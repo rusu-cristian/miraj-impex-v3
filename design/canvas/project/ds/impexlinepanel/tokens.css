@@ -1,46 +1,125 @@
-/* Impex Line Panel tokens as CSS custom properties, generated from the design system's tokens.json (light theme only).
-   components/bundle.css reads these variables; link this file first. */
-:root{
-  --steel-0:#ffffff;--steel-50:#f4f6f7;--steel-100:#e8ebed;--steel-150:#dce1e4;--steel-200:#d3d9dd;--steel-300:#c3cad0;
-  --steel-400:#93a2ac;--steel-500:#76828b;--steel-600:#56626b;--steel-700:#434e57;--steel-800:#1f272d;--steel-900:#13181c;
+/* Impex Line Panel tokens as CSS custom properties.
+ * GENERATED from tokens.json (same layout as the Design System type's compiled tokens.css).
+ * Load BEFORE components/bundle.css, then components/additions.css. Light theme only.
+ * Single source: the canvas copy (project/ds/impexlinepanel/tokens.css) is published from this file. */
 
-  --ground:var(--steel-100);--panel:var(--steel-50);--raised:var(--steel-0);--sunken:var(--steel-150);
-  --rule:var(--steel-200);--line:var(--steel-300);--line-strong:var(--steel-500);
-  --ink:var(--steel-900);--ink-secondary:var(--steel-700);--ink-muted:var(--steel-600);--ink-disabled:var(--steel-400);
-  --control:var(--steel-800);--control-hover:#2c363e;--control-pressed:#0c1013;--on-control:#ffffff;
-  --focus:#17703f;
-
-  --readout:var(--steel-900);--readout-line:#263038;--readout-ink:#e6eef1;--readout-muted:#93a2ac;--readout-guide:#7e8d97;
-  --readout-band:#1e2a26;--readout-ok:#53dd8c;--readout-warn:#f2b544;--readout-fault:#ff7d72;
-  --readout-2:#62c3f5;--readout-3:#c69cf2;--readout-4:#d9c58a;
-
-  --ok:#17703f;--ok-lamp:#1a8a4c;--ok-bg:#daf0e2;
-  --warn:#7f4e00;--warn-lamp:#a86c05;--warn-bg:#fbeaca;
-  --fault:#b0261e;--fault-bg:#f8dedb;
-  --info:#285a82;--info-bg:#dce8f2;
-  --scrim:#13181c80;
-
-  --rec-hen:#b0246a;--rec-hen-bg:#f9e2ee;
-  --rec-rooster:#1f5bb5;--rec-rooster-bg:#e1eaf8;
-  --rec-mortality:#3a424a;--rec-mortality-bg:#e3e6e9;
-  --rec-cull:#7c2f86;--rec-cull-bg:#f1e2f3;
-  --rec-placement:#b4450f;--rec-placement-bg:#fbe6da;
-  --rec-transfer:#5b3cc4;--rec-transfer-bg:#e9e4fa;
-  --rec-sale:#56680c;--rec-sale-bg:#ecf0d8;
-  --rec-feed:#7f5c00;--rec-feed-bg:#f6edc8;
-  --rec-weighing:#0a6a8f;--rec-weighing-bg:#ddeef5;
-  --rec-eggs:#0d6f69;--rec-eggs-bg:#dcf0ee;
-
-  --font-sans:"IBM Plex Sans", system-ui, sans-serif;
-  --font-mono:"IBM Plex Mono", ui-monospace, monospace;
-
-  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-12:48px;
-
-  --radius-none:0px;--radius-xs:2px;--radius-sm:3px;--radius-md:4px;--radius-lg:6px;--radius-round:50%;
-
-  --shadow-overlay:0 1px 2px rgba(19,24,28,0.10), 0 6px 20px rgba(19,24,28,0.14);
-  --shadow-key:inset 0 -1px 0 rgba(19,24,28,0.25);
-
-  --control-h:32px;--control-h-touch:48px;--count-input-h:56px;--row-h:32px;--record-tile:28px;--lamp:8px;
-  --header-h:56px;--tabbar-h:64px;--sidebar-w:232px;--panel-w:440px;
+:root, [data-theme="light"] {
+  --steel-0: #ffffff;
+  --steel-50: #f4f6f7;
+  --steel-100: #e8ebed;
+  --steel-150: #dce1e4;
+  --steel-200: #d3d9dd;
+  --steel-300: #c3cad0;
+  --steel-400: #93a2ac;
+  --steel-500: #76828b;
+  --steel-600: #56626b;
+  --steel-700: #434e57;
+  --steel-800: #1f272d;
+  --steel-900: #13181c;
+  --ground: var(--steel-100);
+  --panel: var(--steel-50);
+  --raised: var(--steel-0);
+  --sunken: var(--steel-150);
+  --rule: var(--steel-200);
+  --line: var(--steel-300);
+  --line-strong: var(--steel-500);
+  --ink: var(--steel-900);
+  --ink-secondary: var(--steel-700);
+  --ink-muted: var(--steel-600);
+  --ink-disabled: var(--steel-400);
+  --control: var(--steel-800);
+  --control-hover: #2c363e;
+  --control-pressed: #0c1013;
+  --on-control: #ffffff;
+  --focus: #17703f;
+  --readout: var(--steel-900);
+  --readout-line: #263038;
+  --readout-ink: #e6eef1;
+  --readout-muted: #93a2ac;
+  --readout-guide: #7e8d97;
+  --readout-band: #1e2a26;
+  --readout-ok: #53dd8c;
+  --readout-warn: #f2b544;
+  --readout-fault: #ff7d72;
+  --readout-2: #62c3f5;
+  --readout-3: #c69cf2;
+  --readout-4: #d9c58a;
+  --ok: #17703f;
+  --ok-lamp: #1a8a4c;
+  --ok-bg: #daf0e2;
+  --warn: #7f4e00;
+  --warn-lamp: #a86c05;
+  --warn-bg: #fbeaca;
+  --fault: #b0261e;
+  --fault-bg: #f8dedb;
+  --info: #285a82;
+  --info-bg: #dce8f2;
+  --scrim: #13181c80;
+  --rec-hen: #b0246a;
+  --rec-hen-bg: #f9e2ee;
+  --rec-rooster: #1f5bb5;
+  --rec-rooster-bg: #e1eaf8;
+  --rec-mortality: #3a424a;
+  --rec-mortality-bg: #e3e6e9;
+  --rec-cull: #7c2f86;
+  --rec-cull-bg: #f1e2f3;
+  --rec-placement: #b4450f;
+  --rec-placement-bg: #fbe6da;
+  --rec-transfer: #5b3cc4;
+  --rec-transfer-bg: #e9e4fa;
+  --rec-sale: #56680c;
+  --rec-sale-bg: #ecf0d8;
+  --rec-feed: #7f5c00;
+  --rec-feed-bg: #f6edc8;
+  --rec-weighing: #0a6a8f;
+  --rec-weighing-bg: #ddeef5;
+  --rec-eggs: #0d6f69;
+  --rec-eggs-bg: #dcf0ee;
+  --shadow-overlay: 0 1px 2px rgba(19,24,28,0.10), 0 6px 20px rgba(19,24,28,0.14);
+  --shadow-key: inset 0 -1px 0 rgba(19,24,28,0.25);
 }
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-round: 50%;
+  --control-h: 32px;
+  --control-h-touch: 48px;
+  --count-input-h: 56px;
+  --row-h: 32px;
+  --record-tile: 28px;
+  --lamp: 8px;
+  --header-h: 56px;
+  --tabbar-h: 64px;
+  --sidebar-w: 232px;
+  --panel-w: 440px;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Type styles: one class per style.
+ * Each bare class (.title, .body, .small, .caption, .input …) also has a prefix-safe alias .ip-t-<name>
+ * (added by SYS00, 16.11.2026). Screens use the .ip-t- names; the bare names stay for the system's own previews. */
+.title, .ip-t-title { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 500; }
+.title-sm, .ip-t-title-sm { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 500; }
+.heading, .ip-t-heading { font-family: var(--font-sans); font-size: 16px; line-height: 22px; font-weight: 500; }
+.body, .ip-t-body { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400; }
+.body-strong, .ip-t-body-strong { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; }
+.input, .ip-t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 400; }
+.small, .ip-t-small { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 400; }
+.caption, .ip-t-caption { font-family: var(--font-sans); font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+.readout-lg, .ip-t-readout-lg { font-family: var(--font-mono); font-size: 32px; line-height: 36px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.readout, .ip-t-readout { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.figure, .ip-t-figure { font-family: var(--font-mono); font-size: 14px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.figure-sm, .ip-t-figure-sm { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 400; font-variant-numeric: tabular-nums; }

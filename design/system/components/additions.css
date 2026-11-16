@@ -1,0 +1,152 @@
+/* Impex Line Panel · additions.css (project, from 16.11.2026)
+ *
+ * Home for every component, state and rule this project adds to the Impex Line Panel system (decision D32).
+ * The system artifact can't be edited from this session (D16), so additions live here, are specified in
+ * design/kit/components.md › "Additions (project, 2026-11-16)", and are listed in HANDOFF for copying into
+ * the system artifact later.
+ *
+ * Load order: tokens.css → components/bundle.css → components/additions.css. Tokens only (CSS variables);
+ * the only literal values are the motion variables defined below.
+ *
+ * Section 0 (SYS00): rule fixes from D31 that bundle.css draws differently (Stat value size).
+ * Section 1 (SYS00): real interaction states. bundle.css draws hover/pressed only as static demo classes
+ * (is-hover, is-pressed). Here the same declarations are wired to :hover, :active and :disabled, and the
+ * demo classes are completed for components that had none, so previews can force every state.
+ * New components go in later sections, one per component, each headed with its name.
+ */
+
+/* Motion: the one easing and three durations (craft.md › Motion), and the focus-ring size. Not in tokens.json, so defined here. */
+:root{
+  --ip-ease:cubic-bezier(0.2,0,0,1);
+  --ip-dur-key:120ms;   /* keys, chips, rows, fields */
+  --ip-dur-panel:200ms; /* panels, sheets, toasts */
+  --ip-dur-page:280ms;  /* page changes */
+  --ip-focus-w:2px;     /* the system focus ring (bundle.css .ip-focus), named so additions use no literal */
+  --ip-focus-offset:2px;
+  --ip-readout-size:20px; /* the readout type style (tokens.css .ip-t-readout 20/24), named for rules that must beat bundle.css */
+  --ip-readout-lh:24px;
+}
+
+/* ---------- 0. Rule fixes (D31) ---------- */
+/* Stat value uses the readout style (20/24), not bundle.css's raw 24/28. */
+.ip-stat__val{font-size:var(--ip-readout-size);line-height:var(--ip-readout-lh)}
+
+/* ---------- 1. Interaction states ---------- */
+
+/* Shared transition for interactive parts: colour and edge only, never transform or all. */
+.ip-btn,.ip-iconbtn,.ip-chip,.ip-tab,.ip-input,.ip-menu__item,.ip-stile,.ip-ev{
+  transition-property:background-color,border-color,color,box-shadow;
+  transition-duration:var(--ip-dur-key);
+  transition-timing-function:var(--ip-ease);
+}
+
+/* Not-disabled guard: every :hover/:active below carries :not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+ * so a disabled control (native, demo class or aria-disabled link) never changes on hover or press. */
+
+/* Button (keys). Hover/pressed never override disabled. Pressed = the key sinks: no shadow. */
+.ip-btn--primary:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--control-hover)}
+.ip-btn--primary:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--control-pressed);box-shadow:none}
+.ip-btn--secondary:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--sunken)}
+.ip-btn--secondary:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-btn--secondary.is-pressed{background:var(--rule);box-shadow:none} /* one steel step past its sunken hover (D34a) */
+.ip-btn--ghost:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--sunken)}
+.ip-btn--ghost:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-btn--ghost.is-pressed{background:var(--rule)}
+.ip-btn--destructive:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--fault-bg)}
+/* Destructive pressed: one step deeper than its fault-bg hover (fault 8% over fault-bg), fault text and edge kept (D34a). */
+.ip-btn--destructive:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-btn--destructive.is-pressed{background:color-mix(in srgb,var(--fault) 8%,var(--fault-bg));color:var(--fault);border-color:var(--fault);box-shadow:none}
+.ip-btn[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);border-color:transparent;box-shadow:none;cursor:not-allowed}
+a.ip-btn{text-decoration:none}
+
+/* IconButton */
+.ip-iconbtn{cursor:pointer}
+.ip-iconbtn:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--sunken);color:var(--ink)}
+.ip-iconbtn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-iconbtn.is-pressed{background:var(--rule);color:var(--ink)}
+.ip-iconbtn:disabled,.ip-iconbtn.is-disabled,.ip-iconbtn[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);cursor:not-allowed}
+
+/* RecordChip (filter: role="checkbox" on a button). Hover sharpens the edge to the record's own colour;
+ * pressed lifts to panel (rec-* text keeps >=4.5:1 there). */
+button.ip-chip,.ip-chip[role="checkbox"]{cursor:pointer}
+.ip-chip[role="checkbox"]:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+button.ip-chip:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-chip.is-hover{border-color:var(--c)}
+.ip-chip--off[role="checkbox"]:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+button.ip-chip--off:hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-chip--off.is-hover{background:var(--panel);border-color:var(--line-strong)}
+.ip-chip[role="checkbox"]:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+button.ip-chip:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-chip.is-pressed{border-color:var(--c);background:var(--panel)}
+.ip-chip:disabled,.ip-chip.is-disabled,.ip-chip[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);border-color:transparent;cursor:not-allowed}
+.ip-chip:disabled .ip-icon,.ip-chip.is-disabled .ip-icon,.ip-chip[aria-disabled="true"] .ip-icon{color:var(--ink-disabled)}
+
+/* Tabs (a.ip-tab or button.ip-tab). Selected keeps its ink underline and green dot. Disabled is text-only (no sunken fill). */
+a.ip-tab,button.ip-tab{text-decoration:none;cursor:pointer;background:transparent;border-top:0;border-left:0;border-right:0;padding:0;font:inherit}
+.ip-tab:hover:not(.is-selected):not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-tab.is-hover{color:var(--ink);border-bottom-color:var(--line-strong)}
+.ip-tab:active:not(.is-selected):not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-tab.is-pressed{color:var(--ink);border-bottom-color:var(--ink-secondary)}
+.ip-tab:disabled,.ip-tab.is-disabled,.ip-tab[aria-disabled="true"]{color:var(--ink-disabled);border-bottom-color:transparent;cursor:not-allowed}
+
+/* TextField / Select / SectionSelect / CycleSelector / CountInput (.ip-input wrapper or native element). */
+.ip-input > input,.ip-input > select,.ip-input > textarea{flex:1;min-width:0;height:100%;border:0;padding:0;margin:0;background:transparent;color:inherit;font:inherit;outline:none;appearance:none}
+.ip-input:hover:not(.is-disabled):not([aria-disabled="true"]):not(.is-readonly):not(.is-error):not(.is-warn):not(.is-focus):not(:disabled):not(:focus-within):not(:has(> :disabled)):not(:has(> [readonly])),
+.ip-input.is-hover{border-color:var(--ink-secondary)}
+.ip-input:focus-within:not(.is-disabled),
+input.ip-input:focus-visible,select.ip-input:focus-visible,textarea.ip-input:focus-visible{border-color:var(--ink);outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-input.is-error:focus-within{border-color:var(--fault)}
+.ip-input.is-warn:focus-within{border-color:var(--warn-lamp)}
+.ip-input:disabled,.ip-input:has(> :disabled){background:var(--sunken);color:var(--ink-disabled);border-color:var(--line);cursor:not-allowed}
+.ip-input:has(> :disabled) > *{cursor:not-allowed}
+.ip-input[readonly],.ip-input:has(> [readonly]){background:var(--sunken);border-color:transparent}
+.ip-menu__item:hover:not(.is-disabled):not([aria-disabled="true"]){background:var(--sunken)}
+.ip-menu__item[aria-disabled="true"]{color:var(--ink-disabled)}
+.ip-menu__item.is-disabled,.ip-menu__item[aria-disabled="true"]{cursor:not-allowed}
+
+/* SectionTile (a.ip-stile when it opens the section). Missing keeps its warn edge on hover. */
+a.ip-stile,button.ip-stile{color:inherit;text-decoration:none;cursor:pointer;font:inherit;text-align:left}
+.ip-stile:is(a,button):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]){border-color:var(--line-strong);background:var(--panel)}
+.ip-stile:is(a,button):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-stile.is-pressed{border-color:var(--line-strong);background:var(--sunken)}
+.ip-stile.is-missing:is(a,button):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-stile.is-missing:is(a,button):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-stile.is-missing.is-hover:not(.is-disabled):not([aria-disabled="true"]),.ip-stile.is-missing.is-pressed:not(.is-disabled):not([aria-disabled="true"]){border-color:var(--warn-lamp)}
+.ip-stile:disabled,.ip-stile.is-disabled,.ip-stile[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);border-color:var(--line);cursor:not-allowed}
+
+/* EventRow (a.ip-ev, or a row holding its own link/button). Disabled is text-only (no sunken fill). */
+a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100%;font:inherit;text-align:left;border-top:0;border-left:0;border-right:0;background:transparent}
+.ip-ev:is(a,button):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-ev:not(.is-disabled):not([aria-disabled="true"]):has(> .ip-ev__main a:hover){background:var(--sunken)}
+.ip-ev:is(a,button):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-ev.is-pressed{background:var(--rule)}
+.ip-ev:disabled,.ip-ev.is-disabled,.ip-ev[aria-disabled="true"]{background:transparent;color:var(--ink-disabled);cursor:not-allowed}
+.ip-ev.is-disabled .ip-ev__meta,.ip-ev[aria-disabled="true"] .ip-ev__meta{color:var(--ink-disabled)}
+/* A list of interactive rows must not clip the focus ring (bundle.css .ip-list has overflow:hidden).
+ * The list stays rounded: first/last rows take its outer corners so hover/pressed fills stay inside them. */
+.ip-list:has(> .ip-ev:is(a,button)){overflow:visible}
+.ip-list > .ip-ev:is(a,button):first-child{border-top-left-radius:var(--radius-md);border-top-right-radius:var(--radius-md)}
+.ip-list > .ip-ev:is(a,button):last-child{border-bottom-left-radius:var(--radius-md);border-bottom-right-radius:var(--radius-md)}
+.ip-list > .ip-ev:is(a,button):focus-visible,.ip-list > .ip-ev.ip-focus{position:relative;z-index:1} /* ring paints over the next row */
+
+/* Pressed contrast (D34a): on `rule`, ink-muted (4.4:1) and the ok lamp word (4.3:1) fall under 4.5:1, so inside a
+ * pressed ghost/secondary Button, IconButton or EventRow, ink-muted text and lamp words switch to ink-secondary.
+ * Lamp dots keep their status colour. */
+:is(.ip-btn--ghost,.ip-btn--secondary,.ip-iconbtn,.ip-ev:is(a,button)):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]) :is(.ip-cap,.ip-note,.ip-hint,.ip-stat__guide,.ip-pair .sep,.ip-lamp),
+:is(.ip-btn--ghost,.ip-btn--secondary,.ip-iconbtn,.ip-ev).is-pressed:not(.is-disabled):not([aria-disabled="true"]) :is(.ip-cap,.ip-note,.ip-hint,.ip-stat__guide,.ip-pair .sep,.ip-lamp){color:var(--ink-secondary)}
+:is(.ip-btn--ghost,.ip-btn--secondary,.ip-iconbtn,.ip-ev:is(a,button)):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]) .ip-lamp--fault::before,
+:is(.ip-btn--ghost,.ip-btn--secondary,.ip-iconbtn,.ip-ev).is-pressed:not(.is-disabled):not([aria-disabled="true"]) .ip-lamp--fault::before{background:var(--fault)}
+:is(.ip-btn--ghost,.ip-btn--secondary,.ip-iconbtn,.ip-ev:is(a,button)):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]) .ip-lamp--info::before,
+:is(.ip-btn--ghost,.ip-btn--secondary,.ip-iconbtn,.ip-ev).is-pressed:not(.is-disabled):not([aria-disabled="true"]) .ip-lamp--info::before{background:var(--info)}
+
+/* Focus stays the system ring on every element above (bundle.css: :where(.ip-root) :focus-visible). */
+
+/* Reduced motion: instant state changes, no transforms or animation. */
+@media (prefers-reduced-motion: reduce){
+  .ip-root *,.ip-root *::before,.ip-root *::after{
+    transition-duration:0s !important;
+    animation-duration:0s !important;
+    animation-iteration-count:1 !important;
+    scroll-behavior:auto !important;
+  }
+}

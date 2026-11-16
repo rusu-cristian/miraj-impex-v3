@@ -1,6 +1,7 @@
 /* Impex Line Panel tokens as CSS custom properties.
  * GENERATED from tokens.json (same layout as the Design System type's compiled tokens.css).
- * Load BEFORE components/bundle.css. Light theme only. */
+ * Load BEFORE components/bundle.css, then components/additions.css. Light theme only.
+ * Single source: the canvas copy (project/ds/impexlinepanel/tokens.css) is published from this file. */
 
 :root, [data-theme="light"] {
   --steel-0: #ffffff;
@@ -107,16 +108,18 @@
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
-/* Type styles: one class per style */
-.title { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 500; }
-.title-sm { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 500; }
-.heading { font-family: var(--font-sans); font-size: 16px; line-height: 22px; font-weight: 500; }
-.body { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400; }
-.body-strong { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; }
-.input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 400; }
-.small { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 400; }
-.caption { font-family: var(--font-sans); font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
-.readout-lg { font-family: var(--font-mono); font-size: 32px; line-height: 36px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.readout { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.figure { font-family: var(--font-mono); font-size: 14px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums; }
-.figure-sm { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 400; font-variant-numeric: tabular-nums; }
+/* Type styles: one class per style.
+ * Each bare class (.title, .body, .small, .caption, .input …) also has a prefix-safe alias .ip-t-<name>
+ * (added by SYS00, 16.11.2026). Screens use the .ip-t- names; the bare names stay for the system's own previews. */
+.title, .ip-t-title { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 500; }
+.title-sm, .ip-t-title-sm { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 500; }
+.heading, .ip-t-heading { font-family: var(--font-sans); font-size: 16px; line-height: 22px; font-weight: 500; }
+.body, .ip-t-body { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400; }
+.body-strong, .ip-t-body-strong { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; }
+.input, .ip-t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 400; }
+.small, .ip-t-small { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 400; }
+.caption, .ip-t-caption { font-family: var(--font-sans); font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+.readout-lg, .ip-t-readout-lg { font-family: var(--font-mono); font-size: 32px; line-height: 36px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.readout, .ip-t-readout { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.figure, .ip-t-figure { font-family: var(--font-mono); font-size: 14px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.figure-sm, .ip-t-figure-sm { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 400; font-variant-numeric: tabular-nums; }

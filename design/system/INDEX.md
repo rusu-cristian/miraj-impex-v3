@@ -5,20 +5,50 @@ Copy of the Design System artifact `95f22f4a-b2df-421d-b638-4d5e9d0656e2`, versi
 ## Files
 - `README.md`: the brand book (colour jobs, record-type code, content rules, surfaces, type, layout). Read it first.
 - `tokens.json`: source tokens (colour, type, spacing, radius, shadow, size). Light theme only.
-- `tokens.css`: **CSS custom properties** generated here from tokens.json (the artifact compiles this file but does not store it; bundle.css does NOT define any variables). Adds `.title` … `.figure-sm` type classes.
-- `components/bundle.css`: every `ip-` class. HTML/CSS only, no bundle.js, no JS behaviour.
+- `tokens.css`: **CSS custom properties** generated here from tokens.json (the artifact compiles this file but does not store it; bundle.css does NOT define any variables). Adds `.title` … `.figure-sm` type classes, each with a prefix-safe alias `.ip-t-<name>` (`ip-t-title`, `ip-t-title-sm`, `ip-t-heading`, `ip-t-body`, `ip-t-body-strong`, `ip-t-input`, `ip-t-small`, `ip-t-caption`, `ip-t-readout-lg`, `ip-t-readout`, `ip-t-figure`, `ip-t-figure-sm`). **Screens use the `ip-t-` names.** This file is the single source; the canvas copy `project/ds/impexlinepanel/tokens.css` is published from it.
+- `components/bundle.css`: every `ip-` class. HTML/CSS only, no bundle.js, no JS behaviour. The system's file: never edited here.
+- `components/additions.css`: **project additions** (D32): real `:hover`/`:active`/`:disabled` states, motion vars (`--ip-ease`, `--ip-dur-key|panel|page`), `prefers-reduced-motion` guard, D31 fixes (Stat value 20/24), and every new component. Spec: `design/kit/components.md` › "Additions (project, 2026-11-16)". Preview of the states: `components/_Interaction/preview.html` (full page, not on the canvas). On the canvas: `project/additions.css`.
 - `components/<Comp>/README.md` (spec) + `preview.html` (reference markup fragment, line 1 is a `@dsCard` marker). `components/Cover/` is the cover art, not a component.
 
 ## To render components in a page
+Link order is fixed: tokens.css → bundle.css → additions.css.
 ```html
-<link rel="stylesheet" href="design/system/tokens.css">            <!-- 1st: variables -->
-<link rel="stylesheet" href="design/system/components/bundle.css"> <!-- 2nd: ip- classes (it @imports Google Fonts) -->
+<link rel="stylesheet" href="design/system/tokens.css">               <!-- 1st: variables + ip-t- type classes -->
+<link rel="stylesheet" href="design/system/components/bundle.css">    <!-- 2nd: ip- classes (it @imports Google Fonts) -->
+<link rel="stylesheet" href="design/system/components/additions.css"> <!-- 3rd: project states, fixes, new components -->
 <body class="ip-root"> ... </body>  <!-- or wrap content in .ip-root: ground, ink, Plex Sans 14/20, box-sizing, focus ring -->
+```
+
+## How to start an artboard (canvas, full rules in design/kit/canvas.md)
+```html
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>S4 · Fermă · Rezumat</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/impexlinepanel/tokens.css">
+<link rel="stylesheet" href="ds/impexlinepanel/components/bundle.css">
+<link rel="stylesheet" href="additions.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ip-root" style="padding:0; min-height:1024px"> … </div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
 ```
 Previews are fragments (no `<html>/<head>`); paste their markup inside an `.ip-root`. Variables: `--rec-hen`, `--ground`, `--panel`, `--raised`, `--sunken`, `--ink`, `--control`, `--ok-lamp`, `--readout-ok`, `--space-1..12`, `--radius-xs|sm|md|lg|round`, `--shadow-key`, `--shadow-overlay`, `--control-h`, `--control-h-touch`, `--count-input-h`, `--row-h`, `--record-tile`, `--lamp`, `--header-h`, `--tabbar-h`, `--sidebar-w`, `--panel-w`, `--font-sans`, `--font-mono`.
 
 ## Icons
-Inline `<svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true">` with `<path>/<circle>` children; Lucide-style line icons (plus custom skull, wheat, venus, mars, coins), stroke `currentColor`, width 1.75, round caps, no fill (set by `.ip-icon`). Sizes: default 18px, `ip-icon--14|16|22`. No sprite, no icon font, no icon files: copy the path data from the previews (RecordTile/RecordCode hold every record icon; BottomTabBar/Sidebar hold nav icons). Record icons: hen venus, rooster mars, mortality skull, cull ban, placement log-in, transfer arrows, sale truck, feed wheat/package/coins, weighing scale, eggs egg; sexing error = `ip-tile--split` with two rings.
+Inline `<svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true">` with `<path>/<circle>` children; Lucide-style line icons (plus custom skull, wheat, venus, mars, coins), stroke `currentColor`, width 1.75, round caps, no fill (set by `.ip-icon`). Sizes: default 18px, `ip-icon--14|16|22`. No sprite, no icon font, no icon files: **copy the SVG path data from the previews** (`components/RecordTile/preview.html` and `components/RecordCode/preview.html` hold every record icon; BottomTabBar/Sidebar hold nav icons); never redraw a record icon. Record icons: hen venus, rooster mars, mortality skull, cull ban, placement log-in, transfer arrows, sale truck, feed wheat/package/coins, weighing scale, eggs egg; sexing error = `ip-tile--split` with two rings.
 
 ## Fonts
 IBM Plex Sans + IBM Plex Mono, weights 400/500, loaded by the `@import` of Google Fonts on line 1 of bundle.css. No font files ship (`type.fonts` is empty). Offline, the stacks fall back to `system-ui` / `ui-monospace`; self-host woff2 files if exact rendering is needed offline.
@@ -54,4 +84,4 @@ IBM Plex Sans + IBM Plex Mono, weights 400/500, loaded by the `@import` of Googl
 **Containers:** Dialog `ip-scrim` > `ip-dialog`; SidePanel `ip-sidepanel` > `__head|__body|__foot`; BottomSheet `ip-sheet` > `ip-sheet__handle`
 **App shell:** Sidebar `ip-sidebar` `ip-wordmark` `ip-nav` (`is-current`, `ip-nav--sub`); BottomTabBar `ip-tabbar` > `ip-tabbar__item` (`is-current`), `ip-tabbar__key`; FormHeader `ip-formhead`; SaveBar `ip-savebar` > `ip-savebar__sum`; PageHeader `ip-pagehead` + `ip-crumbs`; Tabs `ip-tabs` > `ip-tab` (`is-selected`); FilterBar `ip-filterbar`; phone frame `ip-phone`
 
-`is-hover`/`is-pressed`/`is-focus` are static demo states; real pages use `:hover`/`:focus-visible` (only `.ip-root :focus-visible` is wired).
+`is-hover`/`is-pressed`/`is-disabled`/`is-focus` (and `ip-focus`) are static demo states for showing a state on a still artboard. Real `:hover`, `:active`, `:disabled` and `:focus-within` are wired in additions.css for buttons, icon buttons, chips, tabs, fields/selects, menu items, section tiles and event rows; `.ip-root :focus-visible` (bundle.css) gives the focus ring everywhere.

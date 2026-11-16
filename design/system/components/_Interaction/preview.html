@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>Interaction states · Impex Line Panel (additions)</title>
+<!-- Project preview for components/additions.css › Interaction states. Not on the canvas. -->
+<link rel="stylesheet" href="../../tokens.css">
+<link rel="stylesheet" href="../bundle.css">
+<link rel="stylesheet" href="../additions.css">
+<style>
+body{margin:0}
+.sx{border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md)}
+.sx th{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--line)}
+.sx td{padding:var(--space-3);border-bottom:1px solid var(--rule);vertical-align:middle}
+.sx td.w{min-width:200px}
+.sx td.wp{min-width:240px}
+</style>
+</head>
+<body class="ip-root">
+<div class="ip-stack" style="gap:var(--space-6)">
+<div class="ip-stack" style="gap:var(--space-1)">
+<span class="ip-cap">ADDITIONS · STĂRI DE INTERACȚIUNE</span>
+<h1 class="ip-t-title" style="margin:0">Stări: implicit, hover, apăsat, dezactivat, focus</h1>
+<p class="ip-note" style="margin:0">Coloanele 2–5 forțează starea cu clasele demo (is-hover, is-pressed, is-disabled / disabled, ip-focus / is-focus). Ultima coloană e reală: treci cu mouse-ul, apasă, folosește Tab. Apăsat pe oțel (secondary, ghost, IconButton, EventRow) = rule; destructive apăsat = fault 8% peste fault-bg; RecordChip apăsat = panel; IconButton dezactivat = sunken.</p>
+</div>
+
+<table class="sx">
+<thead><tr><th class="ip-cap">Componentă</th><th class="ip-cap">Implicit</th><th class="ip-cap">Hover</th><th class="ip-cap">Apăsat</th><th class="ip-cap">Dezactivat</th><th class="ip-cap">Focus</th><th class="ip-cap">Real</th></tr></thead>
+<tbody>
+<tr><td class="ip-cap">Button primary</td>
+<td><button class="ip-btn ip-btn--primary" type="button">Salvează</button></td>
+<td><button class="ip-btn ip-btn--primary is-hover" type="button">Salvează</button></td>
+<td><button class="ip-btn ip-btn--primary is-pressed" type="button">Salvează</button></td>
+<td><button class="ip-btn ip-btn--primary" type="button" disabled>Salvează</button></td>
+<td><button class="ip-btn ip-btn--primary ip-focus" type="button">Salvează</button></td>
+<td><button class="ip-btn ip-btn--primary" type="button">Salvează</button></td></tr>
+<tr><td class="ip-cap">Button secondary</td>
+<td><button class="ip-btn ip-btn--secondary" type="button">Anulează</button></td>
+<td><button class="ip-btn ip-btn--secondary is-hover" type="button">Anulează</button></td>
+<td><button class="ip-btn ip-btn--secondary is-pressed" type="button">Anulează</button></td>
+<td><button class="ip-btn ip-btn--secondary" type="button" disabled>Anulează</button></td>
+<td><button class="ip-btn ip-btn--secondary ip-focus" type="button">Anulează</button></td>
+<td><button class="ip-btn ip-btn--secondary" type="button">Anulează</button></td></tr>
+<tr><td class="ip-cap">Button ghost</td>
+<td><button class="ip-btn ip-btn--ghost" type="button">Exportă .xlsx</button></td>
+<td><button class="ip-btn ip-btn--ghost is-hover" type="button">Exportă .xlsx</button></td>
+<td><button class="ip-btn ip-btn--ghost is-pressed" type="button">Exportă .xlsx</button></td>
+<td><button class="ip-btn ip-btn--ghost" type="button" disabled>Exportă .xlsx</button></td>
+<td><button class="ip-btn ip-btn--ghost ip-focus" type="button">Exportă .xlsx</button></td>
+<td><button class="ip-btn ip-btn--ghost" type="button">Exportă .xlsx</button></td></tr>
+<tr><td class="ip-cap">Button destructive</td>
+<td><button class="ip-btn ip-btn--destructive" type="button">Șterge</button></td>
+<td><button class="ip-btn ip-btn--destructive is-hover" type="button">Șterge</button></td>
+<td><button class="ip-btn ip-btn--destructive is-pressed" type="button">Șterge</button></td>
+<td><button class="ip-btn ip-btn--destructive" type="button" disabled>Șterge</button></td>
+<td><button class="ip-btn ip-btn--destructive ip-focus" type="button">Șterge</button></td>
+<td><button class="ip-btn ip-btn--destructive" type="button">Șterge</button></td></tr>
+<tr><td class="ip-cap">IconButton</td>
+<td><button class="ip-iconbtn" type="button" aria-label="Închide"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn is-hover" type="button" aria-label="Închide"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn is-pressed" type="button" aria-label="Închide"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn" type="button" aria-label="Închide" disabled><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn ip-focus" type="button" aria-label="Închide"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn" type="button" aria-label="Închide"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td></tr>
+<tr><td class="ip-cap">RecordChip pornit</td>
+<td><button class="ip-chip ip-rec ip-rec--mortality" type="button" role="checkbox" aria-checked="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality is-hover" type="button" role="checkbox" aria-checked="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality is-pressed" type="button" role="checkbox" aria-checked="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality" type="button" role="checkbox" aria-checked="true" disabled><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality ip-focus" type="button" role="checkbox" aria-checked="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality" type="button" role="checkbox" aria-checked="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td></tr>
+<tr><td class="ip-cap">RecordChip oprit</td>
+<td><button class="ip-chip ip-rec ip-rec--transfer ip-chip--off" type="button" role="checkbox" aria-checked="false"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Transfer</button></td>
+<td><button class="ip-chip ip-rec ip-rec--transfer ip-chip--off is-hover" type="button" role="checkbox" aria-checked="false"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Transfer</button></td>
+<td><button class="ip-chip ip-rec ip-rec--transfer ip-chip--off is-pressed" type="button" role="checkbox" aria-checked="false"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Transfer</button></td>
+<td><button class="ip-chip ip-rec ip-rec--transfer ip-chip--off" type="button" role="checkbox" aria-checked="false" disabled><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Transfer</button></td>
+<td><button class="ip-chip ip-rec ip-rec--transfer ip-chip--off ip-focus" type="button" role="checkbox" aria-checked="false"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Transfer</button></td>
+<td><button class="ip-chip ip-rec ip-rec--transfer ip-chip--off" type="button" role="checkbox" aria-checked="false"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Transfer</button></td></tr>
+<tr><td class="ip-cap">Tab</td>
+<td><div class="ip-tabs"><a class="ip-tab" href="#p">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab is-hover" href="#p">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab is-pressed" href="#p">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab is-disabled" aria-disabled="true">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab ip-focus" href="#p">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab is-selected" href="#r">Rezumat</a><a class="ip-tab" href="#p">Păsări</a><a class="ip-tab" href="#h">Hrană</a></div></td></tr>
+<tr><td class="ip-cap">TextField</td>
+<td class="w"><label class="ip-field"><span class="ip-label">Cantitate</span><span class="ip-input"><input class="ip-num" value="24 000"><span class="suffix">kg</span></span></label></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Cantitate</span><span class="ip-input is-hover"><input class="ip-num" value="24 000"><span class="suffix">kg</span></span></label></td>
+<td class="w"><span class="ip-note">– (câmpurile nu au stare apăsat)</span></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Cantitate</span><span class="ip-input"><input class="ip-num" value="24 000" disabled><span class="suffix">kg</span></span></label></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Cantitate</span><span class="ip-input is-focus"><input class="ip-num" value="24 000"><span class="suffix">kg</span></span></label></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Cantitate</span><span class="ip-input"><input class="ip-num" value="24 000"><span class="suffix">kg</span></span></label></td></tr>
+<tr><td class="ip-cap">Select</td>
+<td class="w"><label class="ip-field"><span class="ip-label">Tip hrană</span><span class="ip-input"><select><option>Breeder 2</option><option>Cocoși</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Tip hrană</span><span class="ip-input is-hover"><select><option>Breeder 2</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label></td>
+<td class="w"><div class="ip-menu" style="min-width:0"><div class="ip-menu__item is-active">Breeder 2</div><div class="ip-menu__item">Cocoși</div></div></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Tip hrană</span><span class="ip-input"><select disabled><option>Breeder 2</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Tip hrană</span><span class="ip-input is-focus"><select><option>Breeder 2</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label></td>
+<td class="w"><label class="ip-field"><span class="ip-label">Tip hrană</span><span class="ip-input"><select><option>Breeder 2</option><option>Cocoși</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label></td></tr>
+<tr><td class="ip-cap">SectionTile</td>
+<td class="w"><a class="ip-stile" href="#h11"><span class="ip-stile__head"><span class="ip-stile__code">H1.1</span><span class="ip-lamp ip-lamp--ok">în normă</span></span></a></td>
+<td class="w"><a class="ip-stile is-hover" href="#h11"><span class="ip-stile__head"><span class="ip-stile__code">H1.1</span><span class="ip-lamp ip-lamp--ok">în normă</span></span></a></td>
+<td class="w"><a class="ip-stile is-pressed" href="#h11"><span class="ip-stile__head"><span class="ip-stile__code">H1.1</span><span class="ip-lamp ip-lamp--ok">în normă</span></span></a></td>
+<td class="w"><a class="ip-stile is-disabled" aria-disabled="true"><span class="ip-stile__head"><span class="ip-stile__code">H1.1</span><span class="ip-lamp ip-lamp--off">fără acces</span></span></a></td>
+<td class="w"><a class="ip-stile ip-focus" href="#h11"><span class="ip-stile__head"><span class="ip-stile__code">H1.1</span><span class="ip-lamp ip-lamp--ok">în normă</span></span></a></td>
+<td class="w"><a class="ip-stile is-missing" href="#h12"><span class="ip-stile__head"><span class="ip-stile__code">H1.2</span><span class="ip-lamp ip-lamp--warn">lipsă hrană</span></span></a></td></tr>
+<tr><td class="ip-cap">EventRow</td>
+<td class="w"><div class="ip-list"><a class="ip-ev" href="#e1"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev is-hover" href="#e1"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w wp"><div class="ip-list"><a class="ip-ev is-pressed" href="#e1"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev is-disabled" aria-disabled="true"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev ip-focus" href="#e1"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev" href="#e1"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td></tr>
+</tbody>
+</table>
+
+<div class="ip-stack" style="gap:var(--space-1)">
+<span class="ip-cap">RUNDA 1 DE CORECTURI</span>
+<p class="ip-note" style="margin:0">aria-disabled: coloana Real nu se schimbă la hover sau apăsare. Destructive apăsat: un pas mai adânc decât hover, text și margine fault. Tab și EventRow dezactivate: doar text, fără fundal. EventRow în listă: inelul de focus nu mai e tăiat.</p>
+</div>
+
+<table class="sx" id="fix1">
+<thead><tr><th class="ip-cap">Componentă</th><th class="ip-cap">aria-disabled</th><th class="ip-cap">aria-disabled + hover forțat</th><th class="ip-cap">Real (hover, apasă)</th></tr></thead>
+<tbody>
+<tr><td class="ip-cap">Button primary (link)</td>
+<td><a class="ip-btn ip-btn--primary" aria-disabled="true">Salvează</a></td>
+<td><a class="ip-btn ip-btn--primary is-hover" aria-disabled="true">Salvează</a></td>
+<td><a class="ip-btn ip-btn--primary" aria-disabled="true" data-probe="btn-primary">Salvează</a></td></tr>
+<tr><td class="ip-cap">Button destructive (link)</td>
+<td><a class="ip-btn ip-btn--destructive" aria-disabled="true">Șterge</a></td>
+<td><a class="ip-btn ip-btn--destructive is-hover" aria-disabled="true">Șterge</a></td>
+<td><a class="ip-btn ip-btn--destructive" aria-disabled="true" data-probe="btn-destructive">Șterge</a></td></tr>
+<tr><td class="ip-cap">IconButton</td>
+<td><button class="ip-iconbtn" type="button" aria-label="Închide" aria-disabled="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn is-hover" type="button" aria-label="Închide" aria-disabled="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td>
+<td><button class="ip-iconbtn" type="button" aria-label="Închide" aria-disabled="true" data-probe="iconbtn"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></td></tr>
+<tr><td class="ip-cap">RecordChip</td>
+<td><button class="ip-chip ip-rec ip-rec--mortality" type="button" role="checkbox" aria-checked="true" aria-disabled="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality is-hover" type="button" role="checkbox" aria-checked="true" aria-disabled="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td>
+<td><button class="ip-chip ip-rec ip-rec--mortality" type="button" role="checkbox" aria-checked="true" aria-disabled="true" data-probe="chip"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg>Mortalitate</button></td></tr>
+<tr><td class="ip-cap">Tab</td>
+<td><div class="ip-tabs"><a class="ip-tab" aria-disabled="true">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab is-hover" aria-disabled="true">Păsări</a></div></td>
+<td><div class="ip-tabs"><a class="ip-tab" aria-disabled="true" data-probe="tab">Păsări</a></div></td></tr>
+<tr><td class="ip-cap">SectionTile</td>
+<td class="w"><a class="ip-stile is-missing" aria-disabled="true"><span class="ip-stile__head"><span class="ip-stile__code">H1.2</span><span class="ip-lamp ip-lamp--off">fără acces</span></span></a></td>
+<td class="w"><a class="ip-stile is-missing is-hover" aria-disabled="true"><span class="ip-stile__head"><span class="ip-stile__code">H1.2</span><span class="ip-lamp ip-lamp--off">fără acces</span></span></a></td>
+<td class="w"><a class="ip-stile is-missing" aria-disabled="true" data-probe="stile"><span class="ip-stile__head"><span class="ip-stile__code">H1.2</span><span class="ip-lamp ip-lamp--off">fără acces</span></span></a></td></tr>
+<tr><td class="ip-cap">EventRow</td>
+<td class="w"><div class="ip-list"><a class="ip-ev" aria-disabled="true"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev is-hover" aria-disabled="true"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev" aria-disabled="true" data-probe="ev"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td></tr>
+</tbody>
+</table>
+
+<table class="sx">
+<thead><tr><th class="ip-cap">EventRow în listă</th><th class="ip-cap">Focus pe primul rând</th><th class="ip-cap">Focus pe rândul din mijloc</th><th class="ip-cap">Focus pe ultimul rând</th><th class="ip-cap">Real (Tab)</th></tr></thead>
+<tbody>
+<tr><td class="ip-cap">ip-list &gt; a.ip-ev</td>
+<td class="w"><div class="ip-list"><a class="ip-ev ip-focus" href="#l0"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev" href="#l1"><span class="ip-tile ip-rec ip-rec--mortality" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span><span class="ip-ev__main">Mortalitate · H1.1<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev" href="#l2"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span><span class="ip-ev__main">Transfer · H3.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev" href="#l0"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev ip-focus" href="#l1"><span class="ip-tile ip-rec ip-rec--mortality" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span><span class="ip-ev__main">Mortalitate · H1.1<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev" href="#l2"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span><span class="ip-ev__main">Transfer · H3.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev" href="#l0"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev" href="#l1"><span class="ip-tile ip-rec ip-rec--mortality" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span><span class="ip-ev__main">Mortalitate · H1.1<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev ip-focus" href="#l2"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span><span class="ip-ev__main">Transfer · H3.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td>
+<td class="w"><div class="ip-list"><a class="ip-ev" href="#l0"><span class="ip-tile ip-rec ip-rec--cull" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="ip-ev__main">Sacrificare · H1.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev" href="#l1"><span class="ip-tile ip-rec ip-rec--mortality" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span><span class="ip-ev__main">Mortalitate · H1.1<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a><a class="ip-ev" href="#l2"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span><span class="ip-ev__main">Transfer · H3.2<span class="ip-ev__meta ip-num" style="display:block">16.11.2026 · SAPT 40</span></span></a></div></td></tr>
+</tbody>
+</table>
+</div>
+</body>
+</html>
