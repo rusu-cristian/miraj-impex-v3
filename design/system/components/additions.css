@@ -814,3 +814,95 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* .ip-fsums.ip-fsums--stretch: panels that share a grid row take the row's height (S3 desktop: Telița and Hîrbovăț
  * side by side end on one line; S2 compact rows may use it too). Default .ip-fsums keeps align-items:start. */
 .ip-fsums--stretch{align-items:stretch}
+
+/* =====================================================================================================
+ * S11P · DataTable numeric column headers. Spec: components.md › Additions › S11P. Fixes the bundle rule
+ * `.ip-table .num` (Mono), which also caught `th.num`: the DataTable spec sets every column header as a Sans caption;
+ * only the cells below are Mono. Replaces the S3 screen rule `.s3-table th.num` (S3P).
+ * ===================================================================================================== */
+
+/* ---------- 22. DataTable · numeric headers ---------- */
+/* th.num keeps right alignment and tabular figures, in the caption face (Plex Sans 11/14 500, uppercase, ink-muted). */
+.ip-table th.num{font-family:var(--font-sans)}
+
+/* =====================================================================================================
+ * SYS08 · Acasă blocks for S2 (vet, manager, owner): MissingRow (Lipsesc date), EntryKeys, UnpricedCount.
+ * Spec: components.md › Additions › SYS08. Built on EventRow, RecordTile, Button, Lamp, Tag; nothing restyled.
+ * ===================================================================================================== */
+
+/* ---------- 23. MissingRow (Lipsesc date) ---------- */
+/* Spec C9 / D2: sections with birds and no Zilnic or no Hrană zilnică entry for a day (today from 12:00, up to 7 days
+ * back). section.ip-missing > head (h2 caption + scope line) > .ip-list of rows. One row = section × entry × day:
+ * a.ip-ev.ip-ev--missing (opens the form at that section and day) or div.ip-ev.ip-ev--missing.is-locked (a past day the
+ * user can't enter: vets, D07; Tag "blocat" as EventRow's locked rows). Tile = the entry's record icon (Zilnic: mortality,
+ * Hrană zilnică: feed wheat). Status = warn Lamp "lipsă" in AlertRow's .ip-ev__status column; .ip-ev__go is a fixed
+ * 16px slot holding the chevron on links and left empty on locked rows, so every lamp sits in one column. */
+.ip-missing{display:flex;flex-direction:column;gap:var(--space-2)}
+.ip-missing__head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-1) var(--space-3)}
+.ip-missing__head > h2,.ip-missing__head > h3{margin:0}
+.ip-missing__head > p{margin:0}
+.ip-ev--missing .ip-ev__title{font-weight:500}
+.ip-ev--missing .ip-ev__meta{display:block}
+.ip-ev--missing .ip-ev__meta .ip-sex b{font-weight:400}
+.ip-ev--missing .ip-ev__type{white-space:nowrap} /* entry type + its sex sign(s) stay on one line */
+.ip-ev--missing .ip-ev__title > .ip-tag{margin-left:var(--space-2);vertical-align:1px} /* locked: "blocat" after the title, so phone rows keep their width */
+.ip-ev--missing > .ip-ev__status{min-width:0} /* one word ("lipsă") in every row, so the lamps align without AlertRow's 96px column */
+.ip-ev__go{flex:none;width:var(--space-4);display:inline-flex;align-items:center;justify-content:center;color:var(--ink-muted)}
+.ip-ev__go > .ip-icon{color:inherit;margin:0;vertical-align:0}
+.ip-ev--missing:is(a):active:not(.is-disabled):not([aria-disabled="true"]) .ip-ev__go,
+.ip-ev--missing.is-pressed .ip-ev__go{color:var(--ink-secondary)}
+/* Nothing missing (or before 12:00 with the last 7 days complete): one row-height line, off Lamp + its word + one
+ * sentence, inside the same list frame, so the block keeps its place on Acasă. */
+.ip-missing__empty{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);padding:var(--space-3);min-height:var(--space-12);margin:0;color:var(--ink-secondary)}
+/* Loading: static skeleton rows (sunken tile + two lines), no shimmer. */
+.ip-ev--skel{pointer-events:none}
+.ip-skel--tile{width:var(--record-tile);height:var(--record-tile);border-radius:var(--radius-sm);flex:none}
+.ip-ev--skel .ip-ev__main{display:flex;flex-direction:column;gap:var(--space-2)}
+.ip-skel--w1{width:calc(var(--space-12) * 4)}
+.ip-skel--w2{width:calc(var(--space-12) * 3)}
+.ip-skel--w3{width:calc(var(--space-12) * 1.5)}
+.ip-ev--skel .ip-skel{max-width:100%}
+
+/* ---------- 24. EntryKeys ---------- */
+/* The entry shortcuts on Acasă (spec D2): panel keys that open the entry forms. section.ip-entrykeys (a size container)
+ * > h2 caption > ul.ip-entrykeys__list > li > a.ip-btn.ip-btn--secondary.ip-entrykey: RecordTile (aria-hidden) + label
+ * (Button's 14/20 500) + one hint line (ip-note, so the D34a pressed rule keeps it ≥4.5:1 on rule). Secondary keys:
+ * Acasă has no single primary action. Columns ≥ 168px (space-12 × 3.5): 6 in one row at 1136, 2 on a 358px phone; with
+ * 2 columns an odd last key spans the row (vet: Zilnic | Hrană zilnică, then Cântărire across). Height ≥ control-h-touch
+ * (48) on every size, so one key serves desktop and phone. Disabled = a link with aria-disabled and no href (Button's
+ * sunken + ink-disabled, from section 1); its tile drops the record colour. */
+.ip-entrykeys{container-type:inline-size;display:flex;flex-direction:column;gap:var(--space-2)}
+.ip-entrykeys > h2,.ip-entrykeys > h3{margin:0}
+.ip-entrykeys > p{margin:0}
+.ip-entrykeys__list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--space-12) * 3.5),1fr));gap:var(--space-2)}
+.ip-entrykeys__list > li{display:flex;min-width:0}
+@container (max-width: 519.98px){ /* below 3 × 168 + 2 gaps only 2 columns fit */
+  .ip-entrykeys__list > li:last-child:nth-child(odd){grid-column:1 / -1}
+}
+.ip-entrykey{flex:1;min-width:0;height:auto;min-height:var(--control-h-touch);padding:var(--space-2) var(--space-3);justify-content:flex-start;gap:var(--space-3);text-align:left;white-space:normal}
+.ip-entrykey__txt{display:flex;flex-direction:column;min-width:0}
+.ip-entrykey__txt > .ip-note{font-weight:400}
+.ip-entrykey[aria-disabled="true"] .ip-tile{--b:var(--rule);--c:var(--ink-disabled)}
+.ip-entrykey[aria-disabled="true"] .ip-note{color:var(--ink-disabled)}
+
+/* ---------- 25. UnpricedCount (Livrări fără preț) ---------- */
+/* Owner only (spec D2, D05/D06/D64): how many deliveries wait for a price, with a link to S11 › Livrări. A quiet panel,
+ * not a KPI card: section.ip-unpriced (panel, 1px line, radius-md) > head (coins RecordTile + h2 caption) > count
+ * (readout style 20/24 Mono 500 ink, unit in small) > kg line > one line per farm × feed type (key | "n livrări · kg",
+ * Mono right-aligned, split by rule) > note (oldest date, kg left out of cost) > secondary key "Adaugă prețurile". */
+.ip-unpriced{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.ip-unpriced__head{display:flex;align-items:center;gap:var(--space-2)}
+.ip-unpriced__head > h2,.ip-unpriced__head > h3{margin:0}
+.ip-unpriced__fig{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-1) var(--space-3);margin:0}
+.ip-unpriced__val{font:500 var(--ip-readout-size)/var(--ip-readout-lh) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.ip-unpriced__val small{font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-muted)} /* the unit starts with a real space ("4<small> livrări</small>"), as Readout */
+.ip-unpriced__kg{font:400 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-secondary)}
+.ip-unpriced__list{list-style:none;margin:0;padding:0}
+.ip-unpriced__list > li{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 var(--space-3);padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
+.ip-unpriced__list > li:last-child{border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-unpriced__list > li > :last-child{white-space:nowrap;margin-left:auto;color:var(--ink-secondary)}
+.ip-unpriced__list .ip-num:last-child{font-weight:500;color:var(--ink)} /* kg; the delivery count before it stays Mono 400 ink-secondary */
+.ip-unpriced > .ip-note{margin:0}
+.ip-unpriced > .ip-btn{align-self:flex-start}
+.ip-unpriced .ip-skel--val{width:calc(var(--space-12) * 2);height:var(--ip-readout-lh)}
+.ip-unpriced__skel{display:flex;flex-direction:column;gap:var(--space-2)} /* loading: static skeleton stack */
