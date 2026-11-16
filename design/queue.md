@@ -24,8 +24,8 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S3P | polish | S3 polish + audit | S3 | screens.md#s3; spec.md#d1; DESIGN.md#dos-and-donts | done | 45aa9be |
 | SYS04 | system | For S11: Readout stock variant (row of stock readouts), Cost block | SYS00 | components.md#readout, #lamp, #datatable; screens.md#s11; spec.md#d4 | done | 1bb0a25 |
 | S11 | screen | S11 Rapoarte · Hrană (Stoc · Livrări · Consum · Cost), owner view + manager/viewer read-only note | SYS04, S3P | screens.md#s11; spec.md#d4, #c5, #c6; components.md#datatable, #tag, #textfield, #pageheader, #tabs, #filterbar; extracts: feed-deliveries, feed-daily-telita, feed-types, sample-hirbovat-2026 | done | 6c15ca0 |
-| S11P | polish | S11 polish + audit | S11 | screens.md#s11; spec.md#d4; DESIGN.md#dos-and-donts | todo | |
-| S12 | screen | S12 Prețuri hrană (owner) + "Toate livrările au preț" + error | S11P | screens.md#s12; spec.md#c6; components.md#datatable, #textfield, #button, #emptystate, #toast; extracts: feed-deliveries | todo | |
+| S11P | polish | S11 polish + audit | S11 | screens.md#s11; spec.md#d4; DESIGN.md#dos-and-donts | done | a884384 |
+| S12 | screen | S12 Prețuri hrană (owner) + "Toate livrările au preț" + error | S11P | screens.md#s12; spec.md#c6; components.md#datatable, #textfield, #button, #emptystate, #toast; extracts: feed-deliveries | building | |
 | S12P | polish | S12 polish + audit | S12 | screens.md#s12; spec.md#c6 | todo | |
 | S13 | screen | S13 Livrare hrană (manager; phone + desktop side panel) + saved toast | S12P | screens.md#s13; spec.md#c5; components.md#select, #datefield, #textfield, #button, #sidepanel, #toast; extracts: feed-deliveries, feed-types, sample-hirbovat-2026 | todo | |
 | S13P | polish | S13 polish + audit | S13 | screens.md#s13; spec.md#c5 | todo | |
@@ -41,7 +41,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | SYS07 | system | SexCountRow: section ♀·♂ count row with "Toate", add/remove (S10, S18) | SYS00 | components.md#countinput, #sexcount, #checkbox, #iconbutton; screens.md#s10, #s18; spec.md#c4, #b3 | done | d865d10 |
 | S10 | screen | S10 Vânzare + confirmation dialog (farm empties) | SYS07, S9P | screens.md#s10; spec.md#c4; components.md#effectpreview, #dialog, #textfield, #datefield, #button; extracts: counts-latest, sample-hirbovat-2026 | todo | |
 | S10P | polish | S10 polish + audit | S10 | screens.md#s10; spec.md#c4 | todo | |
-| SYS08 | system | Acasă blocks: MissingRow (Lipsesc date), EntryKeys, UnpricedCount card | SYS00, SYS01 | components.md#eventrow, #recordtile, #button, #lamp, #bottomsheet; screens.md#s2; spec.md#d2, #c9 | todo | |
+| SYS08 | system | Acasă blocks: MissingRow (Lipsesc date), EntryKeys, UnpricedCount card | SYS00, SYS01 | components.md#eventrow, #recordtile, #button, #lamp, #bottomsheet; screens.md#s2; spec.md#d2, #c9 | building | |
 | S2 | screen | S2 Acasă: vet (phone), manager (phone + desktop), owner (desktop) | SYS08, S10P | screens.md#s2; spec.md#d2, #c8, #c9; components.md#cycletrack, #bottomtabbar, #sidebar, #readout; extracts: all needed | todo | |
 | S2P | polish | S2 polish + audit | S2 | screens.md#s2; spec.md#d2 | todo | |
 | S14 | screen | S14 Rapoarte · Producție | S2P | screens.md#s14; spec.md#d3; components.md#datatable, #filterbar, #pageheader; extracts: eggs-hirbovat-prev-weekly, sample-hirbovat-2026, guide-laying | todo | |

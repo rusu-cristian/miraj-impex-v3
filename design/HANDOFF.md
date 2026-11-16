@@ -1,24 +1,27 @@
 # Handoff
-Updated: 2026-11-16 22:15 · Last commit: 6c15ca0
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
+Updated: 2026-11-16 22:30 · Last commit: a884384
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 25 / 64 · Screens done: S4 (+8 states, polished), S7 (+7 states, polished), S3 (+3 states, polished), S11 (+4 states; S11P next)
+Done 26 / 64 · Screens done: S4, S7, S3, S11 (all polished) · Building: S12, SYS08
 
 ## Just finished
-- S11 Rapoarte · Hrană (owner, manager, observator without prices per D64, loading, empty period)
-- S3P published by the coordinator (helper publish approval went unanswered)
+- S11P Rapoarte · Hrană polish + audit (1 fix round: dates/counts in ip-num, observer Livrări table fit); additions.css §22 th.num back to Sans (commits with SYS08)
 
 ## Next up
-- S11P (polish + audit), then S12 → S12P → S13 → S13P; SYS05 is done so S6 can follow S13P; SYS07 done (S10/S18 ready once their order comes)
+- S12 → S12P → S13 → S13P → S6 (SYS05 done)
 
 ## Waiting on the user
-- The user is away (since 16.11.2026 17:48) and asked for every choice to be made by default and reviewed later: D14–D64 in design/kit/decisions-current.md are marked "default (user away) — to review". Flagged for attention: D24 (sapt. 40 not 41), D25 (Hîrbovăț cycle starts 10.02.2026 though transfers are 22–28.02), D27 (illustrative 2026 sample after 28.02.2026), D53 (literal 3× mortality rule), D59 (Corecție vs Mortalitate tiles look alike in grey), D63 (Telița "Diferență registru" ♀ −611 · ♂ −210), D64 (viewers see no prices).
-- No screen gates were held (D33); the user reviews all artboards on return.
+- None blocking. 16.11.2026 resume: user chose to keep defaults D14–D64 and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64).
+
+## Unpublished on the canvas (publish with publish_files, mode patch, "as" = project/<file>)
+- Since 16.11.2026 this session has network access off and did not make the canvas, so no tool here can write to it (get_artifact → network_off_limit). Publish from a chat opened from the canvas page, or from a session with network access on.
+- project/S11-rapoarte-hrana.dc.html, S11-rapoarte-hrana--se-incarca.dc.html, --manager, --observator, --fara-livrari-in-perioada; project/additions.css; project/canvas.json
+- Add every later board (S12…) and each additions.css / canvas.json change here.
 
 ## Things to remember
-- Run loop jobs one screen at a time; system jobs (SYS..) can run in parallel with a screen. Canvas publishes are serial: helpers fetch the version first and retry on conflict; if a helper's publish needs an approval that doesn't come, the coordinator publishes the listed files with publish_files (paths under design/canvas/project/, "as" = project/<file>).
-- Helpers may be refused loading the impeccable/intent skills; they then work from craft.md, PRODUCT.md and DESIGN.md.
-- Generators live in design/canvas/scripts/ (s4s_build.py holds the shared desktop shell; any shell change regenerates S3/S4/S11 boards). Phone screens: s7_build.py pattern. Shots use fallback fonts (Google Fonts blocked here).
-- New components so far (copy into the system artifact later; specs in components.md › Additions, CSS in design/system/components/additions.css): CycleTrackFarm (+ .ded), SectionTotals, AlertRow, GuideMissing, SeriesSelector, FilterInterval, FeedTotals, FarmSummary (+ --stretch), StockReadout, CostBlock, EntryCardPlus, HallCard, GuideChartVariants (phone/wide drawings), RecordCodePlus (Corecție, cycle marks), SexCountRow (--pick), chip --split, ip-alloc--phone, interaction states.
-- FIN backlog: system-wide 10px SVG track text and Mono th.num (noted in S3P.md); S5 section level not queued (not requested).
+- One screen at a time; SYS jobs can run in parallel and append to additions.css / components.md › Additions in their own headed block (re-read before each edit). Commit only a job's own files.
+- Helpers may be refused the impeccable/intent skills; they then work from craft.md, PRODUCT.md and DESIGN.md.
+- Generators live in design/canvas/scripts/ (s4s_build.py holds the shared desktop shell; a shell change regenerates S3/S4/S11). Phone screens: s7_build.py pattern. Shots use fallback fonts.
+- New components so far: see components.md › Additions and design/system/components/additions.css (§1–25).
+- FIN backlog: system-wide 10px SVG track text; S3's local th.num rule now redundant; ip-crumbs links 14px tall (D46 wants ≥24px); S3/S11 separate row-header classes → one DataTable class (S11P.md).
