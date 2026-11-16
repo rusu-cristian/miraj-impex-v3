@@ -63,7 +63,7 @@ def cost_block(sfx, extra=False, wide=True):
                 f'<td class="num">{g("1 143 540")}</td><td class="num">{g("10 417 057")}</td><td class="num">349,27</td><td class="num">1,97</td></tr>'
                 + unpriced('Hîrbovăț · Seria 2026', g('76 107'), '4 livrări, <span class="ip-num">04.11–14.11.2026</span> · neincluse în cost') + '</tbody>'
                 '<tbody><tr class="is-total"><th scope="row">Total Seria 2026<span class="ip-cost__sub">nu include <span class="ip-num">' + g('76 107') + ' kg</span> fără preț</span></th>'
-                f'<td class="num">{g("1 407 280")}</td><td class="num">{g("12 448 825")}</td><td class="num">394,08</td><td class="num">2,35</td></tr></tbody>')
+                f'<td class="num">{g("1 407 280")}</td><td class="num">{g("12 448 825")}</td><td class="num">394,07</td><td class="num">2,35</td></tr></tbody>')
         title, note = 'Cost hrană · Seria 2026', 'din livrările cu preț · până pe <span class="ip-num">16.11.2026</span>'
     foot = ('' if extra else
         '<p class="ip-note ip-cost__foot">Lei = suma livrărilor cu preț; kg fără preț nu intră în cost. '

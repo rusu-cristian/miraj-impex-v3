@@ -176,6 +176,46 @@
       "h": 1024,
       "expand": "fill",
       "title": "S3 · Seria 2026 · fără acces (Observator, doar Hîrbovăț)"
+    },
+    "S11-rapoarte-hrana.dc.html": {
+      "x": 0,
+      "y": 7514,
+      "w": 1440,
+      "h": 2499,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană"
+    },
+    "S11-rapoarte-hrana--se-incarca.dc.html": {
+      "x": 1520,
+      "y": 7514,
+      "w": 1440,
+      "h": 1148,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană · se încarcă"
+    },
+    "S11-rapoarte-hrana--manager.dc.html": {
+      "x": 3040,
+      "y": 7514,
+      "w": 1440,
+      "h": 2467,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană · manager (prețuri doar de citit)"
+    },
+    "S11-rapoarte-hrana--observator.dc.html": {
+      "x": 4560,
+      "y": 7514,
+      "w": 1440,
+      "h": 2057,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană · observator"
+    },
+    "S11-rapoarte-hrana--fara-livrari-in-perioada.dc.html": {
+      "x": 6080,
+      "y": 7514,
+      "w": 1440,
+      "h": 1149,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană · fără livrări în perioadă"
     }
   },
   "order": [
@@ -200,7 +240,12 @@
     "S3-seria-2026.dc.html",
     "S3-seria-2026--se-incarca.dc.html",
     "S3-seria-2026--seria-inchisa.dc.html",
-    "S3-seria-2026--fara-acces.dc.html"
+    "S3-seria-2026--fara-acces.dc.html",
+    "S11-rapoarte-hrana.dc.html",
+    "S11-rapoarte-hrana--se-incarca.dc.html",
+    "S11-rapoarte-hrana--manager.dc.html",
+    "S11-rapoarte-hrana--observator.dc.html",
+    "S11-rapoarte-hrana--fara-livrari-in-perioada.dc.html"
   ],
   "notes": {},
   "designSystems": [
