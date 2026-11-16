@@ -804,3 +804,13 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* In the SaveBar summary each segment ("10 din 12 rânduri ·", "3 691,3 kg", Lamp, detail) is one flex item that never
  * breaks inside, so a narrow bar wraps between segments, never between a figure and its unit. */
 .ip-ftot-sum__line > *{white-space:nowrap}
+
+/* =====================================================================================================
+ * S3P · FarmSummary row stretch, for S3 (Seria). Spec: components.md › Additions › S3P. Moved out of the S3 screen
+ * CSS (.s3-fsums).
+ * ===================================================================================================== */
+
+/* ---------- 21. FarmSummary · stretch ---------- */
+/* .ip-fsums.ip-fsums--stretch: panels that share a grid row take the row's height (S3 desktop: Telița and Hîrbovăț
+ * side by side end on one line; S2 compact rows may use it too). Default .ip-fsums keeps align-items:start. */
+.ip-fsums--stretch{align-items:stretch}

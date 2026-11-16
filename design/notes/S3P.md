@@ -1,0 +1,13 @@
+# S3P · Seria 2026 polish + audit (16.11.2026) · not yet published: canvas still at the S3 fix-1 version `1794855516-0218`
+- Process: impeccable polish → audit (1440, 1280). The launcher, reference playbooks and publish were not run: they needed approval that went unanswered. Kit files were used as context instead.
+- Fixed (high): at 1280 the Păsări table was 1132px in a 1000px column, so the page scrolled sideways (doc 1388). Headers now wrap and the icon stays with the first word ("Mort. %" and "În viață" kept together). Figure columns get 8px sides below 1160px (container query). Result: 1000/1000px, no sideways scroll.
+- Fixed (high): the CycleTrack SVG scaled to 0.86 at 1280, so its labels were 8.6px. The track is now drawn twice, 1:1 (viewBox 1160 and 1000), and a container query shows one; the hidden one is out of the a11y tree. Months, "azi" and the SAPT readout are now 11px caption size (bundle draws them at 10). The readout is 56px wide. Checked at 1440 and 1280: no text or marker overlaps; the transfer link has no labels on the track.
+- Polish: column headers are Sans captions per the DataTable spec (the bundle `.num` rule had made them Mono). The icon sits on the line (`vertical-align:top`), replacing the −3px hack. `.s3-block`/`.s3-head` were replaced by S4's `.s4-block`/`.s4-head`, so headings and gaps are shared. Notes with no figures are no longer set in Mono.
+- `.s3-fsums` became the system modifier `.ip-fsums--stretch` (additions.css §21, components.md › Additions › S3P).
+- Loading board: the track skeleton now has the live track's geometry (22·26·22·26·24 + legend), so nothing shifts when it loads. Card skeletons have two lines per figure. Group-row skeletons are `rule`, because `sunken` was invisible on the sunken row.
+- Not changed: figures, copy, the S4 shell (`s4s_build.py`; the 9 S4 boards are byte-identical) and canvas.json (board heights kept at 1134/1024/1028/1024).
+- Medium, open: the S4 farm track and the CycleTrack preview still draw months, "azi" and the readout at 10px (bundle). A DataTable `th.num` is Mono system-wide (fix in additions.css, then re-shoot S11). Below 1000px content the 1000 track scales down (not a target width).
+- Low, open: the Ferme heads put all-figure notes in Mono, "ferme"/"cicluri" included (same as S4). In the closed board at 1440, "Eroare sexare" and "Diferență registru" wrap with the 2-line closing header.
+- To publish (one patch, mode patch): project/S3-seria-2026{,--se-incarca,--seria-inchisa,--fara-acces}.dc.html + project/additions.css (mirror already copied). No canvas.json change.
+
+Canvas version after S3P publish (coordinator): 1794856107-e8ce

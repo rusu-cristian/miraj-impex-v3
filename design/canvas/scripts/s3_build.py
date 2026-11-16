@@ -109,15 +109,40 @@ def header(mode='default'):
 </header>'''
 
 # ---------- 2. CycleTrack · full ----------
-TW = 1160; LX = 88  # 1:1 in the 1160px content box (1440 − sidebar 232 − 2 × 24)
+LX = 88  # lane-label column
+TWS = (1160, 1000)  # S3P: drawn 1:1 for the 1160px content box at 1440 and the 1000px one at 1280 (1440/1280 − sidebar 232 − 2 × 24);
+                    # a container query shows the one that fits, so track text never scales below its 11px caption size
 LBL = {'telita': 'TELIȚA', 'hirbovat': 'HÎRBOVĂȚ'}
+RO_W = 56  # "SAPT 40" readout at 11px Mono (7 × 6,6px) with 4px sides
 def months(d0, d1):
     out = []; y, m = d0.year, d0.month
     while dt.date(y, m, 1) < d1:
         out.append((dt.date(y, m, 1), f'{m:02d}.{str(y)[2:]}')); y, m = (y + 1, 1) if m == 12 else (y, m + 1)
     return out
 def track(mode='default'):
-    """Full CycleTrack: one lane per farm, Seria cycles as link blocks, transfer link 22–28.02.2026, azi + SAPT readout."""
+    """Full CycleTrack: one lane per farm, Seria cycles as link blocks, transfer link 22–28.02.2026, azi + SAPT readout.
+    Two drawings (1160 / 1000 wide) in a container-query box; the hidden one is display:none (out of tab order and a11y tree)."""
+    svgs = ''.join(track_svg(mode, tw) for tw in TWS)
+    if mode == 'closed':
+        leg = '<span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span>'
+    elif mode == 'viewer':
+        leg = '<span><i class="today"></i>azi</span>'
+    else:
+        leg = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
+               f'<span class="ip-num">{ddate(X0D)[:5]}–{ddate(X1D)}</span></span><span><i class="today"></i>azi</span>')
+    legend = f'<div class="ip-tracklegend" aria-hidden="true">{leg}</div>'
+    if mode == 'closed':
+        sub = f'<span class="ip-note ip-num">02.2025 – 02.2026 · 2 ferme · 1 ciclu</span>'
+    elif mode == 'viewer':
+        sub = '<span class="ip-note">doar fermele tale · Telița: nu ai acces</span>'
+    else:
+        sub = f'<span class="ip-note ip-num">10.2025 – 12.2026 · 2 ferme · 2 cicluri</span>'
+    return f'''<section class="s4-block" aria-labelledby="h-track">
+<div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>
+<div class="s4-tight"><div class="s3-trackbox">{svgs}</div>{legend}</div>
+</section>'''
+
+def track_svg(mode, TW):
     if mode == 'closed':
         d0, d1 = dt.date(2025, 2, 1), dt.date(2026, 3, 1)
         farms = ['telita', 'hirbovat']
@@ -170,7 +195,7 @@ def track(mode='default'):
         top = ly[farms[0]] - 8
         yh = ly['hirbovat'] + 5
         g += (f'<line class="today" x1="{xt}" x2="{xt}" y1="{top}" y2="{H + 4}"/><text class="todaylbl" x="{xt}" y="{top - 3}" text-anchor="middle">azi {ddate(TODAY)[:5]}</text>'
-              f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="48" height="16" rx="2"/><text class="rotxt" x="{round(xt + 28, 1)}" y="{yh + 11.5}" text-anchor="middle">SAPT {WK}</text>')
+              f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{RO_W}" height="16" rx="2"/><text class="rotxt" x="{round(xt + 4 + RO_W / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {WK}</text>')
         if mode == 'viewer':
             desc = f'Seria 2026, doar fermele la care ai acces. Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, SAPT {WK}.'
         else:
@@ -182,32 +207,14 @@ def track(mode='default'):
         x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
         tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 6}"/><text class="month" x="{x}" y="{H + 20}" text-anchor="{anc}">{lbl}</text>'
     VH = H + 24
-    svg = (f'<svg class="ip-track s3-track" viewBox="0 0 {TW} {VH}" role="group" aria-label="Ciclurile seriei {"2025" if mode == "closed" else "2026"} pe ferme">'
-           f'<desc>{desc}</desc>{g}{tk}</svg>')
-    if mode == 'closed':
-        leg = '<span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span>'
-    elif mode == 'viewer':
-        leg = '<span><i class="today"></i>azi</span>'
-    else:
-        leg = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
-               f'<span class="ip-num">{ddate(X0D)[:5]}–{ddate(X1D)}</span></span><span><i class="today"></i>azi</span>')
-    legend = f'<div class="ip-tracklegend" aria-hidden="true">{leg}</div>'
-    if mode == 'closed':
-        sub = f'<span class="ip-note ip-num">02.2025 – 02.2026 · 2 ferme · 1 ciclu</span>'
-    elif mode == 'viewer':
-        sub = '<span class="ip-note">doar fermele tale · Telița: nu ai acces</span>'
-    else:
-        sub = f'<span class="ip-note ip-num">10.2025 – 12.2026 · 2 ferme · 2 cicluri</span>'
-    return f'''<section class="s3-block" aria-labelledby="h-track">
-<div class="s3-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>
-<div class="s4-tight">{svg}{legend}</div>
-</section>'''
+    return (f'<svg class="ip-track s3-track s3-track--{TW}" viewBox="0 0 {TW} {VH}" role="group" aria-label="Ciclurile seriei {"2025" if mode == "closed" else "2026"} pe ferme">'
+            f'<desc>{desc}</desc>{g}{tk}</svg>')
 
-def track_loading():
+def track_loading():  # same box as the live track (azi room 22 · lane 26 · gap 22 · lane 26 · axis 24, legend 16): no shift when it loads
     lane = f'<div class="s3-sklane">{sk("s3-sklbl")}{sk("s3-skbar")}</div>'
-    return f'''<section class="s3-block" aria-hidden="true">
-<div class="s3-head"><h2 class="ip-t-heading">Cicluri pe ferme</h2></div>
-<div class="s4-tight">{lane}{lane}<div class="s3-skaxis">{sk("s3-w100")}</div></div>
+    return f'''<section class="s4-block" aria-hidden="true">
+<div class="s4-head"><h2 class="ip-t-heading">Cicluri pe ferme</h2></div>
+<div class="s4-tight"><div class="s3-sktrack">{lane}{lane}<div class="s3-skaxis"></div></div><div class="s3-sklegend">{sk("s3-w24")}</div></div>
 </section>'''
 
 # ---------- 3. farm summaries (FarmSummary --wide) ----------
@@ -267,16 +274,16 @@ def summaries(mode='default'):
         cards, note = fs_empty('telita', 'Telița', '', 'fără acces', NOACC, '', tags=False) + fs_hirbovat(), 'fermele tale: Hîrbovăț'
     else:
         cards, note = fs_telita() + fs_hirbovat(), f'2 ferme · {ddate(TODAY)}'
-    return f'''<section class="s3-block" aria-labelledby="h-farms">
-<div class="s3-head"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note ip-num">{note}</span></div>
-<div class="ip-fsums s3-fsums">{cards}</div>
+    return f'''<section class="s4-block" aria-labelledby="h-farms">
+<div class="s4-head"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note{" ip-num" if any(c.isdigit() for c in note) else ""}">{note}</span></div>
+<div class="ip-fsums ip-fsums--stretch">{cards}</div>
 </section>'''
 def summaries_loading():
     card = (f'<div class="ip-fsum ip-fsum--wide s3-skcard"><div class="ip-fsum__head">{sk("s3-w30 s3-h16")}{sk("s3-w14")}</div>{sk("s3-w40")}'
-            f'{sk("s3-w50 s3-h20")}' + ''.join(f'<div class="s3-skfig">{sk("s3-w40")}{sk("s3-w20")}</div>' for _ in range(4)) + '</div>')
-    return f'''<section class="s3-block" aria-hidden="true">
-<div class="s3-head"><h2 class="ip-t-heading">Ferme</h2></div>
-<div class="ip-fsums s3-fsums">{card}{card}</div>
+            f'{sk("s3-w50 s3-h20")}' + ''.join(f'<div class="s3-skfig"><div class="s3-skrow">{sk("s3-w40")}{sk("s3-w20")}</div>{sk("s3-w60")}</div>' for _ in range(4)) + '</div>')
+    return f'''<section class="s4-block" aria-hidden="true">
+<div class="s4-head"><h2 class="ip-t-heading">Ferme</h2></div>
+<div class="ip-fsums ip-fsums--stretch">{card}{card}</div>
 </section>'''
 
 # ---------- 4. tabs + Păsări aggregated per farm ----------
@@ -285,13 +292,13 @@ def tabs(series='2026'):
     return f'<div class="ip-tabs" role="tablist" aria-label="Vederi Seria {series}">' + ''.join(
         f'<a class="ip-tab{" is-selected" if i == 0 else ""}" role="tab" id="tab-{k}" aria-controls="tp-serie" aria-selected="{"true" if i == 0 else "false"}" tabindex="{0 if i == 0 else -1}" href="#{k}">{t}</a>'
         for i, (k, t) in enumerate(TABS)) + '</div>'
-COLS = [('', 'Început'), ('mortality', 'Mortalitate'), ('', 'Mort. %'), ('cull', 'Sacrificare'), ('sexerr', 'Eroare sexare'),
-        ('transfer', 'Transfer'), ('sale', 'Vânzare'), ('', 'Diferență registru'), ('', f'În viață · {ddate(TODAY)[:5]}')]
+COLS = [('', 'Început'), ('mortality', 'Mortalitate'), ('', 'Mort.\u00a0%'), ('cull', 'Sacrificare'), ('sexerr', 'Eroare sexare'),
+        ('transfer', 'Transfer'), ('sale', 'Vânzare'), ('', 'Diferență registru'), ('', f'În\u00a0viață · {ddate(TODAY)[:5]}')]
 COLS_CLOSED = COLS[:-1] + [('', f'La închidere · <span class="s3-nw">{ddate(cP["end_date"])}</span>')]  # a closed series counts at its end, not today
-def th(k, w):
+def th(k, w):  # S3P: caption in Sans (DataTable: caption headers); may wrap at 1280, the icon stays with the first word
     i = sexerr_ico() if k == 'sexerr' else (ico(k) if k else '')
-    wrap = ' s3-thwrap' if '<span' in w else ''  # the closing date may drop under its caption (keeps the table in 1160 px)
-    return f'<th scope="col" class="num{wrap}">{i}{w}</th>'
+    first, _, rest = w.partition(' ')
+    return f'<th scope="col" class="num"><span class="s3-nw">{i}{first}</span>{(" " + rest) if rest else ""}</th>'
 def cell(v, sx, sign=False, unit=''):
     if v is None: return '<td class="num s3-dash">–</td>'
     if isinstance(v, str): return f'<td class="num s3-dash">{v}</td>'
@@ -368,7 +375,7 @@ def page(mode='default'):
     main = f'''<main class="s4-main">
 {header(mode)}
 {mid}
-<section class="s3-block" aria-label="Date pe ferme">
+<section class="s4-block" aria-label="Date pe ferme">
 {tabs(series)}
 {panel}
 </section>
@@ -377,14 +384,15 @@ def page(mode='default'):
     return f'<div class="s4-shell">{sb}{main}</div>'
 
 CSS = s4.CSS + '''
-.s3-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
-.s3-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
-.s3-head h2{margin:0}
 .s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
 .s3-m0{margin:0}
 .s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
 .s3-table{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);border-collapse:separate;border-spacing:0;overflow:hidden}
-.s3-table th .s4-ico{margin-right:var(--space-1);vertical-align:calc(-1 * var(--space-1) + var(--ip-hair))}
+.s3-table thead th{vertical-align:bottom}
+.s3-table th.num{font-family:var(--font-sans);white-space:normal} /* S3P: caption headers stay Sans (bundle .num made them Mono); they may wrap at 1280 so the table fits 1000px */
+.s3-table th .s4-ico{vertical-align:top;margin-right:var(--space-1)} /* 14px icon on the 14px caption line */
+.s3-panel{container-type:inline-size}
+@container (max-width: 1159.98px){.s3-table .num{padding-left:var(--space-2);padding-right:var(--space-2)}} /* 1280: 8px sides on figure columns, no sideways scroll */
 .s3-table tbody:last-child tr:last-child > *{border-bottom:0}
 .ip-table .s3-rowh{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule);padding:var(--space-1) var(--space-3) var(--space-1) var(--space-6);height:var(--row-h)}
 .ip-table .s3-group{background:var(--sunken);text-transform:none;letter-spacing:0;font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink);border-bottom:var(--ip-hair) solid var(--rule)}
@@ -393,22 +401,28 @@ CSS = s4.CSS + '''
 .s3-glink:hover{text-decoration-color:var(--ink)}
 .s3-gname{display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s3-dash{color:var(--ink-muted)}
-.ip-table th.s3-thwrap{white-space:normal}
 .s3-nw{white-space:nowrap}
 .s3-diff{display:inline-flex;align-items:center;gap:var(--space-2)}
-.s3-fsums{align-items:stretch} /* S3 fix 1: the two --wide FarmSummary panels side by side share one height */
 .s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
-.s3-track{max-width:100%}
+.s3-trackbox{container-type:inline-size}
+.s3-track--1000{display:none}
+@container (max-width: 1159.98px){.s3-track--1160{display:none}.s3-track--1000{display:block}}
+.s3-track .month,.s3-track .todaylbl,.s3-track .rotxt{font-size:var(--ip-fs-caption)} /* S3P: track text >= 11px (bundle draws these at 10) */
 .s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
 .s3-skmeta .ip-skel{display:block}
 .s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}
-.s3-sklane + .s3-sklane{margin-top:var(--space-4)}
+.s3-sktrack{padding-top:calc(var(--space-5) + 2 * var(--ip-hair))}
+.s3-sklane + .s3-sklane{margin-top:calc(var(--space-5) + 2 * var(--ip-hair))}
 .s3-sklbl{width:60%;display:block}
 .s3-skbar{height:calc(var(--space-6) + var(--ip-hair) + var(--ip-hair));display:block}
-.s3-skaxis{padding-left:calc(var(--space-12) + var(--space-8) + var(--space-2))}
+.s3-skaxis{height:var(--space-6)} /* the month axis room, left empty */
+.s3-sklegend .ip-skel{display:block}
+.s3-sklegend{height:var(--space-4);display:flex;align-items:center}
+.s3-table tr.is-group .ip-skel{background:var(--rule)} /* a sunken skeleton vanishes on the sunken group row */
 .s3-skcard{gap:var(--space-3)}
 .s3-skcard .ip-skel,.s3-panel .ip-skel{display:block}
-.s3-skfig{display:flex;justify-content:space-between;padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
+.s3-skfig{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
+.s3-skrow{display:flex;justify-content:space-between}
 .s3-right{margin-left:auto}
 .s3-h16{height:var(--space-4)}.s3-h20{height:var(--space-5)}
 .s3-w8{width:calc(var(--space-12) + var(--space-6))}.s3-w14{width:calc(var(--space-12) * 2)}.s3-w24{width:calc(var(--space-12) * 4)}
