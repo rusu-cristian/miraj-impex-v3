@@ -150,3 +150,126 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
     scroll-behavior:auto !important;
   }
 }
+
+/* =====================================================================================================
+ * SYS01 · components for screen S4 (farm page). Spec: components.md › Additions › SYS01.
+ * ===================================================================================================== */
+
+/* Sizes the SYS01 rules need that tokens.json doesn't name. Each mirrors a value bundle.css already draws. */
+:root{
+  --ip-hair:1px;          /* the 1px line every bundle.css border uses */
+  --ip-edge-strong:1.5px; /* the open-cycle edge and the off-lamp ring (bundle.css .cyc.open, .ip-lamp--off) */
+  --ip-mark-w:3px;        /* CycleTrack start/end marks (bundle.css .place width) */
+  /* Type styles from tokens.css (.ip-t-small, -caption, -figure, -figure-sm), named so rules can use them in shorthands. */
+  --ip-fs-small:12px;--ip-lh-small:16px;
+  --ip-fs-caption:11px;--ip-lh-caption:14px;--ip-ls-caption:.06em;
+  --ip-fs-figure:14px;--ip-lh-figure:20px;
+}
+
+/* Visually hidden, still read by screen readers (CycleTrack summary, GuideChart data table). */
+.ip-sr{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ---------- 2. CycleTrack · farm variant ---------- */
+/* svg.ip-track.ip-track--farm: one lane, every cycle of any series on one farm. Blocks are <a> links.
+ * Reuses bundle.css .lane .cyc .cyc.open .cyctxt .place .sale .today .todaylbl .ro .rotxt .month .tick. */
+.ip-track .xfer{fill:var(--rec-transfer)}                       /* transfer in (start) / transfer out (end) mark */
+.ip-track a{cursor:pointer}
+/* Cycle blocks are links (both CycleTrack variants): a closed block's edge is ink-muted (>=3:1 on the sunken lane, D38),
+ * not bundle.css's line-strong (2.99:1). Open blocks keep their 1.5px ink edge. */
+.ip-track a .cyc:not(.open){stroke:var(--ink-muted)}
+.ip-track a .cyc{transition:fill var(--ip-dur-key) var(--ip-ease),stroke var(--ip-dur-key) var(--ip-ease)}
+.ip-track a:hover .cyc:not(.open),.ip-track a.is-hover .cyc:not(.open){fill:var(--raised);stroke:var(--ink-secondary)}
+.ip-track a:hover .cyc.open,.ip-track a.is-hover .cyc.open{fill:var(--panel)}
+/* Selected cycle (the one the page shows): aria-current="true", an ink underline in the lane, like a selected Tab.
+ * Geometry (farm variant): block y 16, height 18; .sel at y 37, height 2: >=2px clear of the block's edge, open or closed. */
+.ip-track .sel{fill:var(--ink);visibility:hidden}
+.ip-track a[aria-current="true"] .sel{visibility:visible}
+/* Focus: the system ring (2px focus, 2px off the block) drawn as an SVG rect, since outline doesn't follow SVG shapes. */
+.ip-track .ring{fill:none;stroke:var(--focus);stroke-width:var(--ip-focus-w);visibility:hidden}
+.ip-track a:focus{outline:none}
+.ip-track a:focus-visible .ring,.ip-track a.is-focus .ring{visibility:visible}
+/* Legend under the track: mark + word, so the record colours never stand alone. */
+.ip-tracklegend{display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
+.ip-tracklegend span{display:inline-flex;align-items:center;gap:var(--space-2)}
+.ip-tracklegend i{width:var(--ip-mark-w);height:var(--space-3);border-radius:var(--ip-hair);background:var(--c)}
+.ip-tracklegend i.today{width:var(--ip-edge-strong);background:var(--ok-lamp)}
+
+/* ---------- 3. SectionTotals ---------- */
+/* The farm totals strip under a SectionTile grid: panel, line-strong top edge (like DataTable's total row),
+ * the SectionTile key order and record icons, figures in Plex Mono. */
+.ip-stotals{display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--space-12) * 3),1fr));background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md)}
+.ip-stotals > *{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--space-2) var(--space-3);border-left:var(--ip-hair) solid var(--rule);min-width:0}
+.ip-stotals > :first-child{border-left:0}
+.ip-stotals__key{display:flex;align-items:center;gap:var(--space-1);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary);white-space:nowrap}
+.ip-stotals__key .ip-rec{color:var(--c);display:inline-flex}
+.ip-stotals__val{font:500 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.ip-stotals__val small{font:400 var(--ip-fs-small) var(--font-sans);color:var(--ink-muted);margin-left:calc(2 * var(--ip-hair))}
+.ip-stotals__sub{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted);display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center}
+
+/* ---------- 4. AlertRow (De verificat) ---------- */
+/* An EventRow variant: .ip-ev.ip-ev--alert > RecordTile, .ip-ev__main (title + meta), .ip-ev__status (lamp + word),
+ * optional .ip-ev__act link. Status is always a Lamp; the record colour stays on the tile. */
+.ip-ev--alert .ip-ev__main .ip-num{font-weight:500}
+.ip-ev__status{flex:none;min-width:calc(var(--space-12) * 2)}
+.ip-ev__act{flex:none;display:inline-flex;align-items:center;min-height:var(--control-h);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.ip-ev:not(.is-disabled):not([aria-disabled="true"]):has(> .ip-ev__act:hover){background:var(--sunken)}
+
+/* ---------- 5. Guide missing: Readout lamp off ---------- */
+/* On a Readout with no guide to compare: the off lamp (hollow ring) in readout-muted, with its word. */
+.ip-rlamp--off{color:var(--readout-muted)}
+.ip-rlamp--off::before{background:transparent;border:var(--ip-edge-strong) solid var(--readout-muted)}
+/* Partial guide: the dashed guide stops where the guide's data ends; an end cap marks the stop. */
+.ip-chart .gend{stroke:var(--readout-guide);stroke-width:var(--ip-edge-strong)}
+/* Keyboard week readout (every focusable svg.ip-chart, GuideChart spec): ←/→ move a week cursor (.cur, a hairline in
+ * readout-muted, with .pt on the actual), Home/End jump to the first/last week; .ip-chart__read (role=status, polite)
+ * names the week, the actual, the guide and the deviation. Cursor starts on today / the last week. */
+.ip-chart .cur{stroke:var(--readout-muted);stroke-width:var(--ip-hair)}
+.ip-chart__read{font:500 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--readout-ink)}
+/* Focus on dark Readouts: the green `focus` ring is under 3:1 on the readout ground, so it uses readout-ok (>=3:1). */
+.ip-readout :focus-visible,.ip-readout .ip-focus{outline-color:var(--readout-ok)}
+
+/* ---------- 6. Sidebar series selector ---------- */
+/* An APG select-only combobox under the wordmark: div.ip-input.ip-series__btn[role=combobox][tabindex=0]
+ * (aria-expanded, aria-controls, aria-activedescendant) + ul.ip-menu[role=listbox] of [role=option]. Focus stays on the combobox. */
+.ip-series{position:relative;margin-bottom:var(--space-2)}
+.ip-series__btn{width:100%;font:inherit;cursor:pointer;text-align:left}
+.ip-series__btn .name{flex:1;font-weight:500;white-space:nowrap}
+.ip-series__btn[aria-expanded="true"]{border-color:var(--ink)}
+.ip-series__menu[hidden]{display:none}
+.ip-series__menu{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:2;min-width:0}
+.ip-series__opt{cursor:pointer;justify-content:flex-start;gap:var(--space-2)}
+.ip-series__opt .chk{width:var(--space-4);display:inline-flex;flex:none;color:var(--ink)}
+.ip-series__opt .txt{display:flex;flex-direction:column;flex:1;min-width:0}
+.ip-series__opt .txt .top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.ip-series__opt .txt b{font-weight:500}
+.ip-series__opt .txt > .ip-num{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them as spans) */
+
+/* ---------- 7. FilterBar · Interval ---------- */
+/* When the period SegmentedControl is on Interval: two DateFields (de la / până la, dd.mm.yyyy) inline. */
+.ip-interval{display:inline-flex;align-items:flex-end;gap:var(--space-2);flex-wrap:nowrap} /* the two fields wrap together */
+.ip-interval .ip-label{white-space:nowrap}
+/* Labels sit above their fields (craft: label above every field), so the bar's controls align on the fields' row. */
+.ip-filterbar:has(> .ip-interval){align-items:flex-end}
+.ip-datef{position:relative;display:inline-flex;flex-direction:column;gap:var(--space-1)}
+.ip-datef .ip-input{width:auto;gap:var(--space-1);padding-right:var(--space-1)}
+/* The field is as wide as "dd.mm.yyyy" in Plex Mono (10ch, every glyph one ch) + its padding + the calendar key. */
+.ip-datef .ip-input > input{flex:none;width:calc(10ch + var(--ip-hair));font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.ip-datef .ip-input .ip-icon{color:var(--ink-secondary)}
+.ip-datef .ip-input .ip-iconbtn{width:var(--space-6);height:var(--space-6)} /* calendar key inside the field, 24px target (desktop) */
+/* The bar keeps one row; a date error takes its own row under the controls, in flow (never over content). */
+.ip-filterbar__end{margin-left:auto} /* the last key (Exportă) pushed to the right edge without a spacer element */
+.ip-filterbar > .ip-filterbar__err{flex-basis:100%;margin:0}
+/* Calendar popover: an APG date-picker dialog (.ip-menu[role=dialog]) holding a table[role=grid] of days.
+ * Future days are aria-disabled (sunken + ink-disabled); the selected day is control; today carries aria-current="date". */
+.ip-cal{position:absolute;top:calc(100% + var(--space-1));left:0;z-index:2;padding:var(--space-2)}
+.ip-cal__head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);margin-bottom:var(--space-1)}
+.ip-cal__title{margin:0;font:500 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-sans);color:var(--ink)}
+.ip-cal__grid{border-collapse:separate;border-spacing:calc(2 * var(--ip-hair))}
+.ip-cal__grid td{padding:0}
+.ip-cal__wd{width:var(--control-h);font:500 var(--ip-fs-caption)/var(--ip-lh-caption) var(--font-sans);letter-spacing:var(--ip-ls-caption);text-transform:uppercase;color:var(--ink-muted);text-align:center;padding:var(--space-1) 0}
+.ip-cal__day{width:var(--control-h);height:var(--control-h);border:0;padding:0;text-align:center;border-radius:var(--radius-xs);background:transparent;color:var(--ink);font:400 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;cursor:pointer;transition:background-color var(--ip-dur-key) var(--ip-ease)}
+.ip-cal__day:hover:not(:disabled):not([aria-disabled="true"]):not([aria-selected="true"]),.ip-cal__day.is-hover{background:var(--sunken)}
+.ip-cal__day[aria-selected="true"]{background:var(--control);color:var(--on-control);font-weight:500}
+.ip-cal__day[aria-current="date"]{text-decoration:underline;text-decoration-thickness:var(--ip-edge-strong);text-underline-offset:calc(2 * var(--ip-hair))}
+.ip-cal__day:disabled,.ip-cal__day[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);cursor:not-allowed}

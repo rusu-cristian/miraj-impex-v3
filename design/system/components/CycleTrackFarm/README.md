@@ -1,0 +1,12 @@
+# CycleTrack · farm variant (project addition, SYS01)
+
+The signature, compact, for one farm: one lane with every cycle of any series on that farm over calendar time. Used under the S4 page header, next to the CycleSelector.
+
+- **Markup:** `svg.ip-track.ip-track--farm` (viewBox 640×60). Reuses bundle.css `.lane .cyc .cyc.open .cyctxt .place .sale .today .todaylbl .ro .rotxt .month .tick`; adds `.xfer`, `.sel`, `.ring` (additions.css › 2).
+- **Lane:** one `sunken` lane, full width, no lane label (the page header names the farm; the SVG's `aria-label` does too).
+- **Cycle blocks:** closed `panel` + `ink-muted` edge (blocks are links, so their edge is ≥3:1 on the `sunken` lane; D38, set for both CycleTrack variants in additions.css › 2); open `raised` + 1.5px `ink` edge, label weight 500. Geometry: lane y 14 h 26, block y 16 h 18. Label: series · type · length (closed) or start date (open); shortened to fit (`Seria 2026 · creștere` → `S 2026 · creștere` → no label).
+- **Marks (3px, block height 18):** start = placement `rec-placement` (`.place`) or transfer in `rec-transfer` (`.xfer`); end = sale `rec-sale` (`.sale`) or transfer out `rec-transfer` (`.xfer`). An open cycle has no end mark. The legend `.ip-tracklegend` under the track names each mark (colour never alone).
+- **Today:** the `ok-lamp` "azi 16.11" line, and a small Readout (`.ro` + `.rotxt`) "SAPT 40" right of it when the farm has an open cycle. No readout on an empty farm.
+- **Selection:** each block is an `<a>` (href = the farm at that cycle). Selecting a block selects that cycle (same as the CycleSelector). The selected one carries `aria-current="true"` and shows a 2px `ink` underline in the lane (`.sel`, y 37), ≥2px clear of the block's edge (open or closed), like a selected Tab.
+- **States:** hover (closed: `raised` + `ink-secondary` edge; open: `panel`), focus (`.ring`: 2px `focus` around the block and its underline, y 12 h 30, since outline doesn't follow SVG shapes), selected; demo classes `is-hover`, `is-focus` on the `<a>`.
+- **Accessibility:** `role="group"` + `aria-label`, a `<desc>` text summary of all cycles; each link has an `aria-label` and `<title>` (series, type, dates, length, open/closed, how it started and ended). Tab order follows time.

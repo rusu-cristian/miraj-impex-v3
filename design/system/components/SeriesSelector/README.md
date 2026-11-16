@@ -1,0 +1,10 @@
+# Sidebar · series selector (project addition, SYS01)
+
+The Select under the wordmark that picks the series the app shows. Built as the APG **select-only combobox** (fix round 1).
+
+- **Markup:** `.ip-series` > `span.ip-sr#…-lbl` "Serie" + `div.ip-input.ip-series__btn[role=combobox][tabindex=0]` (`aria-labelledby` the label, `aria-haspopup="listbox"`, `aria-expanded`, `aria-controls` = the listbox id, `aria-activedescendant` = the highlighted option while open, removed when closed) + `ul.ip-menu.ip-series__menu[role=listbox]` (`hidden` while closed) > `.ip-menu__group` "Serii" (`role=presentation`) + `li.ip-menu__item.ip-series__opt[role=option][aria-selected]`. Every id is unique per instance (`ser0-combo`, `ser0-list`, `ser0-2026` …).
+- **Trigger:** the combobox's text is its value: series name (500), then the status Lamp with its word ("deschisă" `ok` while the series has open cycles; "închisă" `off` otherwise), then a chevron (down closed, up open). Open: `ink` edge.
+- **Menu:** the listbox drops over the nav (`shadow-overlay`, same width as the trigger), newest first. Each option: a check slot (selected), name + Lamp and word on line 1, dates in Plex Mono 12 `ink-muted` on line 2 ("din 07.10.2025", "până la 28.01.2026"). Highlighted option: `is-active` (`sunken`).
+- **Keyboard (focus never leaves the combobox):** closed: ↓, Enter, Space, Alt+↓ open on the selected option; ↑ opens on it too; Home / End open on the first / last option. Open: ↓ ↑ move the highlight (`aria-activedescendant`), Home / End first / last, PgUp / PgDn jump 10; typing a character jumps to the next series starting with it; Enter, Space or Alt+↑ select and close; Esc closes without changing; Tab selects the highlighted option, closes and moves focus on. Click an option = select and close.
+- **States:** closed, hover (`ink-secondary` edge), focus (system ring), open with highlighted option.
+- Nav items as links: `a.ip-nav` drops the underline.
