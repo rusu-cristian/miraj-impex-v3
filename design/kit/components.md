@@ -515,3 +515,8 @@ CSS in additions.css sections 19–20 (moved out of the S7 screen CSS `s7-*`, D5
 CSS in additions.css section 21 (moved out of the S3 screen CSS `.s3-fsums`). To copy into the system's FarmSummary README with HANDOFF. Decided by default (user away), to review.
 
 - **FarmSummary · stretch** (`.ip-fsums.ip-fsums--stretch`): panels that share a grid row take the row's height, so side-by-side farms end on one line (S3 desktop: Telița and Hîrbovăț, real, empty or no-access panels alike). Default `.ip-fsums` keeps `align-items:start` (phone stacks, where equal heights mean nothing). S2 compact rows may use it. Tokens only, no new values.
+
+### S11P · DataTable numeric headers, 16.11.2026
+CSS in additions.css section 22. To copy into the system's DataTable README with HANDOFF. Decided by default (user away), to review.
+
+- **DataTable · numeric headers** (`.ip-table th.num`): right-aligned like their column, but set in the caption face (Plex Sans 11/14 500, uppercase, `ink-muted`) like every other header. The bundle's `.ip-table .num` (Mono, tabular) now applies to cells only. Affects S3, S11 and the DataTable, CostBlock, GuideChart-variants and RecordCode-plus previews; the S3 screen rule `.s3-table th.num` font-family is now redundant (its `white-space:normal` stays). No new values.
