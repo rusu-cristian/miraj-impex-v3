@@ -38,6 +38,16 @@ unpriced = [d for d in dels if not d['priced']]; UNP_KG = sum(d['qty_kg'] for d 
 assert len(unpriced) == 4 and UNP_KG == 76107
 SHOWN = dels[:12]
 EDIT_ID = 'del-hir-2026-11-14-b2'  # the owner's inline-edit row (newest unpriced)
+# S11M (D69): the owner changes a saved price with a required Motiv. Row = the newest priced Breeder 2 delivery on the
+# board (30.10.2026, 22 730 kg, 9,22 lei/kg, saved 03.11.2026). The new price on the error board is a labelled sample:
+# the price of the Breeder 2 delivery before it (24.10.2026, 9,24 lei/kg), total derived from kg (craft §7, as D68).
+MOD = next(d for d in SHOWN if d['priced'] and d['feed_type_id'] == 'ft-breeder2')
+MOD_PREV = max((d for d in dels if d['priced'] and d['feed_type_id'] == 'ft-breeder2' and d['farm_id'] == 'hirbovat' and d['date'] < MOD['date']), key=lambda d: d['date'])
+MOD_NEW = MOD_PREV['price_per_kg']; MOD_NEW_TOT = round(MOD['qty_kg'] * MOD_NEW)
+assert (MOD['date'], MOD['qty_kg'], MOD['price_per_kg'], MOD['total_lei'], MOD['priced_at']) == ('2026-10-30', 22730, 9.22, 209571, '2026-11-03')
+assert (MOD_PREV['date'], MOD_NEW, MOD_NEW_TOT) == ('2026-10-24', 9.24, 210025)
+ALERT = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'  # Lucide circle-alert (field error line, shared with S12)
+def ico(path, size=16): return f'<svg class="ip-icon ip-icon--{size}" viewBox="0 0 24 24" aria-hidden="true">{path}</svg>'
 
 stocks = {s['feed_type_id']: s for s in S['stock_today']}
 assert stocks['ft-breeder2']['stock_kg'] == 28252 and stocks['ft-cocosi']['days_left'] == 3.9
@@ -128,35 +138,64 @@ def sec_stock(farm='all'):
 </section>'''
 
 # ---------- 3. Livrări ----------
-def del_row(d, role):
+def mod_rows(d, head, lab, err):
+    """S11M (D69): "Modifică" opens the S11 inline edit row under the saved price: the delivery row keeps its saved
+    lei/kg and total (current price), then Preț nou (the same s11-in lei/kg ↔ total lei inputs), then the required
+    Motiv field with the journal line, and Salvează prețul / Anulează. err: Salvează pressed with Motiv empty."""
+    t = FT[d['feed_type_id']]; nm = t['name']; did = d['id']
+    old = f'{d2(d["price_per_kg"])}{NBSP}lei/kg'
+    cur = (f'<tr class="s11-editrow s11-modrow" id="modifica-pret-{did}">{head}<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td>'
+           f'<td class="s11-muted">proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span><span class="ip-sr">, preț salvat</span></td><td class="s11-act"></td></tr>')
+    kg_v = f' value="{d2(MOD_NEW)}"' if err else ''
+    tot = (f'<span class="ip-input s11-in s11-in--tot is-suggested"><input id="mp-tot" type="text" inputmode="decimal" value="{n(MOD_NEW_TOT)}" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="mp-help mp-sample"/><span class="suffix">lei</span></span>' if err
+           else f'<span class="ip-input s11-in s11-in--tot"><input id="mp-tot" type="text" inputmode="decimal" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="mp-help"/><span class="suffix">lei</span></span>')
+    new = (f'<tr class="s11-editrow s11-modrow"><td colspan="4"><div class="s11-modlbl"><span class="ip-label">Preț nou</span>'
+           f'<span class="ip-hint" id="mp-help">scrie lei/kg sau totalul; celălalt se calculează din <span class="ip-num">{n(d["qty_kg"])}{NBSP}kg</span></span></div></td>'
+           f'<td class="edit"><span class="ip-input s11-in{"" if err else " is-focus"}"><input id="mp-kg" type="text" inputmode="decimal"{kg_v} aria-label="Lei/kg nou, livrarea din {lab}" aria-describedby="mp-help{" mp-sample" if err else ""}"/><span class="suffix">lei/kg</span></span></td>'
+           f'<td class="edit">{tot}</td><td colspan="2"></td></tr>')
+    jur = f'Prețul vechi (<span class="ip-num">{old}</span>), cel nou și motivul rămân în jurnal, în Istoric modificări.'
+    if err:
+        msg = (f'{nm} <span class="ip-num">{ddate(d["date"])}</span>: scrie motivul ca să schimbi prețul din <span class="ip-num">{d2(d["price_per_kg"])}</span> '
+               f'în <span class="ip-num">{d2(MOD_NEW)}{NBSP}lei/kg</span>')
+        fld = (f'<span class="ip-input is-error is-focus"><input id="mp-mot" type="text" required="required" aria-required="true" aria-invalid="true" aria-describedby="mp-err mp-jur" placeholder="de ex. preț corectat pe factură"/></span>'
+               f'<p class="ip-err s11-err" id="mp-err">{ico(ALERT, 14)}<span>{msg}</span></p>')
+    else:
+        fld = '<span class="ip-input"><input id="mp-mot" type="text" required="required" aria-required="true" aria-describedby="mp-jur" placeholder="de ex. preț corectat pe factură"/></span>'
+    why = (f'<tr class="s11-editrow s11-modwhy"><td colspan="6"><div class="ip-field s11-motiv"><label class="ip-label" for="mp-mot">Motiv</label>{fld}'
+           f'<p class="ip-hint s11-m0" id="mp-jur">{jur}</p></div></td>'
+           f'<td colspan="2" class="s11-modact"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>')
+    return cur + new + why
+
+def del_row(d, role, mode='default'):
     t = FT[d['feed_type_id']]; sx = {'F': ' · ' + F, 'M': ' · ' + M}.get(t['for_sex'], '')
     who = f'<td class="num">{n(d["qty_kg"])}</td>'
     lab = f'{ddate(d["date"])}, {n(d["qty_kg"])} kg {t["name"]}'
     head = f'<td class="num">{ddate(d["date"])}</td><td>{FARM[d["farm_id"]]}</td><td><span class="s11-type">{PKG}<span>{t["name"]}{sx}</span></span></td>{who}'
     owner = role == 'Proprietar'
     if role == 'Observator': return f'<tr>{head}</tr>'  # D64: viewers see no prices
-    if owner and d['id'] == EDIT_ID:  # inline edit (DataTable: medium TextField, lei/kg ↔ total)
+    if owner and mode in ('mod', 'moderr') and d['id'] == MOD['id']: return mod_rows(d, head, lab, mode == 'moderr')
+    if owner and mode == 'default' and d['id'] == EDIT_ID:  # inline edit (DataTable: medium TextField, lei/kg ↔ total)
         return f'''<tr class="s11-editrow">{head}<td class="edit"><span class="ip-input is-focus s11-in"><input id="pr-kg" type="text" inputmode="decimal" aria-label="Lei/kg, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei/kg</span></span></td><td class="edit"><span class="ip-input s11-in s11-in--tot"><input id="pr-tot" type="text" inputmode="decimal" aria-label="Total lei, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei</span></span></td><td colspan="2" class="edit"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>'''
     if d['priced']:
         by = f'proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span>' if d.get('priced_at') else '– din registru'
-        price = f'<td class="num">{d2(d["price_per_kg"])}</td><td class="num">{n(d["total_lei"])}</td><td class="s11-muted">{by}</td>'
-        act = f'<td class="s11-act"><a class="ip-link s11-lk" href="#modifica-{d["id"]}" aria-label="Modifică prețul, livrarea din {lab}">Modifică</a></td>' if owner else ''
+        price = f'<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td><td class="s11-muted">{by}</td>'
+        act = f'<td class="s11-act"><a class="ip-link s11-lk" href="#modifica-pret-{d["id"]}" aria-label="Modifică prețul, livrarea din {lab}">Modifică</a></td>' if owner else ''
     else:
-        price = '<td class="num"><span class="ip-tag ip-tag--info">fără preț</span></td><td class="num">–</td><td class="s11-muted">–</td>'
+        price = '<td class="num s11-pc"><span class="ip-tag ip-tag--info">fără preț</span></td><td class="num s11-pc">–</td><td class="s11-muted">–</td>'
         act = f'<td class="s11-act"><a class="ip-link s11-lk" href="#pret-{d["id"]}" aria-label="Adaugă prețul, livrarea din {lab}">Adaugă preț</a></td>' if owner else ''
     return f'<tr>{head}{price}{act}</tr>'
 
 def del_ths(role):
     ths = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
            f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>')
-    if role != 'Observator': ths += '<th scope="col" class="num">Lei/kg</th><th scope="col" class="num">Total lei</th><th scope="col">Preț adăugat</th>'
+    if role != 'Observator': ths += '<th scope="col" class="num s11-thedit">Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th><th scope="col">Preț adăugat</th>'
     if role == 'Proprietar': ths += '<th scope="col"><span class="ip-sr">Acțiuni</span></th>'
     return ths
 
-def sec_deliveries(role):
+def sec_deliveries(role, mode='default'):
     owner = role == 'Proprietar'; viewer = role == 'Observator'
     ths = del_ths(role)
-    rows = ''.join(del_row(d, role) for d in SHOWN)
+    rows = ''.join(del_row(d, role, mode) for d in SHOWN)
     unp_dates = ', '.join(ddm(d['date']) for d in sorted(unpriced, key=lambda d: d['date']))
     if owner:
         right = f'<a class="ip-link s11-s12 s11-lk" href="#preturi-hrana">{rec_ico(COINS, 14)}<span><span class="ip-num">{len(unpriced)}</span> livrări fără preț · Adaugă prețurile</span></a>'
@@ -164,7 +203,10 @@ def sec_deliveries(role):
         right = f'<span class="ip-note s11-s12"><span class="ip-num">{len(unpriced)}</span> livrări fără preț</span>'
     else:
         right = f'<span class="ip-note s11-s12">{rec_ico(COINS, 14)}<span><span class="ip-num">{len(unpriced)}</span> livrări fără preț · prețurile le adaugă proprietarul</span></span>'
-    help_ = '<p class="ip-sr" id="pr-help">Scrie lei/kg sau totalul în lei; celălalt se calculează din 24 000 kg.</p>' if owner else ''
+    help_ = '<p class="ip-sr" id="pr-help">Scrie lei/kg sau totalul în lei; celălalt se calculează din 24 000 kg.</p>' if owner and mode == 'default' else ''
+    if mode == 'moderr':  # D68-style label for the typed sample price
+        help_ = (f'<p class="ip-hint s11-m0" id="mp-sample">Valoare de exemplu: <span class="ip-num">{d2(MOD_NEW)}{NBSP}lei/kg</span> la <span class="ip-num">{ddate(MOD["date"])}</span> '
+                 f'(prețul livrării Breeder 2 din <span class="ip-num">{ddate(MOD_PREV["date"])}</span>); totalul <span class="ip-num">{n(MOD_NEW_TOT)}{NBSP}lei</span> e calculat din <span class="ip-num">{n(MOD["qty_kg"])}{NBSP}kg</span>.</p>')
     unp = '' if viewer else f' · fără preț: <span class="ip-num">{unp_dates}.2026</span> · <span class="ip-num">{n(UNP_KG)} kg</span>'
     foot = f'<div class="s11-foot{' s11-tablebox--fit' if viewer else ''}"><span class="ip-note">Afișate <span class="ip-num">{len(SHOWN)}</span> din <span class="ip-num">{N_ALL}</span>{unp}</span><a class="ip-link s11-lk" href="#livrari-toate">Vezi toate (<span class="ip-num">{N_ALL}</span>)</a></div>'
     ro = ' · prețuri doar de citit' if role == 'Manager' else ''
@@ -240,8 +282,9 @@ def sk(c=''): return s4.sk(c)
 def sec_loading():
     ro = f'<li><div class="ip-readout ip-readout--stock s11-skro">{sk("s4s-w60")}{sk("s4s-w40 s4s-h28")}{sk("s4s-w100")}{sk("s4s-w100")}{sk("s4s-w100")}</div></li>'
     def tbl(ths, rows, cost=''):  # the real thead; skeleton cells keep each column's alignment
-        cols = re.findall(r'<th scope="col"( class="num")?>', ths)
-        tr = ''.join('<tr>' + ''.join(f'<td{c}>{sk("s4s-w70")}</td>' for c in cols) + '</tr>' for _ in range(rows))
+        cols = re.findall(r'<th scope="col"(?: class="([^"]*)")?>', ths)  # num → td.num; s11-thedit → td.s11-pc (same right edge)
+        cl = lambda c: (' class="' + ' '.join(['num'] * ('num' in c.split()) + ['s11-pc'] * ('s11-thedit' in c.split())) + '"') if 'num' in c.split() else ''
+        tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}</td>' for c in cols) + '</tr>' for _ in range(rows))
         if cost: return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'
         return f'<div class="s11-tablebox"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'
     return f'''<div class="s11-page" aria-busy="true">
@@ -274,7 +317,7 @@ def sec_empty():
 def page(role='Proprietar', mode='default'):
     if mode == 'loading': body = sec_loading()
     elif mode == 'empty': body = sec_empty()
-    else: body = f'<div class="s11-page">{sec_stock()}{sec_deliveries(role)}{sec_consum()}{"" if role == "Observator" else sec_cost()}</div>'
+    else: body = f'<div class="s11-page">{sec_stock()}{sec_deliveries(role, mode)}{sec_consum()}{"" if role == "Observator" else sec_cost()}</div>'
     h = header(role)
     return f'<div class="s4-shell">{sidebar(role)}<main class="s4-main">\n{h}\n{filterbar("empty" if mode == "empty" else "default")}\n{body}\n</main></div>'
 
@@ -316,7 +359,15 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-table td.num > .ip-skel{margin-left:auto}
 .s11-skro{gap:var(--space-2);min-height:calc(var(--space-12) * 4)}
 .s11-skro .ip-skel{background:var(--readout-line)}
-.s11-empty{padding:var(--space-8) var(--space-4)}'''
+.s11-empty{padding:var(--space-8) var(--space-4)}
+.s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */
+.s11-err{margin:0;white-space:normal;align-items:flex-start} /* field error line (S11M Motiv, S12 prices) */
+.s11-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.s11-modrow > td{border-bottom:0} /* S11M: saved price · Preț nou · Motiv read as one open row */
+.s11-modlbl{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--space-2)}
+.s11-modwhy > td{vertical-align:top;height:auto;white-space:normal;padding-top:var(--space-1);padding-bottom:var(--space-3)}
+.s11-motiv{max-width:calc(var(--space-12) * 12)}
+.s11-modwhy > td.s11-modact{padding-top:calc(var(--space-1) + var(--space-4) + var(--space-1));padding-right:var(--space-2)} /* keys on the Motiv field's line (label 16 + gap 4) */'''
 
 STEM = 'S11-rapoarte-hrana'
 BOARDS = [
@@ -325,6 +376,8 @@ BOARDS = [
  (STEM + '--manager', 'S11 · Rapoarte · Hrană · manager (prețuri doar de citit)', page('Manager')),
  (STEM + '--observator', 'S11 · Rapoarte · Hrană · observator', page('Observator')),
  (STEM + '--fara-livrari-in-perioada', 'S11 · Rapoarte · Hrană · fără livrări în perioadă', page(mode='empty')),
+ (STEM + '--modifica-pret', 'S11 · Rapoarte · Hrană · modifică preț', page(mode='mod')),
+ (STEM + '--modifica-pret--eroare', 'S11 · Rapoarte · Hrană · modifică preț · eroare', page(mode='moderr')),
 ]
 if __name__ == '__main__':
     for stem, title, body in BOARDS:

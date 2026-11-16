@@ -219,7 +219,7 @@
     },
     "S12-preturi-hrana.dc.html": {
       "x": 0,
-      "y": 10133,
+      "y": 10303,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -227,7 +227,7 @@
     },
     "S12-preturi-hrana--se-incarca.dc.html": {
       "x": 1520,
-      "y": 10133,
+      "y": 10303,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -235,7 +235,7 @@
     },
     "S12-preturi-hrana--in-lucru.dc.html": {
       "x": 3040,
-      "y": 10133,
+      "y": 10303,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -243,7 +243,7 @@
     },
     "S12-preturi-hrana--toate-livrarile-au-pret.dc.html": {
       "x": 4560,
-      "y": 10133,
+      "y": 10303,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -251,11 +251,27 @@
     },
     "S12-preturi-hrana--eroare.dc.html": {
       "x": 6080,
-      "y": 10133,
+      "y": 10303,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
       "title": "S12 · Prețuri hrană · eroare la încărcare"
+    },
+    "S11-rapoarte-hrana--modifica-pret.dc.html": {
+      "x": 7600,
+      "y": 7514,
+      "w": 1440,
+      "h": 2621,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană · modifică preț"
+    },
+    "S11-rapoarte-hrana--modifica-pret--eroare.dc.html": {
+      "x": 9120,
+      "y": 7514,
+      "w": 1440,
+      "h": 2669,
+      "expand": "fill",
+      "title": "S11 · Rapoarte · Hrană · modifică preț · eroare"
     }
   },
   "order": [
@@ -286,6 +302,8 @@
     "S11-rapoarte-hrana--manager.dc.html",
     "S11-rapoarte-hrana--observator.dc.html",
     "S11-rapoarte-hrana--fara-livrari-in-perioada.dc.html",
+    "S11-rapoarte-hrana--modifica-pret.dc.html",
+    "S11-rapoarte-hrana--modifica-pret--eroare.dc.html",
     "S12-preturi-hrana.dc.html",
     "S12-preturi-hrana--se-incarca.dc.html",
     "S12-preturi-hrana--in-lucru.dc.html",

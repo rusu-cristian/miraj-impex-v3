@@ -2,7 +2,7 @@
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
 R = pathlib.Path('/home/claude/miraj-impex-v3')
-ORDER = ['S11-rapoarte-hrana', 'S11-rapoarte-hrana--se-incarca', 'S11-rapoarte-hrana--manager', 'S11-rapoarte-hrana--observator', 'S11-rapoarte-hrana--fara-livrari-in-perioada']
+ORDER = ['S11-rapoarte-hrana', 'S11-rapoarte-hrana--se-incarca', 'S11-rapoarte-hrana--manager', 'S11-rapoarte-hrana--observator', 'S11-rapoarte-hrana--fara-livrari-in-perioada', 'S11-rapoarte-hrana--modifica-pret', 'S11-rapoarte-hrana--modifica-pret--eroare']
 async def main():
     hp = pathlib.Path(sys.argv[1]); hs = json.loads(hp.read_text()) if hp.exists() else {}
     async with async_playwright() as p:

@@ -29,8 +29,7 @@ assert (B2_LAST['date'], B2_LAST['price_per_kg']) == ('2026-10-30', 9.22)
 W_ROW, E_ROW = UNP[0], UNP[1]  # în lucru: 04.11 Breeder 2 priced (sample), 06.11 Cocoși with the field error
 W_TOT = round(W_ROW['qty_kg'] * B2_LAST['price_per_kg'])
 assert (W_ROW['date'], W_ROW['qty_kg'], W_TOT, E_ROW['date'], E_ROW['feed_type_id']) == ('2026-11-04', 24068, 221907, '2026-11-06', 'ft-cocosi')
-ALERT = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'  # Lucide circle-alert
-def ico(path, size=16): return f'<svg class="ip-icon ip-icon--{size}" viewBox="0 0 24 24" aria-hidden="true">{path}</svg>'
+ALERT, ico = s11.ALERT, s11.ico  # shared with S11 (Modifică preț, S11M)
 
 # ---------- header ----------
 def header(mode):
@@ -62,7 +61,7 @@ def row(d, first, mode='default'):
     if mode == 'work' and d is E_ROW:  # refused on save: 0 lei/kg; the first error takes focus, total stays empty
         kg_cls = ' is-error is-focus'; kg_val = ' value="0"'; kg_aria = f' aria-invalid="true"'; tr = ' class="s12-haserr"'
         after = (f'<tr class="s12-errrow"><td colspan="4"><span class="ip-sr">{lab(d)}</span></td><td colspan="2" class="edit">'
-                 f'<p class="ip-err" id="err-{d["id"]}">{ico(ALERT, 14)}<span>{err_text(d)}</span></p></td></tr>')
+                 f'<p class="ip-err s11-err" id="err-{d["id"]}">{ico(ALERT, 14)}<span>{err_text(d)}</span></p></td></tr>')
     desc = f'err-{d["id"]} pr-help' if kg_aria else 'pr-help'
     return (f'<tr{tr}><td class="num">{ddate(d["date"])}</td><td>{FARM[d["farm_id"]]}</td>'
             f'<td><span class="s11-type">{s11.PKG}<span>{t["name"]}{sx}</span></span></td><td class="num">{n(d["qty_kg"])}</td>'
@@ -71,7 +70,7 @@ def row(d, first, mode='default'):
 
 THS = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
        f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>'
-       f'<th scope="col" class="num s12-thedit"><span class="ip-rec ip-rec--feed s11-thico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s12-thedit">Total lei</th>')
+       f'<th scope="col" class="num s11-thedit"><span class="ip-rec ip-rec--feed s11-thico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th>')
 
 COLS = '<colgroup><col/><col/><col/><col/><col class="s12-col-pk"/><col class="s12-col-tot"/></colgroup>'
 
@@ -134,8 +133,7 @@ def page(mode='default'):
 
 CSS = s11.CSS + '''
 .s12-meta{align-items:center;gap:var(--space-2)}
-.s12-table th.s12-thedit{padding-right:var(--space-2)}
-.s12-table td.edit > .ip-skel{height:var(--control-h);border-radius:var(--radius-sm)} /* loading: the inputs' footprint, no row jump */ /* Lei/kg + Total lei: text ends at the inputs' right edge (td.edit padding) */
+.s12-table td.edit > .ip-skel{height:var(--control-h);border-radius:var(--radius-sm)} /* loading: the inputs' footprint, no row jump */
 .s12-form{display:flex;flex-direction:column;gap:var(--space-3);width:fit-content;min-width:calc(var(--space-12) * 16);max-width:100%;margin:0}
 .s12-help{margin:0;max-width:calc(var(--space-12) * 14)}
 .s12-table th.s12-toth{background:var(--panel);font-weight:500;border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
@@ -145,10 +143,9 @@ CSS = s11.CSS + '''
 .s12-m0{margin:0}
 .s12-table tr.s12-haserr > td{border-bottom:0} /* the field error row belongs to the row above */
 .s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
-.s12-errrow .ip-err{margin:0;white-space:normal;align-items:flex-start;contain:inline-size} /* wraps inside Lei/kg + Total lei, never widens them */
+.s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */
 .s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */
 .s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}
-.s12-errrow .ip-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s12-toastwrap{position:absolute;left:calc(var(--sidebar-w) + var(--space-6));bottom:var(--space-6);z-index:4}'''
 
 STEM = 'S12-preturi-hrana'

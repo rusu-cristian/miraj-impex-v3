@@ -121,7 +121,15 @@
 .s11-table td.num > .ip-skel{margin-left:auto}
 .s11-skro{gap:var(--space-2);min-height:calc(var(--space-12) * 4)}
 .s11-skro .ip-skel{background:var(--readout-line)}
-.s11-empty{padding:var(--space-8) var(--space-4)}</style>
+.s11-empty{padding:var(--space-8) var(--space-4)}
+.s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */
+.s11-err{margin:0;white-space:normal;align-items:flex-start} /* field error line (S11M Motiv, S12 prices) */
+.s11-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.s11-modrow > td{border-bottom:0} /* S11M: saved price · Preț nou · Motiv read as one open row */
+.s11-modlbl{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--space-2)}
+.s11-modwhy > td{vertical-align:top;height:auto;white-space:normal;padding-top:var(--space-1);padding-bottom:var(--space-3)}
+.s11-motiv{max-width:calc(var(--space-12) * 12)}
+.s11-modwhy > td.s11-modact{padding-top:calc(var(--space-1) + var(--space-4) + var(--space-1));padding-right:var(--space-2)} /* keys on the Motiv field's line (label 16 + gap 4) */</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:2057px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
