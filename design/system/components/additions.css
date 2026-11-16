@@ -273,3 +273,50 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-cal__day[aria-selected="true"]{background:var(--control);color:var(--on-control);font-weight:500}
 .ip-cal__day[aria-current="date"]{text-decoration:underline;text-decoration-thickness:var(--ip-edge-strong);text-underline-offset:calc(2 * var(--ip-hair))}
 .ip-cal__day:disabled,.ip-cal__day[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);cursor:not-allowed}
+
+/* =====================================================================================================
+ * SYS02 · FeedTotals for screen S7 (Hrană zilnică). Spec: components.md › Additions › SYS02.
+ * ===================================================================================================== */
+
+/* ---------- 8. FeedTotals ---------- */
+/* The per-feed-type totals block under the AllocationRows (spec C2 step 4): one row per feed type used today at the
+ * farm: RecordTile (wheat, rec-feed), type name + for-sex sign, kg today (confirmed rows only), stock after today,
+ * days left, status Lamp + word. Phone layout by default (3 figure cells under the type line); .ip-ftot--wide puts
+ * each type on one line under a column header (desktop). Same panel strip as SectionTotals (line-strong top edge). */
+:root{
+  --ip-fs-alloc:16px;--ip-lh-alloc:20px; /* AllocationRow live kg (bundle.css .ip-alloc__kg 16/20): the total matches the rows it sums */
+}
+.ip-ftot{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md)}
+.ip-ftot__head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap;padding:var(--space-2) var(--space-3);border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-ftot__head > :is(h2,h3,h4){margin:0}
+.ip-ftot__cols{display:none}
+.ip-ftot__row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"type type status" "kg stock days" "msg msg msg";gap:var(--space-2) var(--space-3);padding:var(--space-3)}
+.ip-ftot__row + .ip-ftot__row{border-top:var(--ip-hair) solid var(--rule)}
+.ip-ftot__type{grid-area:type;display:flex;align-items:center;gap:var(--space-2);min-width:0}
+.ip-ftot__name{display:flex;align-items:baseline;gap:var(--space-1);font-weight:500;color:var(--ink);white-space:nowrap}
+.ip-ftot__sub{display:block;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-ftot__status{grid-area:status;justify-self:end;align-self:center}
+.ip-ftot__cell{display:flex;flex-direction:column;align-items:flex-end;text-align:right;min-width:0}
+.ip-ftot__cell--kg{grid-area:kg}.ip-ftot__cell--stock{grid-area:stock}.ip-ftot__cell--days{grid-area:days}
+.ip-ftot__key{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary);white-space:nowrap}
+.ip-ftot__val{font:500 var(--ip-fs-alloc)/var(--ip-lh-alloc) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.ip-ftot__val small{font:400 var(--ip-fs-small) var(--font-sans);color:var(--ink-muted);margin-left:calc(2 * var(--ip-hair))}
+.ip-ftot__msg{grid-area:msg}
+.ip-ftot__row:not(:has(> .ip-ftot__msg)){grid-template-areas:"type type status" "kg stock days"}
+.ip-ftot__sub .ip-num,.ip-ftot__foot .ip-num{white-space:nowrap} /* a date or figure never breaks inside */
+.ip-ftot__foot{margin:0;padding:var(--space-2) var(--space-3);border-top:var(--ip-hair) solid var(--rule)}
+/* Wide (desktop): one line per type; column header once; per-cell keys stay for screen readers only. Status in a fixed
+ * right column (like AlertRow) so the lamps line up. */
+.ip-ftot--wide .ip-ftot__cols,
+.ip-ftot--wide .ip-ftot__row{grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr)) calc(var(--space-12) * 2.5);column-gap:var(--space-4)}
+.ip-ftot--wide .ip-ftot__row{grid-template-areas:"type kg stock days status" "msg msg msg msg msg";align-items:start}
+.ip-ftot--wide .ip-ftot__row:not(:has(> .ip-ftot__msg)){grid-template-areas:"type kg stock days status"}
+.ip-ftot--wide .ip-ftot__cols{display:grid;padding:var(--space-2) var(--space-3);border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-ftot--wide .ip-ftot__cols > :not(:first-child):not(:last-child){text-align:right}
+.ip-ftot--wide .ip-ftot__status{justify-self:start;align-self:start;padding-top:calc(2 * var(--ip-hair))}
+.ip-ftot--wide .ip-ftot__key{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* Compact (SaveBar summary): two short lines inside .ip-savebar__sum. Line 1: wheat + confirmed rows + kg today;
+ * line 2: rows still to confirm + one Lamp for the stock (worst type first). */
+.ip-savebar__sum.ip-ftot-sum{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
+.ip-ftot-sum__line{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2)}
+.ip-ftot-sum .ip-rec{color:var(--c);display:inline-flex}
