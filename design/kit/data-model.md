@@ -12,7 +12,7 @@ Shared by both designs (ledger and control panel). This replaces §0 of the firs
 | `GUIDE_WEEK` | `guide_id, week, sex, feed_g, body_weight_g, mortality_pct?, lay_pct?, hatching_pct?, egg_weight_g?` | General targets for week 1, 2, … of a cycle. |
 | `SERIES` | `id, name, year, status` | For example "Seria 2026". The yearly flow: growth → laying → sale. |
 | `CYCLE` | `id, series_id, farm_id, guide_id, start_date, end_date?, started_by` | One stay of one series in one farm. `started_by`: `auto` or `manual`. |
-| `BIRD_EVENT` | `id, cycle_id, section_id, date, sex, type, qty, transfer_id?, note?, created_by, created_at` | `type`: `placement`, `mortality`, `sexing_error`, `transfer`, `sale`, `adjustment`. `qty` is signed. |
+| `BIRD_EVENT` | `id, cycle_id, section_id, date, sex, type, qty, transfer_id?, note?, created_by, created_at` | `type`: `placement`, `mortality`, `cull`, `sexing_error`, `transfer`, `sale`, `adjustment`. `qty` is signed. `reason?` (for `cull`): `boală`, `șchiopătare`, `altul` (added 16.11.2026, D36). |
 | `FEED_TYPE` | `id, name, for_sex?, active` | For example Starter, Grower, Breeder 1, Cocoși. |
 | `FEED_DELIVERY` | `id, farm_id, feed_type_id, date, qty_kg, note?, created_by` · `price_per_kg?, priced_by?, priced_at?` | The manager enters type, date and kg. The owner adds the price later. |
 | `FEED_ALLOCATION` | `id, section_id, date, sex, feed_type_id, g_per_bird, created_by` | The vet's daily grams per hen or rooster, per section. |
