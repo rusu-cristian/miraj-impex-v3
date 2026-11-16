@@ -88,6 +88,13 @@
       "h": 1874,
       "expand": "fill",
       "title": "S4 · Fermă · Rezumat · ciclu nou"
+    },
+    "S7-hrana-zilnica.dc.html": {
+      "x": 0,
+      "y": 2854,
+      "w": 390,
+      "h": 3286,
+      "title": "S7 · Hrană zilnică"
     }
   },
   "order": [
@@ -100,7 +107,8 @@
     "S4-ferma-rezumat--ferma-goala.dc.html",
     "S4-ferma-rezumat--ciclu-meniu.dc.html",
     "S4-ferma-rezumat--ciclu-ales.dc.html",
-    "S4-ferma-rezumat--ciclu-nou.dc.html"
+    "S4-ferma-rezumat--ciclu-nou.dc.html",
+    "S7-hrana-zilnica.dc.html"
   ],
   "notes": {},
   "designSystems": [

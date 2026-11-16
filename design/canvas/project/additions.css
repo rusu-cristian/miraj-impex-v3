@@ -168,6 +168,9 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
 
 /* Visually hidden, still read by screen readers (CycleTrack summary, GuideChart data table). */
 .ip-sr{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* A table never shrinks below its content, so a hidden table.ip-sr (GuideChart data) would still widen the page and
+ * scroll it sideways on a phone; as a block it keeps the 1px box (SYS06 fix 1). */
+table.ip-sr{display:block}
 
 /* ---------- 2. CycleTrack · farm variant ---------- */
 /* svg.ip-track.ip-track--farm: one lane, every cycle of any series on one farm. Blocks are <a> links.
@@ -564,3 +567,109 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * svg.ded (viewBox 0 0 3 12, one line) + "început dedus" in .ip-tracklegend. ink-secondary is >=3:1 on the sunken lane. */
 .ip-track .ded,.ip-tracklegend .ded line{stroke:var(--ink-secondary);stroke-width:var(--ip-edge-strong);stroke-dasharray:var(--ip-mark-w) var(--ip-mark-w);fill:none}
 .ip-tracklegend svg.ded{width:var(--ip-mark-w);height:var(--space-3);flex:none;overflow:visible}
+
+/* =====================================================================================================
+ * SYS06 · GuideChart variants + RecordCode adjustment and cycle marks. Spec: components.md › Additions › SYS06.
+ * ===================================================================================================== */
+
+/* Values the SYS06 rules need that tokens.json doesn't name. Each mirrors a value bundle.css already draws
+ * (.ip-chart .act width 1.75, .guide dash 5 4, .s2 dash 8 3), plus the dashes of readout-3/-4 (GuideChart spec:
+ * "each with its own dash"). Dash lengths are in SVG user units. */
+:root{
+  --ip-line-w:1.75px;
+  --ip-dash-guide:5 4;
+  --ip-dash-2:8 3;
+  --ip-dash-3:2 3;
+  --ip-dash-4:12 3 2 3;
+}
+
+/* ---------- 16. GuideChart variants ---------- */
+/* Series beyond the actual: readout-2…4, each with its own dash (craft.md §3). Two-sex charts (mortality ♀ · ♂, feed
+ * kg/zi by type): ♀ = .act (readout-ok, solid), ♂ = .s2 (readout-2, dash 8 3): rec-hen 2.81:1 and rec-rooster 2.74:1 on
+ * the readout ground are under 3:1, so sex rides on line style + the ♀/♂ sign and word in the legend (SYS06). */
+.ip-chart .s3{fill:none;stroke:var(--readout-3);stroke-width:var(--ip-line-w);stroke-dasharray:var(--ip-dash-3)}
+.ip-chart .s4{fill:none;stroke:var(--readout-4);stroke-width:var(--ip-line-w);stroke-dasharray:var(--ip-dash-4)}
+.ip-chart .pt2{fill:var(--readout-2)}
+.ip-chart .pt3{fill:var(--readout-3)}
+.ip-chart .pt4{fill:var(--readout-4)}
+/* Phone drawing (SYS06 fix 1): the wide chart (viewBox 600×150, 10px axis text) shrinks its text under 10px below a
+ * 600px box, so every GuideChart carries two drawings in div.ip-chartbox: svg.ip-chart--wide and svg.ip-chart--phone
+ * (viewBox 320×150, plot x 40–308, fewer ticks: X 1 · middle · last, ≤3–4 Y ticks; axis text in the caption size, 11px,
+ * so ≥10px on screen from a 290px box up). A container query on the box shows one; the hidden one is display:none, so
+ * it leaves the tab order and the accessibility tree. Same ARIA, readout and hidden table for both. The query's 600px
+ * is the wide viewBox width (container queries can't read a variable). A lone svg.ip-chart (no modifier) stays as before. */
+.ip-chartbox{container-type:inline-size}
+.ip-chart--phone{display:none}
+@container (max-width: 599.98px){
+  .ip-chart--wide{display:none}
+  .ip-chart--phone{display:block}
+}
+.ip-chart--phone .ax{font-size:var(--ip-fs-caption)}
+
+/* Legend under the chart, on the Readout: line swatch (24×8, the series' own class) + sign + word. Signs in readout-ink. */
+.ip-chart__legend{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);color:var(--readout-muted)}
+.ip-chart__legend > span{display:inline-flex;align-items:center;gap:var(--space-1)}
+.ip-chart__legend svg{width:var(--space-6);height:var(--space-2);flex:none;overflow:visible}
+.ip-chart__legend .act{stroke:var(--readout-ok);stroke-width:var(--ip-line-w)}
+.ip-chart__legend .s2{stroke:var(--readout-2);stroke-width:var(--ip-line-w);stroke-dasharray:var(--ip-dash-2)}
+.ip-chart__legend .s3{stroke:var(--readout-3);stroke-width:var(--ip-line-w);stroke-dasharray:var(--ip-dash-3)}
+.ip-chart__legend .s4{stroke:var(--readout-4);stroke-width:var(--ip-line-w);stroke-dasharray:var(--ip-dash-4)}
+.ip-chart__legend .guide{stroke:var(--readout-guide);stroke-width:var(--ip-edge-strong);stroke-dasharray:var(--ip-dash-guide)}
+.ip-chart__legend .band{fill:var(--readout-band)}
+.ip-chart__legend b{font-weight:500;color:var(--readout-ink)}
+
+/* Small curve (sparkline size, 160×48): actual + guide only, no axes, no band, not focusable (role=img + aria-label;
+ * the figures sit in the same table row or Readout). On light steel (DataTable cells, S20 guide detail): actual ink,
+ * or rec-hen / rec-rooster for a ♀ / ♂ figure (≥4.5:1 on raised/panel); guide dashed ink-muted (≥3:1). Inside a Readout
+ * it takes the readout tokens (♂ readout-2 dashed). */
+.ip-spark{display:block;width:calc(var(--space-12) * 3 + var(--space-4));height:var(--space-12);overflow:visible;flex:none}
+.ip-spark .guide{fill:none;stroke:var(--ink-muted);stroke-width:var(--ip-hair);stroke-dasharray:var(--ip-dash-guide)}
+.ip-spark .act{fill:none;stroke:var(--ink);stroke-width:var(--ip-edge-strong)}
+.ip-spark .pt{fill:var(--ink)}
+.ip-spark--hen .act{stroke:var(--rec-hen)}.ip-spark--hen .pt{fill:var(--rec-hen)}
+.ip-spark--rooster .act{stroke:var(--rec-rooster)}.ip-spark--rooster .pt{fill:var(--rec-rooster)}
+.ip-readout .ip-spark .guide{stroke:var(--readout-guide)}
+.ip-readout .ip-spark .act{stroke:var(--readout-ok)}
+.ip-readout .ip-spark .pt{fill:var(--readout-ok)}
+.ip-readout .ip-spark--rooster .act{stroke:var(--readout-2);stroke-dasharray:var(--ip-dash-2)}
+.ip-readout .ip-spark--rooster .pt{fill:var(--readout-2)}
+/* DataTable phone rule as a wrapper (SYS06 fix 1): div.ip-tablescroll[tabindex=0][role=region][aria-label] scrolls a wide
+ * .ip-table sideways inside its own box (never the page) with the first column sticky. Focus: the system ring. */
+.ip-tablescroll{overflow-x:auto;max-width:100%}
+.ip-tablescroll > .ip-table{border-collapse:separate;border-spacing:0}
+.ip-tablescroll > .ip-table :is(thead th:first-child,tbody > tr > :first-child){position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule)}
+.ip-tablescroll > .ip-table tbody > tr > td:first-child{background:var(--raised)}
+/* DataTable with a curve column: the row grows to the curve (48 + 2×4). */
+.ip-sparktable td.ip-sparktable__curve{padding-block:var(--space-1);width:calc(var(--space-12) * 3 + var(--space-4))}
+.ip-sparktable tbody th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-sparktable__key{display:inline-flex;align-items:center;gap:var(--space-1);white-space:nowrap}
+
+/* ---------- 17. RecordCode · Corecție (adjustment) + cycle marks ---------- */
+/* Corecție = BIRD_EVENT type adjustment (D01): a count change with no other cause. Steel record colour, not a new hue:
+ * icon ink-secondary on sunken (6.46:1 on sunken, 7.11:1 ground, 7.86:1 panel, 8.52:1 raised, 5.98:1 rule when pressed).
+ * Lucide "pencil-line". Close pair: Mortalitate (#3a424a on its grey tint) — told apart by icon and word.
+ * An edit of an existing record is NOT a Corecție: the record keeps its own type and gets the Tag "corectat" (D41). */
+.ip-rec--adjust{--c:var(--ink-secondary);--b:var(--sunken)}
+
+/* Cycle marks (ciclu nou / ciclu închis) on EventRows, in the CycleTrack vocabulary: the 3×12 start/end mark bar
+ * (--ip-mark-w × space-3, as .ip-tracklegend i) beside a small cycle block, open block (raised + 1.5px ink) for a new
+ * cycle, closed block (panel + ink-muted edge, D38) for a closed one. Bar colour = the record that started or ended
+ * the cycle, as on the track: .place rec-placement, .xfer rec-transfer, .sale rec-sale; .ded = svg.ded dashed ink-secondary line
+ * (inferred start, D55, see below); no record (Începe ciclu nou, golire) = ink. No new colour. Sits in .ip-ev__meta with its word. */
+.ip-cmark{--c:var(--ink);display:inline-flex;align-items:center;gap:var(--space-1);white-space:nowrap;vertical-align:bottom}
+.ip-cmark__g{display:inline-flex;align-items:center;gap:var(--ip-hair);flex:none}
+.ip-cmark--end .ip-cmark__g{flex-direction:row-reverse}
+.ip-cmark__bar{width:var(--ip-mark-w);height:var(--space-3);border-radius:var(--ip-hair);background:var(--c)}
+.ip-cmark__blk{width:var(--space-3);height:var(--space-2);border-radius:var(--radius-xs);box-sizing:border-box}
+.ip-cmark--start .ip-cmark__blk{background:var(--raised);border:var(--ip-edge-strong) solid var(--ink)}
+.ip-cmark--end .ip-cmark__blk{background:var(--panel);border:var(--ip-hair) solid var(--ink-muted)}
+.ip-cmark.place{--c:var(--rec-placement)}
+.ip-cmark.xfer{--c:var(--rec-transfer)}
+.ip-cmark.sale{--c:var(--rec-sale)}
+/* Inferred start (D55): no record bar but the CycleTrack .ded line, drawn the same way (svg.ded, viewBox 0 0 3 12, one
+ * 1.5px ink-secondary line dashed 3 3 = two dashes), so it never reads as the solid ink bar of "Începe ciclu nou". */
+.ip-cmark svg.ded{width:var(--ip-mark-w);height:var(--space-3);flex:none;overflow:visible}
+.ip-cmark svg.ded line{stroke:var(--ink-secondary);stroke-width:var(--ip-edge-strong);stroke-dasharray:var(--ip-mark-w) var(--ip-mark-w);fill:none}
+/* A row that is only a cycle event (Începe ciclu nou, ciclu încheiat prin golire) leads with a hollow tile: not a
+ * record, so no record colour; raised + 1px line edge, the cycle mark glyph inside. */
+.ip-tile--cycle{background:var(--raised);box-shadow:inset 0 0 0 var(--ip-hair) var(--line);color:var(--ink)}

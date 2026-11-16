@@ -1,0 +1,10 @@
+# SYS06 · GuideChart variants, RecordCode Corecție + cycle marks (16.11.2026)
+- GuideChart/GuideMissing previews: role="group" + aria-roledescription="grafic", drawing in g[aria-hidden], live-region readout, th scope col/row; % per D46. GuideChart preview now real Telița ♀ weight vs growth guide (+6,8% SAPT 20, abatere).
+- GuideChartVariants: mortality ♀·♂, kg/zi by feed type, uniformity+CV ♀, incubabile %, egg weight g, small curve 160×48 (table + Readout). Data: sample-hirbovat-2026.json, guide-laying.json.
+- Sex lines on dark: rec-hen 2,81:1, rec-rooster 2,74:1 on readout (<3:1) → ♀ readout-ok solid, ♂ readout-2 dash 8 3, sign + word in legend.
+- kg/zi: two lines (not stacked); no guide line (guide is g/pasăre); lamp = kg vs guide g × birds, same rows, ±10% → în normă.
+- Small curve on light steel: ink / rec-hen / rec-rooster, guide dashed ink-muted; role=img, not focusable.
+- Corecție: ip-rec--adjust = pencil-line, ink-secondary on sunken (6,46/7,11/7,86:1); close pair with Mortalitate. Edits keep type + "corectat".
+- Cycle marks: ip-cmark start/end (CycleTrack bar + mini block, bar colour = causing record, ink if none); ip-tile--cycle hollow tile for cycle-only rows.
+- CSS: additions.css §16–17; generator /home/claude/scripts/sys06_gen.py. Renders: 2 (fallback fonts).
+- Fix 1 (16.11.2026): phone charts = div.ip-chartbox + svg.ip-chart--wide (600×150) / --phone (320×150, 11px axis text, X 1·mid·last), container query <600px; axis text 11,2px at 390, 10,9px at 1440. table.ip-sr{display:block}; .ip-tablescroll (DataTable phone rule wrapper) around .ip-sparktable + RecordCodePlus table → no sideways scroll at 390 (all 4 previews: 0). .ip-cmark.ded = svg.ded dashed line (as CycleTrack). Base/GuideMissing legends → .ip-chart__legend swatches; GuideMissing charts regenerated in sys06_gen.py (data embedded), today line SAPT 25, "date exemplu". Incubabile table headers (% vs counts), SAPT 3 "– fără ouă"; uniformity legend "păsări în ±10% din medie". D59 recorded in components.md › Additions › SYS06. Render script /home/claude/scripts/sys06_render.py. Canvas: additions.css published, version 1794853378-53b6.
