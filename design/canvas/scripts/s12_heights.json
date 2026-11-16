@@ -2,5 +2,6 @@
  "S12-preturi-hrana": 1024,
  "S12-preturi-hrana--toate-livrarile-au-pret": 1024,
  "S12-preturi-hrana--eroare": 1024,
- "S12-preturi-hrana--in-lucru": 1024
+ "S12-preturi-hrana--in-lucru": 1024,
+ "S12-preturi-hrana--se-incarca": 1024
 }

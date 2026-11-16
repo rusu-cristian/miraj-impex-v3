@@ -38,6 +38,8 @@ def header(mode):
         meta = f'<span class="ip-num">{len(UNP)}</span> livrări fără preț · <span class="ip-num">{n(UNP_KG)} kg</span> · toate la Hîrbovăț · cele mai vechi întâi'
     elif mode == 'done':
         meta = '<span class="ip-num">0</span> livrări fără preț'
+    elif mode == 'loading':  # the count arrives with the list
+        meta = '<span class="ip-num">–</span> livrări fără preț · se încarcă'
     else:  # error: the count comes from the same request, so it is unknown
         meta = 'livrări fără preț: – nu s-au încărcat'
     return f'''<header class="ip-pagehead">
@@ -69,18 +71,20 @@ def row(d, first, mode='default'):
 
 THS = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
        f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>'
-       f'<th scope="col" class="num"><span class="ip-rec ip-rec--feed s11-thico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num">Total lei</th>')
+       f'<th scope="col" class="num s12-thedit"><span class="ip-rec ip-rec--feed s11-thico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s12-thedit">Total lei</th>')
+
+COLS = '<colgroup><col/><col/><col/><col/><col class="s12-col-pk"/><col class="s12-col-tot"/></colgroup>'
 
 def form(mode='default'):
     work = mode == 'work'
     rows = ''.join(row(d, i == 0, mode) for i, d in enumerate(UNP))
-    lei = (f'<td class="num">{n(W_TOT)} <span class="s12-why s11-muted">· <span class="ip-num">{n(UNP_KG - W_ROW["qty_kg"])} kg</span> fără preț</span></td>' if work
-           else '<td class="num s11-muted">– <span class="s12-why">niciun preț scris</span></td>')
+    lei = (f'<td class="num" colspan="2">{n(W_TOT)} <span class="s12-why s11-muted">· <span class="ip-num">{n(UNP_KG - W_ROW["qty_kg"])} kg</span> fără preț</span></td>' if work
+           else '<td class="num s11-muted" colspan="2">– <span class="s12-why">niciun preț scris</span></td>')
     total = (f'<tfoot><tr class="is-total"><th scope="row" colspan="3" class="s12-toth">Total · <span class="ip-num">{len(UNP)}</span> livrări</th>'
-             f'<td class="num">{n(UNP_KG)}</td><td class="num s11-muted">–</td>{lei}</tr></tfoot>')
+             f'<td class="num">{n(UNP_KG)}</td>{lei}</tr></tfoot>')
     if work:
-        foot = (f'<span class="ip-note" id="save-why"><span class="ip-num">1</span> din <span class="ip-num">{len(UNP)}</span> livrări cu preț scris</span>'
-                '<button type="submit" class="ip-btn ip-btn--primary">Salvează prețurile</button>')
+        foot = (f'<span class="ip-note" id="save-why"><span class="ip-num">1</span> din <span class="ip-num">{len(UNP)}</span> livrări cu preț scris · <span class="ip-num">1</span> preț de corectat</span>'
+                '<button type="submit" class="ip-btn ip-btn--primary" aria-describedby="save-why">Salvează prețurile</button>')
         sample = (f'<p class="ip-hint s12-help">Valoare de exemplu: <span class="ip-num">{n(B2_LAST["price_per_kg"], 2)}{NB}lei/kg</span> la <span class="ip-num">{ddate(W_ROW["date"])}</span> '
                   f'(ultimul preț Breeder 2, din <span class="ip-num">{ddate(B2_LAST["date"])}</span>); totalul <span class="ip-num">{n(W_TOT)}{NB}lei</span> e calculat din <span class="ip-num">{n(W_ROW["qty_kg"])}{NB}kg</span>.</p>')
     else:
@@ -90,8 +94,22 @@ def form(mode='default'):
     return f'''<form class="s12-form" aria-labelledby="h-unp" novalidate="novalidate">
 <div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <p class="ip-note s12-help" id="pr-help">Scrie prețul pe kg sau totalul de pe factură; celălalt se calculează din kg. Poți completa doar o parte din rânduri. După salvare, un preț se modifică doar cu un motiv și rămâne în jurnal.</p>
-<div class="s11-tablebox"><table class="ip-table s11-table s12-table"><caption class="ip-sr">Livrări fără preț, cele mai vechi întâi</caption><thead><tr>{THS}</tr></thead><tbody>{rows}</tbody>{total}</table></div>
+<div class="s11-tablebox"><table class="ip-table s11-table s12-table"><caption class="ip-sr">Livrări fără preț, cele mai vechi întâi</caption>{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody>{total}</table></div>
 <div class="s12-foot">{foot}</div>{sample}
+</form>'''
+
+# ---------- state: loading (static sunken skeletons in the same 6 columns; nothing to save yet) ----------
+def loading():
+    sk = s11.sk
+    cells = (f'<td class="num">{sk("s4s-w70")}</td><td>{sk("s4s-w70")}</td><td>{sk("s4s-w70")}</td><td class="num">{sk("s4s-w70")}</td>'
+             f'<td class="edit">{sk()}</td><td class="edit">{sk()}</td>')  # input-sized bars: rows as tall as the default's
+    rows = f'<tr>{cells}</tr>' * len(UNP)
+    return f'''<form class="s12-form" aria-labelledby="h-unp" aria-busy="true" novalidate="novalidate">
+<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
+<p class="ip-note s12-help" id="pr-help">Scrie prețul pe kg sau totalul de pe factură; celălalt se calculează din kg. Poți completa doar o parte din rânduri. După salvare, un preț se modifică doar cu un motiv și rămâne în jurnal.</p>
+<p class="ip-sr" role="status">Se încarcă livrările fără preț.</p>
+<div class="s11-tablebox" aria-hidden="true"><table class="ip-table s11-table s12-table">{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody></table></div>
+<div class="s12-foot"><span class="ip-note" id="save-why">Se încarcă livrările fără preț · poți scrie prețuri după încărcare</span><button type="submit" class="ip-btn ip-btn--primary" disabled="disabled" aria-describedby="save-why">Salvează prețurile</button></div>
 </form>'''
 
 # ---------- state: none unpriced (reached after saving the 4: toast) ----------
@@ -111,11 +129,13 @@ def error():
 </section>'''
 
 def page(mode='default'):
-    body = form(mode) if mode in ('default', 'work') else {'done': done, 'error': error}[mode]()
+    body = form(mode) if mode in ('default', 'work') else {'done': done, 'error': error, 'loading': loading}[mode]()
     return f'<div class="s4-shell">{s11.sidebar("Proprietar")}<main class="s4-main">\n{header(mode)}\n{body}\n</main></div>'
 
 CSS = s11.CSS + '''
 .s12-meta{align-items:center;gap:var(--space-2)}
+.s12-table th.s12-thedit{padding-right:var(--space-2)}
+.s12-table td.edit > .ip-skel{height:var(--control-h);border-radius:var(--radius-sm)} /* loading: the inputs' footprint, no row jump */ /* Lei/kg + Total lei: text ends at the inputs' right edge (td.edit padding) */
 .s12-form{display:flex;flex-direction:column;gap:var(--space-3);width:fit-content;min-width:calc(var(--space-12) * 16);max-width:100%;margin:0}
 .s12-help{margin:0;max-width:calc(var(--space-12) * 14)}
 .s12-table th.s12-toth{background:var(--panel);font-weight:500;border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
@@ -125,13 +145,16 @@ CSS = s11.CSS + '''
 .s12-m0{margin:0}
 .s12-table tr.s12-haserr > td{border-bottom:0} /* the field error row belongs to the row above */
 .s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
-.s12-errrow .ip-err{margin:0;white-space:normal}
+.s12-errrow .ip-err{margin:0;white-space:normal;align-items:flex-start;contain:inline-size} /* wraps inside Lei/kg + Total lei, never widens them */
+.s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */
+.s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}
 .s12-errrow .ip-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s12-toastwrap{position:absolute;left:calc(var(--sidebar-w) + var(--space-6));bottom:var(--space-6);z-index:4}'''
 
 STEM = 'S12-preturi-hrana'
 BOARDS = [
  (STEM, 'S12 · Prețuri hrană', page(), ''),
+ (STEM + '--se-incarca', 'S12 · Prețuri hrană · se încarcă', page('loading'), ''),
  (STEM + '--in-lucru', 'S12 · Prețuri hrană · în lucru', page('work'), ''),
  (STEM + '--toate-livrarile-au-pret', 'S12 · Prețuri hrană · toate livrările au preț', page('done'), TOAST),
  (STEM + '--eroare', 'S12 · Prețuri hrană · eroare la încărcare', page('error'), ''),
