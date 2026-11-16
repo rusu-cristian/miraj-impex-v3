@@ -19,7 +19,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S7 | screen | S7 Hrană zilnică (phone 390) | SYS02, S4P | screens.md#s7; spec.md#c2; components.md#formheader, #datefield, #allocationrow, #select, #textfield, #button, #savebar, #toast, #banner; extracts: farms-sections, counts-latest, sample-hirbovat-2026, guide-laying, feed-types | todo | |
 | S7S | screen | S7 states: fără zi anterioară, avertisment abatere, stoc sub 0, salvat (toast), eroare cu reîncercare | S7 | spec.md#c2 (Rules, States), #1-shared-rules (Connectivity) | todo | |
 | S7P | polish | S7 polish + audit | S7S | screens.md#s7; spec.md#c2; DESIGN.md#dos-and-donts | todo | |
-| SYS03 | system | For S3: FarmSummary panel | SYS00 | components.md#stat, #sexcount, #lamp, #tag; screens.md#s3; spec.md#d1 | todo | |
+| SYS03 | system | For S3: FarmSummary panel | SYS00 | components.md#stat, #sexcount, #lamp, #tag; screens.md#s3; spec.md#d1 | done | 36313aa |
 | S3 | screen | S3 Seria 2026 · nivel serie, cycle track full (desktop) + states | SYS03, S7P | screens.md#s3; spec.md#d1, #b3, #b4; components.md#cycletrack, #pageheader, #tabs, #readout; extracts: cycles, placement-seria2026, transfers-seria2026, counts-latest, sample-hirbovat-2026 | todo | |
 | S3P | polish | S3 polish + audit | S3 | screens.md#s3; spec.md#d1; DESIGN.md#dos-and-donts | todo | |
 | SYS04 | system | For S11: Readout stock variant (row of stock readouts), Cost block | SYS00 | components.md#readout, #lamp, #datatable; screens.md#s11; spec.md#d4 | todo | |
