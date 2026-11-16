@@ -15,7 +15,7 @@ Done 11 / 64 · Current: S7 Hrană zilnică (phone) + SYS06
 - User is away (decided 16.11.2026 17:48): every choice taken by default is logged as "default (user away) — to review" in decisions-current.md (D14–D33). Review on return.
 
 ## Things to remember
-- New components so far (copy into the system artifact later): CycleTrackFarm, SectionTotals, AlertRow, GuideMissing, SeriesSelector, FilterInterval, FeedTotals, FarmSummary, StockReadout, CostBlock, EntryCardPlus, HallCard, chip --split, track .ded, plus additions.css interaction states.
+- New components so far (copy into the system artifact later): CycleTrackFarm, SectionTotals, AlertRow, GuideMissing, SeriesSelector, FilterInterval, FeedTotals, FarmSummary, StockReadout, CostBlock, EntryCardPlus, HallCard, chip --split, track .ded, GuideChartVariants, RecordCodePlus (Corecție, cycle marks), SexCountRow (--pick), ip-alloc--phone, plus additions.css interaction states.
 - Today = 16.11.2026 = Hîrbovăț sapt. 40 (D24). Workbook ends 28.02.2026; later Hîrbovăț figures are illustrative (D27).
 - The design-system artifact can't be edited from this session: new components go to design/system/ + components.md "Additions" (D32) — copy them into the system later.
 - Canvas publishes must run one at a time (they all edit canvas.json).

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>S3 · Seria 2026 · fără acces (Observator, doar Hîrbovăț)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/impexlinepanel/tokens.css">
+<link rel="stylesheet" href="ds/impexlinepanel/components/bundle.css">
+<link rel="stylesheet" href="additions.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}
+.s4-shell{display:flex;align-items:stretch}
+.s4-side{flex:none;min-height:0}
+.s4-grow{flex:1}
+.s4-account{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2);border-top:var(--ip-hair) solid var(--line)}
+.s4-account b{color:var(--ink);font-weight:500}
+.s4-main{flex:1;min-width:0;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
+.s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
+.s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
+.s4-lamps{display:flex;gap:var(--space-3)}
+.s4-meta{gap:var(--space-2) var(--space-3)}
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
+.s4-cycsel{cursor:pointer}
+.s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
+.s4-readout{justify-content:flex-start}
+.s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.s4-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.s4-head h2{margin:0}
+.s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
+.s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.s4-split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-4);align-items:start}
+.s4-capi{display:flex;gap:var(--space-1);align-items:center}
+.s4-ico{color:var(--c);display:inline-flex}
+.s4-kvpair{gap:var(--space-1);font-size:inherit;line-height:inherit}
+.s4-kvpair .ip-sex b{font:inherit}
+.s4-unit{color:var(--ink-muted);font-family:var(--font-sans)}
+.s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
+.s4-nowrap{flex-wrap:wrap}
+.s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
+.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
+.s4-filterbar{row-gap:var(--space-2)}
+.s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.s4s-rel{position:relative}
+.s4s-rel > .s4-shell{min-height:inherit}
+.s3-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.s3-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.s3-head h2{margin:0}
+.s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
+.s3-m0{margin:0}
+.s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
+.s3-table{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);border-collapse:separate;border-spacing:0;overflow:hidden}
+.s3-table th .s4-ico{margin-right:var(--space-1);vertical-align:calc(-1 * var(--space-1) + var(--ip-hair))}
+.s3-table tbody:last-child tr:last-child > *{border-bottom:0}
+.ip-table .s3-rowh{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule);padding:var(--space-1) var(--space-3) var(--space-1) var(--space-6);height:var(--row-h)}
+.ip-table .s3-group{background:var(--sunken);text-transform:none;letter-spacing:0;font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink);border-bottom:var(--ip-hair) solid var(--rule)}
+.s3-group > .ip-note{display:inline-flex;align-items:center;gap:var(--space-1);margin-left:var(--space-3);font-weight:400}
+.s3-glink{display:inline-flex;align-items:center;min-height:var(--space-6);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair))}
+.s3-glink:hover{text-decoration-color:var(--ink)}
+.s3-gname{display:inline-flex;align-items:center;min-height:var(--space-6)}
+.s3-dash{color:var(--ink-muted)}
+.s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
+.s3-track{max-width:100%}
+.s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
+.s3-skmeta .ip-skel{display:block}
+.s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}
+.s3-sklane + .s3-sklane{margin-top:var(--space-4)}
+.s3-sklbl{width:60%;display:block}
+.s3-skbar{height:calc(var(--space-6) + var(--ip-hair) + var(--ip-hair));display:block}
+.s3-skaxis{padding-left:calc(var(--space-12) + var(--space-8) + var(--space-2))}
+.s3-skcard{gap:var(--space-3)}
+.s3-skcard .ip-skel,.s3-panel .ip-skel{display:block}
+.s3-skfig{display:flex;justify-content:space-between;padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
+.s3-right{margin-left:auto}
+.s3-h16{height:var(--space-4)}.s3-h20{height:var(--space-5)}
+.s3-w8{width:calc(var(--space-12) + var(--space-6))}.s3-w14{width:calc(var(--space-12) * 2)}.s3-w24{width:calc(var(--space-12) * 4)}
+.s3-w20{width:20%}.s3-w30{width:30%}.s3-w40{width:40%}.s3-w50{width:50%}.s3-w60{width:60%}.s3-w100{width:100%}</style>
+</helmet>
+<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
+<div class="ip-wordmark">Impex Line</div>
+<div class="ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-series__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl"><span class="name">Seria 2026</span><span class="ip-lamp ip-lamp--ok">deschisă</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+<ul class="ip-menu ip-series__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2026" aria-selected="true"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2026</b><span class="ip-lamp ip-lamp--ok">deschisă</span></span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2025" aria-selected="false"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2025</b><span class="ip-lamp ip-lamp--off">închisă</span></span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
+<a class="ip-nav" href="#acasa"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>Acasă</a><a class="ip-nav is-current" href="#serie" aria-current="page"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>Serie</a><a class="ip-nav" href="#rapoarte"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Rapoarte</a>
+<span class="s4-grow"></span>
+<div class="ip-note s4-account"><b>Observator</b><a class="ip-link" href="#iesi">Ieși</a></div>
+</nav><main class="s4-main">
+<header class="ip-pagehead">
+<div>
+<nav class="ip-crumbs" aria-label="Cale"><span aria-current="page">Seria 2026</span></nav>
+<h1>Seria 2026</h1>
+<div class="ip-row s4-meta"><span class="ip-lamp ip-lamp--ok">deschisă</span><span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>25 252</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>2 685</b></span></span><span class="ip-note">în viață la fermele tale · <span class="ip-num">16.11.2026</span></span></div>
+</div>
+<div class="ip-row"><button type="button" class="ip-btn ip-btn--secondary"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Exportă .xlsx</button></div>
+</header>
+<section class="s3-block" aria-labelledby="h-track">
+<div class="s3-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2><span class="ip-note">doar fermele tale · Telița: nu ai acces</span></div>
+<div class="s4-tight"><svg class="ip-track s3-track" viewBox="0 0 1160 72" role="group" aria-label="Ciclurile seriei 2026 pe ferme"><desc>Seria 2026, doar fermele la care ai acces. Hîrbovăț: ouat din 10.02.2026, deschis, azi 16.11.2026, SAPT 40.</desc><text class="lanelbl" x="0" y="39">HÎRBOVĂȚ</text><rect class="lane" x="88" y="22" width="1072" height="26"/><a href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2026" aria-label="Hîrbovăț, Seria 2026, ouat, din 10.02.2026, deschis, azi SAPT 40. Deschide ferma la acest ciclu."><title>Hîrbovăț, Seria 2026, ouat, din 10.02.2026, deschis, azi SAPT 40. Deschide ferma la acest ciclu.</title><rect class="ring" x="393.6" y="21" width="662.5" height="28" rx="3"/><rect class="cyc open" x="397.6" y="25" width="654.5" height="20" rx="2"/><text class="cyctxt open" x="405.6" y="39">Seria 2026 · ouat · din 10.02.2026</text></a><line class="today" x1="1052.1" x2="1052.1" y1="14" y2="52"/><text class="todaylbl" x="1052.1" y="11" text-anchor="middle">azi 16.11</text><rect class="ro" x="1056.1" y="27" width="48" height="16" rx="2"/><text class="rotxt" x="1080.1" y="38.5" text-anchor="middle">SAPT 40</text><line class="tick" x1="88.0" x2="88.0" y1="48" y2="54"/><text class="month" x="88.0" y="68" text-anchor="start">10.25</text><line class="tick" x1="160.7" x2="160.7" y1="48" y2="54"/><text class="month" x="160.7" y="68" text-anchor="middle">11.25</text><line class="tick" x1="231.1" x2="231.1" y1="48" y2="54"/><text class="month" x="231.1" y="68" text-anchor="middle">12.25</text><line class="tick" x1="303.8" x2="303.8" y1="48" y2="54"/><text class="month" x="303.8" y="68" text-anchor="middle">01.26</text><line class="tick" x1="376.5" x2="376.5" y1="48" y2="54"/><text class="month" x="376.5" y="68" text-anchor="middle">02.26</text><line class="tick" x1="442.2" x2="442.2" y1="48" y2="54"/><text class="month" x="442.2" y="68" text-anchor="middle">03.26</text><line class="tick" x1="514.9" x2="514.9" y1="48" y2="54"/><text class="month" x="514.9" y="68" text-anchor="middle">04.26</text><line class="tick" x1="585.3" x2="585.3" y1="48" y2="54"/><text class="month" x="585.3" y="68" text-anchor="middle">05.26</text><line class="tick" x1="658.0" x2="658.0" y1="48" y2="54"/><text class="month" x="658.0" y="68" text-anchor="middle">06.26</text><line class="tick" x1="728.4" x2="728.4" y1="48" y2="54"/><text class="month" x="728.4" y="68" text-anchor="middle">07.26</text><line class="tick" x1="801.1" x2="801.1" y1="48" y2="54"/><text class="month" x="801.1" y="68" text-anchor="middle">08.26</text><line class="tick" x1="873.8" x2="873.8" y1="48" y2="54"/><text class="month" x="873.8" y="68" text-anchor="middle">09.26</text><line class="tick" x1="944.2" x2="944.2" y1="48" y2="54"/><text class="month" x="944.2" y="68" text-anchor="middle">10.26</text><line class="tick" x1="1016.9" x2="1016.9" y1="48" y2="54"/><text class="month" x="1016.9" y="68" text-anchor="middle">11.26</text><line class="tick" x1="1087.3" x2="1087.3" y1="48" y2="54"/><text class="month" x="1087.3" y="68" text-anchor="middle">12.26</text></svg><div class="ip-tracklegend" aria-hidden="true"><span><i class="today"></i>azi</span></div></div>
+</section><section class="s3-block" aria-labelledby="h-farms">
+<div class="s3-head"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note ip-num">fermele tale: Hîrbovăț</span></div>
+<div class="ip-fsums"><article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-telita" aria-describedby="fs-telita-c"><div class="ip-fsum__head"><div class="ip-fsum__id"><h3 class="ip-fsum__name" id="fs-telita">Telița</h3></div><span class="ip-lamp ip-lamp--off">fără acces</span></div>
+<div class="ip-fsum__empty" id="fs-telita-c"><p class="s3-m0">Nu ai acces la această fermă.</p><p class="s3-m0">Cere acces proprietarului.</p></div></article><article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-hirbovat" aria-describedby="fs-hirbovat-c"><div class="ip-fsum__head"><div class="ip-fsum__id"><h3 class="ip-fsum__name" id="fs-hirbovat"><a href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2026">Hîrbovăț</a></h3><span class="ip-tag ip-tag--neutral">Ouat</span><span class="ip-tag ip-tag--neutral">Ross 308 ouat</span></div><span class="ip-lamp ip-lamp--ok">deschis</span></div>
+<p class="ip-fsum__cycle" id="fs-hirbovat-c">ciclu din 10.02.2026 · SAPT 40</p>
+<div class="ip-fsum__alive"><span class="ip-cap">În viață · 16.11.2026</span><div><span class="ip-pair ip-pair--lg"><span class="ip-sex ip-sex--hen">♀ <b>25 252</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>2 685</b></span></span><span class="ip-note">total 27 937</span></div></div>
+<dl class="ip-fsum__figs"><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--eggs s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/></svg></span>Ouat azi</dt><dd class="ip-fsum__val">74,0<small class="ip-fsum__pct">%</small></dd><dd class="ip-fsum__sub"><span class="ip-num">ghid 74,1% · SAPT 40</span></dd><dd class="ip-fsum__status"><span class="ip-lamp ip-lamp--ok">în normă</span></dd></div><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--mortality s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span>Mortalitate cumulată</dt><dd class="ip-fsum__val"><span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>5,54</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>11,93</b></span></span><small class="ip-fsum__pct">%</small></dd><dd class="ip-fsum__sub">ghid: – fără date în ghid</dd></div><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--feed s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9M12 9c-3 0-4-2-4-5 3 0 4 2 4 5zM12 9c3 0 4-2 4-5-3 0-4 2-4 5zM12 15c-3 0-4-2-4-5 3 0 4 2 4 5zM12 15c3 0 4-2 4-5-3 0-4 2-4 5z"/></svg></span>Hrană azi</dt><dd class="ip-fsum__val"><span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>158</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>159</b></span></span><small>g</small></dd><dd class="ip-fsum__sub"><span class="ip-num">ghid 158 / 155 g ·</span><span>medie fără <span class="ip-sex ip-sex--hen">♀</span> H4.2 · <span class="ip-sex ip-sex--rooster">♂</span> H3.2</span></dd><dd class="ip-fsum__status"><span class="ip-lamp ip-lamp--ok">în normă</span></dd></div><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--feed s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9zM3 7.5 12 12l9-4.5M12 12v9"/></svg></span>Zile stoc</dt><dd class="ip-fsum__val"><span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>7,1</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>3,9</b></span></span><small>zile</small></dd><dd class="ip-fsum__sub"><span>Cocoși până pe <span class="ip-num">19.11.2026</span> · sub 5 zile</span></dd><dd class="ip-fsum__status"><span class="ip-lamp ip-lamp--warn">abatere</span></dd></div></dl></article></div>
+</section>
+<section class="s3-block" aria-label="Date pe ferme">
+<div class="ip-tabs" role="tablist" aria-label="Vederi Seria 2026"><a class="ip-tab is-selected" role="tab" id="tab-pasari" aria-controls="tp-serie" aria-selected="true" tabindex="0" href="#pasari">Păsări</a><a class="ip-tab" role="tab" id="tab-hrana" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#hrana">Hrană</a><a class="ip-tab" role="tab" id="tab-greutate" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#greutate">Greutate</a><a class="ip-tab" role="tab" id="tab-productie" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#productie">Producție</a></div>
+<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">
+<table class="ip-table s3-table"><caption class="ip-sr">Păsări în Seria 2026, pe ferme; mortalitate % din păsările de la începutul ciclului fermei</caption><thead><tr><th scope="col">Fermă · sex</th><th scope="col" class="num">Început</th><th scope="col" class="num"><span class="ip-rec ip-rec--mortality s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span>Mortalitate</th><th scope="col" class="num">Mort. %</th><th scope="col" class="num"><span class="ip-rec ip-rec--cull s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span>Sacrificare</th><th scope="col" class="num"><span class="s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4" stroke="var(--rec-hen)"/><circle cx="16" cy="12" r="4" stroke="var(--rec-rooster)"/></svg></span>Eroare sexare</th><th scope="col" class="num"><span class="ip-rec ip-rec--transfer s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span>Transfer</th><th scope="col" class="num"><span class="ip-rec ip-rec--sale s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>Vânzare</th><th scope="col" class="num"><span class="ip-rec ip-rec--adjust s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg></span>Corecție</th><th scope="col" class="num">În viață · 16.11</th></tr></thead><tbody><tr class="is-group"><th scope="rowgroup" colspan="10" class="s3-group"><span class="s3-gname">Telița</span><span class="ip-note">nu ai acces la această fermă</span></th></tr></tbody><tbody><tr class="is-group"><th scope="rowgroup" colspan="10" class="s3-group"><a class="s3-glink" href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2026">Hîrbovăț</a><span class="ip-note"><span class="ip-rec ip-rec--transfer s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span>ouat · sosite prin transfer <span class="ip-num">22.02–28.02.2026</span> · deschis, <span class="ip-num">SAPT 40</span></span></th></tr><tr><th scope="row" class="s3-rowh"><span class="ip-sex ip-sex--hen">♀</span> găini</th><td class="num"><span class="ip-sex ip-sex--hen"><b>26 765</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>−1 484</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>5,54%</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>−27</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>−2</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--hen"><b>25 252</b></span></td></tr><tr><th scope="row" class="s3-rowh"><span class="ip-sex ip-sex--rooster">♂</span> cocoși</th><td class="num"><span class="ip-sex ip-sex--rooster"><b>3 060</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>−365</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>11,93%</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>−10</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>0</b></span></td><td class="num"><span class="ip-sex ip-sex--rooster"><b>2 685</b></span></td></tr></tbody></table>
+<div class="s3-notes"><p class="ip-note s3-m0">Început: sosire prin transfer la Hîrbovăț.</p><p class="ip-note s3-m0">Nicio vânzare în Seria 2026 până pe <span class="ip-num">16.11.2026</span>.</p></div>
+</div>
+</section>
+</main></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>S3 · Seria 2026 · se încarcă</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/impexlinepanel/tokens.css">
+<link rel="stylesheet" href="ds/impexlinepanel/components/bundle.css">
+<link rel="stylesheet" href="additions.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}
+.s4-shell{display:flex;align-items:stretch}
+.s4-side{flex:none;min-height:0}
+.s4-grow{flex:1}
+.s4-account{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2);border-top:var(--ip-hair) solid var(--line)}
+.s4-account b{color:var(--ink);font-weight:500}
+.s4-main{flex:1;min-width:0;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
+.s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
+.s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
+.s4-lamps{display:flex;gap:var(--space-3)}
+.s4-meta{gap:var(--space-2) var(--space-3)}
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
+.s4-cycsel{cursor:pointer}
+.s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
+.s4-readout{justify-content:flex-start}
+.s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.s4-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.s4-head h2{margin:0}
+.s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
+.s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.s4-split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-4);align-items:start}
+.s4-capi{display:flex;gap:var(--space-1);align-items:center}
+.s4-ico{color:var(--c);display:inline-flex}
+.s4-kvpair{gap:var(--space-1);font-size:inherit;line-height:inherit}
+.s4-kvpair .ip-sex b{font:inherit}
+.s4-unit{color:var(--ink-muted);font-family:var(--font-sans)}
+.s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
+.s4-nowrap{flex-wrap:wrap}
+.s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
+.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
+.s4-filterbar{row-gap:var(--space-2)}
+.s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.s4s-rel{position:relative}
+.s4s-rel > .s4-shell{min-height:inherit}
+.s3-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.s3-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.s3-head h2{margin:0}
+.s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
+.s3-m0{margin:0}
+.s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
+.s3-table{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);border-collapse:separate;border-spacing:0;overflow:hidden}
+.s3-table th .s4-ico{margin-right:var(--space-1);vertical-align:calc(-1 * var(--space-1) + var(--ip-hair))}
+.s3-table tbody:last-child tr:last-child > *{border-bottom:0}
+.ip-table .s3-rowh{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule);padding:var(--space-1) var(--space-3) var(--space-1) var(--space-6);height:var(--row-h)}
+.ip-table .s3-group{background:var(--sunken);text-transform:none;letter-spacing:0;font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink);border-bottom:var(--ip-hair) solid var(--rule)}
+.s3-group > .ip-note{display:inline-flex;align-items:center;gap:var(--space-1);margin-left:var(--space-3);font-weight:400}
+.s3-glink{display:inline-flex;align-items:center;min-height:var(--space-6);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair))}
+.s3-glink:hover{text-decoration-color:var(--ink)}
+.s3-gname{display:inline-flex;align-items:center;min-height:var(--space-6)}
+.s3-dash{color:var(--ink-muted)}
+.s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
+.s3-track{max-width:100%}
+.s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
+.s3-skmeta .ip-skel{display:block}
+.s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}
+.s3-sklane + .s3-sklane{margin-top:var(--space-4)}
+.s3-sklbl{width:60%;display:block}
+.s3-skbar{height:calc(var(--space-6) + var(--ip-hair) + var(--ip-hair));display:block}
+.s3-skaxis{padding-left:calc(var(--space-12) + var(--space-8) + var(--space-2))}
+.s3-skcard{gap:var(--space-3)}
+.s3-skcard .ip-skel,.s3-panel .ip-skel{display:block}
+.s3-skfig{display:flex;justify-content:space-between;padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
+.s3-right{margin-left:auto}
+.s3-h16{height:var(--space-4)}.s3-h20{height:var(--space-5)}
+.s3-w8{width:calc(var(--space-12) + var(--space-6))}.s3-w14{width:calc(var(--space-12) * 2)}.s3-w24{width:calc(var(--space-12) * 4)}
+.s3-w20{width:20%}.s3-w30{width:30%}.s3-w40{width:40%}.s3-w50{width:50%}.s3-w60{width:60%}.s3-w100{width:100%}</style>
+</helmet>
+<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
+<div class="ip-wordmark">Impex Line</div>
+<div class="ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-series__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl"><span class="name">Seria 2026</span><span class="ip-lamp ip-lamp--ok">deschisă</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+<ul class="ip-menu ip-series__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2026" aria-selected="true"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2026</b><span class="ip-lamp ip-lamp--ok">deschisă</span></span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2025" aria-selected="false"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2025</b><span class="ip-lamp ip-lamp--off">închisă</span></span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
+<a class="ip-nav" href="#acasa"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>Acasă</a><a class="ip-nav" href="#inregistreaza"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Înregistrează</a><a class="ip-nav is-current" href="#serie" aria-current="page"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>Serie</a><a class="ip-nav" href="#rapoarte"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Rapoarte</a><a class="ip-nav" href="#setari"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 18h4"/><path d="M12 18h8"/><circle cx="10" cy="18" r="2"/></svg>Setări</a>
+<span class="s4-grow"></span>
+<div class="ip-note s4-account"><b>Proprietar</b><a class="ip-link" href="#iesi">Ieși</a></div>
+</nav><main class="s4-main">
+<header class="ip-pagehead">
+<div>
+<nav class="ip-crumbs" aria-label="Cale"><span aria-current="page">Seria 2026</span></nav>
+<h1>Seria 2026</h1>
+<div class="ip-row s4-meta"><span class="s3-skmeta" aria-hidden="true"><span class="ip-skel s3-w8"></span><span class="ip-skel s3-w14"></span><span class="ip-skel s3-w24"></span></span></div>
+</div>
+<div class="ip-row"><button type="button" class="ip-btn ip-btn--secondary is-disabled" disabled="disabled"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Exportă .xlsx</button></div>
+</header>
+<section class="s3-block" aria-hidden="true">
+<div class="s3-head"><h2 class="ip-t-heading">Cicluri pe ferme</h2></div>
+<div class="s4-tight"><div class="s3-sklane"><span class="ip-skel s3-sklbl"></span><span class="ip-skel s3-skbar"></span></div><div class="s3-sklane"><span class="ip-skel s3-sklbl"></span><span class="ip-skel s3-skbar"></span></div><div class="s3-skaxis"><span class="ip-skel s3-w100"></span></div></div>
+</section><section class="s3-block" aria-hidden="true">
+<div class="s3-head"><h2 class="ip-t-heading">Ferme</h2></div>
+<div class="ip-fsums"><div class="ip-fsum ip-fsum--wide s3-skcard"><div class="ip-fsum__head"><span class="ip-skel s3-w30 s3-h16"></span><span class="ip-skel s3-w14"></span></div><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w50 s3-h20"></span><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div></div><div class="ip-fsum ip-fsum--wide s3-skcard"><div class="ip-fsum__head"><span class="ip-skel s3-w30 s3-h16"></span><span class="ip-skel s3-w14"></span></div><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w50 s3-h20"></span><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div><div class="s3-skfig"><span class="ip-skel s3-w40"></span><span class="ip-skel s3-w20"></span></div></div></div>
+</section>
+<section class="s3-block" aria-label="Date pe ferme">
+<div class="ip-tabs" role="tablist" aria-label="Vederi Seria 2026"><a class="ip-tab is-selected" role="tab" id="tab-pasari" aria-controls="tp-serie" aria-selected="true" tabindex="0" href="#pasari">Păsări</a><a class="ip-tab" role="tab" id="tab-hrana" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#hrana">Hrană</a><a class="ip-tab" role="tab" id="tab-greutate" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#greutate">Greutate</a><a class="ip-tab" role="tab" id="tab-productie" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#productie">Producție</a></div>
+<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari" aria-busy="true">
+<p class="ip-sr" role="status">Se încarcă Seria 2026: ciclurile, fermele și păsările.</p>
+<table class="ip-table s3-table" aria-hidden="true"><thead><tr><th scope="col">Fermă · sex</th><th scope="col" class="num">Început</th><th scope="col" class="num"><span class="ip-rec ip-rec--mortality s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span>Mortalitate</th><th scope="col" class="num">Mort. %</th><th scope="col" class="num"><span class="ip-rec ip-rec--cull s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span>Sacrificare</th><th scope="col" class="num"><span class="s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4" stroke="var(--rec-hen)"/><circle cx="16" cy="12" r="4" stroke="var(--rec-rooster)"/></svg></span>Eroare sexare</th><th scope="col" class="num"><span class="ip-rec ip-rec--transfer s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span>Transfer</th><th scope="col" class="num"><span class="ip-rec ip-rec--sale s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>Vânzare</th><th scope="col" class="num"><span class="ip-rec ip-rec--adjust s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg></span>Corecție</th><th scope="col" class="num">În viață · 16.11</th></tr></thead><tbody><tr class="is-group"><td colspan="10"><span class="ip-skel s3-w14"></span></td></tr><tr><td><span class="ip-skel s3-w60"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td></tr><tr><td><span class="ip-skel s3-w60"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td></tr><tr class="is-group"><td colspan="10"><span class="ip-skel s3-w14"></span></td></tr><tr><td><span class="ip-skel s3-w60"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td></tr><tr><td><span class="ip-skel s3-w60"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td><td class="num"><span class="ip-skel s3-w60 s3-right"></span></td></tr></tbody></table>
+</div>
+</section>
+</main></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

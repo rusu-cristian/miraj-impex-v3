@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>S3 · Seria 2026 · seria închisă (Seria 2025)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/impexlinepanel/tokens.css">
+<link rel="stylesheet" href="ds/impexlinepanel/components/bundle.css">
+<link rel="stylesheet" href="additions.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}
+.s4-shell{display:flex;align-items:stretch}
+.s4-side{flex:none;min-height:0}
+.s4-grow{flex:1}
+.s4-account{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2);border-top:var(--ip-hair) solid var(--line)}
+.s4-account b{color:var(--ink);font-weight:500}
+.s4-main{flex:1;min-width:0;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
+.s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
+.s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
+.s4-lamps{display:flex;gap:var(--space-3)}
+.s4-meta{gap:var(--space-2) var(--space-3)}
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
+.s4-cycsel{cursor:pointer}
+.s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
+.s4-readout{justify-content:flex-start}
+.s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.s4-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.s4-head h2{margin:0}
+.s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
+.s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.s4-split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-4);align-items:start}
+.s4-capi{display:flex;gap:var(--space-1);align-items:center}
+.s4-ico{color:var(--c);display:inline-flex}
+.s4-kvpair{gap:var(--space-1);font-size:inherit;line-height:inherit}
+.s4-kvpair .ip-sex b{font:inherit}
+.s4-unit{color:var(--ink-muted);font-family:var(--font-sans)}
+.s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
+.s4-nowrap{flex-wrap:wrap}
+.s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
+.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
+.s4-filterbar{row-gap:var(--space-2)}
+.s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.s4s-rel{position:relative}
+.s4s-rel > .s4-shell{min-height:inherit}
+.s3-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.s3-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.s3-head h2{margin:0}
+.s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
+.s3-m0{margin:0}
+.s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
+.s3-table{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);border-collapse:separate;border-spacing:0;overflow:hidden}
+.s3-table th .s4-ico{margin-right:var(--space-1);vertical-align:calc(-1 * var(--space-1) + var(--ip-hair))}
+.s3-table tbody:last-child tr:last-child > *{border-bottom:0}
+.ip-table .s3-rowh{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule);padding:var(--space-1) var(--space-3) var(--space-1) var(--space-6);height:var(--row-h)}
+.ip-table .s3-group{background:var(--sunken);text-transform:none;letter-spacing:0;font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink);border-bottom:var(--ip-hair) solid var(--rule)}
+.s3-group > .ip-note{display:inline-flex;align-items:center;gap:var(--space-1);margin-left:var(--space-3);font-weight:400}
+.s3-glink{display:inline-flex;align-items:center;min-height:var(--space-6);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair))}
+.s3-glink:hover{text-decoration-color:var(--ink)}
+.s3-gname{display:inline-flex;align-items:center;min-height:var(--space-6)}
+.s3-dash{color:var(--ink-muted)}
+.s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
+.s3-track{max-width:100%}
+.s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
+.s3-skmeta .ip-skel{display:block}
+.s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}
+.s3-sklane + .s3-sklane{margin-top:var(--space-4)}
+.s3-sklbl{width:60%;display:block}
+.s3-skbar{height:calc(var(--space-6) + var(--ip-hair) + var(--ip-hair));display:block}
+.s3-skaxis{padding-left:calc(var(--space-12) + var(--space-8) + var(--space-2))}
+.s3-skcard{gap:var(--space-3)}
+.s3-skcard .ip-skel,.s3-panel .ip-skel{display:block}
+.s3-skfig{display:flex;justify-content:space-between;padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
+.s3-right{margin-left:auto}
+.s3-h16{height:var(--space-4)}.s3-h20{height:var(--space-5)}
+.s3-w8{width:calc(var(--space-12) + var(--space-6))}.s3-w14{width:calc(var(--space-12) * 2)}.s3-w24{width:calc(var(--space-12) * 4)}
+.s3-w20{width:20%}.s3-w30{width:30%}.s3-w40{width:40%}.s3-w50{width:50%}.s3-w60{width:60%}.s3-w100{width:100%}</style>
+</helmet>
+<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
+<div class="ip-wordmark">Impex Line</div>
+<div class="ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-series__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl"><span class="name">Seria 2025</span><span class="ip-lamp ip-lamp--off">închisă</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+<ul class="ip-menu ip-series__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2026" aria-selected="false"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2026</b><span class="ip-lamp ip-lamp--ok">deschisă</span></span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2025" aria-selected="true"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2025</b><span class="ip-lamp ip-lamp--off">închisă</span></span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
+<a class="ip-nav" href="#acasa"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>Acasă</a><a class="ip-nav" href="#inregistreaza"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Înregistrează</a><a class="ip-nav is-current" href="#serie" aria-current="page"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>Serie</a><a class="ip-nav" href="#rapoarte"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Rapoarte</a><a class="ip-nav" href="#setari"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 18h4"/><path d="M12 18h8"/><circle cx="10" cy="18" r="2"/></svg>Setări</a>
+<span class="s4-grow"></span>
+<div class="ip-note s4-account"><b>Proprietar</b><a class="ip-link" href="#iesi">Ieși</a></div>
+</nav><main class="s4-main">
+<header class="ip-pagehead">
+<div>
+<nav class="ip-crumbs" aria-label="Cale"><span aria-current="page">Seria 2025</span></nav>
+<h1>Seria 2025</h1>
+<div class="ip-row s4-meta"><span class="ip-lamp ip-lamp--off">închisă</span><span class="ip-note">început dedus <span class="ip-num">07.03.2025</span> la Hîrbovăț · încheiată prin golire <span class="ip-num">28.01.2026</span> · <span class="ip-num">47 săpt.</span></span><span class="ip-note">efectiv – fără date în registru · doar citire</span></div>
+</div>
+<div class="ip-row"><button type="button" class="ip-btn ip-btn--secondary"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Exportă .xlsx</button></div>
+</header>
+<section class="s3-block" aria-labelledby="h-track">
+<div class="s3-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2><span class="ip-note ip-num">02.2025 – 02.2026 · 2 ferme · 1 ciclu</span></div>
+<div class="s4-tight"><svg class="ip-track s3-track" viewBox="0 0 1160 104" role="group" aria-label="Ciclurile seriei 2025 pe ferme"><desc>Seria 2025, închisă. Telița: fără date pentru Seria 2025. Hîrbovăț: ouat, început dedus 07.03.2025, încheiat prin golire 28.01.2026, 47 săpt. Azi, 16.11.2026, e după sfârșitul seriei.</desc><text class="lanelbl" x="0" y="23">TELIȚA</text><rect class="lane" x="88" y="6" width="1072" height="26"/><text class="lanelbl" x="0" y="71">HÎRBOVĂȚ</text><rect class="lane" x="88" y="54" width="1072" height="26"/><text class="cyctxt" x="100" y="23">– fără date pentru Seria 2025 la Telița</text><a href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2025" aria-label="Hîrbovăț, Seria 2025, ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, 47 săptămâni, închis. Deschide ferma la acest ciclu."><title>Hîrbovăț, Seria 2025, ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, 47 săptămâni, închis. Deschide ferma la acest ciclu.</title><rect class="ring" x="176.7" y="53" width="900.0" height="28" rx="3"/><rect class="cyc" x="180.7" y="57" width="892.0" height="20" rx="2"/><text class="cyctxt" x="188.7" y="71">Seria 2025 · ouat · 47 săpt.</text><line class="ded" x1="177.7" x2="177.7" y1="54" y2="80"/></a><line class="tick" x1="88.0" x2="88.0" y1="80" y2="86"/><text class="month" x="88.0" y="100" text-anchor="start">02.25</text><line class="tick" x1="164.4" x2="164.4" y1="80" y2="86"/><text class="month" x="164.4" y="100" text-anchor="middle">03.25</text><line class="tick" x1="248.9" x2="248.9" y1="80" y2="86"/><text class="month" x="248.9" y="100" text-anchor="middle">04.25</text><line class="tick" x1="330.8" x2="330.8" y1="80" y2="86"/><text class="month" x="330.8" y="100" text-anchor="middle">05.25</text><line class="tick" x1="415.3" x2="415.3" y1="80" y2="86"/><text class="month" x="415.3" y="100" text-anchor="middle">06.25</text><line class="tick" x1="497.2" x2="497.2" y1="80" y2="86"/><text class="month" x="497.2" y="100" text-anchor="middle">07.25</text><line class="tick" x1="581.7" x2="581.7" y1="80" y2="86"/><text class="month" x="581.7" y="100" text-anchor="middle">08.25</text><line class="tick" x1="666.3" x2="666.3" y1="80" y2="86"/><text class="month" x="666.3" y="100" text-anchor="middle">09.25</text><line class="tick" x1="748.1" x2="748.1" y1="80" y2="86"/><text class="month" x="748.1" y="100" text-anchor="middle">10.25</text><line class="tick" x1="832.7" x2="832.7" y1="80" y2="86"/><text class="month" x="832.7" y="100" text-anchor="middle">11.25</text><line class="tick" x1="914.5" x2="914.5" y1="80" y2="86"/><text class="month" x="914.5" y="100" text-anchor="middle">12.25</text><line class="tick" x1="999.1" x2="999.1" y1="80" y2="86"/><text class="month" x="999.1" y="100" text-anchor="middle">01.26</text><line class="tick" x1="1083.6" x2="1083.6" y1="80" y2="86"/><text class="month" x="1083.6" y="100" text-anchor="middle">02.26</text></svg><div class="ip-tracklegend" aria-hidden="true"><span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span></div></div>
+</section><section class="s3-block" aria-labelledby="h-farms">
+<div class="s3-head"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note ip-num">2 ferme · Seria 2025</span></div>
+<div class="ip-fsums"><article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-telita" aria-describedby="fs-telita-c"><div class="ip-fsum__head"><div class="ip-fsum__id"><h3 class="ip-fsum__name" id="fs-telita"><a href="#/ferme/telita">Telița</a></h3><span class="ip-tag ip-tag--neutral">Creștere</span><span class="ip-tag ip-tag--neutral">Ross 308 creștere</span></div><span class="ip-lamp ip-lamp--off">fără date</span></div>
+<div class="ip-fsum__empty" id="fs-telita-c"><p class="s3-m0">Registrul nu are date pentru Seria 2025 la Telița.</p><a class="ip-link" href="#/serii/seria-2026">Vezi Seria 2026</a></div></article><article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-hirbovat" aria-describedby="fs-hirbovat-c"><div class="ip-fsum__head"><div class="ip-fsum__id"><h3 class="ip-fsum__name" id="fs-hirbovat"><a href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2025">Hîrbovăț</a></h3><span class="ip-tag ip-tag--neutral">Ouat</span><span class="ip-tag ip-tag--neutral">Ross 308 ouat</span></div><span class="ip-lamp ip-lamp--off">închis</span></div>
+<p class="ip-fsum__cycle" id="fs-hirbovat-c">07.03.2025 – 28.01.2026 · 47 săpt. · început dedus</p>
+<div class="ip-fsum__alive"><span class="ip-cap">Populat · început dedus 07.03.2025</span><div><span class="ip-pair ip-pair--lg"><b>–</b></span><span class="ip-note">fără efectiv în registru</span></div></div>
+<dl class="ip-fsum__figs"><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--eggs s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/></svg></span>Ouă în ciclu</dt><dd class="ip-fsum__val">4 606 935</dd><dd class="ip-fsum__sub"><span class="ip-num">04.04.2025 – 28.01.2026 · 300 zile ·</span><span>ghid: – fără date în ghid</span></dd></div><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--eggs s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/></svg></span>Incubabile</dt><dd class="ip-fsum__val">94,9<small class="ip-fsum__pct">%</small></dd><dd class="ip-fsum__sub"><span class="ip-num">4 371 341 din 4 606 935 ouă ·</span><span>ghid: – fără date în ghid</span></dd></div><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--mortality s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span>Mortalitate cumulată</dt><dd class="ip-fsum__val"><span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>6 948</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>1 505</b></span></span></dd><dd class="ip-fsum__sub"><span>% – fără efectiv în registru ·</span><span>fără golirea din <span class="ip-num">15.01.2026</span></span></dd></div><div class="ip-fsum__fig"><dt><span class="ip-rec ip-rec--eggs s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/></svg></span>Masă medie ou · SAPT 47</dt><dd class="ip-fsum__val">69,9<small>g</small></dd><dd class="ip-fsum__sub">ghid: – fără date în ghid</dd></div></dl></article></div>
+</section>
+<section class="s3-block" aria-label="Date pe ferme">
+<div class="ip-tabs" role="tablist" aria-label="Vederi Seria 2025"><a class="ip-tab is-selected" role="tab" id="tab-pasari" aria-controls="tp-serie" aria-selected="true" tabindex="0" href="#pasari">Păsări</a><a class="ip-tab" role="tab" id="tab-hrana" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#hrana">Hrană</a><a class="ip-tab" role="tab" id="tab-greutate" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#greutate">Greutate</a><a class="ip-tab" role="tab" id="tab-productie" aria-controls="tp-serie" aria-selected="false" tabindex="-1" href="#productie">Producție</a></div>
+<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">
+<table class="ip-table s3-table"><caption class="ip-sr">Păsări în Seria 2025, pe ferme; mortalitate % din păsările de la începutul ciclului fermei</caption><thead><tr><th scope="col">Fermă · sex</th><th scope="col" class="num">Început</th><th scope="col" class="num"><span class="ip-rec ip-rec--mortality s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v4l2 2v3h10v-3l2-2v-4a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="11" r="1.2"/><circle cx="14.5" cy="11" r="1.2"/><path d="M11 19v-2M13 19v-2"/></svg></span>Mortalitate</th><th scope="col" class="num">Mort. %</th><th scope="col" class="num"><span class="ip-rec ip-rec--cull s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span>Sacrificare</th><th scope="col" class="num"><span class="s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4" stroke="var(--rec-hen)"/><circle cx="16" cy="12" r="4" stroke="var(--rec-rooster)"/></svg></span>Eroare sexare</th><th scope="col" class="num"><span class="ip-rec ip-rec--transfer s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span>Transfer</th><th scope="col" class="num"><span class="ip-rec ip-rec--sale s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>Vânzare</th><th scope="col" class="num"><span class="ip-rec ip-rec--adjust s4-ico"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg></span>Corecție</th><th scope="col" class="num">În viață · 16.11</th></tr></thead><tbody><tr class="is-group"><th scope="rowgroup" colspan="10" class="s3-group"><span class="s3-gname">Telița</span><span class="ip-note">– fără date pentru Seria 2025 la Telița</span></th></tr></tbody><tbody><tr class="is-group"><th scope="rowgroup" colspan="10" class="s3-group"><a class="s3-glink" href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2025">Hîrbovăț</a><span class="ip-note">ouat · început dedus <span class="ip-num">07.03.2025</span> · golit <span class="ip-num">28.01.2026</span></span></th></tr><tr><th scope="row" class="s3-rowh"><span class="ip-sex ip-sex--hen">♀</span> găini</th><td class="num s3-dash">–</td><td class="num"><span class="ip-sex ip-sex--hen"><b>−6 948</b></span></td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num"><span class="ip-sex ip-sex--hen"><b>0</b></span></td></tr><tr><th scope="row" class="s3-rowh"><span class="ip-sex ip-sex--rooster">♂</span> cocoși</th><td class="num s3-dash">–</td><td class="num"><span class="ip-sex ip-sex--rooster"><b>−1 505</b></span></td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num s3-dash">–</td><td class="num"><span class="ip-sex ip-sex--rooster"><b>0</b></span></td></tr></tbody></table>
+<div class="s3-notes"><p class="ip-note s3-m0">– la Hîrbovăț: registrul ciclului anterior are doar ouă și mortalitate pe zi, fără efectiv, sacrificări, erori de sexare, transferuri sau vânzări.</p><p class="ip-note s3-m0">Mortalitatea nu include golirea halelor din <span class="ip-num">15.01.2026</span>; golirea încheie ciclul, nu e vânzare.</p></div>
+</div>
+</section>
+</main></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

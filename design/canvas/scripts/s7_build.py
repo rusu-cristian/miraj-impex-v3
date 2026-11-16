@@ -1,8 +1,9 @@
 """Build the S7 · Hrană zilnică phone artboard (default state) from the extracts.
 Hîrbovăț, 16.11.2026, SAPT 40, Dr. Ceban mid-entry: 10 of 12 rows confirmed (allocations_today), H3.2 ♂ and H4.2 ♀
 still yesterday's suggestion, H1.2 ♂ 172 g (+11% vs guide 155 g). Composed from system classes only (FormHeader,
-DateField, Button, AllocationRow, Select, TextField, Lamp, SexCount, HallCard hall head, FeedTotals + compact SaveBar);
-screen-only CSS (s7-*) is layout with tokens. One tall phone board (canvas.md: taller h for a long scrolling form).
+DateField, Button, AllocationRow (ip-alloc--phone, S7P), Select, TextField, Lamp, SexCount, HallCard hall head, FeedTotals
++ compact SaveBar); screen-only CSS (s7-*) is page layout with tokens. One tall phone board (canvas.md: taller h for a long
+scrolling form). savebar() is the one SaveBar shell shared with the state boards (s7s_build.py).
 python3 -I s7_build.py <repo_root> [height]
 Writes design/canvas/project/S7-hrana-zilnica.dc.html and /tmp/s7/S7-hrana-zilnica.html (plain wrapper for renders)."""
 import sys, json, pathlib, datetime as dt
@@ -86,23 +87,23 @@ def row(r):
     if confirmed: assert abs(kg - r['kg']) < 0.051, (sec, sx, kg, r['kg'])
     dev = (g - guide) / guide * 100
     opts = ''.join(f'<option{" selected" if t == r["feed_type_id"] else ""}>{FTN[t]}</option>' for t in HB_TYPES if FTS[t] == sx)
-    sel = f'<label class="ip-field"><span class="ip-label">Tip hrană<span class="ip-sr">, {sec} {word}</span></span><span class="ip-input ip-input--touch s7-sel"><select>{opts}</select>{icon("chev", 16)}</span></label>'
+    sel = f'<label class="ip-field"><span class="ip-label">Tip hrană<span class="ip-sr">, {sec} {word}</span></span><span class="ip-input ip-input--touch"><select>{opts}</select>{icon("chev", 16)}</span></label>'
     msg = ''
     if not confirmed:
         inp = f'<span class="ip-input ip-input--touch ip-num is-suggested"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}" aria-describedby="s-{gid}"/><span class="suffix">ieri</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg is-sugg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small><small id="s-{gid}">de confirmat</small></div>'
+        right = f'<div class="ip-alloc__kg is-suggested">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small><small id="s-{gid}">de confirmat</small></div>'
     elif abs(dev) > 10:  # D19 feed ±10%: warning, saveable
         inp = f'<span class="ip-input ip-input--touch ip-num is-warn"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}" aria-describedby="w-{gid}"/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g · <span class="ip-num">{"+" if dev > 0 else MINUS}{abs(dev):.0f}%</span></small>{lamp("warn", "abatere")}</div>'
-        msg = f'<p class="ip-warnline s7-msg s7-m0" id="w-{gid}">{icon("warn", 14)}<span>{sec} <span class="ip-sex ip-sex--{c}">{"♀" if sx == "F" else "♂"}</span>: <span class="ip-num">{g}{NB}g</span>, cu <span class="ip-num">{abs(dev):.0f}%</span> {"peste" if dev > 0 else "sub"} ghidul de <span class="ip-num">{guide}{NB}g</span>. Verifică gramajul; se poate salva.</span></p>'
+        right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g · <span class="ip-num">{"+" if dev > 0 else MINUS}{abs(dev):.0f}%</span></small>{lamp("warn", "abatere")}</div>'
+        msg = f'<p class="ip-warnline ip-alloc__msg" id="w-{gid}">{icon("warn", 14)}<span>{sec} <span class="ip-sex ip-sex--{c}">{"♀" if sx == "F" else "♂"}</span>: <span class="ip-num">{g}{NB}g</span>, cu <span class="ip-num">{abs(dev):.0f}%</span> {"peste" if dev > 0 else "sub"} ghidul de <span class="ip-num">{guide}{NB}g</span>. Verifică gramajul; se poate salva.</span></p>'
     else:
         inp = f'<span class="ip-input ip-input--touch ip-num"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}"/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small>{lamp("ok", "în normă")}</div>'
+        right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small>{lamp("ok", "în normă")}</div>'
     ginp = f'<label class="ip-field" for="g-{gid}"><span class="ip-label">g/pasăre<span class="ip-sr">, {sec} {word}</span></span>{inp}</label>'
-    return f'''<div class="ip-alloc s7-alloc" role="group" aria-label="{sec}, {word}, {n(alive)} în viață">
+    return f'''<div class="ip-alloc ip-alloc--phone" role="group" aria-label="{sec}, {word}, {n(alive)} în viață">
 <div class="ip-alloc__who"><span class="ip-sex ip-sex--{c} ip-t-heading" aria-hidden="true">{"♀" if sx == "F" else "♂"}</span><div><div class="ip-t-body-strong">{sec}</div><div class="ip-note"><span class="ip-num">{n(alive)}</span> {word}</div></div></div>
 {right}
-<div class="s7-ctl">{sel}{ginp}</div>
+<div class="ip-alloc__ctl">{sel}{ginp}</div>
 {msg}
 </div>''', confirmed, kg, r['feed_type_id'], sx, sec
 
@@ -110,7 +111,7 @@ built = [row(r) for r in ROWS]
 halls = {}
 for r, b in zip(ROWS, built):
     halls.setdefault(r['section'].split('.')[0], []).append((r, b[0]))
-HALLS = '<div class="ip-halls s7-halls">' + ''.join(
+HALLS = '<div class="ip-halls">' + ''.join(
     f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(dict.fromkeys(r["section"] for r, _ in rs))}</span></span>{pair(n(sum(r["alive"] for r, _ in rs if r["sex"] == "F")), n(sum(r["alive"] for r, _ in rs if r["sex"] == "M")), sr="în viață ")}</header>
 <div class="ip-hall__sections">{"".join(b for _, b in rs)}</div></section>''' for h, rs in halls.items()) + '</div>'
 
@@ -138,10 +139,21 @@ FTOT = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__
 <p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
 
 # ---------- save bar (compact FeedTotals summary; lamp word "abatere" per D42/D50, detail names type + days) ----------
+# One SaveBar shell for the default and the state boards (s7s_build.py imports savebar/sum_rows). Two lines at 390 (S7P):
+# line 1 = wheat · "n din m rânduri ·" · kg; line 2 = one status (Lamp + word + detail) or the saved meta. Each segment
+# is one no-wrap flex item (additions.css §20), so a narrower bar wraps between segments, never inside a figure.
+# "2 de confirmat" is not repeated on line 2: it is 12 − 10 from line 1, and each such row says "de confirmat" (S7P).
+FEED14 = f'<span class="ip-rec ip-rec--feed">{icon("feed", 14)}</span>'
+def sum_rows(nconf, nrows, kg, lead=''):
+    kgs = f'<span><span class="ip-num">{n(kg, 1)}</span> kg</span>' if kg is not None else '<span>– kg</span>'
+    rows = f'<span><span class="ip-num">{nconf} din {nrows}</span> rânduri ·</span>' if lead == '' else f'<span>{lead} · <span class="ip-num">{nrows}</span> rânduri ·</span>'
+    return f'{FEED14}{rows}{kgs}'
+def savebar(line1, line2, key):
+    return f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line">{line1}</span><span class="ip-ftot-sum__line">{line2}</span></span>{key}</div>'''
 nconf = sum(1 for b in built if b[1]); total = round(sum(b[2] for b in built if b[1]), 1)
 worst = min(FTR, key=lambda f: f['days'])
-slamp = (lamp('warn', 'abatere') + f'<span>{FTN[worst["t"]]} <span class="ip-num">{n(worst["days"], 1)}</span> zile</span>') if not worst['ok'] else lamp('ok', 'stoc în normă')
-SAVE = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum"><span class="ip-ftot-sum__line"><span class="ip-rec ip-rec--feed">{icon("feed", 14)}</span><span class="ip-num">{nconf} din {len(built)}</span> rânduri · <span class="ip-num">{n(total, 1)}</span> kg</span><span class="ip-ftot-sum__line">{len(built) - nconf} de confirmat ·{slamp}</span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button></div>'''
+slamp = (lamp('warn', 'abatere') + f'<span>{FTN[worst["t"]]} <span class="ip-num">{n(worst["days"], 1)}</span> zile</span>') if not worst['ok'] else lamp('ok', 'în normă') + '<span>stoc</span>'
+SAVE = savebar(sum_rows(nconf, len(built), total), slamp, '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>')
 assert (nconf, n(total, 1)) == (10, f'3{NB}691,3')
 
 BODY = f'''<div class="s7-screen">
@@ -156,7 +168,8 @@ BODY = f'''<div class="s7-screen">
 </div>'''
 
 CSS = '''body{margin:0}
-html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-8) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar real height (81 px measured at 390: 3 summary lines 3x16 + 2x4 + 2x12 padding + 1 top line = 48 + 32 + 1) + the field border and focus ring, so a focused field scrolls clear of the sticky SaveBar */
+html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar 73 px at 390 (48 key + 2x12 padding + 1 top line; the 2-line summary, 36 px, sits inside the key height) + the field border and focus ring (1 + 2 + 2), so a focused field scrolls clear of the sticky SaveBar: 78 px */
+@media (max-width: 389.98px){html{scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}} /* under 390 a summary line can wrap between segments: up to 4 lines at 360 (measured, refusal state: 4x16 + 3x4 + 2x12 + 1 = 101 px) + 5 = 106 px */
 .s7-m0{margin:0}
 .s7-screen{width:390px;min-height:inherit;display:flex;flex-direction:column;background:var(--ground)}
 .s7-title{display:flex;flex-direction:column;min-width:0}
@@ -166,18 +179,6 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-8) + var(--
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
 .s7-copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}
-.s7-halls{gap:var(--space-6)}
-.s7-alloc{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who kg" "ctl ctl" "msg msg";align-items:start;row-gap:var(--space-3)}
-.s7-alloc > .ip-alloc__who{grid-area:who}
-.s7-alloc > .ip-alloc__who .ip-sex{width:var(--space-4);justify-content:center}
-.s7-kg{grid-area:kg;display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-1)}
-.s7-kg small{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
-.s7-kg.is-sugg{color:var(--ink-muted)}
-.s7-ctl{grid-area:ctl;display:grid;grid-template-columns:minmax(0,1fr) calc(var(--space-12) * 2.5);gap:var(--space-2)}
-.s7-sel > select{cursor:pointer}
-.s7-sel > .ip-icon{color:var(--ink-secondary);flex:none;pointer-events:none}
-.s7-msg{grid-area:msg}
-.s7-msg .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7-savebar{position:sticky;bottom:0;z-index:2}'''
 
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'

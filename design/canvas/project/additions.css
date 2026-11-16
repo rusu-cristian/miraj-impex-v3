@@ -775,3 +775,32 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
   /* Visible labels move to the column head; the per-field label and the "în viață" word stay for screen readers. */
   .ip-sexrows--wide .ip-sexrow__lbl,.ip-sexrows--wide .ip-sexrow__k{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 }
+
+/* =====================================================================================================
+ * S7P · AllocationRow phone layout + compact FeedTotals segments, for S7 (Hrană zilnică). Spec: components.md ›
+ * Additions › S7P. Moved out of the S7 screen CSS (s7-*), D57.
+ * ===================================================================================================== */
+
+/* ---------- 19. AllocationRow · phone layout ---------- */
+/* .ip-alloc.ip-alloc--phone stacks the row for a 358px card (390 − 2 × 16 page edge): line 1 = who (♀/♂ sign, section
+ * code, birds alive) left and the live kg column right (kg 16/20, "ghid 158 g [· +11%]", then the Lamp + word or the
+ * "de confirmat" / "de completat" line); line 2 = .ip-alloc__ctl, the Tip hrană Select (1fr) and the g/pasăre field
+ * (120px) at 48px with labels above, so labels, fields and figures line up down the list; then an optional full-row
+ * message (.ip-alloc__msg: bundle.css ip-warnline / ip-err). Line 1 shares one baseline (section code = kg figure).
+ * The message is placed by grid-column, not a named area, so a row without one has no empty track or extra gap.
+ * .ip-alloc__kg.is-suggested = yesterday's unconfirmed suggestion (kg in ink-muted, not counted). Tokens only. */
+.ip-alloc--phone{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who kg" "ctl ctl";align-items:baseline;row-gap:var(--space-3)}
+.ip-alloc--phone > .ip-alloc__who{grid-area:who;align-items:baseline;min-width:0}
+.ip-alloc--phone > .ip-alloc__who > .ip-sex{flex:none;width:var(--space-4);justify-content:center;font-size:var(--ip-fs-heading);line-height:var(--ip-lh-alloc)}
+.ip-alloc--phone > .ip-alloc__kg{grid-area:kg;display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-1)}
+.ip-alloc--phone > .ip-alloc__kg small{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.ip-alloc__kg.is-suggested{color:var(--ink-muted)}
+.ip-alloc__ctl{grid-area:ctl;display:grid;grid-template-columns:minmax(0,1fr) calc(var(--space-12) * 2.5);gap:var(--space-2);min-width:0}
+.ip-alloc__ctl select{cursor:pointer}
+.ip-alloc__msg{grid-column:1 / -1;margin:0;align-items:flex-start}
+.ip-alloc__msg .ip-icon{flex:none;margin-top:var(--ip-hair)}
+
+/* ---------- 20. FeedTotals compact · segments ---------- */
+/* In the SaveBar summary each segment ("10 din 12 rânduri ·", "3 691,3 kg", Lamp, detail) is one flex item that never
+ * breaks inside, so a narrow bar wraps between segments, never between a figure and its unit. */
+.ip-ftot-sum__line > *{white-space:nowrap}

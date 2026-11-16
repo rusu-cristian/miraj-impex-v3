@@ -1,6 +1,6 @@
 """Build the S7 · Hrană zilnică state artboards (S7S) from the extracts, reusing s7_build.py.
 python3 -I s7s_build.py <repo_root>
-Imports s7_build (it rewrites the S7 default board with its own height 3286, byte-identical) and reuses its helpers,
+Imports s7_build (it rewrites the S7 default board at its height 3162, S7P) and reuses its helpers,
 header, date field, CSS and data. Every state board is one 390×844 phone viewport: FormHeader pinned at the top,
 SaveBar at the foot, the form scrolled to the part the state concerns (scroll offsets measured at 390; all line heights
 are fixed px tokens, so they do not depend on the font). Writes design/canvas/project/S7-hrana-zilnica--<state>.dc.html
@@ -8,7 +8,7 @@ and /tmp/s7s/<stem>.html (plain wrappers for renders)."""
 import sys, pathlib, importlib, datetime as dt
 
 ROOT = pathlib.Path(sys.argv[1])
-sys.argv = ['s7_build.py', str(ROOT), '3286']
+sys.argv = ['s7_build.py', str(ROOT), '3162']
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 B = importlib.import_module('s7_build')
 n, dd, icon, sexv, pair, lamp = B.n, B.dd, B.icon, B.sexv, B.pair, B.lamp
@@ -34,7 +34,7 @@ def row(r, mode, g=None, uid=''):
     if mode == 'ro':
         sel = f'<label class="ip-field" for="t-{gid}"><span class="ip-label">Tip hrană{sr}</span><span class="ip-input ip-input--touch is-readonly"><input id="t-{gid}" type="text" value="{FTN[r["feed_type_id"]]}" readonly/></span></label>'
     else:
-        sel = f'<label class="ip-field"><span class="ip-label">Tip hrană{sr}</span><span class="ip-input ip-input--touch s7-sel"><select>{opts}</select>{icon("chev", 16)}</span></label>'
+        sel = f'<label class="ip-field"><span class="ip-label">Tip hrană{sr}</span><span class="ip-input ip-input--touch"><select>{opts}</select>{icon("chev", 16)}</span></label>'
     kg = round(g * alive / 1000, 1) if mode in ('ok', 'warn', 'sugg', 'ro') else None
     dev = (g - guide) / guide * 100 if kg is not None else 0
     if mode in ('ok', 'ro', 'warn'): mode_eff = 'warn' if abs(dev) > 10 and mode != 'ro' else mode
@@ -44,29 +44,29 @@ def row(r, mode, g=None, uid=''):
     msg = ''
     if mode_eff == 'sugg':
         inp = f'<span class="ip-input ip-input--touch ip-num is-suggested"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}" aria-describedby="s-{gid}"/><span class="suffix">ieri</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg is-sugg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small><small id="s-{gid}">de confirmat</small></div>'
+        right = f'<div class="ip-alloc__kg is-suggested">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small><small id="s-{gid}">de confirmat</small></div>'
     elif mode_eff == 'empty':
         inp = f'<span class="ip-input ip-input--touch ip-num"><input id="g-{gid}" type="text" inputmode="decimal" value="" placeholder="{guide}" aria-describedby="s-{gid}"/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg is-sugg">–<small>ghid {guide}{NB}g</small><small id="s-{gid}">de completat</small></div>'
+        right = f'<div class="ip-alloc__kg is-suggested">–<small>ghid {guide}{NB}g</small><small id="s-{gid}">de completat</small></div>'
     elif mode_eff == 'error':
         inp = f'<span class="ip-input ip-input--touch ip-num is-error"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}" aria-invalid="true" aria-describedby="e-{gid}"/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg">–<small>ghid {guide}{NB}g</small>{lamp("fault", "refuzat")}</div>'
-        msg = f'<p class="ip-err s7-msg s7-m0" id="e-{gid}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{c}">{sign}</span>: <span class="ip-num">{g}{NB}g</span> e peste limită. Scrie o valoare între <span class="ip-num">1</span> și <span class="ip-num">300</span>{NB}g.</span></p>'
+        right = f'<div class="ip-alloc__kg">–<small>ghid {guide}{NB}g</small>{lamp("fault", "refuzat")}</div>'
+        msg = f'<p class="ip-err ip-alloc__msg" id="e-{gid}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{c}">{sign}</span>: <span class="ip-num">{g}{NB}g</span> e peste limită. Scrie o valoare între <span class="ip-num">1</span> și <span class="ip-num">300</span>{NB}g.</span></p>'
     elif mode_eff == 'warn':
         inp = f'<span class="ip-input ip-input--touch ip-num is-warn"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}" aria-describedby="w-{gid}"/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g{devtxt}</small>{st}</div>'
-        msg = f'<p class="ip-warnline s7-msg s7-m0" id="w-{gid}">{icon("warn", 14)}<span>{sec} <span class="ip-sex ip-sex--{c}">{sign}</span>: <span class="ip-num">{g}{NB}g</span>, cu <span class="ip-num">{abs(dev):.0f}%</span> {"peste" if dev > 0 else "sub"} ghidul de <span class="ip-num">{guide}{NB}g</span>. Verifică gramajul; se poate salva.</span></p>'
+        right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g{devtxt}</small>{st}</div>'
+        msg = f'<p class="ip-warnline ip-alloc__msg" id="w-{gid}">{icon("warn", 14)}<span>{sec} <span class="ip-sex ip-sex--{c}">{sign}</span>: <span class="ip-num">{g}{NB}g</span>, cu <span class="ip-num">{abs(dev):.0f}%</span> {"peste" if dev > 0 else "sub"} ghidul de <span class="ip-num">{guide}{NB}g</span>. Verifică gramajul; se poate salva.</span></p>'
     elif mode_eff == 'ro':
         inp = f'<span class="ip-input ip-input--touch ip-num is-readonly"><input id="g-{gid}" type="text" value="{g}" readonly/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g{devtxt}</small>{st}</div>'
+        right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g{devtxt}</small>{st}</div>'
     else:
         inp = f'<span class="ip-input ip-input--touch ip-num"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}"/><span class="suffix">g</span></span>'
-        right = f'<div class="ip-alloc__kg s7-kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small>{st}</div>'
+        right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small>{st}</div>'
     ginp = f'<label class="ip-field" for="g-{gid}"><span class="ip-label">g/pasăre{sr}</span>{inp}</label>'
-    html = f'''<div class="ip-alloc s7-alloc" role="group" aria-label="{sec}, {word}, {n(alive)} în viață" id="r-{gid}">
+    html = f'''<div class="ip-alloc ip-alloc--phone" role="group" aria-label="{sec}, {word}, {n(alive)} în viață" id="r-{gid}">
 <div class="ip-alloc__who"><span class="ip-sex ip-sex--{c} ip-t-heading" aria-hidden="true">{sign}</span><div><div class="ip-t-body-strong">{sec}</div><div class="ip-note"><span class="ip-num">{n(alive)}</span> {word}</div></div></div>
 {right}
-<div class="s7-ctl">{sel}{ginp}</div>
+<div class="ip-alloc__ctl">{sel}{ginp}</div>
 {msg}
 </div>'''
     confirmed = mode_eff in ('ok', 'warn', 'ro')
@@ -75,7 +75,7 @@ def row(r, mode, g=None, uid=''):
 def halls(built):
     hs = {}
     for r, b in zip(ROWS, built): hs.setdefault(r['section'].split('.')[0], []).append((r, b['html']))
-    return '<div class="ip-halls s7-halls">' + ''.join(
+    return '<div class="ip-halls">' + ''.join(
         f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(dict.fromkeys(r["section"] for r, _ in rs))}</span></span>{pair(n(sum(r["alive"] for r, _ in rs if r["sex"] == "F")), n(sum(r["alive"] for r, _ in rs if r["sex"] == "M")), sr="în viață ")}</header>
 <div class="ip-hall__sections">{"".join(b for _, b in rs)}</div></section>''' for h, rs in hs.items()) + '</div>'
 
@@ -115,10 +115,9 @@ def stocklamp(fts):
     if not w['ok']: return lamp('warn', 'abatere') + f'<span>{FTN[w["t"]]} <span class="ip-num">{n(w["days"], 1)}</span> zile</span>'
     return lamp('ok', 'în normă') + '<span>stoc</span>'
 
-def savebar(built, line2, key):
+def savebar(built, line2, key, lead=''):  # the one SaveBar shell (s7_build.savebar / sum_rows)
     nconf = sum(1 for b in built if b['conf']); tot = round(sum(b['kg'] for b in built if b['conf']), 1)
-    kg = f'<span class="ip-num">{n(tot, 1)}</span> kg' if nconf else '– kg'
-    return f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line"><span class="ip-rec ip-rec--feed">{icon("feed", 14)}</span><span class="ip-num">{nconf} din {len(built)}</span> rânduri · {kg}</span><span class="ip-ftot-sum__line">{line2}</span></span>{key}</div>''', nconf, tot
+    return B.savebar(B.sum_rows(nconf, len(built), tot if nconf else None, lead), line2, key), nconf, tot
 
 SAVE_KEY = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>'
 SAVE_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Salvează</button>'
@@ -155,7 +154,7 @@ boards = []
 # 1 · fără zi anterioară — no 15.11 grams: empty fields, guide as placeholder, Copiază ieri disabled with its reason
 b1 = [row(r, 'empty') for r in ROWS]
 ft1, f1 = ftot(b1)
-sv1, nc, _ = savebar(b1, f'<span class="ip-num">12</span> de completat ·{stocklamp(f1)}', SAVE_OFF)
+sv1, nc, _ = savebar(b1, stocklamp(f1), SAVE_OFF)
 assert nc == 0 and [n(f['days'], 1) for f in f1] == ['7,9', '4,8']
 reason = f'Nimic de copiat: pe <span class="ip-num">{dd(YDAY)}</span> nu sunt grame introduse. Scrie gramele pentru fiecare rând.'
 boards.append(('fara-zi-anterioara', 'fără zi anterioară', screen([B.DATE, copy(reason), halls(b1), ft1], sv1)))
@@ -164,16 +163,16 @@ boards.append(('fara-zi-anterioara', 'fără zi anterioară', screen([B.DATE, co
 m = default_modes(); b2 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 assert ROWS[idx('H1.2', 'M')]['today_g'] == 172
 ft2, f2 = ftot(b2)
-sv2, nc, tot = savebar(b2, f'<span class="ip-num">2</span> de confirmat ·{stocklamp(f2)}', SAVE_KEY)
+sv2, nc, tot = savebar(b2, stocklamp(f2), SAVE_KEY)
 assert (nc, n(tot, 1)) == (10, f'3{NB}691,3')
-SCROLL2 = 369  # measured at 390: H1.2 ♂ row (with its warn line) ends 16 px above the SaveBar; H1.2 ♀ and part of H1.1 ♂ above it
+SCROLL2 = 329  # measured at 390 (S7P): H1.2 ♂ row (with its warn line) ends 16 px above the SaveBar; H1.2 ♀ and part of H1.1 ♂ above it
 boards.append(('abatere', 'abatere', screen([B.DATE, B.COPY, halls(b2), ft2], sv2, scroll=SCROLL2)))
 
 # 3 · valoare în afara limitei — H1.1 ♀ 350 g: error (D57 copy), refuzat, Salvează disabled until fixed
 m = default_modes(); m[idx('H1.1', 'F')] = ('error', 350)
 b3 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft3, f3 = ftot(b3)
-sv3, nc, tot = savebar(b3, f'{lamp("fault", "refuzat")}<span>H1.1 <span class="ip-sex ip-sex--hen">♀</span> <span class="ip-num">350{NB}g</span> · scrie între <span class="ip-num">1</span> și <span class="ip-num">300</span>{NB}g</span>', SAVE_OFF)
+sv3, nc, tot = savebar(b3, f'{lamp("fault", "refuzat")}<span>H1.1 <span class="ip-sex ip-sex--hen">♀</span> <span class="ip-num">350{NB}g</span> ·</span><span>scrie <span class="ip-num">1–300</span>{NB}g</span>', SAVE_OFF)
 assert (nc, n(tot, 1)) == (9, f'3{NB}015,1')
 boards.append(('valoare-in-afara-limitei', 'valoare în afara limitei', screen([B.DATE, B.COPY, halls(b3), ft3], sv3)))
 
@@ -181,7 +180,7 @@ boards.append(('valoare-in-afara-limitei', 'valoare în afara limitei', screen([
 m = default_modes(); b4 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft4, f4 = ftot(b4, start_override={'ft-breeder2': 2093})
 assert n(round(f4[0]['after'])) == f'{MINUS}1{NB}240' and f4[0]['below0']
-sv4, _, _ = savebar(b4, f'<span class="ip-num">2</span> de confirmat ·{stocklamp(f4)}', SAVE_KEY)
+sv4, _, _ = savebar(b4, stocklamp(f4), SAVE_KEY)
 boards.append(('stoc-sub-0', 'stoc sub 0 · exemplu de stare (D39)', screen([B.DATE, B.COPY, halls(b4), ft4], sv4, view_cls='s7s-view--end')))
 
 # 5 · salvat — all 12 rows confirmed (H3.2 ♂ 157, H4.2 ♀ 156 from yesterday) and saved: read-only, Toast with Anulează, Editează
@@ -190,28 +189,32 @@ b5 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft5, f5 = ftot(b5)
 tot5 = round(sum(b['kg'] for b in b5), 1); br2 = round(f5[0]['after'])
 assert n(tot5, 1) == f'4{NB}398,9' and br2 == 27611 and n(f5[1]['days'], 1) == '3,8'
-sv5, _, _ = savebar(b5, 'salvat · Dr. Ceban · poți modifica până la <span class="ip-num">23:59</span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Editează</button>')
+sv5, _, _ = savebar(b5, '<span>Dr. Ceban ·</span><span>poți modifica până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Editează</button>', lead='salvat')
 toast = f'''<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Salvat · <span class="ip-num">12</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc Breeder 2: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE}</div>', halls(b5), ft5], sv5, overlay=toast)))
 
 # 6 · eroare la salvare — connectivity: fault Banner + Reîncearcă, typed values kept (draft in the browser)
 m = default_modes(); b6 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft6, f6 = ftot(b6)
-sv6, nc6, tot6 = savebar(b6, f'<span class="ip-num">2</span> de confirmat ·{stocklamp(f6)}', SAVE_KEY)
+sv6, nc6, tot6 = savebar(b6, stocklamp(f6), SAVE_KEY)
 assert (nc6, n(tot6, 1)) == (10, f'3{NB}691,3')
 ban = f'''<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Nu s-au salvat cele <span class="ip-num">{nc6}</span> rânduri din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{n(tot6, 1)}</span> kg). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>'''
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban, B.DATE, B.COPY, halls(b6), ft6], sv6)))
 
 # 7 · se încarcă — static Skeleton rows (no shimmer); header and date are known from the route
 def skel(w, h=None): return f'<div class="ip-skel" style="width:{w}{";height:" + h if h else ""}"></div>'
-skrow = f'''<div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol">{skel("40%", "var(--space-4)")}{skel("60%")}</div><div class="s7-kg s7s-skcol s7s-skcol--end">{skel("calc(var(--space-12) * 1.5)", "var(--space-4)")}{skel("var(--space-12)")}</div><div class="s7-ctl">{skel("100%", "var(--control-h-touch)")}{skel("100%", "var(--control-h-touch)")}</div></div>'''
-skhall = f'''<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("30%", "var(--space-4)")}</div><div class="ip-hall__sections">{skrow * 4}</div></section>'''
+# Skeleton geometry = the loaded geometry, so nothing shifts when rows arrive (S7P): row line 1 = code 20 + alive 16 |
+# kg 20 + guide 16 + lamp 16 (gaps 4); line 2 = label 16 + field 48; hall head = heading line 22; Copiază ieri = key 48 +
+# guide line 16; SaveBar summary = 2 lines of 16 (gap 4).
+SK16, SK20 = 'var(--ip-lh-small)', 'var(--ip-lh-alloc)'
+skrow = f'''<div class="ip-alloc ip-alloc--phone s7s-skrow" aria-hidden="true"><div class="ip-alloc__who s7s-skcol">{skel("40%", SK20)}{skel("60%", SK16)}</div><div class="ip-alloc__kg s7s-skcol s7s-skcol--end">{skel("calc(var(--space-12) * 1.5)", SK20)}{skel("var(--space-12)", SK16)}{skel("calc(var(--space-12) + var(--space-4))", SK16)}</div><div class="ip-alloc__ctl"><div class="s7s-skcol">{skel("40%", SK16)}{skel("100%", "var(--control-h-touch)")}</div><div class="s7s-skcol">{skel("60%", SK16)}{skel("100%", "var(--control-h-touch)")}</div></div></div>'''
+skhall = f'''<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("30%", "var(--ip-lh-heading)")}</div><div class="ip-hall__sections">{skrow * 4}</div></section>'''
 sk = f'''<p class="ip-sr" role="status">Se încarcă rândurile pentru <span class="ip-num">{dd(TODAY)}</span>…</p>
 <div class="s7s-skblock" aria-busy="true">
-<div class="s7-copy" aria-hidden="true">{skel("45%", "var(--control-h-touch)")}{skel("55%")}</div>
-<div class="ip-halls s7-halls">{skhall * 2}</div>
+<div class="s7-copy" aria-hidden="true">{skel("45%", "var(--control-h-touch)")}{skel("55%", SK16)}</div>
+<div class="ip-halls">{skhall * 2}</div>
 </div>'''
-sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol s7s-sksum" aria-hidden="true">{skel("70%", "var(--space-4)")}{skel("45%", "var(--space-4)")}{skel("55%", "var(--space-4)")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol" aria-hidden="true">{skel("70%", SK16)}{skel("45%", SK16)}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv7)))
 
 CSS = B.CSS + '''
@@ -226,10 +229,12 @@ CSS = B.CSS + '''
 .s7s-undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
-.s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
-.s7s-skcol{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);flex:1;min-width:0}
-.s7s-skcol--end{align-items:flex-end}'''
-CSS_EXTRA = {'se-incarca': '\n.s7s-skblock{display:flex;flex-direction:column;gap:var(--space-6)}\n.s7s-sksum{gap:var(--space-1)}'}  # 3 lines × 16 + 2 × 4 = the loaded summary (56 px)  # board-only rules keep the other boards byte-stable
+.s7s-banner__body > .ip-btn{margin-top:var(--space-1)}'''
+CSS_EXTRA = {'se-incarca': '''
+.s7s-skblock{display:flex;flex-direction:column;gap:var(--space-6)}
+.s7s-skrow{align-items:start}
+.s7s-skcol{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);flex:1;min-width:0}
+.s7s-skcol--end{align-items:flex-end}'''}  # skeleton rules only on the board that uses them
 
 STEM0, TITLE0 = 'S7-hrana-zilnica', 'S7 · Hrană zilnică'
 SYS = ROOT / 'design/system'
