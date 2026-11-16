@@ -544,3 +544,23 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-check{cursor:pointer}
 .ip-check > input.ip-sr:focus-visible + .ip-check__box{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
 .ip-check > input.ip-sr:checked + .ip-check__box{background:var(--control);border-color:var(--control)}
+
+/* =====================================================================================================
+ * S4P · polish of S4 (farm page). Spec: components.md › Additions › S4P. Moved out of the S4 screen CSS (D47, D55).
+ * ===================================================================================================== */
+
+/* ---------- 14. RecordChip · split (Eroare sexare) ---------- */
+/* Sexing error has no single record colour (D04: a split hen/rooster tile), so its chip is neutral steel led by the
+ * split RecordTile at 20px with the two rings: button.ip-chip.ip-rec.ip-chip--split > span.ip-tile.ip-tile--split + word.
+ * On: sunken + ink; off (.ip-chip--off): raised + ink-muted, the split tile kept (as other chips keep their icon).
+ * Hover/pressed/disabled come from section 1 (edge in --c = ink). */
+.ip-chip--split{--c:var(--ink);--b:var(--sunken);color:var(--ink);padding-left:var(--space-1)}
+.ip-chip--split.ip-chip--off{color:var(--ink-muted)}
+.ip-chip--split > .ip-tile{width:var(--space-5);height:var(--space-5);border-radius:var(--radius-xs)}
+
+/* ---------- 15. CycleTrack · inferred start mark + legend key ---------- */
+/* A cycle start with no recorded placement or transfer (start inferred, D54/D55) is not a record mark: a dashed
+ * ink-secondary line across the lane, 3px before the block (line.ded inside svg.ip-track, y 14–40). Legend key:
+ * svg.ded (viewBox 0 0 3 12, one line) + "început dedus" in .ip-tracklegend. ink-secondary is >=3:1 on the sunken lane. */
+.ip-track .ded,.ip-tracklegend .ded line{stroke:var(--ink-secondary);stroke-width:var(--ip-edge-strong);stroke-dasharray:var(--ip-mark-w) var(--ip-mark-w);fill:none}
+.ip-tracklegend svg.ded{width:var(--ip-mark-w);height:var(--space-3);flex:none;overflow:visible}

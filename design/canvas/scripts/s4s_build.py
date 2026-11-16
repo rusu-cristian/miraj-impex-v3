@@ -1,5 +1,6 @@
-"""Build the S4 state artboards (S4S) from the extracts. Copied from s4_build.py (the S4 default board) and
-extended: the shared shell/header/sections are functions with a no-guide flag; % is written without a space (D46).
+"""Build the S4 state artboards (S4S) from the extracts. The shared shell/header/sections are functions with a no-guide
+flag; % is written without a space (D46). Since S4P the default board (s4_build.py) is drawn by these same functions,
+so the shell is identical on all 9 boards; the inferred-start mark and the split chip are system classes (additions.css).
 python3 -I s4s_build.py <repo_root>
 Writes design/canvas/project/S4-ferma-rezumat--<state>.dc.html and /tmp/s4s/<state>.html (plain wrappers)."""
 import sys, json, pathlib, datetime as dt
@@ -201,7 +202,7 @@ def track(today_iso, sel='2026', dom=DOM_LIVE):
     w25 = round(x25b - x25a, 1)
     cur25 = ' aria-current="true"' if sel == '2025' else ''
     sel25 = f'<rect class="sel" x="{x25a}" y="37" width="{w25}" height="2"/>' if sel == '2025' else ''
-    b25 = f'<a href="#ciclu-seria-2025"{cur25} aria-label="{lab25}"><title>{lab25}</title><rect class="ring" x="{round(x25a-4,1)}" y="12" width="{round(w25+8,1)}" height="30" rx="3"/><rect class="cyc" x="{x25a}" y="16" width="{w25}" height="18" rx="2"/><text class="cyctxt" x="{round(x25a+7,1)}" y="29">Seria 2025 · ouat · {PREV_WEEKS} săpt.</text><line class="s4-ded" x1="{round(x25a-3,1)}" x2="{round(x25a-3,1)}" y1="14" y2="40"/>{sel25}</a>'
+    b25 = f'<a href="#ciclu-seria-2025"{cur25} aria-label="{lab25}"><title>{lab25}</title><rect class="ring" x="{round(x25a-4,1)}" y="12" width="{round(w25+8,1)}" height="30" rx="3"/><rect class="cyc" x="{x25a}" y="16" width="{w25}" height="18" rx="2"/><text class="cyctxt" x="{round(x25a+7,1)}" y="29">Seria 2025 · ouat · {PREV_WEEKS} săpt.</text><line class="ded" x1="{round(x25a-3,1)}" x2="{round(x25a-3,1)}" y1="14" y2="40"/>{sel25}</a>'
     tl = ddate(today_iso)[:5]
     if with26:
         x26a = tx(c26['start_date']); w26 = round(xt - x26a, 1)
@@ -217,7 +218,7 @@ def track(today_iso, sel='2026', dom=DOM_LIVE):
     return f'''<svg class="ip-track ip-track--farm" viewBox="0 0 {TW} 60" role="group" aria-label="Ciclurile fermei Hîrbovăț"><desc>{desc}</desc><rect class="lane" x="0" y="14" width="{TW}" height="26"/>{b25}{b26}<line class="today" x1="{xt}" x2="{xt}" y1="12" y2="42"/><text class="todaylbl" x="{xt}" y="9" text-anchor="middle">azi {tl}</text>{ro}{ticks}</svg>'''
 def legend(xfer=True):  # names only the marks drawn: Seria 2026 starts by transfer; Seria 2025's start is inferred (D54), no sale
     x = '<span><i class="ip-rec ip-rec--transfer"></i>transfer</span>' if xfer else ''
-    return f'<div class="ip-tracklegend" aria-hidden="true">{x}<span><svg class="s4-dedkey" viewBox="0 0 3 12"><line class="s4-ded" x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span><span><i class="today"></i>azi</span></div>'
+    return f'<div class="ip-tracklegend" aria-hidden="true">{x}<span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span><span><i class="today"></i>azi</span></div>'
 LEGEND = legend()
 def opt26(selected):
     return f'''<li class="ip-menu__item ip-series__opt{" is-active" if selected else ""}" role="option" id="cyc-2026" aria-selected="{"true" if selected else "false"}"><span class="chk">{icon('check', 16) if selected else ""}</span><span class="txt"><span class="top"><b>Seria 2026 · ouat</b>{lamp('ok', 'deschis')}</span><span class="ip-num">din 10.02.2026 · SAPT {WK}</span></span></li>'''
@@ -262,7 +263,7 @@ def seg(label, items, sel):
     return f'<span class="ip-seg" role="radiogroup" aria-label="{label}">{its}</span>'
 def chip(k, word, on=True):
     return f'<button type="button" class="ip-chip ip-rec ip-rec--{REC[k]}{"" if on else " ip-chip--off"}" role="checkbox" aria-checked="{"true" if on else "false"}">{icon(k, 16)}{word}</button>'
-chip_sexerr = f'<button type="button" class="ip-chip ip-rec s4-chipsplit" role="checkbox" aria-checked="true"><span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>'
+chip_sexerr = f'<button type="button" class="ip-chip ip-rec ip-chip--split" role="checkbox" aria-checked="true"><span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>'
 assert S['sexing_errors'] and all(e['date'] >= '2026-02-10' for e in S['sexing_errors'])
 CHIPS = f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("cull", "Sacrificare")}{chip_sexerr}{chip("transfer", "Transfer")}{chip("feed", "Hrană")}{chip("weighing", "Cântărire")}{chip("eggs", "Ouă")}</div>'
 EXPORT = f'<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end">{icon("download", 16)}Exportă .xlsx</button>'
@@ -284,7 +285,7 @@ tabs = '<div class="ip-tabs" role="tablist" aria-label="Vederi Hîrbovăț">' + 
     for i, (k, t) in enumerate(TABS)) + '</div>'
 
 # ---------- readout + guide chart ----------
-CW, CH = 548, 220
+CW, CH = 540, 216  # S4P: drawn 1:1 in the Readout's 540px content box (no scaling); Readout = the 3 Stat rows (364)
 X0, X1, YT, YB = 40, CW - 8, 10, CH - 22
 WMAX = 45
 def cx(w): return round(X0 + (w - 1) * (X1 - X0) / (WMAX - 1), 1)
@@ -404,7 +405,7 @@ def alerts(ng=False):
            f'16.11.2026 · SAPT {WK} · de la 12:00 · ieri {roo(alloc[("H3.2","M")]["yesterday_g"], " g")}', lamp('warn', 'lipsă'), ('Deschide secțiunea', '#sectiune-H3.2'))
     a_42 = alert('feed', f'H4.2 · hrană {F} azi – lipsă{g42}',
            f'16.11.2026 · SAPT {WK} · de la 12:00 · ieri {hen(alloc[("H4.2","F")]["yesterday_g"], " g")}', lamp('warn', 'lipsă'), ('Deschide secțiunea', '#sectiune-H4.2'))
-    a_st = alert('delivery', f'Cocoși · stoc <span class="ip-num">{n(s_co["stock_kg"])} kg</span> · <span class="ip-num">{n(s_co["days_left"],1)} zile</span> · limită 5 zile',
+    a_st = alert('delivery', f'Cocoși · stoc <span class="ip-num">{n(s_co["stock_kg"])} kg</span> · <span class="ip-num">{n(s_co["days_left"],1)} zile</span> · limită <span class="ip-num">5 zile</span>',
            f'16.11.2026 · se termină pe {ddate(s_co["run_out_date"])} · {s_co["avg_daily_kg_last3"]} kg/zi', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
     a_pr = alert('delivery', f'Hrană · {len(unpriced)} livrări fără preț · <span class="ip-num">{n(unpriced_kg)} kg</span>',
            f'{ddate(unpriced[0]["date"])[:5]}–{ddate(unpriced[-1]["date"])} · Ion Rusu · așteaptă prețul', lamp('info', 'informație'), ('Adaugă prețurile', '#preturi-hrana'))
@@ -543,7 +544,7 @@ def readout_past():
 <span class="ip-sr" id="egg-help">Săgețile stânga și dreapta mută săptămâna; Home și End: prima și ultima săptămână.</span>
 <div class="ip-chart__read" id="egg-read" role="status" aria-live="polite">SAPT {PFIN} · {n(fin["total_eggs"])} ouă · {fin["days"]} zile · ghid – fără date în ghid</div>
 <table class="ip-sr"><caption>Ouă pe săptămână la Hîrbovăț, Seria 2025; înregistrări din {ddate(c25["data_start_date"])} (SAPT {PWEEKS[0]})</caption><tr><th scope="col">SAPT</th><th scope="col">Ouă</th><th scope="col">Zile</th><th scope="col">Ghid</th></tr>{rows}</table>
-<div class="ip-readout__sub">— efectiv, ouă totale (Cat. 1–3 + incubabile) · axa: săptămâna ciclului · SAPT 1–4 fără date</div>
+<div class="ip-readout__sub">— ouă totale (Cat. 1–3 + incubabile) · axa: săpt. ciclului, 1–4 fără date</div>
 </div>'''
 
 def stats_past():
@@ -591,7 +592,7 @@ def panel_past():
 DLG = f'''<div class="ip-scrim s4s-scrim"><div class="ip-dialog s4s-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note">
 <h2 id="dlg-t">Începe ciclu nou la Hîrbovăț</h2>
 <p class="s4s-dlgnote" id="dlg-note">Ciclul curent (sapt. {WK}) se închide pe 16.11.2026. Săptămâna ghidului pornește de la 1.</p>
-<div class="ip-field"><label class="ip-label" for="nc-date">Data de început</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="nc-date" type="text" inputmode="numeric" value="16.11.2026" placeholder="zz.ll.aaaa" aria-describedby="nc-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data de început din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-note ip-num" id="nc-date-h">SAPT 1 · ciclu nou din 16.11.2026</span></div>
+<div class="ip-field"><label class="ip-label" for="nc-date">Data de început</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="nc-date" type="text" inputmode="numeric" value="16.11.2026" placeholder="zz.ll.aaaa" aria-describedby="nc-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data de început din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="nc-date-h">SAPT 1 · ciclu nou din 16.11.2026</span></div>
 <div class="ip-field"><label class="ip-label" for="nc-guide">Ghid</label><span class="ip-input"><select id="nc-guide" aria-describedby="nc-guide-h"><option selected="selected">Ross 308 ouat</option></select>{icon("chev", 16)}</span><span class="ip-hint" id="nc-guide-h">ghidul fermei · ouat</span></div>
 <div class="ip-field"><label class="ip-label" for="nc-why">Motiv</label><span class="ip-input ip-input--area"><textarea id="nc-why" rows="3" required="required" aria-required="true" aria-describedby="nc-why-h"></textarea></span><span class="ip-hint" id="nc-why-h">Obligatoriu. Apare în jurnalul de modificări.</span></div>
 <div class="ip-row s4s-dlgfoot"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary">{icon("cycle", 16)}Începe ciclu nou</button></div>
@@ -618,6 +619,7 @@ CSS = '''body{margin:0}
 .s4-lamps{display:flex;gap:var(--space-3)}
 .s4-meta{gap:var(--space-2) var(--space-3)}
 .s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-cycsel{cursor:pointer}
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
@@ -635,18 +637,15 @@ CSS = '''body{margin:0}
 .s4-kvpair .ip-sex b{font:inherit}
 .s4-unit{color:var(--ink-muted);font-family:var(--font-sans)}
 .s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
-.s4-nowrap{flex-wrap:nowrap;white-space:nowrap}
+.s4-nowrap{flex-wrap:wrap}
+.s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
+.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
-.s4-chipsplit{color:var(--ink);padding-left:var(--space-1)}
-.s4-chipsplit .ip-tile{width:var(--space-5);height:var(--space-5);border-radius:var(--radius-xs)}
-/* D54: an inferred cycle start (no recorded placement/transfer) is drawn as a dashed steel line across the lane, not a record mark */
-.s4-ded{stroke:var(--ink-secondary);stroke-width:var(--ip-edge-strong);stroke-dasharray:var(--ip-mark-w) var(--ip-mark-w)}
-.s4-dedkey{width:var(--ip-mark-w);height:var(--space-3);flex:none;overflow:visible}
-/* S4S: state boards */
 .s4s-rel{position:relative}
-.s4s-rel > .s4-shell{min-height:inherit}
-.s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.s4s-rel > .s4-shell{min-height:inherit}'''
+# state boards only
+CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
@@ -684,8 +683,9 @@ CSS = '''body{margin:0}
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'
 HEIGHTS = json.loads(pathlib.Path(__file__).with_name('s4s_heights.json').read_text()) if pathlib.Path(__file__).with_name('s4s_heights.json').exists() else {}
-def write(stem, title, body, overlay=''):
-    H = HEIGHTS.get(stem, 1874)
+def write(stem, title, body, overlay='', H=None, css=None):
+    H = H or HEIGHTS.get(stem, 1874)
+    css = css if css is not None else CSS + '\n' + CSS_STATES
     root = f'<div class="ip-root s4s-rel" style="padding:0; min-height:{H}px">{body}{overlay}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
@@ -701,7 +701,7 @@ def write(stem, title, body, overlay=''):
 <x-dc>
 <helmet>
 {FONTS}
-<style>{CSS}</style>
+<style>{css}</style>
 </helmet>
 {root}
 </x-dc>
@@ -715,7 +715,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
     out.write_text(dc, encoding='utf-8')
     wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{title}</title>
 <link rel="stylesheet" href="file://{SYS}/tokens.css"><link rel="stylesheet" href="file://{SYS}/components/bundle.css"><link rel="stylesheet" href="file://{SYS}/components/additions.css">
-{FONTS}<style>{CSS}</style></head><body>{root}</body></html>'''
+{FONTS}<style>{css}</style></head><body>{root}</body></html>'''
     pathlib.Path('/tmp/s4s').mkdir(exist_ok=True)
     pathlib.Path(f'/tmp/s4s/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, H, len(dc))

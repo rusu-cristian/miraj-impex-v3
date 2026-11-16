@@ -24,6 +24,7 @@
 .s4-lamps{display:flex;gap:var(--space-3)}
 .s4-meta{gap:var(--space-2) var(--space-3)}
 .s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-cycsel{cursor:pointer}
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
@@ -41,15 +42,11 @@
 .s4-kvpair .ip-sex b{font:inherit}
 .s4-unit{color:var(--ink-muted);font-family:var(--font-sans)}
 .s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
-.s4-nowrap{flex-wrap:nowrap;white-space:nowrap}
+.s4-nowrap{flex-wrap:wrap}
+.s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
+.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
-.s4-chipsplit{color:var(--ink);padding-left:var(--space-1)}
-.s4-chipsplit .ip-tile{width:var(--space-5);height:var(--space-5);border-radius:var(--radius-xs)}
-/* D54: an inferred cycle start (no recorded placement/transfer) is drawn as a dashed steel line across the lane, not a record mark */
-.s4-ded{stroke:var(--ink-secondary);stroke-width:var(--ip-edge-strong);stroke-dasharray:var(--ip-mark-w) var(--ip-mark-w)}
-.s4-dedkey{width:var(--ip-mark-w);height:var(--space-3);flex:none;overflow:visible}
-/* S4S: state boards */
 .s4s-rel{position:relative}
 .s4s-rel > .s4-shell{min-height:inherit}
 .s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
