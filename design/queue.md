@@ -41,7 +41,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | SYS07 | system | SexCountRow: section ♀·♂ count row with "Toate", add/remove (S10, S18) | SYS00 | components.md#countinput, #sexcount, #checkbox, #iconbutton; screens.md#s10, #s18; spec.md#c4, #b3 | done | d865d10 |
 | S10 | screen | S10 Vânzare + confirmation dialog (farm empties) | SYS07, S9P | screens.md#s10; spec.md#c4; components.md#effectpreview, #dialog, #textfield, #datefield, #button; extracts: counts-latest, sample-hirbovat-2026 | todo | |
 | S10P | polish | S10 polish + audit | S10 | screens.md#s10; spec.md#c4 | todo | |
-| SYS08 | system | Acasă blocks: MissingRow (Lipsesc date), EntryKeys, UnpricedCount card | SYS00, SYS01 | components.md#eventrow, #recordtile, #button, #lamp, #bottomsheet; screens.md#s2; spec.md#d2, #c9 | building | |
+| SYS08 | system | Acasă blocks: MissingRow (Lipsesc date), EntryKeys, UnpricedCount card | SYS00, SYS01 | components.md#eventrow, #recordtile, #button, #lamp, #bottomsheet; screens.md#s2; spec.md#d2, #c9 | done | d1bd1e3 |
 | S2 | screen | S2 Acasă: vet (phone), manager (phone + desktop), owner (desktop) | SYS08, S10P | screens.md#s2; spec.md#d2, #c8, #c9; components.md#cycletrack, #bottomtabbar, #sidebar, #readout; extracts: all needed | todo | |
 | S2P | polish | S2 polish + audit | S2 | screens.md#s2; spec.md#d2 | todo | |
 | S14 | screen | S14 Rapoarte · Producție | S2P | screens.md#s14; spec.md#d3; components.md#datatable, #filterbar, #pageheader; extracts: eggs-hirbovat-prev-weekly, sample-hirbovat-2026, guide-laying | todo | |
