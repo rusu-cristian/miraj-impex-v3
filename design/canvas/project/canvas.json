@@ -1,0 +1,21 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-16T15:50:30Z"},
+  "title": "Impex Line Panel · Ecrane",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 880, "h": 560, "title": "00 · Index"}
+  },
+  "order": ["Main.dc.html"],
+  "notes": {},
+  "designSystems": [
+    {
+      "title": "Impex Line Panel",
+      "namespace": "impexlinepanel",
+      "artifact": "https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd",
+      "version": "1794843774-ade9",
+      "copiedAt": "2026-11-16T15:50:00Z"
+    }
+  ]
+}

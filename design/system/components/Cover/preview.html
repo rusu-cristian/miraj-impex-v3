@@ -1,0 +1,25 @@
+<!-- @dsCard height=288 -->
+<div class="cover"><style>
+.cover{position:relative;width:960px;height:288px;background:var(--ground);overflow:hidden;font-family:var(--font-sans)}
+.cv{position:absolute;inset:0}
+.cv .ro{fill:var(--readout)} .cv .okl{fill:var(--readout-ok)} .cv .warnl{fill:var(--readout-warn)}
+.cv .hen{fill:var(--rec-hen)} .cv .roo{fill:var(--rec-rooster)} .cv .feed{fill:var(--rec-feed)}
+.cover .name{position:absolute;left:40px;bottom:76px;margin:0;font:500 72px/.95 var(--font-sans);color:var(--ink);max-width:440px}
+.cover .tag{position:absolute;left:40px;bottom:40px;margin:0;font-size:14px;line-height:20px;color:var(--ink-muted);max-width:440px}
+</style>
+<svg class="cv" viewBox="0 0 960 288" width="960" height="288" aria-hidden="true">
+<!--
+blocks: readout 384x176, rec-hen 200x112, rec-rooster 104x112, rec-feed 96x112 (space multiples); radius-none, the slab bleeds top and right
+arrangement: one tall dark readout slab with a strip of three unequal record-colour bands under it, bleeding off the bottom
+pattern: a single row of status lamps (radius-round, lamp size x 1) at pitch space-6 in readout-ok with one readout-warn, chosen because lamps + readouts are how this system shows status
+steps and radii: space-6 pitch, lamp 8px discs, radius-none blocks
+-->
+<rect class="ro" x="576" y="0" width="384" height="176"/>
+<circle class="okl" cx="592" cy="140" r="4"/><circle class="okl" cx="616" cy="140" r="4"/><circle class="okl" cx="640" cy="140" r="4"/><circle class="okl" cx="664" cy="140" r="4"/><circle class="okl" cx="688" cy="140" r="4"/><circle class="okl" cx="712" cy="140" r="4"/><circle class="okl" cx="736" cy="140" r="4"/><circle class="okl" cx="760" cy="140" r="4"/><circle class="okl" cx="784" cy="140" r="4"/><circle class="warnl" cx="808" cy="140" r="4"/><circle class="okl" cx="832" cy="140" r="4"/><circle class="okl" cx="856" cy="140" r="4"/><circle class="okl" cx="880" cy="140" r="4"/><circle class="okl" cx="904" cy="140" r="4"/><circle class="okl" cx="928" cy="140" r="4"/>
+<rect class="hen" x="480" y="176" width="200" height="112"/>
+<rect class="roo" x="680" y="176" width="104" height="112"/>
+<rect class="feed" x="784" y="176" width="176" height="112"/>
+</svg>
+<h1 class="name">Impex Line Panel</h1>
+<p class="tag">Ciclurile seriei, citite ca pe un panou de control.</p>
+</div>

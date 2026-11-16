@@ -1,0 +1,24 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-16T15:37:06Z"
+ },
+ "title": "Impex Line Panel",
+ "namespace": "ImpexLinePanel",
+ "libraries": [],
+ "sections": {},
+ "groups": [],
+ "assetGroups": {},
+ "blobs": {},
+ "docs": {
+  "sections": []
+ },
+ "lastChange": {
+  "by": "Claude",
+  "at": "2026-11-16T15:37:06Z",
+  "via": "Claude chat",
+  "note": "Control-panel design system: tokens, record-type code, brand book, 41 components, cover."
+ }
+}
