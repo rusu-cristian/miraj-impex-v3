@@ -341,7 +341,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-fsum__id{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2);min-width:0}
 .ip-fsum__name{margin:0;font:500 var(--ip-fs-heading)/var(--ip-lh-heading) var(--font-sans);color:var(--ink)}
 /* The farm name is the panel's one link: ink text, underlined (a link must not rely on colour); hover darkens the underline. */
-.ip-fsum__name a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));border-radius:var(--radius-xs);transition:text-decoration-color var(--ip-dur-key) var(--ip-ease)}
+/* Desktop (narrow, --wide, --compact): inline-flex, >=24px target (D46), negative block margin keeps the 22px heading line. */
+.ip-fsum__name a{display:inline-flex;align-items:center;min-height:var(--space-6);margin-block:calc((var(--ip-lh-heading) - var(--space-6)) / 2);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));border-radius:var(--radius-xs);transition:text-decoration-color var(--ip-dur-key) var(--ip-ease)}
 .ip-fsum__name a:hover,.ip-fsum__name a.is-hover{text-decoration-color:var(--ink)}
 .ip-fsum__name a:active,.ip-fsum__name a.is-pressed{text-decoration-thickness:var(--ip-edge-strong)}
 .ip-fsum__head > .ip-lamp{flex:none;min-height:var(--ip-lh-heading)} /* the cycle lamp sits on the name's line */
@@ -359,6 +360,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-fsum__fig dd{margin:0;min-width:0}
 .ip-fsum__val{grid-area:val;justify-self:end;text-align:right;font:500 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
 .ip-fsum__val small{font:400 var(--ip-fs-small) var(--font-sans);color:var(--ink-muted);margin-left:calc(2 * var(--ip-hair))}
+.ip-fsum__val small.ip-fsum__pct{margin-left:0} /* "74,0%": no space before % (D46) */
 .ip-fsum__sub{grid-area:sub;display:flex;flex-wrap:wrap;gap:0 var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
 .ip-fsum__sub .ip-num{white-space:nowrap} /* a date or figure never breaks inside */
 .ip-fsum__status{grid-area:status;justify-self:end;align-self:start}

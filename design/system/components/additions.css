@@ -320,3 +320,61 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-savebar__sum.ip-ftot-sum{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .ip-ftot-sum__line{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2)}
 .ip-ftot-sum .ip-rec{color:var(--c);display:inline-flex}
+
+/* =====================================================================================================
+ * SYS03 · FarmSummary for screens S3 (series level) and S2 (Acasă, owner). Spec: components.md › Additions › SYS03.
+ * ===================================================================================================== */
+
+/* ---------- 9. FarmSummary ---------- */
+/* One panel per farm for a series: head (farm name as a link to the farm page at that cycle, type Tag, guide Tag,
+ * cycle Lamp + word), the cycle line (Mono context line), birds alive ♀ · ♂ (SexCount at readout size), then 3–4 key
+ * figures vs the guide as a <dl> of key/value lines with record icons (SectionTile's kv language, SectionTotals' type).
+ * Narrow by default (phone, S2 compact): each line's Lamp sits right of its guide sub-line. .ip-fsum--wide (S3 desktop
+ * columns) gives the Lamps a fixed right column, like AlertRow. .ip-fsum--compact: S2 owner, 2 figures, alive inline.
+ * .ip-fsum--touch: 48px targets for the links on phone. Empty farm: .ip-fsum__empty, the EmptyState sentence + next step. */
+:root{
+  --ip-fs-heading:16px;--ip-lh-heading:22px; /* tokens.css .ip-t-heading, named for the farm name */
+}
+.ip-fsums{display:grid;gap:var(--space-3);grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(var(--space-12) * 8)),1fr));align-items:start}
+.ip-fsum{display:flex;flex-direction:column;gap:var(--space-3);min-width:0;margin:0;padding:var(--space-4);background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.ip-fsum__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-2) var(--space-3)}
+.ip-fsum__id{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2);min-width:0}
+.ip-fsum__name{margin:0;font:500 var(--ip-fs-heading)/var(--ip-lh-heading) var(--font-sans);color:var(--ink)}
+/* The farm name is the panel's one link: ink text, underlined (a link must not rely on colour); hover darkens the underline. */
+/* Desktop (narrow, --wide, --compact): inline-flex, >=24px target (D46), negative block margin keeps the 22px heading line. */
+.ip-fsum__name a{display:inline-flex;align-items:center;min-height:var(--space-6);margin-block:calc((var(--ip-lh-heading) - var(--space-6)) / 2);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));border-radius:var(--radius-xs);transition:text-decoration-color var(--ip-dur-key) var(--ip-ease)}
+.ip-fsum__name a:hover,.ip-fsum__name a.is-hover{text-decoration-color:var(--ink)}
+.ip-fsum__name a:active,.ip-fsum__name a.is-pressed{text-decoration-thickness:var(--ip-edge-strong)}
+.ip-fsum__head > .ip-lamp{flex:none;min-height:var(--ip-lh-heading)} /* the cycle lamp sits on the name's line */
+.ip-fsum__cycle{margin:calc(-1 * var(--space-2)) 0 0;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-secondary)}
+.ip-fsum__alive{display:flex;flex-direction:column;gap:var(--space-1);margin:0}
+.ip-fsum__alive > div{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3)}
+.ip-fsum__alive .ip-note{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+/* Key figures: rows split by rule, a line-strong-free list (the panel is the container). */
+.ip-fsum__figs{margin:0;border-top:var(--ip-hair) solid var(--rule)}
+.ip-fsum__fig{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"key val" "sub status";gap:var(--space-1) var(--space-3);padding:var(--space-2) 0;border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-fsum__fig:last-child{border-bottom:0;padding-bottom:0}
+.ip-fsum__fig:not(:has(> .ip-fsum__status)){grid-template-areas:"key val" "sub sub"}
+.ip-fsum__fig dt{grid-area:key;display:flex;align-items:center;gap:var(--space-1);min-width:0;font-size:var(--ip-fs-small);line-height:var(--ip-lh-figure);color:var(--ink-secondary)}
+.ip-fsum__fig dt .ip-rec{color:var(--c);display:inline-flex}
+.ip-fsum__fig dd{margin:0;min-width:0}
+.ip-fsum__val{grid-area:val;justify-self:end;text-align:right;font:500 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.ip-fsum__val small{font:400 var(--ip-fs-small) var(--font-sans);color:var(--ink-muted);margin-left:calc(2 * var(--ip-hair))}
+.ip-fsum__val small.ip-fsum__pct{margin-left:0} /* "74,0%": no space before % (D46) */
+.ip-fsum__sub{grid-area:sub;display:flex;flex-wrap:wrap;gap:0 var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-fsum__sub .ip-num{white-space:nowrap} /* a date or figure never breaks inside */
+.ip-fsum__status{grid-area:status;justify-self:end;align-self:start}
+/* Wide (S3 desktop columns): Lamps in a fixed right column (>=96px, like AlertRow) so they line up down the panel. */
+.ip-fsum--wide .ip-fsum__fig{grid-template-columns:minmax(0,1fr) auto calc(var(--space-12) * 2);grid-template-areas:"key val status" "sub sub ."}
+.ip-fsum--wide .ip-fsum__fig:not(:has(> .ip-fsum__status)){grid-template-areas:"key val ." "sub sub ."}
+.ip-fsum--wide .ip-fsum__status{justify-self:start;align-self:center}
+/* Compact (S2 owner): tighter panel, alive on one line with its caption, 2 figures (markup). */
+.ip-fsum--compact{gap:var(--space-2);padding:var(--space-3)}
+.ip-fsum--compact .ip-fsum__cycle{margin-top:calc(-1 * var(--space-1))}
+.ip-fsum--compact .ip-fsum__alive{flex-direction:row;align-items:baseline;justify-content:space-between;gap:var(--space-2)}
+/* Empty farm between cycles: the EmptyState sentence and its next step, left-aligned inside the panel. */
+.ip-fsum__empty{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);margin:0;padding-top:var(--space-3);border-top:var(--ip-hair) solid var(--rule);color:var(--ink-secondary)}
+.ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+/* Touch (phone): both links reach the 48px touch height without moving the text. */
+.ip-fsum--touch .ip-fsum__name a,.ip-fsum--touch .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch);margin-block:calc((var(--ip-lh-heading) - var(--control-h-touch)) / 2)}
+.ip-fsum--touch .ip-fsum__empty .ip-link{margin-block:calc((var(--ip-lh-small) - var(--control-h-touch)) / 2)}
