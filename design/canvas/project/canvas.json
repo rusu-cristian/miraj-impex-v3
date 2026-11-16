@@ -95,6 +95,55 @@
       "w": 390,
       "h": 3286,
       "title": "S7 · Hrană zilnică"
+    },
+    "S7-hrana-zilnica--fara-zi-anterioara.dc.html": {
+      "x": 470,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · fără zi anterioară"
+    },
+    "S7-hrana-zilnica--abatere.dc.html": {
+      "x": 940,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · abatere"
+    },
+    "S7-hrana-zilnica--valoare-in-afara-limitei.dc.html": {
+      "x": 1410,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · valoare în afara limitei"
+    },
+    "S7-hrana-zilnica--stoc-sub-0.dc.html": {
+      "x": 1880,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · stoc sub 0 · exemplu de stare (D39)"
+    },
+    "S7-hrana-zilnica--salvat.dc.html": {
+      "x": 2350,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · salvat"
+    },
+    "S7-hrana-zilnica--eroare-la-salvare.dc.html": {
+      "x": 2820,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · eroare la salvare"
+    },
+    "S7-hrana-zilnica--se-incarca.dc.html": {
+      "x": 3290,
+      "y": 2854,
+      "w": 390,
+      "h": 844,
+      "title": "S7 · Hrană zilnică · se încarcă"
     }
   },
   "order": [
@@ -108,7 +157,14 @@
     "S4-ferma-rezumat--ciclu-meniu.dc.html",
     "S4-ferma-rezumat--ciclu-ales.dc.html",
     "S4-ferma-rezumat--ciclu-nou.dc.html",
-    "S7-hrana-zilnica.dc.html"
+    "S7-hrana-zilnica.dc.html",
+    "S7-hrana-zilnica--fara-zi-anterioara.dc.html",
+    "S7-hrana-zilnica--abatere.dc.html",
+    "S7-hrana-zilnica--valoare-in-afara-limitei.dc.html",
+    "S7-hrana-zilnica--stoc-sub-0.dc.html",
+    "S7-hrana-zilnica--salvat.dc.html",
+    "S7-hrana-zilnica--eroare-la-salvare.dc.html",
+    "S7-hrana-zilnica--se-incarca.dc.html"
   ],
   "notes": {},
   "designSystems": [

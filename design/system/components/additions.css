@@ -673,3 +673,105 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* A row that is only a cycle event (Începe ciclu nou, ciclu încheiat prin golire) leads with a hollow tile: not a
  * record, so no record colour; raised + 1px line edge, the cycle mark glyph inside. */
 .ip-tile--cycle{background:var(--raised);box-shadow:inset 0 0 0 var(--ip-hair) var(--line);color:var(--ink)}
+
+/* =====================================================================================================
+ * SYS07 · SexCountRow for S10 Vânzare, S18 Serie nouă (placement), S9 Transfer. Spec: components.md › Additions › SYS07.
+ * ===================================================================================================== */
+
+/* ---------- 18. SexCountRow ---------- */
+/* A list of section rows, each with ♀ and ♂ CountInputs (section.ip-panel.ip-sexrows > ol.ip-sexrows__list >
+ * li.ip-sexrow), a ghost key "Adaugă secțiune" when rows are user-added, and a totals line (line-strong top edge, like
+ * SectionTotals) with the ♀ · ♂ sum as a SexCount. Row: head (code, or a SectionSelect when the user adds the row;
+ * "în viață" ♀ · ♂ where the form takes birds out; remove IconButton on user-added rows) > ♀ field > ♂ field >
+ * full-row message > "Toate" Checkbox (fills both counts with everything alive; inputs read-only while checked).
+ * Phone by default (stacked, CountInput 56, keys 48). .ip-sexrows--wide = one line per row on desktop markup
+ * (CountInput --md, 32px keys), applied by a container query only when the list is ≥ 640px wide, else stacked.
+ * .ip-sexrows--pick = S9 Transfer: one "Din" row whose section is a SectionSelect (farm › section, alive in the menu),
+ * with alive, ♀ · ♂ and Toate; no remove key, no "Adaugă secțiune", no totals line. */
+.ip-sexrows{container-type:inline-size;display:flex;flex-direction:column;min-width:0}
+.ip-sexrows__head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3);margin-bottom:var(--space-4)}
+.ip-sexrows__head > :is(h2,h3,h4){margin:0}
+.ip-sexrows__list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;min-width:0}
+.ip-sexrows__cols{display:none}
+.ip-sexrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);align-items:end;padding-block:var(--space-4);border-top:var(--ip-hair) solid var(--rule);min-width:0}
+.ip-sexrow:first-child{border-top:0;padding-top:0}
+.ip-sexrow > *{grid-column:1 / -1;min-width:0}
+.ip-sexrow > .is-hen{grid-column:1}
+.ip-sexrow > .is-rooster{grid-column:2}
+/* Head: code (16/22 heading) or the section field, then "în viață" ♀ · ♂ (12px words, 14px figures), remove key last. */
+.ip-sexrow__head{display:flex;align-items:flex-end;flex-wrap:wrap;gap:var(--space-1) var(--space-3);min-width:0}
+.ip-sexrow__code{margin:0;font:500 var(--ip-fs-heading)/var(--ip-lh-heading) var(--font-sans);color:var(--ink)}
+.ip-sexrow__alive{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--space-2);margin-left:auto;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-sexrow__alive .ip-pair{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-figure)}
+.ip-sexrow__rm{flex:none;margin-left:auto}
+.ip-sexrow__alive + .ip-sexrow__rm{margin-left:0}
+/* --pick (phone): the Din SectionSelect takes the whole first line, "în viață" goes under it, left. */
+.ip-sexrows--pick .ip-sexrow__sel{flex-basis:100%}
+.ip-sexrows--pick .ip-sexrow__alive{margin-left:0}
+.ip-sexrows--pick .ip-sexrow:last-child{padding-bottom:0} /* no totals line under the one row */
+/* SectionSelect in a user-added row: an APG select-only combobox (as the SeriesSelector), section code in Sans 500,
+ * placeholder "Alege" ink-muted; the listbox (ip-menu) under it. Sections already in the list are aria-disabled with
+ * the reason "în listă" (as "sursa"); empty sections say "goală". On phone it opens as a BottomSheet (SectionSelect). */
+.ip-sexrow__sel{position:relative;flex:1;min-width:0}
+.ip-sexrow__btn{width:100%;font:inherit;cursor:pointer;text-align:left}
+.ip-sexrow__btn .name{flex:1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ip-sexrow__btn .name.is-empty{font-weight:400;color:var(--ink-muted)}
+.ip-sexrow__btn > .ip-icon{flex:none;color:var(--ink-secondary)}
+.ip-sexrow__btn[aria-expanded="true"]{border-color:var(--ink)}
+.ip-sexrow__menu{position:absolute;top:calc(100% + var(--space-1));left:0;min-width:100%;z-index:2;list-style:none;margin:0}
+.ip-sexrow__menu[hidden]{display:none}
+.ip-sexrow__menu .ip-menu__item{cursor:pointer}
+.ip-sexrow__menu .ip-menu__item[aria-disabled="true"]{cursor:not-allowed}
+.ip-sexrow__menu .ip-menu__item .ip-note{color:inherit}
+.ip-sexrow__menu .ip-menu__item:not([aria-disabled="true"]) .ip-note{color:var(--ink-muted)}
+/* Labels: the sex sign visible (in its record colour), section + "găini"/"cocoși" for screen readers only. */
+.ip-sexrow__lbl .ip-sex{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-small)}
+/* Message (refusal / duplicate): bundle.css ip-err across the row, under the field it belongs to. */
+.ip-sexrow__msg{margin:0;align-items:flex-start}
+.ip-sexrow__msg .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.ip-sexrow__msg .ip-num{white-space:nowrap}
+/* "Toate": the system Checkbox (44px hit area); its hidden suffix names the section. */
+.ip-sexrow__all{justify-self:start;margin-block:calc(-1 * var(--space-2)) calc(-1 * var(--space-1))}
+/* Add key under the list (ghost, plus icon), its text aligned with the row edge. */
+.ip-sexrows__add{align-self:flex-start;margin:0 0 0 calc(-1 * var(--space-3))}
+.ip-sexrows__list + .ip-sexrows__add{margin-top:var(--space-1)}
+/* Totals: caption + sub-line left, the ♀ · ♂ sum (SexCount at readout size) right. */
+.ip-sexrows__total{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3);margin-top:var(--space-4);padding-top:var(--space-3);border-top:var(--ip-hair) solid var(--line-strong)}
+.ip-sexrows__tk{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.ip-sexrows__sub{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-sexrows__sub .ip-pair{gap:var(--space-1)}
+.ip-sexrows__total > .ip-pair{font-weight:500;margin-left:auto} /* phone: right edge, even when it wraps under the caption */
+
+/* Wide (desktop): one line per row, columns shared by the column head (aria-hidden; per-field labels stay for screen
+ * readers), the rows and the totals, so ♀ and ♂ figures line up down the list. Default columns: Secțiune · În viață ·
+ * ♀ · ♂ · Toate (Vânzare). --add (user-added rows, Serie nouă): Secțiune (SectionSelect) · ♀ · ♂ · · remove.
+ * --pick (Transfer Din): Din (SectionSelect, 192) · În viață · ♀ · ♂ · Toate. Totals: ♀ sum under ♀, ♂ sum under ♂,
+ * each right-aligned in its column (the phone keeps one SexCount pair). */
+.ip-sexrows--wide{--ip-sexrow-in:calc(var(--space-12) * 3);--ip-sexrow-cols:calc(var(--space-12) + var(--space-4)) minmax(0,1fr) var(--ip-sexrow-in) var(--ip-sexrow-in) calc(var(--space-12) * 2);--ip-sexrow-areas:"sec alive f m all"}
+.ip-sexrows--wide.ip-sexrows--pick{--ip-sexrow-cols:calc(var(--space-12) * 4) minmax(0,1fr) var(--ip-sexrow-in) var(--ip-sexrow-in) calc(var(--space-12) * 2)}
+.ip-sexrows--wide.ip-sexrows--add{--ip-sexrow-cols:calc(var(--space-12) * 4) var(--ip-sexrow-in) var(--ip-sexrow-in) minmax(0,1fr) var(--control-h);--ip-sexrow-areas:"sec f m . rm"}
+@container (min-width: 640px){
+  .ip-sexrows--wide .ip-sexrows__cols,.ip-sexrows--wide .ip-sexrow,.ip-sexrows--wide .ip-sexrows__total{display:grid;grid-template-columns:var(--ip-sexrow-cols);grid-template-areas:var(--ip-sexrow-areas);column-gap:var(--space-4);align-items:center}
+  .ip-sexrows--wide .ip-sexrows__cols{padding-bottom:var(--space-2);border-bottom:var(--ip-hair) solid var(--rule)}
+  .ip-sexrows--wide .ip-sexrows__cols > span{display:flex;align-items:baseline;gap:var(--space-1)}
+  .ip-sexrows--wide .ip-sexrows__cols .ip-sex{font-size:var(--ip-fs-figure);letter-spacing:0}
+  .ip-sexrows--wide .ip-sexrow{row-gap:var(--space-1);padding-block:var(--space-2)}
+  .ip-sexrows--wide .ip-sexrow:first-child{padding-top:var(--space-2)}
+  .ip-sexrows--wide .ip-sexrow__head{display:contents}
+  .ip-sexrows--wide .ip-sexrow__code,.ip-sexrows--wide .ip-sexrow__sel{grid-area:sec}
+  .ip-sexrows--wide .ip-sexrow__alive{grid-area:alive;margin-left:0}
+  .ip-sexrows--wide .ip-sexrow > .is-hen{grid-area:f}
+  .ip-sexrows--wide .ip-sexrow > .is-rooster{grid-area:m}
+  .ip-sexrows--wide .ip-sexrow__all{grid-area:all;margin-block:0}
+  .ip-sexrows--wide .ip-sexrow__rm{grid-area:rm;margin-left:0}
+  .ip-sexrows--wide .ip-sexrow__msg{grid-column:1 / -1;grid-row:2}
+  .ip-sexrows--wide .ip-sexrows__total{margin-top:var(--space-2);padding-top:var(--space-2);align-items:end}
+  .ip-sexrows--wide .ip-sexrows__tk{grid-column:1 / f-start;grid-row:1}
+  .ip-sexrows--wide .ip-sexrows__total > .ip-pair{display:contents}
+  .ip-sexrows--wide .ip-sexrows__total > .ip-pair > .sep{display:none}
+  .ip-sexrows--wide .ip-sexrows__total > .ip-pair > .ip-sex{grid-row:1;justify-self:end}
+  .ip-sexrows--wide .ip-sexrows__total > .ip-pair > .ip-sex--hen{grid-column:f}
+  .ip-sexrows--wide .ip-sexrows__total > .ip-pair > .ip-sex--rooster{grid-column:m}
+  /* Visible labels move to the column head; the per-field label and the "în viață" word stay for screen readers. */
+  .ip-sexrows--wide .ip-sexrow__lbl,.ip-sexrows--wide .ip-sexrow__k{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}

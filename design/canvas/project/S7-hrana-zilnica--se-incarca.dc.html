@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>S7 · Hrană zilnică · se încarcă</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/impexlinepanel/tokens.css">
+<link rel="stylesheet" href="ds/impexlinepanel/components/bundle.css">
+<link rel="stylesheet" href="additions.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}
+html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-8) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar real height (81 px measured at 390: 3 summary lines 3x16 + 2x4 + 2x12 padding + 1 top line = 48 + 32 + 1) + the field border and focus ring, so a focused field scrolls clear of the sticky SaveBar */
+.s7-m0{margin:0}
+.s7-screen{width:390px;min-height:inherit;display:flex;flex-direction:column;background:var(--ground)}
+.s7-title{display:flex;flex-direction:column;min-width:0}
+.s7-main{flex:1;display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-4) var(--space-4) var(--space-8)}
+.s7-date{display:flex;gap:var(--space-2);align-items:center}
+.s7-date > .ip-input{flex:1;min-width:0}
+.s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
+.s7-copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}
+.s7-halls{gap:var(--space-6)}
+.s7-alloc{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who kg" "ctl ctl" "msg msg";align-items:start;row-gap:var(--space-3)}
+.s7-alloc > .ip-alloc__who{grid-area:who}
+.s7-alloc > .ip-alloc__who .ip-sex{width:var(--space-4);justify-content:center}
+.s7-kg{grid-area:kg;display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-1)}
+.s7-kg small{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.s7-kg.is-sugg{color:var(--ink-muted)}
+.s7-ctl{grid-area:ctl;display:grid;grid-template-columns:minmax(0,1fr) calc(var(--space-12) * 2.5);gap:var(--space-2)}
+.s7-sel > select{cursor:pointer}
+.s7-sel > .ip-icon{color:var(--ink-secondary);flex:none;pointer-events:none}
+.s7-msg{grid-area:msg}
+.s7-msg .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.s7-savebar{position:sticky;bottom:0;z-index:2}
+.s7s-vp{height:844px;min-height:0;overflow:hidden}
+.s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.s7s-view > .s7-main{flex:none}
+.s7s-view--end{justify-content:flex-end}
+.s7s-toastwrap{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);z-index:3}
+.s7s-toast{display:flex;width:100%;align-items:flex-start}
+.s7s-toast > .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.s7s-toast__txt{flex:1;min-width:0}
+.s7s-undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
+.s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
+.s7s-skcol{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);flex:1;min-width:0}
+.s7s-skcol--end{align-items:flex-end}
+.s7s-skblock{display:flex;flex-direction:column;gap:var(--space-6)}
+.s7s-sksum{gap:var(--space-1)}</style>
+</helmet>
+<div class="ip-root" style="padding:0; width:390px; height:844px; overflow:hidden"><div class="s7-screen s7s-vp">
+<header class="ip-formhead">
+<a class="ip-iconbtn ip-iconbtn--touch" href="#acasa" aria-label="Înapoi la Acasă"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></a>
+<span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9M12 9c-3 0-4-2-4-5 3 0 4 2 4 5zM12 9c3 0 4-2 4-5-3 0-4 2-4 5zM12 15c-3 0-4-2-4-5 3 0 4 2 4 5zM12 15c3 0 4-2 4-5-3 0-4 2-4 5z"/></svg></span>
+<div class="s7-title"><h1 class="ip-t-heading s7-m0">Hrană zilnică</h1><p class="ip-note ip-num s7-m0">HÎRBOVĂȚ · 16.11.2026 · SAPT 40</p></div>
+</header>
+<div class="s7s-view">
+<main class="s7-main">
+<div class="ip-field">
+<span class="ip-label" id="d-lbl">Data</span>
+<div class="s7-date">
+<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="d-lbl"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span>
+<span class="ip-input ip-input--touch ip-num"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg><input id="d-val" type="text" inputmode="numeric" value="16.11.2026" aria-labelledby="d-lbl" aria-describedby="d-wk"/></span>
+</div>
+<span class="ip-note ip-num" id="d-wk">SAPT 40 · ciclu din 10.02.2026</span>
+</div><p class="ip-sr" role="status">Se încarcă rândurile pentru <span class="ip-num">16.11.2026</span>…</p>
+<div class="s7s-skblock" aria-busy="true">
+<div class="s7-copy" aria-hidden="true"><div class="ip-skel" style="width:45%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:55%"></div></div>
+<div class="ip-halls s7-halls"><section class="ip-hall" aria-hidden="true"><div class="ip-hall__head"><div class="ip-skel" style="width:30%;height:var(--space-4)"></div></div><div class="ip-hall__sections"><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div></div></section><section class="ip-hall" aria-hidden="true"><div class="ip-hall__head"><div class="ip-skel" style="width:30%;height:var(--space-4)"></div></div><div class="ip-hall__sections"><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div><div class="ip-alloc s7-alloc" aria-hidden="true"><div class="ip-alloc__who s7s-skcol"><div class="ip-skel" style="width:40%;height:var(--space-4)"></div><div class="ip-skel" style="width:60%"></div></div><div class="s7-kg s7s-skcol s7s-skcol--end"><div class="ip-skel" style="width:calc(var(--space-12) * 1.5);height:var(--space-4)"></div><div class="ip-skel" style="width:var(--space-12)"></div></div><div class="s7-ctl"><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div><div class="ip-skel" style="width:100%;height:var(--control-h-touch)"></div></div></div></div></section></div>
+</div>
+</main>
+
+</div>
+<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol s7s-sksum" aria-hidden="true"><div class="ip-skel" style="width:70%;height:var(--space-4)"></div><div class="ip-skel" style="width:45%;height:var(--space-4)"></div><div class="ip-skel" style="width:55%;height:var(--space-4)"></div></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
