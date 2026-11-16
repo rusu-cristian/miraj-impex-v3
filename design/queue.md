@@ -23,7 +23,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S3 | screen | S3 Seria 2026 · nivel serie, cycle track full (desktop) + states | SYS03, S7P | screens.md#s3; spec.md#d1, #b3, #b4; components.md#cycletrack, #pageheader, #tabs, #readout; extracts: cycles, placement-seria2026, transfers-seria2026, counts-latest, sample-hirbovat-2026 | done | 33b2847 |
 | S3P | polish | S3 polish + audit | S3 | screens.md#s3; spec.md#d1; DESIGN.md#dos-and-donts | done | 45aa9be |
 | SYS04 | system | For S11: Readout stock variant (row of stock readouts), Cost block | SYS00 | components.md#readout, #lamp, #datatable; screens.md#s11; spec.md#d4 | done | 1bb0a25 |
-| S11 | screen | S11 Rapoarte · Hrană (Stoc · Livrări · Consum · Cost), owner view + manager/viewer read-only note | SYS04, S3P | screens.md#s11; spec.md#d4, #c5, #c6; components.md#datatable, #tag, #textfield, #pageheader, #tabs, #filterbar; extracts: feed-deliveries, feed-daily-telita, feed-types, sample-hirbovat-2026 | building | |
+| S11 | screen | S11 Rapoarte · Hrană (Stoc · Livrări · Consum · Cost), owner view + manager/viewer read-only note | SYS04, S3P | screens.md#s11; spec.md#d4, #c5, #c6; components.md#datatable, #tag, #textfield, #pageheader, #tabs, #filterbar; extracts: feed-deliveries, feed-daily-telita, feed-types, sample-hirbovat-2026 | done | 6c15ca0 |
 | S11P | polish | S11 polish + audit | S11 | screens.md#s11; spec.md#d4; DESIGN.md#dos-and-donts | todo | |
 | S12 | screen | S12 Prețuri hrană (owner) + "Toate livrările au preț" + error | S11P | screens.md#s12; spec.md#c6; components.md#datatable, #textfield, #button, #emptystate, #toast; extracts: feed-deliveries | todo | |
 | S12P | polish | S12 polish + audit | S12 | screens.md#s12; spec.md#c6 | todo | |
