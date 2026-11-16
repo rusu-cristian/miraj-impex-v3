@@ -447,3 +447,25 @@ Folder `design/system/components/CostBlock/` (README + preview), CSS in addition
 - **Layouts:** default = phone (DataTable rule: horizontal scroll, sticky 160px first column with a `rule` edge, focusable labelled region; no `overflow:hidden` on the block so the focus ring shows whole, head/foot round their own `radius-md` corners); `ip-cost--wide` for desktop.
 - **Roles:** owner, manager, viewer: same read-only markup. Vets: the section is not rendered (D06).
 - **Tokens:** existing only; new var `--ip-fs-table/--ip-lh-table` (13/18, bundle.css `.ip-table`). The coins icon is Lucide "coins" (the system names it but ships no path).
+
+### SYS05 · EntryCard additions, 16.11.2026
+Folder `design/system/components/EntryCardPlus/` (README + preview), CSS in additions.css section 12. Decided by default (user away), to review.
+
+- **Purpose:** what S6 Zilnic (spec C1) needs on top of EntryCard: the yesterday hint, the warning and refusal states, the cull reason, "Fără pierderi azi" filled and the saved state.
+- **Anatomy:** `section.ip-panel.ip-entry` > head (code `h4` 16/22, status Tag right, "în viață" ♀ · ♂ at the start of the day) > `.ip-entry__grid` (one column per sex present, ♀ left, ♂ right; rows Mortalitate, Sacrificare, Motiv; one-sex sections `--one`) > ghost key "Mai mult · Eroare sexare" > foot (Checkbox, or saved meta + Editează). CountInputs hold real `input[inputmode=numeric]` with placeholder "–" (null, not 0).
+- **Yesterday hint:** under each sex's Mortalitate, "ieri ♀ 3 · media 7 zile 1,0" (`ink-muted` 12/16, figures Plex Mono, sex sign in its record colour); mean of the 7 days before the chosen day, one decimal; in `aria-describedby`.
+- **Warning (saveable):** Mortalitate > 3 × the section's 7-day mean for that sex (D19, literal: a 0,0 mean warns on any death). `is-warn` + full-row warn line naming section, number and mean ("H1.1: 4 găini moarte, de peste 3 ori media pe 7 zile (1,0). Verifică numărătoarea; poți salva."), Tag `warn` "abatere", Salvează enabled.
+- **Refusal:** Mortalitate + Sacrificare + Eroare sexare of one sex > alive at the start of the day. `is-error` + error naming section, number, alive, day and fix ("H1.2: 4 370 depășește cei 437 cocoși în viață pe 16.11.2026. Introdu cel mult 437."), Tag `fault` "refuzat", Salvează disabled; SaveBar Lamp + what it concerns.
+- **Cull reason:** Sacrificare > 0 shows a required Select "Motiv ♀|♂" (boală, șchiopătare, altul; D36) under it in that sex's column; placeholder "Alege". Missing on save: error "H1.1: alege motivul pentru 2 găini sacrificate.", Tag "refuzat", save blocked, focus to the Select.
+- **Fără pierderi azi:** fills 0 in Mortalitate and Sacrificare for the sexes present, read-only (`sunken`, sex bar kept), Tag `neutral` "fără pierderi"; unchecking restores the draft.
+- **Saved:** read-only fields, Tag `neutral` "salvat", "Salvat la 08:34 · Dr. Ceban · poți modifica până la 23:59" + secondary Editează (D07).
+- **Messages span the grid row** under the field they belong to (a 157px phone column can't hold them). Tags: one at a time, refuzat > abatere > fără pierderi / salvat; none while empty or unsaved.
+
+### SYS05 · HallCard, 16.11.2026
+Folder `design/system/components/HallCard/` (README + preview), CSS in additions.css section 13. Decided by default (user away), to review.
+
+- **Purpose:** laying farm only: groups a hall's compartment EntryCards and carries the hall's Ouă entry (spec C1, EGG_PRODUCTION on the parent section).
+- **Anatomy:** `section.ip-hall` > head on the ground with a `line-strong` top edge ("Hală" caption · code `h3` · "secțiuni H1.1 · H1.2" · ♀ · ♂ alive) > section EntryCards > `section.ip-panel.ip-eggs` "Ouă · H1" led by the eggs RecordTile: CountInputs Jos, Cat. 1, Cat. 2, Cat. 3, Incubabile (whole, numeric keypad) and TextField Masa medie (decimal, g, at CountInput height in this group) > read-only `dl.ip-eggs__calc`.
+- **Computed:** Total ouă = Cat. 1 + 2 + 3 + Incubabile, "Jos separat (345)" (D18), only when all four are filled; Ouat azi = total ÷ hens alive at the start of the day vs the guide week ("75,8%", "ghid 74,1% · +1,7 puncte") with Lamp `ok` "în normă" / `warn` "abatere" beyond ±3 points (D19). Empty: "–" with its reason, no Lamp. Not a live region.
+- **Layouts:** phone one column; `ip-hall--wide` (desktop): section cards in 2 columns, Ouă across with 6 fields in a row and the two computed figures side by side; 32px controls.
+- **Tokens:** existing only; no new colours or values.

@@ -449,3 +449,98 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-cost--wide .ip-cost__table thead th:first-child,.ip-cost--wide .ip-cost__table tbody th{position:static;border-right:0}
 .ip-cost--wide .ip-cost__table tbody th{white-space:nowrap;min-width:0;max-width:none}
 .ip-cost__foot{margin:0;padding:var(--space-2) var(--space-3);border-top:var(--ip-hair) solid var(--rule);background:var(--panel);border-radius:0 0 var(--radius-md) var(--radius-md)}
+
+/* =====================================================================================================
+ * SYS05 · EntryCard additions + HallCard for screen S6 (Zilnic). Spec: components.md › Additions › SYS05.
+ * ===================================================================================================== */
+
+/* ---------- 12. EntryCard additions ---------- */
+/* One section in the Zilnic form (.ip-panel.ip-entry). Head: code, Tag on the right, "în viață" ♀ · ♂ at the start of
+ * the day. Grid: one column per sex present (♀ left, ♂ right), rows Mortalitate, Sacrificare, Motiv (only when that
+ * sex's Sacrificare > 0). Under each Mortalitate: the yesterday hint. Warn / error lines span the whole row under the
+ * field they belong to (aria-describedby), so a 157px column never holds a 5-line message. Phone by default
+ * (CountInput 56, Select 48, keys 48); desktop markup uses ip-count--md / plain controls inside .ip-hall--wide. */
+.ip-entry{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.ip-entry__head{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"code tag" "alive alive";align-items:center;gap:var(--space-1) var(--space-3)}
+.ip-entry__code{grid-area:code;margin:0;font:500 var(--ip-fs-heading)/var(--ip-lh-heading) var(--font-sans);color:var(--ink)}
+.ip-entry__head > .ip-tag,.ip-entry__head > .ip-entry__tags{grid-area:tag;justify-self:end}
+.ip-entry__alive{grid-area:alive;display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-entry__alive .ip-pair{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-figure)}
+.ip-entry__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);align-items:start}
+.ip-entry__grid > .is-hen{grid-column:1}
+.ip-entry__grid > .is-rooster{grid-column:2}
+.ip-entry__grid > .ip-entry__msg{grid-column:1 / -1}
+.ip-entry__grid--one > .is-hen,.ip-entry__grid--one > .is-rooster{grid-column:auto} /* a section holding one sex: Mortalitate | Sacrificare */
+/* CountInput with a real <input>: empty shows the system "–" placeholder (null, not 0). */
+.ip-count > input{font-variant-numeric:tabular-nums}
+.ip-input > input::placeholder{color:var(--ink-muted);font-weight:400;opacity:1}
+.ip-input > select:invalid{color:var(--ink-muted)} /* "Alege" placeholder option */
+.ip-input > select + .ip-icon{flex:none;color:var(--ink-secondary);pointer-events:none}
+/* Yesterday hint: "ieri ♀ 3 · media 7 zile 1,0": words ink-muted Sans, figures Plex Mono ink-muted, the sex sign in its
+ * record colour. Segments never break inside; a narrow column wraps at the dot. */
+.ip-entry__hint{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--space-1);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-entry__hint > span{white-space:nowrap}
+.ip-entry__hint .ip-num{color:var(--ink-muted)}
+/* Messages: bundle.css ip-warnline / ip-err, full row; the icon keeps its size when the text wraps. */
+.ip-entry__msg .ip-icon,.ip-eggs .ip-err .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.ip-entry__msg.ip-err,.ip-eggs .ip-err{align-items:flex-start}
+.ip-entry__msg.ip-warnline{align-items:flex-start}
+/* "Mai mult" disclosure (ghost key) and the foot: checkbox left, saved meta + Editează. */
+.ip-entry__more{align-self:flex-start;margin-inline:calc(-1 * var(--space-3))}
+.ip-entry__more .ip-icon{transition:none}
+.ip-entry__foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2) var(--space-3);padding-top:var(--space-2);border-top:var(--ip-hair) solid var(--rule)}
+.ip-entry__foot .ip-check{margin-block:calc(-1 * var(--space-1))}
+.ip-entry__saved{display:flex;flex-direction:column;gap:var(--space-1) 0;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted);min-width:0}
+.ip-entry__saved .ip-num{white-space:nowrap}
+/* Saved / fără pierderi: read-only CountInputs keep their sex bar (bundle.css draws it as an inset shadow). */
+.ip-count.is-readonly,.ip-count:has(> [readonly]){color:var(--ink)}
+/* SaveBar line for the form: a status Lamp + what it concerns (refusal disables Salvează; a warning doesn't). */
+.ip-savebar__sum .ip-entry-sum{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2)}
+.ip-savebar__sum .ip-rec{color:var(--c);display:inline-flex}
+
+/* ---------- 13. HallCard (laying farm) ---------- */
+/* A hall groups its compartments' EntryCards and the hall's Ouă group (eggs are counted per hall, data-model
+ * EGG_PRODUCTION on the parent section). Head on the ground (no panel: the cards are the panels), line-strong top edge
+ * like SectionTotals: "Hală" caption, code, "secțiuni H1.1 · H1.2", hens · roosters alive at the start of the day.
+ * Then the section cards (one column on phone; 2 columns in .ip-hall--wide), then the Ouă group across the row. */
+.ip-halls{display:flex;flex-direction:column;gap:var(--space-8)}
+.ip-hall{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.ip-hall__head{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--space-1) var(--space-2);padding-top:var(--space-3);border-top:var(--ip-hair) solid var(--line-strong)}
+.ip-hall__code{margin:0;font:500 var(--ip-fs-heading)/var(--ip-lh-heading) var(--font-sans);color:var(--ink)}
+.ip-hall__head > .ip-pair{margin-left:auto;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
+.ip-hall__sections{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3);align-items:start}
+/* --wide is for content ≥ ~640px; narrower, the columns fall back (a section card is ≥ 288px, an Ouă field ≥ 96px). */
+.ip-hall--wide .ip-hall__sections{grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(var(--space-12) * 6)),1fr));gap:var(--space-4)}
+.ip-hall--wide{gap:var(--space-4)}
+/* Ouă group: a panel like the EntryCard, led by the eggs RecordTile. Fields 2 per row on phone, 6 in a row wide.
+ * Masa medie is a TextField (decimal, suffix g) drawn at the CountInput height in this group so the rows stay equal. */
+.ip-eggs{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.ip-eggs__head{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2)}
+.ip-eggs__head .ip-entry__code{flex:none}
+.ip-eggs__head > .ip-tag{margin-left:auto}
+.ip-eggs__head > .ip-note{flex:1 1 auto;min-width:0}
+.ip-eggs__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);align-items:start}
+.ip-hall--wide .ip-eggs__grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(var(--space-12) * 2)),1fr))}
+.ip-eggs__grid > .ip-entry__msg{grid-column:1 / -1}
+.ip-eggs__weight{height:var(--count-input-h);font:500 var(--ip-readout-size)/var(--ip-readout-lh) var(--font-mono);font-variant-numeric:tabular-nums}
+.ip-hall--wide .ip-eggs__weight{height:var(--control-h);font-size:var(--ip-fs-figure);line-height:var(--ip-lh-figure)}
+/* Computed, read-only (D18): Total ouă and Ouat azi vs ghid. Not a live region (no announcement per keystroke). */
+.ip-eggs__calc{margin:0;display:flex;flex-direction:column;border-top:var(--ip-hair) solid var(--rule)}
+.ip-eggs__calc > div{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"key val" "sub lamp";align-items:baseline;gap:0 var(--space-3);padding:var(--space-2) 0}
+.ip-eggs__calc > div + div{border-top:var(--ip-hair) solid var(--rule)}
+.ip-eggs__calc dt{grid-area:key;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
+.ip-eggs__calc dd{margin:0}
+.ip-eggs__val{grid-area:val;font:500 var(--ip-fs-alloc)/var(--ip-lh-alloc) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap}
+.ip-eggs__sub{grid-area:sub;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted);min-width:0}
+.ip-eggs__sub .ip-num,.ip-eggs__sub .ip-sex{white-space:nowrap}
+.ip-eggs__lamp{grid-area:lamp;justify-self:end}
+.ip-eggs__calc > div:not(:has(> .ip-eggs__lamp)){grid-template-areas:"key val" "sub sub"}
+.ip-hall--wide .ip-eggs__calc{flex-direction:row}
+.ip-hall--wide .ip-eggs__calc > div{flex:1;padding-inline:0 var(--space-4)}
+.ip-hall--wide .ip-eggs__calc > div + div{border-top:0;border-left:var(--ip-hair) solid var(--rule);padding-inline:var(--space-4) 0}
+/* Label record icons (Mortalitate skull, Sacrificare ban) in their record colour; the label text stays ink-secondary. */
+.ip-label > .ip-rec{display:inline-flex;color:var(--c)}
+/* Checkbox with a real (visually hidden) input: the box shows the focus ring and the checked fill. */
+.ip-check{cursor:pointer}
+.ip-check > input.ip-sr:focus-visible + .ip-check__box{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-check > input.ip-sr:checked + .ip-check__box{background:var(--control);border-color:var(--control)}
