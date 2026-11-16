@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "generated_by": "DATA01",
+    "source": "design/data/Seria_2026.xlsx",
+    "workbook_last_real_date": "2026-02-28",
+    "sheets": "Telita \"Corectie\" cols R–W (out side); Sheet9 G11…C42 first change per section (in side)",
+    "range": ["2025-11-05", "2026-02-28"],
+    "real": true,
+    "conventions": "qty positive; sex F/M by Telița section; arrivals are the day-on-day increase of the forward-filled Sheet9 grid",
+    "design_dates": "D21/D25: the screens start the Hîrbovăț cycle on 2026-02-10 and show one transfer link that day; the real movements below are 2026-02-22 … 2026-02-28.",
+    "reconciliation": {
+      "out_of_telita": {
+        "F": 26881,
+        "M": 2994
+      },
+      "arrived_hirbovat": {
+        "F": 26765,
+        "M": 3060
+      },
+      "difference_arrived_minus_out": {
+        "F": -116,
+        "M": 66
+      },
+      "notes": ["The kit sample ♀ 26 881 · ♂ 2 994 equals the Telița-side transfer outs; Hîrbovăț recorded ♀ 26 765 · ♂ 3 060 (D28 uses the arrivals).", "♀ gap of 116 is all on H2 (6 999 out on 2026-02-27, 6 883 in on 2026-02-28).", "♂: 66 more arrived than left on 2026-02-22; Telița then still shows 698 ♂ (H5-1 454, H5-2 244), partly refilled by unexplained +11/+277/+144/+16/+14 corrections.", "Pairing by date (links) contradicts the H-sheet names (H1→H4.x, H3→H1.x, H6→H3.x): dated movements put H6→H1.1/H1.2, H3→H1.2/H3.1, H1→H3.1/H3.2/H4.1, H2→H4.1/H4.2."]
+    }
+  },
+  "transfers_out": [
+    {"date": "2026-02-22", "from_farm": "telita", "from_section": "H5-1", "sex": "M", "qty": 1387},
+    {"date": "2026-02-22", "from_farm": "telita", "from_section": "H5-2", "sex": "M", "qty": 1607},
+    {"date": "2026-02-25", "from_farm": "telita", "from_section": "H6", "sex": "F", "qty": 5783},
+    {"date": "2026-02-26", "from_farm": "telita", "from_section": "H3", "sex": "F", "qty": 7072},
+    {"date": "2026-02-27", "from_farm": "telita", "from_section": "H1", "sex": "F", "qty": 7027},
+    {"date": "2026-02-27", "from_farm": "telita", "from_section": "H2", "sex": "F", "qty": 6999}
+  ],
+  "arrivals": [
+    {"date": "2026-02-22", "farm_id": "hirbovat", "section": "H1.1", "sex": "M", "qty": 498},
+    {"date": "2026-02-22", "farm_id": "hirbovat", "section": "H1.2", "sex": "M", "qty": 498},
+    {"date": "2026-02-22", "farm_id": "hirbovat", "section": "H3.1", "sex": "M", "qty": 498},
+    {"date": "2026-02-22", "farm_id": "hirbovat", "section": "H3.2", "sex": "M", "qty": 498},
+    {"date": "2026-02-22", "farm_id": "hirbovat", "section": "H4.1", "sex": "M", "qty": 534},
+    {"date": "2026-02-22", "farm_id": "hirbovat", "section": "H4.2", "sex": "M", "qty": 534},
+    {"date": "2026-02-25", "farm_id": "hirbovat", "section": "H1.1", "sex": "F", "qty": 4500},
+    {"date": "2026-02-25", "farm_id": "hirbovat", "section": "H1.2", "sex": "F", "qty": 1283},
+    {"date": "2026-02-26", "farm_id": "hirbovat", "section": "H1.2", "sex": "F", "qty": 3217},
+    {"date": "2026-02-26", "farm_id": "hirbovat", "section": "H3.1", "sex": "F", "qty": 3855},
+    {"date": "2026-02-27", "farm_id": "hirbovat", "section": "H3.1", "sex": "F", "qty": 645},
+    {"date": "2026-02-27", "farm_id": "hirbovat", "section": "H3.2", "sex": "F", "qty": 4500},
+    {"date": "2026-02-27", "farm_id": "hirbovat", "section": "H4.1", "sex": "F", "qty": 1882},
+    {"date": "2026-02-28", "farm_id": "hirbovat", "section": "H4.1", "sex": "F", "qty": 2500},
+    {"date": "2026-02-28", "farm_id": "hirbovat", "section": "H4.2", "sex": "F", "qty": 4383}
+  ],
+  "arrival_counts": [
+    {"section": "H1.1", "F": 4500, "M": 498},
+    {"section": "H1.2", "F": 4500, "M": 498},
+    {"section": "H3.1", "F": 4500, "M": 498},
+    {"section": "H3.2", "F": 4500, "M": 498},
+    {"section": "H4.1", "F": 4382, "M": 534},
+    {"section": "H4.2", "F": 4383, "M": 534}
+  ],
+  "arrival_totals": {
+    "F": 26765,
+    "M": 3060
+  },
+  "links_inferred_by_date": [
+    {"out_date": "2026-02-22", "from": ["H5-1", "H5-2"], "sex": "M", "qty_out": 2994, "arrival_date": "2026-02-22", "to": {"H1.1": 498, "H1.2": 498, "H3.1": 498, "H3.2": 498, "H4.1": 534, "H4.2": 534}, "qty_in": 3060, "difference_in_minus_out": 66},
+    {"out_date": "2026-02-25", "from": ["H6"], "sex": "F", "qty_out": 5783, "arrival_date": "2026-02-25", "to": {"H1.1": 4500, "H1.2": 1283}, "qty_in": 5783, "difference_in_minus_out": 0},
+    {"out_date": "2026-02-26", "from": ["H3"], "sex": "F", "qty_out": 7072, "arrival_date": "2026-02-26", "to": {"H1.2": 3217, "H3.1": 3855}, "qty_in": 7072, "difference_in_minus_out": 0},
+    {"out_date": "2026-02-27", "from": ["H1"], "sex": "F", "qty_out": 7027, "arrival_date": "2026-02-27", "to": {"H3.1": 645, "H3.2": 4500, "H4.1": 1882}, "qty_in": 7027, "difference_in_minus_out": 0},
+    {"out_date": "2026-02-27", "from": ["H2"], "sex": "F", "qty_out": 6999, "arrival_date": "2026-02-28", "to": {"H4.1": 2500, "H4.2": 4383}, "qty_in": 6883, "difference_in_minus_out": -116}
+  ],
+  "internal_moves_telita": [
+    {"date": "2025-11-05", "from": "H1", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 3338},
+    {"date": "2025-11-06", "from": "H2", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 3341},
+    {"date": "2025-11-11", "from": "H5-1", "to": "H5-2", "sex_from": "M", "sex_to": "M", "qty": 1652},
+    {"date": "2025-11-13", "from": "H1", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 341},
+    {"date": "2025-11-24", "from": "H1", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 100},
+    {"date": "2025-11-24", "from": "H2", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 200},
+    {"date": "2025-12-09", "from": "H5-1", "to": "H5-2", "sex_from": "M", "sex_to": "M", "qty": 26},
+    {"date": "2025-12-16", "from": "H1", "to": "H6", "sex_from": "F", "sex_to": "F", "qty": 2040},
+    {"date": "2025-12-17", "from": "H2", "to": "H6", "sex_from": "F", "sex_to": "F", "qty": 1495},
+    {"date": "2025-12-18", "from": "H3", "to": "H6", "sex_from": "F", "sex_to": "F", "qty": 2443},
+    {"date": "2025-12-23", "from": "H2", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 830},
+    {"date": "2025-12-24", "from": "H2", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 660},
+    {"date": "2025-12-25", "from": "H1", "to": "H3", "sex_from": "F", "sex_to": "F", "qty": 931},
+    {"date": "2026-01-13", "from": "H3", "to": "H6", "sex_from": "F", "sex_to": "F", "qty": 131},
+    {"date": "2026-02-23", "from": "H6", "to": "H5-1", "sex_from": "F", "sex_to": "M", "qty": 277},
+    {"date": "2026-02-24", "from": "H5-1", "to": "H5-2", "sex_from": "M", "sex_to": "M", "qty": 286}
+  ],
+  "other_corrections_telita": [
+    {"date": "2026-02-21", "section": "H5-1", "sex": "M", "qty": 11, "kind": "inflow_unexplained"},
+    {"date": "2026-02-24", "section": "H1", "sex": "F", "qty": -39, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-24", "section": "H2", "sex": "F", "qty": -48, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-24", "section": "H3", "sex": "F", "qty": -46, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-24", "section": "H6", "sex": "F", "qty": -23, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-25", "section": "H1", "sex": "F", "qty": -16, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-25", "section": "H3", "sex": "F", "qty": -14, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-25", "section": "H5-1", "sex": "M", "qty": 144, "kind": "inflow_unexplained"},
+    {"date": "2026-02-25", "section": "H5-2", "sex": "M", "qty": -42, "kind": "outflow_not_at_hirbovat"},
+    {"date": "2026-02-26", "section": "H5-1", "sex": "M", "qty": 16, "kind": "inflow_unexplained"},
+    {"date": "2026-02-27", "section": "H5-1", "sex": "M", "qty": 14, "kind": "inflow_unexplained"},
+    {"date": "2026-02-28", "section": "H2", "sex": "F", "qty": -14, "kind": "outflow_not_at_hirbovat"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "generated_by": "DATA01",
+    "source": "design/data/Seria_2026.xlsx",
+    "workbook_last_real_date": "2026-02-28",
+    "derived": true,
+    "guide_week": "floor((date − start_date) / 7) + 1 (data-model)"
+  },
+  "series": [
+    {"id": "seria-2026", "name": "Seria 2026", "year": 2026, "status": "active", "illustrative_name": false},
+    {"id": "seria-2025", "name": "Seria 2025", "year": 2025, "status": "closed", "illustrative_name": true, "note": "previous Hîrbovăț flock; the workbook does not name it"}
+  ],
+  "cycles": [
+    {"id": "cyc-telita-2026", "series_id": "seria-2026", "farm_id": "telita", "guide_id": "g-growth", "start_date": "2025-10-07", "end_date": "2026-02-28", "status": "closed", "started_by": "auto", "weeks": 21, "real": true, "notes": "Placement 2025-10-07; transfers out 2026-02-22 … 2026-02-28. Telița never reaches 0 in the workbook (residuals 23/16/−9/0/454/244); closed 2026-02-28 per D25."},
+    {"id": "cyc-hirbovat-2026", "series_id": "seria-2026", "farm_id": "hirbovat", "guide_id": "g-laying", "start_date": "2026-02-10", "end_date": null, "status": "open", "started_by": "manual", "today": "2026-11-16", "week_today": 40, "age_week_today": 58, "real": "start date is a design decision (D21/D25); real data ends 2026-02-28 (feed row 2026-03-10); later figures are sample (D27)", "notes": "An auto start would fall on 2026-02-22 (first arrival, Sheet9). 2026-02-10 = first Hrana Hîrbovăț row (age wk 19)."},
+    {"id": "cyc-hirbovat-2025", "series_id": "seria-2025", "farm_id": "hirbovat", "guide_id": "g-laying", "start_date": "2025-04-04", "start_inferred": true, "end_date": "2026-01-28", "status": "closed", "started_by": "auto", "weeks": 43, "age_week_at_start": 23, "real": true, "notes": "Start = earliest egg/feed date in \"import date\" and DataHirbovat (2025-04-04), which datefinal places at age wk 23 (cycle wk 5 by D26); a start at age wk 19 would be about 2025-03-07. End = last data date. 300 data days."}
+  ]
+}

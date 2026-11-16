@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "generated_by": "DATA01",
+    "source": "design/data/Seria_2026.xlsx",
+    "workbook_last_real_date": "2026-02-28",
+    "sheet": "Hrana Telita: C date, L kg (\"Gaina\"), X lei, Y note",
+    "range": ["2025-10-07", "2026-02-10"],
+    "real": "date, kg, lei and the note are real; feed_type_id is illustrative per D30 (type carried forward from the latest note; the two deliveries before the first note are put on Starter)",
+    "conventions": "price_per_kg = total_lei / qty_kg, rounded to 4 decimals; priced = the workbook has lei for the row",
+    "totals": {
+      "deliveries": 13,
+      "qty_kg": 263740,
+      "total_lei": 2031768,
+      "priced_kg": 263740,
+      "unpriced_kg": 0,
+      "kg_by_type": {
+        "ft-starter": 46280,
+        "ft-grower": 146900,
+        "ft-preouat": 70560
+      }
+    },
+    "notes": ["No deliveries to Hîrbovăț in the workbook (Hrana Hîrbovăț \"Cantitate primită\" is empty); D30: Hîrbovăț deliveries are sample (DATA02).", "No rooster-only deliveries (col M \"Cocos\" empty).", "Every Telița delivery carries a price; \"fără preț\" rows would be illustrative."]
+  },
+  "rows": [
+    {"id": "del-2025-10-07", "date": "2025-10-07", "farm_id": "telita", "qty_kg": 8000, "workbook_note": null, "feed_type_id": "ft-starter", "priced": true, "price_per_kg": 8.35, "total_lei": 66800},
+    {"id": "del-2025-10-14", "date": "2025-10-14", "farm_id": "telita", "qty_kg": 12160, "workbook_note": null, "feed_type_id": "ft-starter", "priced": true, "price_per_kg": 8.4, "total_lei": 102144},
+    {"id": "del-2025-10-24", "date": "2025-10-24", "farm_id": "telita", "qty_kg": 14060, "workbook_note": "rost", "feed_type_id": "ft-starter", "priced": true, "price_per_kg": 7.95, "total_lei": 111777},
+    {"id": "del-2025-11-01", "date": "2025-11-01", "farm_id": "telita", "qty_kg": 12060, "workbook_note": null, "feed_type_id": "ft-starter", "priced": true, "price_per_kg": 7.95, "total_lei": 95877},
+    {"id": "del-2025-11-14", "date": "2025-11-14", "farm_id": "telita", "qty_kg": 21940, "workbook_note": "razvitie", "feed_type_id": "ft-grower", "priced": true, "price_per_kg": 7.4, "total_lei": 162356},
+    {"id": "del-2025-11-29", "date": "2025-11-29", "farm_id": "telita", "qty_kg": 25580, "workbook_note": "norponin", "feed_type_id": "ft-grower", "priced": true, "price_per_kg": 7.3, "total_lei": 186734},
+    {"id": "del-2025-12-11", "date": "2025-12-11", "farm_id": "telita", "qty_kg": 25320, "workbook_note": null, "feed_type_id": "ft-grower", "priced": true, "price_per_kg": 7.3499, "total_lei": 186100},
+    {"id": "del-2025-12-18", "date": "2025-12-18", "farm_id": "telita", "qty_kg": 25620, "workbook_note": null, "feed_type_id": "ft-grower", "priced": true, "price_per_kg": 7.377, "total_lei": 189000},
+    {"id": "del-2026-01-02", "date": "2026-01-02", "farm_id": "telita", "qty_kg": 24000, "workbook_note": null, "feed_type_id": "ft-grower", "priced": true, "price_per_kg": 7.3, "total_lei": 175200},
+    {"id": "del-2026-01-16", "date": "2026-01-16", "farm_id": "telita", "qty_kg": 24440, "workbook_note": null, "feed_type_id": "ft-grower", "priced": true, "price_per_kg": 7.5, "total_lei": 183300},
+    {"id": "del-2026-01-23", "date": "2026-01-23", "farm_id": "telita", "qty_kg": 24000, "workbook_note": null, "feed_type_id": "ft-preouat", "priced": true, "price_per_kg": 7.3333, "total_lei": 176000},
+    {"id": "del-2026-02-03", "date": "2026-02-03", "farm_id": "telita", "qty_kg": 24920, "workbook_note": null, "feed_type_id": "ft-preouat", "priced": true, "price_per_kg": 8.0, "total_lei": 199360},
+    {"id": "del-2026-02-10", "date": "2026-02-10", "farm_id": "telita", "qty_kg": 21640, "workbook_note": null, "feed_type_id": "ft-preouat", "priced": true, "price_per_kg": 9.1091, "total_lei": 197120}
+  ]
+}

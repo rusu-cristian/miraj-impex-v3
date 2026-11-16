@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "generated_by": "DATA01",
+    "source": "design/data/Seria_2026.xlsx",
+    "workbook_last_real_date": "2026-02-28",
+    "sheet": "Telita row 3 (confirmed by H1, H2, H51. row 4)",
+    "real": true,
+    "series": "Seria 2026",
+    "date": "2025-10-07",
+    "notes": ["H3, H6 and H5-2 had no placement; they were filled by moves between sections (Corectie) from 2025-11-05, 2025-12-16 and 2025-11-11.", "H-sheet row 4 for H3 (8 264, dated 2024-10-07), H6 (1, dated 2024-11-01) and H52 (1 855) is not a placement; kept below for reference only."]
+  },
+  "totals": {
+    "F": 28080,
+    "M": 3510
+  },
+  "rows": [
+    {"date": "2025-10-07", "farm_id": "telita", "section": "H1", "sex": "F", "qty": 14080},
+    {"date": "2025-10-07", "farm_id": "telita", "section": "H2", "sex": "F", "qty": 14000},
+    {"date": "2025-10-07", "farm_id": "telita", "section": "H5-1", "sex": "M", "qty": 3510}
+  ],
+  "h_sheet_row4_reference": [
+    {"section": "H1", "sheet": "H1 ( h41,h42)", "date": "2025-10-07", "qty": 14080},
+    {"section": "H2", "sheet": "H2", "date": "2025-10-07", "qty": 14000},
+    {"section": "H3", "sheet": "H3 ( h11,h12)", "date": "2024-10-07", "qty": 8264},
+    {"section": "H6", "sheet": "H6( h31,h32)", "date": "2024-11-01", "qty": 1},
+    {"section": "H5-1", "sheet": "H51.", "date": "2025-10-07", "qty": 3510},
+    {"section": "H5-2", "sheet": "H52", "date": "2025-10-07", "qty": 1855}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "generated_by": "DATA01",
+    "source": "design/data/Seria_2026.xlsx",
+    "workbook_last_real_date": "2026-02-28",
+    "decision": "D30",
+    "illustrative": true,
+    "notes": ["Workbook notes in Hrana Telita col Y: rost 2025-10-24, razvitie 2025-11-14, norponin 2025-11-29, preouat 2026-01-20 (norponin also in Telita col AD on 2025-11-27).", "Telița types are fed to both sexes (for_sex null). Hîrbovăț types have no workbook source."]
+  },
+  "rows": [
+    {"id": "ft-starter", "name": "Starter", "for_sex": null, "farm_id": "telita", "active": false, "workbook_note": "rost", "note_date": "2025-10-24", "illustrative_name": true},
+    {"id": "ft-grower", "name": "Grower", "for_sex": null, "farm_id": "telita", "active": false, "workbook_note": "razvitie", "note_date": "2025-11-14", "illustrative_name": true, "also_covers_note": "norponin (2025-11-29; not a phase name, not in D30; the delivery is kept on Grower)"},
+    {"id": "ft-preouat", "name": "Pre-ouat", "for_sex": null, "farm_id": "telita", "active": false, "workbook_note": "preouat", "note_date": "2026-01-20", "illustrative_name": true},
+    {"id": "ft-breeder2", "name": "Breeder 2", "for_sex": "F", "farm_id": "hirbovat", "active": true, "workbook_note": null, "note_date": null, "illustrative_name": true},
+    {"id": "ft-cocosi", "name": "Cocoși", "for_sex": "M", "farm_id": "hirbovat", "active": true, "workbook_note": null, "note_date": null, "illustrative_name": true}
+  ]
+}
