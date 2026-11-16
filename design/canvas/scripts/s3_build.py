@@ -36,9 +36,10 @@ for r in MT['rows']:
         TSE[r['sex'] if 'sex' in r else ('M' if r['section'].startswith('H5') else 'F')] += -r['sexing_error']
 assert TSE == {'F': 0, 'M': 1}, TSE
 TMP = {sx: round(TM[sx] / PLC[sx] * 100, 2) for sx in 'FM'}; assert TMP == tz['cycle']['mortality_pct']
-# Telița closes at 0 (D25): what placement − deaths − sexing errors − transfers (at arrival, D28) leaves is the workbook's
-# own corrections and residuals, shown as one Corecție figure so the row balances (never as leftover birds).
-TCOR = {sx: -(PLC[sx] - TM[sx] - TSE[sx] - ARR[sx]) for sx in 'FM'}; assert TCOR == {'F': -611, 'M': -210}, TCOR
+# Telița closes at 0 (D25): placement − deaths − sexing errors − transfers (at arrival, D28) doesn't reach 0 in the workbook.
+# D63: the gap is a register difference, shown in a "Diferență registru" column with the info lamp — never as a Corecție
+# (no correction was recorded) and never as leftover birds.
+TDIFF = {sx: -(PLC[sx] - TM[sx] - TSE[sx] - ARR[sx]) for sx in 'FM'}; assert TDIFF == {'F': -611, 'M': -210}, TDIFF
 for sx in 'FM':
     assert ARR[sx] - HR[sx]['mortality'] - HR[sx]['culls'] - HR[sx]['sexing_errors'] == ALIVE[sx]
 # Telița summary (FarmSummary README): weight ♀ at transfer = SAPT 20 weighings weighted by hens sent out
@@ -63,10 +64,9 @@ assert (B2['days_left'], CO['days_left'], CO['run_out_date']) == (7.1, 3.9, '202
 assert abs(s4.lay_today - s4.lay_guide) <= 3
 
 # ---------- small helpers ----------
-PEN = '<path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>'
 PLACE = '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/>'
-s4.IC.update({'adjust': PEN, 'placement': PLACE})
-s4.REC.update({'adjust': 'adjust', 'placement': 'placement'})
+s4.IC.update({'placement': PLACE})
+s4.REC.update({'placement': 'placement'})
 def ico(k): return f'<span class="ip-rec ip-rec--{s4.REC[k]} s4-ico">{icon(k, 14)}</span>'
 def sexerr_ico(): return f'<span class="s4-ico">{icon("sexerr", 14)}</span>'
 def fig(k, key, val, sub, status=''):
@@ -212,9 +212,9 @@ def track_loading():
 
 # ---------- 3. farm summaries (FarmSummary --wide) ----------
 TAG = {'telita': ('Creștere', 'Ross 308 creștere'), 'hirbovat': ('Ouat', 'Ross 308 ouat')}
-def fs_head(fid, name, href, lmp, tags=True):
+def fs_head(fid, name, href, lmp, tags=True):  # tags: True = type + guide, 'type' = type only (no cycle → no guide), False = none
     nm = f'<a href="{href}">{name}</a>' if href else name
-    tg = ''.join(f'<span class="ip-tag ip-tag--neutral">{t}</span>' for t in TAG[fid]) if tags else ''
+    tg = ''.join(f'<span class="ip-tag ip-tag--neutral">{t}</span>' for t in (TAG[fid][:1] if tags == 'type' else TAG[fid] if tags else ()))
     return f'<div class="ip-fsum__head"><div class="ip-fsum__id"><h3 class="ip-fsum__name" id="fs-{fid}">{nm}</h3>{tg}</div>{lmp}</div>'
 def fs_telita():
     figs = (fig('weighing', f'Greutate {F} la transfer', f'{n(WT)}<small>g</small>',
@@ -261,7 +261,7 @@ NOACC = ['Nu ai acces la această fermă.', 'Cere acces proprietarului.']
 def summaries(mode='default'):
     if mode == 'closed':
         tel = fs_empty('telita', 'Telița', '#/ferme/telita', 'fără date', ['Registrul nu are date pentru Seria 2025 la Telița.'],
-                       '<a class="ip-link" href="#/serii/seria-2026">Vezi Seria 2026</a>')
+                       '<a class="ip-link" href="#/serii/seria-2026">Vezi Seria 2026</a>', tags='type')
         cards, note = tel + fs_prev(), '2 ferme · Seria 2025'
     elif mode == 'viewer':
         cards, note = fs_empty('telita', 'Telița', '', 'fără acces', NOACC, '', tags=False) + fs_hirbovat(), 'fermele tale: Hîrbovăț'
@@ -269,14 +269,14 @@ def summaries(mode='default'):
         cards, note = fs_telita() + fs_hirbovat(), f'2 ferme · {ddate(TODAY)}'
     return f'''<section class="s3-block" aria-labelledby="h-farms">
 <div class="s3-head"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note ip-num">{note}</span></div>
-<div class="ip-fsums">{cards}</div>
+<div class="ip-fsums s3-fsums">{cards}</div>
 </section>'''
 def summaries_loading():
     card = (f'<div class="ip-fsum ip-fsum--wide s3-skcard"><div class="ip-fsum__head">{sk("s3-w30 s3-h16")}{sk("s3-w14")}</div>{sk("s3-w40")}'
             f'{sk("s3-w50 s3-h20")}' + ''.join(f'<div class="s3-skfig">{sk("s3-w40")}{sk("s3-w20")}</div>' for _ in range(4)) + '</div>')
     return f'''<section class="s3-block" aria-hidden="true">
 <div class="s3-head"><h2 class="ip-t-heading">Ferme</h2></div>
-<div class="ip-fsums">{card}{card}</div>
+<div class="ip-fsums s3-fsums">{card}{card}</div>
 </section>'''
 
 # ---------- 4. tabs + Păsări aggregated per farm ----------
@@ -286,16 +286,21 @@ def tabs(series='2026'):
         f'<a class="ip-tab{" is-selected" if i == 0 else ""}" role="tab" id="tab-{k}" aria-controls="tp-serie" aria-selected="{"true" if i == 0 else "false"}" tabindex="{0 if i == 0 else -1}" href="#{k}">{t}</a>'
         for i, (k, t) in enumerate(TABS)) + '</div>'
 COLS = [('', 'Început'), ('mortality', 'Mortalitate'), ('', 'Mort. %'), ('cull', 'Sacrificare'), ('sexerr', 'Eroare sexare'),
-        ('transfer', 'Transfer'), ('sale', 'Vânzare'), ('adjust', 'Corecție'), ('', f'În viață · {ddate(TODAY)[:5]}')]
+        ('transfer', 'Transfer'), ('sale', 'Vânzare'), ('', 'Diferență registru'), ('', f'În viață · {ddate(TODAY)[:5]}')]
+COLS_CLOSED = COLS[:-1] + [('', f'La închidere · <span class="s3-nw">{ddate(cP["end_date"])}</span>')]  # a closed series counts at its end, not today
 def th(k, w):
     i = sexerr_ico() if k == 'sexerr' else (ico(k) if k else '')
-    return f'<th scope="col" class="num">{i}{w}</th>'
+    wrap = ' s3-thwrap' if '<span' in w else ''  # the closing date may drop under its caption (keeps the table in 1160 px)
+    return f'<th scope="col" class="num{wrap}">{i}{w}</th>'
 def cell(v, sx, sign=False, unit=''):
     if v is None: return '<td class="num s3-dash">–</td>'
     if isinstance(v, str): return f'<td class="num s3-dash">{v}</td>'
     txt = ('−' + n(v)) if (sign and v) else (n(v, 2) + unit if unit else n(v))
     cls = 'hen' if sx == 'F' else 'rooster'
     return f'<td class="num"><span class="ip-sex ip-sex--{cls}"><b>{txt}</b></span></td>'
+def diff(v, sx):  # D63: register difference, info lamp + word, figure in its sex colour
+    cls = 'hen' if sx == 'F' else 'rooster'
+    return f'<td class="num"><span class="s3-diff">{lamp("info", "informație")}<span class="ip-sex ip-sex--{cls}"><b>−{n(-v)}</b></span></span></td>'
 def sexrow(sx, vals):
     word = 'găini' if sx == 'F' else 'cocoși'
     return f'<tr><th scope="row" class="s3-rowh">{sg(sx)} {word}</th>{"".join(vals)}</tr>'
@@ -303,7 +308,7 @@ def group(fid, name, href, line):
     nm = f'<a class="s3-glink" href="{href}">{name}</a>' if href else f'<span class="s3-gname">{name}</span>'
     return f'<tr class="is-group"><th scope="rowgroup" colspan="{len(COLS) + 1}" class="s3-group">{nm}<span class="ip-note">{line}</span></th></tr>'
 def pasari(mode='default'):
-    head = '<thead><tr><th scope="col">Fermă · sex</th>' + ''.join(th(k, w) for k, w in COLS) + '</tr></thead>'
+    head = '<thead><tr><th scope="col">Fermă · sex</th>' + ''.join(th(k, w) for k, w in (COLS_CLOSED if mode == 'closed' else COLS)) + '</tr></thead>'
     tel_line = (f'{ico("placement")}creștere · populată <span class="ip-num">{ddate(PL["meta"]["date"])}</span> · închis '
                 f'<span class="ip-num">{ddate(cT["end_date"])}</span>')
     hir_line = (f'{ico("transfer")}ouat · sosite de la Telița <span class="ip-num">{ddate(X0D)[:5]}–{ddate(X1D)}</span> · deschis, '
@@ -324,10 +329,10 @@ def pasari(mode='default'):
         else:
             tel = (f'<tbody>{group("telita", "Telița", "#/ferme/telita?ciclu=cyc-telita-2026", tel_line)}'
                    + ''.join(sexrow(sx, [cell(PLC[sx], sx), cell(TM[sx], sx, sign=True), cell(TMP[sx], sx, unit='%'), cell(None, sx),
-                                         cell(TSE[sx], sx, sign=True), cell(ARR[sx], sx, sign=True), cell(0, sx), cell(-TCOR[sx], sx, sign=True), cell(0, sx)]) for sx in 'FM')
+                                         cell(TSE[sx], sx, sign=True), cell(ARR[sx], sx, sign=True), cell(0, sx), diff(TDIFF[sx], sx), cell(0, sx)]) for sx in 'FM')
                    + '</tbody>')
             notes = [f'Început: populare la Telița, sosire prin transfer la Hîrbovăț. Sacrificare – la Telița: registrul nu le ține separat.',
-                     f'Corecție la Telița: ce lipsește până la 0 la închiderea din <span class="ip-num">{ddate(cT["end_date"])}</span> (mutări și resturi din registru, transfer numărat la sosire).',
+                     'Diferență registru la Telița: diferență din registrul Seria 2026, de verificat la import; nu e o corecție înregistrată.',
                      f'Nicio vânzare în Seria 2026 până pe <span class="ip-num">{ddate(TODAY)}</span>.']
         if mode == 'viewer':  # the arrival is Hîrbovăț's own record; the source farm isn't named for a viewer without Telița
             hir_line = hir_line.replace('sosite de la Telița', 'sosite prin transfer')
@@ -388,6 +393,10 @@ CSS = s4.CSS + '''
 .s3-glink:hover{text-decoration-color:var(--ink)}
 .s3-gname{display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s3-dash{color:var(--ink-muted)}
+.ip-table th.s3-thwrap{white-space:normal}
+.s3-nw{white-space:nowrap}
+.s3-diff{display:inline-flex;align-items:center;gap:var(--space-2)}
+.s3-fsums{align-items:stretch} /* S3 fix 1: the two --wide FarmSummary panels side by side share one height */
 .s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
 .s3-track{max-width:100%}
 .s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
