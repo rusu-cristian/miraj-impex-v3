@@ -117,7 +117,7 @@ a.ip-stile,button.ip-stile{color:inherit;text-decoration:none;cursor:pointer;fon
 /* EventRow (a.ip-ev, or a row holding its own link/button). Disabled is text-only (no sunken fill). */
 a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100%;font:inherit;text-align:left;border-top:0;border-left:0;border-right:0;background:transparent}
 .ip-ev:is(a,button):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
-.ip-ev:not(.is-disabled):not([aria-disabled="true"]):has(> .ip-ev__main a:hover){background:var(--sunken)}
+.ip-ev:not(.is-disabled):not([aria-disabled="true"]):not(.ip-ev--act):has(> .ip-ev__main a:hover){background:var(--sunken)}
 .ip-ev:is(a,button):active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
 .ip-ev.is-pressed{background:var(--rule)}
 .ip-ev:disabled,.ip-ev.is-disabled,.ip-ev[aria-disabled="true"]{background:transparent;color:var(--ink-disabled);cursor:not-allowed}
@@ -906,3 +906,130 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-unpriced > .ip-btn{align-self:flex-start}
 .ip-unpriced .ip-skel--val{width:calc(var(--space-12) * 2);height:var(--ip-readout-lh)}
 .ip-unpriced__skel{display:flex;flex-direction:column;gap:var(--space-2)} /* loading: static skeleton stack */
+
+/* =====================================================================================================
+ * SYS09 · EventRow actions + ChangeRow, for S15 Introdus azi, S16 Corectează, S17 Istoric modificări and every event
+ * log (S4, S5). Spec: components.md › Additions › SYS09.
+ * ===================================================================================================== */
+
+/* ---------- 26. EventRow · actions (Editează / Șterge / Corectează) ---------- */
+/* An EventRow whose record the user may change: li.ip-ev.ip-ev--act in ul.ip-list.ip-list--act (a size container).
+ * The row itself is not a target; its keys are. Who gets which key (spec C8, E1, D07): the author, the same day until
+ * 23:59 → Editează (link to the form in edit mode) + Șterge (button → Dialog); manager/owner on a past day → Corectează
+ * (link to S16, reason + effect preview) + Șterge (reason + Dialog). Vet on a past own entry → locked: Tag "blocat" in
+ * the action slot, the reason in the meta. Viewer → no action slot.
+ * Layouts from the list's width: ≥ 480px inline ghost keys (.ip-ev__acts, control-h, labels + hidden record name);
+ * below, one touch IconButton "Acțiuni" (.ip-ev__more, Lucide ellipsis-vertical) opening an ip-menu[role=menu] whose
+ * items are 48px. The other layout is display:none (out of the tab order and the a11y tree). */
+.ip-list:is(ul,ol){list-style:none;margin:0;padding:0}
+.ip-list--act{container-type:inline-size;overflow:visible} /* the open menu and the keys' focus rings must not be clipped */
+.ip-ev--act .ip-ev__title{display:block}
+.ip-ev--act .ip-ev__meta{display:block}
+.ip-ev--act .ip-ev__meta .ip-sex b{font-weight:400}
+/* "corectat" + "modificat de … · dd.mm.yyyy, hh:mm": neutral Tag (D58) + a link to Istoric modificări for this record
+ * (spec E2 entry point). 24px target on desktop (D46), 48px touch height in the phone layout (hit area only). */
+.ip-ev__mod{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--space-2);margin-top:var(--space-1);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
+.ip-ev__mod > .ip-tag{flex:none}
+.ip-ev__mod .ip-link{display:inline-block;padding-block:calc((var(--space-6) - var(--ip-lh-small)) / 2);margin-block:calc((var(--ip-lh-small) - var(--space-6)) / 2);border-radius:var(--radius-xs)} /* hit area only; text wraps as text */
+.ip-ev--act .ip-ev__title .ip-num,.ip-ev__mod .ip-num{white-space:nowrap} /* a figure never splits from its unit ("3 691,3 kg"), a date from its time */
+.ip-ev__sexes{white-space:nowrap} /* "♀ și ♂" stays together */
+/* List head (S15 Introdus azi): caption title + the one note for the whole list ("poți modifica sau șterge până la 23:59"). */
+.ip-list__head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-1) var(--space-3);margin:0 0 var(--space-2)}
+.ip-list__head > :is(h2,h3,p){margin:0}
+/* Same-day edit by the author: plain "modificat la 09:52" in the meta, no Tag, no link (see SYS09 decision A). */
+.ip-ev__edited{white-space:nowrap}
+/* Action slot */
+.ip-ev__acts{flex:none;display:none;align-items:center;gap:var(--space-1)}
+.ip-ev__acts .ip-btn{padding-inline:var(--space-3)}
+.ip-ev__more{flex:none;position:relative;display:inline-flex;margin-block:calc(-1 * var(--space-2))} /* 48px key inside a 52px row */
+.ip-ev__more > .ip-iconbtn{cursor:pointer}
+.ip-ev__lock{flex:none;display:inline-flex;align-items:center}
+/* Phone menu: right-aligned under its key, over the next rows (shadow-overlay from ip-menu). div.ip-menu.ip-ev__menu
+ * (hidden while closed) > div.ip-ev__items[role=menu] (menuitems only) + p.ip-note sibling, tied by aria-describedby. */
+.ip-ev__menu{position:absolute;top:calc(100% + var(--space-1));right:0;z-index:2;margin:0;list-style:none}
+.ip-ev__menu[hidden]{display:none}
+.ip-ev__items{display:flex;flex-direction:column}
+.ip-ev__menu .ip-menu__item{width:100%;min-height:var(--control-h-touch);border:0;background:transparent;font:inherit;color:var(--ink);text-align:left;text-decoration:none;cursor:pointer}
+.ip-ev__menu .ip-menu__item:active:not(.is-disabled):not([aria-disabled="true"]),.ip-ev__menu .ip-menu__item.is-pressed{background:var(--rule)}
+.ip-ev__menu .ip-menu__item[aria-disabled="true"]{color:var(--ink-disabled);cursor:not-allowed}
+.ip-ev__menu > .ip-note{margin:0;padding:var(--space-1) var(--space-3) var(--space-2);max-width:calc(var(--space-12) * 5)}
+@container (min-width: 480px){ /* tile 32 + title ≥ 240 + "Corectează" + "Șterge" keys fit on one line */
+  .ip-ev__acts{display:inline-flex}
+  .ip-ev__more{display:none}
+}
+@container (max-width: 479.98px){
+  .ip-ev__mod .ip-link{padding-block:calc((var(--control-h-touch) - var(--ip-lh-small)) / 2);margin-block:calc((var(--ip-lh-small) - var(--control-h-touch)) / 2)}
+}
+/* Disabled with reason: the 23:59 window closed while the page was open. Keys stay in place, aria-disabled (Button's
+ * sunken + ink-disabled), aria-describedby → the reason in the meta. */
+.ip-ev__why{color:var(--ink-secondary)}
+/* Deleted: the struck record (shown where history is shown, decision D). Tile drops to steel (type kept by icon + word),
+ * title ink-secondary with <del> figures, Tag "șters", meta "șters de … · motiv". No keys. */
+.ip-ev--deleted .ip-tile{--b:var(--sunken);--c:var(--ink-secondary)}
+.ip-ev--deleted .ip-ev__title{color:var(--ink-secondary)}
+.ip-ev--deleted del{text-decoration-line:line-through;text-decoration-color:var(--ink-muted)}
+.ip-ev--deleted del .ip-sex{text-decoration:inherit}
+
+/* ---------- 27. ChangeRow (Istoric modificări) ---------- */
+/* One change in the change log (spec E2): li.ip-ev.ip-ev--change in ul.ip-list.ip-list--change (a size container).
+ * Cells: when (dd.mm.yyyy, hh:mm Mono) · RecordTile of the record changed · record (section · type + sex · record day, a
+ * link to that section and day, stretched over the row) + meta (farm · SAPT) · values (one line per field: key, <del>
+ * old, arrow, <ins> new; deleted = new "–") · reason ("– în aceeași zi, fără motiv" for same-day author edits) · who
+ * (name + role) · Tag of the change type (neutral: corectat / șters / editat) · chevron. Phone: stacked; ≥ 720px: one
+ * line per change under an aria-hidden column head. */
+.ip-list--change{container-type:inline-size;overflow:visible}
+.ip-ev--change{position:relative;display:grid;grid-template-columns:var(--record-tile) minmax(0,1fr) auto var(--space-4);grid-template-areas:"tile rec tag go" ". vals vals vals" ". why why why" ". meta meta meta";align-items:start;gap:var(--space-1) var(--space-3);padding:var(--space-3)}
+.ip-ev--change > .ip-tile{grid-area:tile}
+.ip-ev--change > .ip-ev__main{grid-area:rec;display:flex;flex-direction:column;min-width:0}
+.ip-ev--change > .ip-tag{grid-area:tag;justify-self:end}
+.ip-ev--change > .ip-ev__go{grid-area:go;align-self:start;height:var(--ip-lh-figure)}
+.ip-chg__link{font-weight:500;color:var(--ink);text-decoration:none;border-radius:var(--radius-xs)}
+.ip-chg__link::after{content:"";position:absolute;inset:0} /* the whole row opens the record */
+.ip-chg__link:focus-visible{outline:none}
+.ip-ev--change:has(.ip-chg__link:focus-visible),.ip-ev--change.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset);z-index:1}
+.ip-list--change > .ip-ev--change:first-child{border-top-left-radius:var(--radius-md);border-top-right-radius:var(--radius-md)}
+.ip-list--change > .ip-ev--change:last-child{border-bottom-left-radius:var(--radius-md);border-bottom-right-radius:var(--radius-md)}
+.ip-ev--change:not(.is-disabled):has(.ip-chg__link:active),.ip-ev--change.is-pressed{background:var(--rule)}
+.ip-ev--change:is(.is-pressed,:has(.ip-chg__link:active)) :is(.ip-chg__arrow,.ip-ev__go){color:var(--ink-secondary)} /* D34a: ink-muted text on rule */
+.ip-ev--change .ip-ev__meta{display:block}
+.ip-ev--change:is(.is-hover,:has(.ip-chg__link:hover)):not(.is-pressed):not(:has(.ip-chg__link:active)) .ip-tag--neutral{background:var(--rule)} /* the neutral Tag keeps its fill on the sunken hover row */
+/* Values */
+.ip-chg__vals{grid-area:vals;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.ip-chg__val{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--space-2)}
+.ip-chg__k{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
+.ip-chg__val del,.ip-chg__val ins{font:400 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ip-chg__val del{color:var(--ink-secondary);text-decoration-line:line-through;text-decoration-color:var(--ink-muted)}
+.ip-chg__val ins{font-weight:500;color:var(--ink);text-decoration:none}
+.ip-chg__arrow{color:var(--ink-muted)}
+/* Reason */
+.ip-chg__why{grid-area:why;margin:0;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink);min-width:0}
+.ip-chg__whyk{color:var(--ink-secondary)}
+.ip-chg__why.is-none{color:var(--ink-secondary)}
+/* When + who: one meta line on the phone ("15.11.2026, 10:12 · Ion Rusu · manager"); two columns when wide. */
+.ip-chg__meta{grid-area:meta;display:flex;flex-wrap:wrap;gap:0 var(--space-1);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary);min-width:0}
+.ip-chg__when{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ip-chg__who{display:inline-flex;flex-wrap:wrap;gap:0 var(--space-1)}
+.ip-chg__who > .ip-note{color:inherit}
+.ip-chg__cols{display:none}
+/* Empty list (no change in the chosen period) and generic empty row: off Lamp + word + one sentence, row height. */
+.ip-list__empty{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);padding:var(--space-3);min-height:var(--space-12);margin:0;color:var(--ink-secondary)}
+@container (max-width: 719.98px){
+  .ip-list--change > .ip-chg__cols + .ip-ev--change{border-top-left-radius:var(--radius-md);border-top-right-radius:var(--radius-md)}
+}
+@container (min-width: 720px){ /* one line per change: when 84 · tile · record · values · reason · who 120 · tag 72 · chevron */
+  .ip-ev--change,.ip-chg__cols{grid-template-columns:calc(var(--space-12) * 1.75) var(--record-tile) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.5fr) calc(var(--space-12) * 2.5) calc(var(--space-12) * 1.5) var(--space-4);column-gap:var(--space-3)}
+  .ip-ev--change{grid-template-areas:"when tile rec vals why who tag go"}
+  .ip-ev--change > .ip-tag{justify-self:start}
+  .ip-chg__meta{display:contents}
+  .ip-chg__when{grid-area:when;display:flex;flex-direction:column;padding-top:calc(2 * var(--ip-hair))}
+  .ip-chg__who{grid-area:who;display:flex;flex-direction:column;padding-top:calc(2 * var(--ip-hair))}
+  .ip-chg__dot{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .ip-chg__whyk{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap} /* the column head names it */
+  .ip-chg__cols{display:grid;padding:var(--space-2) var(--space-3);border-bottom:var(--ip-hair) solid var(--rule);background:var(--panel);border-radius:var(--radius-md) var(--radius-md) 0 0}
+  .ip-chg__cols > span:first-child{grid-column:1}
+  .ip-chg__cols > span:nth-child(2){grid-column:3}
+  .ip-chg__cols > span:nth-child(3){grid-column:4}
+  .ip-chg__cols > span:nth-child(4){grid-column:5}
+  .ip-chg__cols > span:nth-child(5){grid-column:6}
+  .ip-chg__cols > span:nth-child(6){grid-column:7}
+}
