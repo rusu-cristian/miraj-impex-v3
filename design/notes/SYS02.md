@@ -7,3 +7,4 @@
 - Wide variant by modifier class, not a container query (system uses modifiers like `--touch`; no literal breakpoint).
 - Rendered 2× at 1440 (headless Chrome); fixed footer wording and date wrapping.
 - Canvas: additions.css published to project/additions.css, version 1794848329-7c69.
+- SYS04 fix 1 (D50, 16.11.2026): stock below 0 now shows the warn lamp "abatere" (row and SaveBar summary); "stoc sub 0" moves to the detail text (first sub-line of Stoc după azi; SaveBar: "Breeder 2 · stoc sub 0" after the lamp). README + components.md › SYS02 updated. Rendered 1440/390.

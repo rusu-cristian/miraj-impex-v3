@@ -378,3 +378,74 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* Touch (phone): both links reach the 48px touch height without moving the text. */
 .ip-fsum--touch .ip-fsum__name a,.ip-fsum--touch .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch);margin-block:calc((var(--ip-lh-heading) - var(--control-h-touch)) / 2)}
 .ip-fsum--touch .ip-fsum__empty .ip-link{margin-block:calc((var(--ip-lh-small) - var(--control-h-touch)) / 2)}
+
+/* =====================================================================================================
+ * SYS04 · StockReadout and CostBlock for screen S11 (Rapoarte · Hrană). Spec: components.md › Additions › SYS04.
+ * ===================================================================================================== */
+
+/* ---------- 10. StockReadout (Readout --stock) + StockReadoutRow ---------- */
+/* One dark Readout per farm × feed type (spec D4 §1, S11 §2): the only place Readouts repeat in a section (craft.md).
+ * Caption "HÎRBOVĂȚ · BREEDER 2" + readout lamp and word; value = kg in stock (readout-lg); three key/value lines
+ * (zile rămase, medie/zi over the last 3 days, data epuizării) in Plex Mono; optional .ip-readout__sub for the reason.
+ * No record icon: rec-feed is 2.92:1 on the readout ground (under 3:1), so the caption names the feed type instead.
+ * .ip-readout--off: farm without an open cycle (or a type with no recent consumption shown as unlit): value in readout-muted. */
+.ip-readouts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--space-12) * 5)),1fr));gap:var(--space-3);align-items:stretch;margin:0;padding:0;list-style:none}
+.ip-readouts > li{display:flex;min-width:0}
+.ip-readouts > li > .ip-readout{flex:1}
+.ip-readout--stock{min-width:0;gap:var(--space-2)}
+.ip-readout--stock .ip-readout__cap{align-items:flex-start}
+.ip-readout--stock .ip-readout__cap > :first-child{min-width:0;overflow-wrap:anywhere}
+.ip-readout--stock .ip-rlamp{flex:none;white-space:nowrap}
+.ip-readout--stock .ip-readout__val{white-space:nowrap}
+.ip-readout__kv{margin:0;display:flex;flex-direction:column;gap:var(--space-1);padding-top:var(--space-2);border-top:var(--ip-hair) solid var(--readout-line)}
+.ip-readout__kv > div{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3)}
+.ip-readout__kv dt{font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);color:var(--readout-muted);white-space:nowrap}
+.ip-readout__kv dd{margin:0;font:500 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--readout-ink);text-align:right;white-space:nowrap}
+.ip-readout__kv dd small{font:400 var(--ip-fs-small) var(--font-mono);color:var(--readout-muted)}
+.ip-readout--off .ip-readout__val{color:var(--readout-muted)}
+.ip-readout--off .ip-readout__val small{color:var(--readout-muted)}
+
+/* ---------- 11. CostBlock ---------- */
+/* Feed cost per cycle (spec D4 §4, S11 §5): a compact DataTable (caption headers on panel, Plex Mono right-aligned
+ * figures, line-strong totals edge), one <tbody> per cycle: the cycle row (priced deliveries: kg, lei, lei/pasăre,
+ * lei/ou) and its "fără preț" line (coins in rec-feed, info Tag, unpriced kg, what is left out). Not a KPI grid.
+ * Phone: the DataTable rule, horizontal scroll with the first column sticky. Owner, manager, viewer: same markup
+ * (read-only block); never rendered for vets (D06). */
+:root{
+  --ip-fs-table:13px;--ip-lh-table:18px; /* bundle.css .ip-table body text 13/18, named for the row headers */
+}
+/* No overflow:hidden on .ip-cost: the phone scroll region's focus ring (2px, 2px offset) must show whole. The panel strips
+ * round their own outer corners instead; with no foot, the scroll region rounds (and clips) its bottom corners. */
+.ip-cost{margin:0;background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.ip-cost__head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3);padding:var(--space-2) var(--space-3);background:var(--panel);border-bottom:var(--ip-hair) solid var(--line);border-radius:var(--radius-md) var(--radius-md) 0 0}
+.ip-cost__head > :is(h2,h3,h4){margin:0}
+.ip-cost__scroll{overflow-x:auto}
+.ip-cost__scroll:last-child{border-radius:0 0 var(--radius-md) var(--radius-md)}
+.ip-cost__table{border-collapse:separate;border-spacing:0}
+.ip-cost__table thead th{border-bottom-color:var(--line)}
+/* Row headers (th scope=row) read as body text, not as caption headers. */
+.ip-cost__table tbody th{font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--raised);text-align:left;vertical-align:top;padding:var(--space-2) var(--space-3);border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-cost__table td{vertical-align:top;padding-top:var(--space-2);padding-bottom:var(--space-2)}
+.ip-cost__table td.num small,.ip-cost__table td.ip-cost__note{font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-muted)}
+.ip-cost__table td.num small{display:block}
+.ip-cost__sub{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-muted)}
+.ip-cost__sub .ip-num,.ip-cost__note .ip-num{white-space:nowrap}
+/* Each cycle is a <tbody>; cycles are split by line, rows inside a cycle by rule. */
+.ip-cost__table tbody + tbody > tr:first-child > :is(th,td){border-top:var(--ip-hair) solid var(--line)}
+/* The "fără preț" line: coins (rec-feed) + info Tag in the row header, unpriced kg in the kg column, the rest says what is left out. */
+.ip-cost__unpriced > th{font-weight:400;color:var(--ink-secondary)}
+.ip-cost__unpriced > th > span:not(.ip-sr){display:inline-flex;align-items:center;gap:var(--space-2)} /* the .ip-sr cycle prefix names the cycle for screen readers */
+.ip-cost__unpriced .ip-rec{color:var(--c);display:inline-flex}
+.ip-cost__unpriced td.num{color:var(--ink-secondary)}
+.ip-cost__table tbody > tr:last-child > :is(th,td){border-bottom:0}
+/* Totals: bundle.css tr.is-total (line-strong top edge, panel). */
+.ip-cost__table tr.is-total > th{background:var(--panel);border-top:var(--ip-hair) solid var(--line-strong)}
+.ip-cost__table tbody + tbody > tr.is-total:first-child > :is(th,td){border-top-color:var(--line-strong)}
+/* Default = phone (DataTable rule): the first column stays while the figures scroll; it is 160px wide and its
+ * sub-lines wrap (dates are separate Mono spans), a rule edge marks where the figures slide under it. */
+.ip-cost__table thead th:first-child,.ip-cost__table tbody th{position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule)}
+.ip-cost__table tbody th{white-space:normal;min-width:calc(var(--space-12) * 3 + var(--space-4));max-width:calc(var(--space-12) * 3 + var(--space-4))}
+/* .ip-cost--wide (desktop): one line per row header, no sticky edge (nothing scrolls). */
+.ip-cost--wide .ip-cost__table thead th:first-child,.ip-cost--wide .ip-cost__table tbody th{position:static;border-right:0}
+.ip-cost--wide .ip-cost__table tbody th{white-space:nowrap;min-width:0;max-width:none}
+.ip-cost__foot{margin:0;padding:var(--space-2) var(--space-3);border-top:var(--ip-hair) solid var(--rule);background:var(--panel);border-radius:0 0 var(--radius-md) var(--radius-md)}
