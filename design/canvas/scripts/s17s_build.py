@@ -2,9 +2,11 @@
 desktops (x 7600 …), the S17 phone moved right after them (only its x, as S16S did), the new phone after it.
 - din-modificat-de (owner, desktop): Istoric opened from the H4.1 14.11.2026 row's "modificat de Ion Rusu · 15.11.2026, 10:12"
   link (S4 · Păsări Jurnal, S16): one record, every period. No FilterBar (user, farm, period and type don't apply to one
-  record); an info Banner names the record, with "Arată tot istoricul" (back to the default filters).
+  record); a static info Banner (no live role) names the record, with "Arată toate modificările" (back to the
+  default filters, 4 săpt.).
 - manager-interval-gresit (D39): a manager assigned only Hîrbovăț (unnamed, as the S14S Telița-only manager): manager Sidebar,
-  Setări holds only Istoric modificări, no Fermă select (one farm, as D57), meta "ferma ta: Hîrbovăț". Merged with Interval
+  Setări holds only Istoric modificări, no Fermă select (one farm, as D57), meta "ferma ta: Hîrbovăț"; he is in his own
+  Utilizator list as "Manager (tu)" (no name, D96; the Sidebar account says "Manager"). Merged with Interval
   with a date error (FilterInterval preview markup and wording: "Până la 20.11.2026 e în viitor. Alege o dată până la
   16.11.2026."); the list keeps the last valid period.
 - exemple-randuri (D39, owner): the S15S same-day edit (Mortalitate H1.1, 16.11.2026, 09:52, Dr. Ceban; D39 old values,
@@ -16,7 +18,9 @@ desktops (x 7600 …), the S17 phone moved right after them (only its x, as S16S
   same: not drawn. The vet's "Nu ai acces la Istoric modificări." = the S17 observator-fara-acces picture: not drawn.
 - telefon-filtre (manager Ion Rusu, 390×844): the S17 phone with the system BottomSheet open (S14P pattern): Perioadă
   (touch SegmentedControl, focus on the chosen period), Fermă, Utilizator (touch Selects), the 7 record-type chips at
-  touch height (new system modifier .ip-chip--touch, additions.css section 40); choices apply at once, Închide / Esc closes.
+  touch height (new system modifier .ip-chip--touch, additions.css section 40) in the screen's chip group (.s4-chips,
+  space-2 apart); choices apply at once, Închide / Esc closes.
+S17P polish (17.11.2026): Banner one line + "Arată toate modificările", "Manager (tu)", corecție wording, no .s17-fchips.
 python3 -I s17s_build.py <repo_root> [--canvas]
 Imports s17_build (which rewrites the S17 boards, and through s14s_build the S14S/S2/S7 boards, byte-identical).
 Writes design/canvas/project/S17-istoric-modificari--<state>.dc.html, /tmp/s4s|/tmp/s2/<stem>.html and /tmp/s17/boards.json
@@ -55,7 +59,7 @@ def chg_row(c, state=''):
         r = r.replace(a, '<p class="ip-chg__why is-none"><span class="ip-chg__whyk">Motiv: </span>– în aceeași zi, fără motiv</p>')
     if len(c['vals']) == 2:
         d = f"{c['day']:%d.%m.%Y}"
-        a = f'<span class="ip-sex ip-sex--hen">♀</span><span class="ip-sr"> găini, ziua {d}</span>'; assert r.count(a) == 1
+        a = f'<span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr"> găini, ziua {d}</span>'; assert r.count(a) == 1
         r = r.replace(a, f'<span class="ip-ev__sexes" aria-hidden="true"><span class="ip-sex ip-sex--hen">♀</span> și <span class="ip-sex ip-sex--rooster">♂</span></span>'
                          f'<span class="ip-sr">găini și cocoși, ziua {d}</span>')
     if state:
@@ -72,12 +76,11 @@ def shell(sb, parts): return f'<div class="s4-shell">{sb}<main class="s4-main">\
 # ================================================================= 1 · din „modificat de” (owner): one record, all periods
 REC_TXT = f'Mortalitate · {REAL["sec"]} · ziua {REAL["day"]:%d.%m.%Y} · {REAL["farm"]}'
 def page_record():
-    ban = (f'<div class="ip-banner ip-banner--info s4s-banner" role="status">{icon("info", 16)}'
-           f'<div class="s4-grow"><p class="s4s-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p>'
-           '<p class="s4s-m0">Ai venit din „modificat de” de pe rândul ei. Filtrele nu se aplică unei singure înregistrări.</p></div>'
-           '<a class="ip-btn ip-btn--secondary" href="#istoric-modificari">Arată tot istoricul</a></div>')
+    ban = (f'<div class="ip-banner ip-banner--info s4s-banner">{icon("info", 16)}'   # static: present on load, no live role (S17P)
+           f'<div class="s4-grow"><p class="s4s-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p></div>'
+           '<a class="ip-btn ip-btn--secondary" href="#istoric-modificari">Arată toate modificările</a></div>')   # back to the 4 săpt. default
     note = f'1 modificare · Mortalitate {REAL["sec"]} · ziua {num(format(REAL["day"], "%d.%m.%Y"))} · tot istoricul'
-    foot = ('Istoricul unei înregistrări arată fiecare corectură sau ștergere a ei, cu valorile vechi și noi. '
+    foot = ('Istoricul unei înregistrări arată fiecare corecție sau ștergere a ei, cu valorile vechi și noi. '
             'Rândul deschide secțiunea în ziua înregistrării.')
     return shell(Y.sidebar_owner(), [Y.header(), ban, block([chg_row(REAL)], note, foot)])
 
@@ -97,12 +100,12 @@ def interval():
         assert b.count(a) == 1, a; b = b.replace(a, z)
     return f'<span class="ip-interval" role="group" aria-label="Interval">{s4.datef("iv-a", "de la", IV_A)}{b}</span>'
 def page_manager():
-    users = [o for o in Y.USER_OPTS]
+    users = list(Y.USER_OPTS); users.insert(users.index('Ion Rusu · manager') + 1, 'Manager (tu)')   # the D39 manager himself, unnamed (D96)
     fb = (f'<div class="ip-filterbar s11-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", Y.PER, 3)}{interval()}'
           f'{Y.select("f-user", "Utilizator", users, users[0])}{Y.chips()}<p class="ip-err ip-filterbar__err" id="iv-b-err">{IV_ERR}</p></div>')
     h = Y.header()
-    a = '· Hîrbovăț, Telița</span>'; assert h.count(a) == 1
-    h = h.replace(a, '· ferma ta: Hîrbovăț</span>')
+    a = f'·{Y.NB2}{Y.SCOPE}</span>'; assert h.count(a) == 1
+    h = h.replace(a, f'·{Y.NB2}ferma ta:{Y.NB2}Hîrbovăț</span>')
     note = f'1 modificare · {num(Y.PER_TXT)} · perioada de dinainte, până corectezi data · cele mai noi întâi'
     return shell(sidebar_manager(), [h, fb, block([chg_row(REAL)], note, Y.FOOT + ' Vezi doar fermele tale.')])
 
@@ -139,7 +142,7 @@ def p_sheet():
     chips = ''.join(s4.chip(k, w).replace('class="ip-chip ', 'class="ip-chip ip-chip--touch ', 1) for k, w in Y.TYPES)
     assert chips.count('ip-chip--touch') == len(Y.TYPES) == 7
     typ = (f'<div class="ip-field"><span class="ip-label" id="pf-typ">Tipuri de înregistrări</span>'
-           f'<div class="s4-chips s17-fchips" role="group" aria-labelledby="pf-typ">{chips}</div></div>')
+           f'<div class="s4-chips" role="group" aria-labelledby="pf-typ">{chips}</div></div>')   # .s4-chips: wrapping, space-2 apart
     return ('<div class="ip-scrim ip-scrim--sheet">'
             '<div class="ip-sheet s14-fsheet" role="dialog" aria-modal="true" id="pf-sheet" aria-labelledby="pf-t" aria-describedby="pf-d">'
             '<div class="ip-sheet__handle" aria-hidden="true"></div>'
@@ -159,8 +162,7 @@ def phone_sheet():  # as s14s_build.phone_sheet: the page (at its top) and the t
     assert b.endswith('</div>')
     return b[:-len('</div>')] + p_sheet() + '</div>'
 
-CSS_SHEET = Z.CSS_SHEET + Y.CSS17 + '''
-.s17-fchips{gap:var(--space-2)} /* touch chips: 8px apart, as the sheet's other touch controls */'''
+CSS_SHEET = Z.CSS_SHEET + Y.CSS17
 
 # ================================================================= boards
 DESK = [(STEM + '--din-modificat-de', f'{T} · din „modificat de” · o înregistrare', page_record, Y.CSS_D, 1024),

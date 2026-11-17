@@ -15,6 +15,7 @@ Boards (row below S16, y 30164):
 Reuses by import: s14s_build (phone filter key, Banner fault icon, phone CSS; imports s14_build, s2_build, sstate_css and
 rewrites the S14S/S2/S7 boards byte-identical), s14_build (desktop CSS: S4 shell + S11 farm select), s4s_build (sidebar,
 seg, chip, icons, empty_box, skeleton, write), s2_build (phone, write_phone). No new system class.
+S17P polish (17.11.2026): wording Corecții/managerilor, meta · rule (S2P), foot note measure, ♀ hidden in the row link name.
 python3 -I s17_build.py <repo_root> [s17_heights.json] [--canvas]
 Writes design/canvas/project/S17-istoric-modificari[--<state>].dc.html, /tmp/s4s|/tmp/s2/<stem>.html, /tmp/s17/boards.json;
 --canvas adds the 6 boards to canvas.json (new row, nothing else changes)."""
@@ -33,6 +34,7 @@ X, A, s4, s11 = Z.X, Z.A, Z.s4, Z.s11
 icon, lamp, num, n, ddate = s4.icon, s4.lamp, X.num, s4.n, s4.ddate
 S = s4.S
 NB = ' '
+NB2 = '\u00a0'  # S2P meta rule: no-break space on both sides of a · separator that must not dangle
 
 # ================================================================= data (extracts only)
 TODAY = dt.date(2026, 11, 16)
@@ -79,14 +81,19 @@ assert [k for k, _ in TYPES] == ['mortality', 'cull', 'feed', 'delivery', 'price
 # ================================================================= ChangeRow (SYS09, components.md › Additions; preview markup)
 GO = f'<span class="ip-ev__go">{icon("chev", 16).replace(s4.IC["chev"], "<path d=\"m9 18 6-6-6-6\"/>")}</span>'
 SEXSR = {'F': ('hen', '♀', 'găini'), 'M': ('rooster', '♂', 'cocoși')}
-def chg_row(c):
+def chg_row(c, preview=False):
+    """The SYS09 ChangeRow. S17P: the ♀/♂ sign in the record link is aria-hidden, so the link's name says "găini" once.
+    Its meta groups (ziua date · SAPT · farm) wrap whole and a · never ends or starts a line (.s17-meta).
+    preview=True gives the preview's markup (sign exposed, plain-text separators)."""
     cls, sign, word = SEXSR[c['sx']]; d = f"{c['day']:%d.%m.%Y}"
     vals = ''.join(f'<li class="ip-chg__val"><span class="ip-chg__k">{k}</span><del><span class="ip-sr">înainte </span>{o}</del>'
                    f'<span class="ip-chg__arrow" aria-hidden="true">→</span><ins><span class="ip-sr">, după </span>{v}</ins></li>' for k, o, v in c['vals'])
     href = f"#{c['farm'].lower().replace('î', 'i').replace('ă', 'a').replace('ț', 't')}-{c['sec'].lower().replace('.', '-')}-{c['day']:%d-%m-%Y}"
     return (f'<li class="ip-ev ip-ev--change">{s4.tile(c["rec"])}<span class="ip-ev__main">'
-            f'<a class="ip-chg__link" href="{href}">{RECW[c["rec"]]} · {c["sec"]} <span class="ip-sex ip-sex--{cls}">{sign}</span><span class="ip-sr"> {word}, ziua {d}</span></a>'
-            f'<span class="ip-ev__meta">ziua <span class="ip-num">{d} · SAPT {sapt(c["day"])}</span> · {c["farm"]}</span></span>'
+            f'<a class="ip-chg__link" href="{href}">{RECW[c["rec"]]} · {c["sec"]} <span class="ip-sex ip-sex--{cls}"{"" if preview else ' aria-hidden="true"'}>{sign}</span><span class="ip-sr"> {word}, ziua {d}</span></a>'
+            + (f'<span class="ip-ev__meta">ziua <span class="ip-num">{d} · SAPT {sapt(c["day"])}</span> · {c["farm"]}</span></span>' if preview else
+               f'<span class="ip-ev__meta s17-meta"><span><span>ziua <span class="ip-num">{d}</span></span><span class="ip-num">SAPT{NB2}{sapt(c["day"])}</span>'
+               f'<span>{c["farm"]}</span></span></span></span>') +
             f'<ul class="ip-chg__vals">{vals}</ul>'
             f'<p class="ip-chg__why"><span class="ip-chg__whyk">Motiv: </span>{c["why"]}</p>'
             f'<span class="ip-chg__meta"><span class="ip-chg__when">{c["at"]:%d.%m.%Y}<span class="ip-chg__dot">, </span><span>{c["at"]:%H:%M}</span></span>'
@@ -98,9 +105,9 @@ SKEL = ('<li class="ip-ev ip-ev--skel" aria-hidden="true"><span class="ip-skel i
         '<span class="ip-skel ip-skel--w1"></span><span class="ip-skel ip-skel--w2"></span></span><span class="ip-skel ip-skel--w3"></span></li>')
 # the preview's markup, so the row is the system's (only the chevron path differs in source: Lucide chevron-right)
 _pv = (ROOT / 'design/system/components/ChangeRow/preview.html').read_text(encoding='utf-8')
-assert chg_row(CH[0]).replace('href="#hirbovat-h4-1-14-11-2026"', 'href="#"') in _pv and COLS in _pv and SKEL in _pv
+assert chg_row(CH[0], preview=True).replace('href="#hirbovat-h4-1-14-11-2026"', 'href="#"') in _pv and COLS in _pv and SKEL in _pv
 
-FOOT = ('Istoricul păstrează corecturile și ștergerile managerului și ale proprietarului, cu motiv, și modificările autorului '
+FOOT = ('Istoricul păstrează corecțiile și ștergerile managerilor și ale proprietarului, cu motiv, și modificările autorului '
         f'în aceeași zi, până la {num("23:59")}, fără motiv. Înregistrările noi nu apar aici. Rândul deschide secțiunea în ziua înregistrării.')
 def count_txt(k): return 'nicio modificare' if k == 0 else '1 modificare' if k == 1 else f'{k} modificări'
 
@@ -147,7 +154,10 @@ def filterbar(user=None):
             f'{select("f-farm", "Fermă", ["Toate fermele", "Hîrbovăț", "Telița"], "Toate fermele")}{select("f-user", "Utilizator", USER_OPTS, u)}{chips()}</div>')
 CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a><span aria-hidden="true">›</span>'
           '<span aria-current="page">Istoric modificări</span></nav>')
-META = '<div class="ip-row s4-meta"><span class="ip-note">Corecturi, ștergeri și modificări din aceeași zi, cu valorile vechi și noi · Hîrbovăț, Telița</span></div>'
+SCOPE = f'Hîrbovăț,{NB2}Telița'
+def meta(scope=SCOPE):  # S2P: the · never ends or starts a line; "noi · Hîrbovăț, Telița" wraps as one unit (S17P)
+    return f'<div class="ip-row s4-meta"><span class="ip-note">Corecții, ștergeri și modificări din aceeași zi, cu valorile vechi și noi{NB2}·{NB2}{scope}</span></div>'
+META = meta()
 def header(bare=False):
     if bare: return '<header class="ip-pagehead"><div><h1>Istoric modificări</h1></div></header>'
     return f'<header class="ip-pagehead">\n<div>\n{CRUMBS}\n<h1>Istoric modificări</h1>\n{META}\n</div>\n</header>'
@@ -181,7 +191,7 @@ def p_header():
     return f'<header class="ip-pagehead s2-phead s14-phead"><div>{h}<h1>Istoric modificări</h1></div></header>'
 def p_filter():
     pf = Z.p_filter()
-    for a, z in (('Filtrează sau exportă', 'Filtrează'), ('Ciclul curent · Hîrbovăț', f'4 săpt. · toate fermele · toți utilizatorii · {len(TYPES)} tipuri')):
+    for a, z in (('Filtrează sau exportă', 'Filtrează'), ('Ciclul curent · Hîrbovăț', '4 săpt. · toate fermele · toți utilizatorii · toate tipurile')):
         assert pf.count(a) == 1, a; pf = pf.replace(a, z)
     return pf
 def phone_page():
@@ -195,7 +205,12 @@ def phone_page():
 
 # ================================================================= CSS (screen-only; system classes untouched)
 CSS17 = '''
-.s17-block > .ip-list__head{margin:0} /* the block's gap spaces the head, as .s2-block */'''
+.s17-block > .ip-list__head{margin:0} /* the block's gap spaces the head, as .s2-block */
+.s17-meta{overflow:hidden} /* S17P: the row meta breaks only between its groups; the · before a group that wraps is clipped */
+.s17-meta > span{display:flex;flex-wrap:wrap;margin-left:calc(-1 * var(--space-4))}
+.s17-meta > span > span{white-space:nowrap}
+.s17-meta > span > span::before{content:"·";display:inline-block;width:var(--space-4);text-align:center}
+.s17-block > p.ip-note{max-width:calc(var(--space-12) * 11)} /* S17P: the foot note keeps a reading measure (528px, about 80 characters) */'''
 CSS_D = X.CSS + CSS17
 CSS_P = Z.CSS_PHONE + CSS17
 
