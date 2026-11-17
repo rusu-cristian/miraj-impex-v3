@@ -1545,6 +1545,125 @@
       "h": 1024,
       "expand": "fill",
       "title": "S20 · Ghiduri · Șterge ghidul nefolosit · exemplu de stare (D39): „Ross 308 ouat 2027”, salvat și nefolosit"
+    },
+    "S21-tipuri-hrana.dc.html": {
+      "x": 0,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană"
+    },
+    "S21-tipuri-hrana--breeder-2.dc.html": {
+      "x": 1520,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Breeder 2 · panoul tipului"
+    },
+    "S21-tipuri-hrana--starter.dc.html": {
+      "x": 3040,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Starter · tip retras"
+    },
+    "S21-tipuri-hrana--retragere-refuzata.dc.html": {
+      "x": 4560,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Breeder 2 · retragere refuzată: stoc la Hîrbovăț · exemplu de stare (D39): Activ debifat"
+    },
+    "S21-tipuri-hrana--tip-nou.dc.html": {
+      "x": 6080,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Tip nou"
+    },
+    "S21-tipuri-hrana--nume-gol.dc.html": {
+      "x": 7600,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Tip nou · nume gol și pentru lipsă · exemplu de stare (D39)"
+    },
+    "S21-tipuri-hrana--nume-folosit.dc.html": {
+      "x": 9120,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Tip nou · nume deja folosit · exemplu de stare (D39): „cocosi”"
+    },
+    "S21-tipuri-hrana--salvat.dc.html": {
+      "x": 10640,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · salvat · exemplu de stare (D39): Breeder 3 adăugat"
+    },
+    "S21-tipuri-hrana--eroare-la-salvare.dc.html": {
+      "x": 12160,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Tip nou · eroare la salvare · exemplu de stare (D39): Breeder 3"
+    },
+    "S21-tipuri-hrana--sterge.dc.html": {
+      "x": 13680,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Breeder 3 · Șterge tipul · exemplu de stare (D39): tip nou, nefolosit"
+    },
+    "S21-tipuri-hrana--se-incarca.dc.html": {
+      "x": 15200,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · se încarcă"
+    },
+    "S21-tipuri-hrana--eroare-la-incarcare.dc.html": {
+      "x": 16720,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · eroare la încărcare"
+    },
+    "S21-tipuri-hrana--fara-acces.dc.html": {
+      "x": 18240,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · observator · fără acces"
+    },
+    "S21-tipuri-hrana--niciun-tip.dc.html": {
+      "x": 19760,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · niciun tip · exemplu de stare (D39)"
+    },
+    "S21-tipuri-hrana--telefon.dc.html": {
+      "x": 21280,
+      "y": 38201,
+      "w": 390,
+      "h": 844,
+      "title": "S21 · Tipuri de hrană · telefon · doar citire"
     }
   },
   "order": [
@@ -1750,7 +1869,22 @@
     "S20-ghiduri--nume-folosit.dc.html",
     "S20-ghiduri--ghid-nou.dc.html",
     "S20-ghiduri--eroare-la-salvare.dc.html",
-    "S20-ghiduri--sterge.dc.html"
+    "S20-ghiduri--sterge.dc.html",
+    "S21-tipuri-hrana.dc.html",
+    "S21-tipuri-hrana--breeder-2.dc.html",
+    "S21-tipuri-hrana--starter.dc.html",
+    "S21-tipuri-hrana--retragere-refuzata.dc.html",
+    "S21-tipuri-hrana--tip-nou.dc.html",
+    "S21-tipuri-hrana--nume-gol.dc.html",
+    "S21-tipuri-hrana--nume-folosit.dc.html",
+    "S21-tipuri-hrana--salvat.dc.html",
+    "S21-tipuri-hrana--eroare-la-salvare.dc.html",
+    "S21-tipuri-hrana--sterge.dc.html",
+    "S21-tipuri-hrana--se-incarca.dc.html",
+    "S21-tipuri-hrana--eroare-la-incarcare.dc.html",
+    "S21-tipuri-hrana--fara-acces.dc.html",
+    "S21-tipuri-hrana--niciun-tip.dc.html",
+    "S21-tipuri-hrana--telefon.dc.html"
   ],
   "notes": {},
   "designSystems": [
