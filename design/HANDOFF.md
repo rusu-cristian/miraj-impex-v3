@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 06:00 · Last commit: 9d9f334
+Updated: 2026-11-18 06:45 · Last commit: d4b5d94
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 73 / 78 · Screens done: S22 + 16 states, S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S22S; all SYS jobs done
+Done 74 / 78 · Screens done: S22 + 25 states, S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S22P; all SYS jobs done
 
 ## Just finished
+- S22S Utilizatori states: 9 desktops x 24320–36480 (meniu deschis după ↓, meniu contul tău, resetează parola, resetare eșuată, parolă copiată, copiere eșuată, meniu dezactivat, reactivat, editează dezactivat), phone moved to x 38000; D119; rebuild s22_build --canvas then s22s_build --canvas; 1 fix round (alertdialog, copy-failed announced once) (d4b5d94)
 - S22 Utilizatori: row y 39345, 16 desktops x 0–22800 (list, Ion Rusu panel, utilizator nou, erori, login folosit, parolă o dată, salvat, eroare la salvare, contul tău, dezactivează Dialog, dezactivat Toast, parolă resetată, se încarcă, eroare la încărcare, fără acces, doar tu) + read-only phone x 24320; D118 (D78 still departs from A2: app generates the password); S22S queued; 1 fix round (focus on login error, last sign-in in the fold, Observator prices hint) (9d9f334)
 - S21P Tipuri de hrană polish: §44 Checkbox disabled / error / `.ip-field > .ip-check` rhythm (44px target kept, position:relative); Activ refusal uses the error look; 2 D39 boards --retras-stoc-0, --reactivat (desktops x … 22800), phone x 24320; D117; 1 fix round (target overlap, "0 kg" Mono) (41b20b7)
 - S21 Tipuri de hrană: row y 38201, 14 desktops x 0–19760 (list, Breeder 2 / Starter panels, retragere refuzată, tip nou, nume gol, nume folosit, salvat, eroare la salvare, Șterge Dialog, se încarcă, eroare la încărcare, fără acces, niciun tip) + read-only phone x 21280; all 5 types in use (none deletable); D116; 1 fix round (read-only Pentru = S8/S19 read-only TextField) (fff55b3)
@@ -56,7 +57,7 @@ Done 73 / 78 · Screens done: S22 + 16 states, S21 + 16 states (polished), S20 +
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S22S → S22P → S1 → S1P → FIN (screens only from here)
+- S22P → S1 → S1P → FIN (screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -104,6 +105,7 @@ Done 73 / 78 · Screens done: S22 + 16 states, S21 + 16 states (polished), S20 +
 - S21: project/S21-tipuri-hrana*.dc.html (15 boards) + canvas.json
 - S21P: project/additions.css (§44) + all 17 project/S21-tipuri-hrana*.dc.html (new --retras-stoc-0, --reactivat) + canvas.json (phone x 24320)
 - S22: project/S22-utilizatori*.dc.html (17 boards) + canvas.json
+- S22S: project/S22-utilizatori--{meniu-deschis,meniu-contul-tau,reseteaza-parola,resetare-esuata,parola-copiata,copiere-esuata,meniu-dezactivat,reactivat,editeaza-dezactivat}.dc.html + canvas.json (phone x 38000)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
