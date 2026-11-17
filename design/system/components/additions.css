@@ -1033,3 +1033,71 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
   .ip-chg__cols > span:nth-child(5){grid-column:6}
   .ip-chg__cols > span:nth-child(6){grid-column:7}
 }
+
+/* =====================================================================================================
+ * SYS10 · SectionTree, the farm → hall → section editor of S19 Ferme și secțiuni (spec B1). Spec: components.md ›
+ * Additions › SYS10.
+ * ===================================================================================================== */
+
+/* ---------- 28. SectionTree (Ferme și secțiuni) ---------- */
+/* A DataTable (ip-table, unchanged) whose rows form a tree: farm (tr.is-group, the system's group row) → section or hall
+ * (.ip-stree--l2) → compartment (.ip-stree--l3; spec B1 "optional parent for compartments", so one level only).
+ * Columns: Secțiune (code, indented by level; a hall names its compartment count) · Stare (Lamp "cu păsări" ok / "goală"
+ * off, Tag neutral "retrasă") · one IconButton "Acțiuni" per row opening an ip-menu (Redenumește, Mută în sus, Mută în
+ * jos, Adaugă compartiment, Retrage). Rows are not targets; the key, the menu items and the add rows are.
+ * Each action saves on its own (SYS10 decision A): inline edit row with Salvează / Anulează, Retrage through a Dialog. */
+.ip-stree{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.ip-stree > .ip-list__head{margin:0}
+.ip-stree__box{background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)} /* no overflow clip: the open menu hangs over the rows below */
+.ip-stree__t td{vertical-align:middle}
+.ip-stree__t tbody tr:last-child > td{border-bottom:0}
+.ip-stree__t th.ip-stree__acth{width:calc(var(--control-h) + 2 * var(--space-1));padding-inline:var(--space-1)}
+/* Code cell: the section code (sans 500, like the SectionTile code) + an optional note ("2 compartimente"). */
+.ip-stree__cell{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 var(--space-2);min-width:0}
+.ip-stree__code{font-weight:500;color:var(--ink);white-space:nowrap}
+.ip-stree__cell > .ip-note{white-space:nowrap}
+/* Indent per level; compartments hang from a hair rail under their hall's code. */
+.ip-stree--l2 > td:first-child{padding-left:calc(var(--space-3) + var(--space-4))}
+.ip-stree--l3 > td:first-child{position:relative;padding-left:calc(var(--space-3) + var(--space-8) + var(--space-2))}
+.ip-stree--l3 > td:first-child::before{content:"";position:absolute;left:calc(var(--space-3) + var(--space-4) + var(--space-1));top:0;height:50%;width:var(--space-3);border-left:var(--ip-hair) solid var(--line);border-bottom:var(--ip-hair) solid var(--line)}
+.ip-stree--l3:not(.is-last) > td:first-child::after{content:"";position:absolute;left:calc(var(--space-3) + var(--space-4) + var(--space-1));top:50%;bottom:calc(-1 * var(--ip-hair));border-left:var(--ip-hair) solid var(--line)}
+/* Farm row: the DataTable group row (sunken, 500). Name + guide Tag (or "fără ghid"), then type and counts. The neutral
+ * Tag would vanish on the sunken row, so it takes the next steel step (as on the ChangeRow hover row). */
+.ip-stree__farm > td{padding-block:var(--space-2)}
+.ip-stree__farmname{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2)}
+.ip-stree__farmname > b{font:500 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-sans)}
+.ip-stree__farm .ip-tag--neutral{background:var(--rule)}
+.ip-stree__farm .ip-note{display:block;font-weight:400;white-space:normal}
+/* Action cell: one 32px IconButton "Acțiuni" in a 32px row; open = sunken + ink (aria-expanded). */
+.ip-stree__t td.ip-stree__act{position:relative;width:calc(var(--control-h) + 2 * var(--space-1));padding:0 var(--space-1);text-align:right}
+.ip-stree__act > .ip-iconbtn{vertical-align:middle}
+.ip-stree__act > .ip-iconbtn[aria-expanded="true"]{background:var(--sunken);color:var(--ink)}
+/* Row menu: right-aligned under its key, over the next rows (shadow-overlay from ip-menu). div.ip-menu.ip-stree__menu
+ * (hidden while closed) > div[role=menu] of button menuitems + a p.ip-note sibling naming why an item is disabled,
+ * tied by aria-describedby on the menu and on the disabled item. */
+.ip-stree__menu{position:absolute;top:calc(100% + var(--space-1));right:var(--space-1);z-index:2;text-align:left;white-space:normal}
+.ip-stree__menu[hidden]{display:none}
+.ip-stree__items{display:flex;flex-direction:column}
+.ip-stree__menu .ip-menu__item{width:100%;border:0;background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.ip-stree__menu .ip-menu__item.is-active{background:var(--sunken)} /* keyboard-current item (bundle.css is-active; the reset above would drop it) */
+.ip-stree__menu .ip-menu__item:active:not([aria-disabled="true"]),.ip-stree__menu .ip-menu__item.is-pressed{background:var(--rule)}
+.ip-stree__menu .ip-menu__item[aria-disabled="true"]{color:var(--ink-disabled);cursor:not-allowed}
+.ip-stree__sep{height:var(--ip-hair);margin:var(--space-1) 0;background:var(--rule)}
+.ip-stree__menu > .ip-note{margin:0;padding:var(--space-1) var(--space-3) var(--space-2);max-width:calc(var(--space-12) * 5)}
+/* Retired section (B1 "retire"): listed after the active ones, code ink-secondary, Tag neutral "retrasă", no key. */
+.ip-stree__row.is-retired .ip-stree__code{color:var(--ink-secondary)}
+/* Inline edit row (add or rename): a medium TextField (DataTable inline edit) sized for a code, Salvează (secondary) +
+ * Anulează (ghost) on the same line, the error line under the field. Typed values stay after a failed save. */
+.ip-stree__t tr.ip-stree__edit > td{height:auto;padding-block:var(--space-1);white-space:normal}
+.ip-stree__form{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2)}
+.ip-stree__in{flex:none;width:calc(var(--space-12) * 2)}
+.ip-stree__form > .ip-label{flex-basis:100%;margin:0} /* visible label above the field (craft §5): "Compartiment nou în H1", "Cod nou pentru H5-2" keeps the old code in view */
+.ip-stree__form > .ip-err{flex-basis:100%;margin:0}
+/* Add row: a ghost Button "Adaugă secțiune" at the end of each farm, aligned with the section codes. */
+.ip-stree__t tr.ip-stree__add > td{padding-block:0}
+.ip-stree__add .ip-btn{padding-inline:var(--space-2);margin-left:calc(-1 * var(--space-2))}
+/* Farm without sections: off Lamp + one sentence inside the tree; the add row under it is the next step. */
+.ip-stree__t tr.ip-stree__empty > td{height:auto;padding-block:var(--space-3);white-space:normal}
+.ip-stree__empty .ip-stree__cell{flex-direction:column;align-items:flex-start;gap:var(--space-1);color:var(--ink-secondary)}
+/* Loading: static skeleton rows (aria-busy on the table). */
+.ip-stree__skel .ip-skel{display:block}
