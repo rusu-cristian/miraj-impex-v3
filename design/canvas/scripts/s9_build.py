@@ -277,16 +277,7 @@ boards.append(('ciclu-nou', 'ciclu nou · exemplu de stare (D39)', screen([DATE2
 
 SCSS = '''
 .s9-in > .ip-sexrow__sel{flex:none}
-.s9-alive .ip-pair{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-small)}
-.s9-fxbody{display:flex;flex-direction:column;gap:var(--space-1);min-width:0;flex:1}
-.s9-fxline{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 var(--space-2)}
-.s9-fxval{display:inline-flex;align-items:baseline;gap:var(--space-1);white-space:nowrap}
-.s9-fxval .ip-pair{gap:var(--space-1)}
-.s9-to{color:var(--ink-secondary)}
-.s9-strong{font-weight:500;color:var(--ink)}
-.s9-fxcyc{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--space-2);margin-top:var(--space-1)}
-.s9-fxsub{color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
-.s9-modal{position:relative} /* the BottomSheet scrim fills the phone screen */'''
+.s9-alive .ip-pair{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-small)}''' + SC.FX + SC.MODAL  # EffectPreview lines + modal anchor: shared with s10_build (s9- names kept)
 CSS = P.CSS + SC.MAIN + SC.REC + SC.EFFECT + SCSS
 
 # ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 16.11.2026 ----------

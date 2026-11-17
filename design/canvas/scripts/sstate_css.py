@@ -45,9 +45,28 @@ MAIN = '\n.s13-main{gap:var(--space-5)}'  # the phone form main gap (s7-main is 
 M0 = '''
 .s13-m0{margin:0}'''
 
+OPT = '''
+.s13-opt{font-weight:400;color:var(--ink-muted)}'''  # "(opțional)" after a field label (craft §5), shared by s13_build and s10_build
+
 REC = '''
 .s13-rec{color:var(--c);display:inline-flex;flex:none}'''
 
 EFFECT = '''
 .s13-effect{align-items:flex-start}
 .s13-effect > .s13-rec{margin-top:var(--ip-hair)}'''
+
+# EffectPreview body: one line per scope (name left, before → after right), cycle-mark lines with a sub-line; and the phone
+# screen as the anchor of a modal over it (BottomSheet scrim, Dialog scrim). Shared by s9_build and s10_build; class names
+# stay `s9-` (s9_build concatenates them where its own rules stood, so its boards are byte-identical to before).
+FX = '''
+.s9-fxbody{display:flex;flex-direction:column;gap:var(--space-1);min-width:0;flex:1}
+.s9-fxline{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 var(--space-2)}
+.s9-fxval{display:inline-flex;align-items:baseline;gap:var(--space-1);white-space:nowrap}
+.s9-fxval .ip-pair{gap:var(--space-1)}
+.s9-to{color:var(--ink-secondary)}
+.s9-strong{font-weight:500;color:var(--ink)}
+.s9-fxcyc{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--space-2);margin-top:var(--space-1)}
+.s9-fxsub{color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}'''
+
+MODAL = '''
+.s9-modal{position:relative} /* the BottomSheet scrim fills the phone screen */'''

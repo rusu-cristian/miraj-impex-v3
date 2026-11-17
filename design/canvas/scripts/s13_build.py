@@ -137,8 +137,7 @@ ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("
        f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + FORM(), B.savebar(sum1(), SUM2, ADD))))
 
-CSS = P.CSS + SC.MAIN + SC.REC + '''
-.s13-opt{font-weight:400;color:var(--ink-muted)}''' + SC.M0 + '''
+CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''
 .s13-nw{white-space:nowrap}
 .s13-err{margin:0}
 .s13-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}''' + SC.EFFECT + '''
