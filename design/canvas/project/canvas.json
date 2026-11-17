@@ -1810,11 +1810,83 @@
       "title": "S22 · Utilizatori · doar tu · exemplu de stare (D39)"
     },
     "S22-utilizatori--telefon.dc.html": {
-      "x": 24320,
+      "x": 38000,
       "y": 39345,
       "w": 390,
       "h": 844,
       "title": "S22 · Utilizatori · telefon · doar citire · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--meniu-deschis.dc.html": {
+      "x": 24320,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · meniul rândului deschis · Ion Rusu, după ↓ tastatura pe „Resetează parola” (deschis, cade pe Editează) · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--meniu-contul-tau.dc.html": {
+      "x": 25840,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · meniul rândului tău · Dezactivează indisponibil, cu motivul · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--reseteaza-parola.dc.html": {
+      "x": 27360,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Resetează parola lui Ion Rusu · confirmare · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--resetare-esuata.dc.html": {
+      "x": 28880,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Resetează parola lui Ion Rusu · resetarea nu a mers, Reîncearcă · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--parola-copiata.dc.html": {
+      "x": 30400,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Observator exemplu · parola temporară copiată · exemplu de stare (D39), parola exemplu"
+    },
+    "S22-utilizatori--copiere-esuata.dc.html": {
+      "x": 31920,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Ion Rusu · copierea parolei nu a mers, parola selectată · exemplu de stare (D39), parola exemplu"
+    },
+    "S22-utilizatori--meniu-dezactivat.dc.html": {
+      "x": 33440,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · meniul unui cont dezactivat · Petrea: Reactivează, Resetează parola indisponibil · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--reactivat.dc.html": {
+      "x": 34960,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Petrea reactivat · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--editeaza-dezactivat.dc.html": {
+      "x": 36480,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Petrea, cont dezactivat · panoul utilizatorului · exemplu de stare (D39)"
     }
   },
   "order": [
@@ -2054,7 +2126,16 @@
     "S22-utilizatori--eroare-la-incarcare.dc.html",
     "S22-utilizatori--fara-acces.dc.html",
     "S22-utilizatori--doar-tu.dc.html",
-    "S22-utilizatori--telefon.dc.html"
+    "S22-utilizatori--telefon.dc.html",
+    "S22-utilizatori--meniu-deschis.dc.html",
+    "S22-utilizatori--meniu-contul-tau.dc.html",
+    "S22-utilizatori--reseteaza-parola.dc.html",
+    "S22-utilizatori--resetare-esuata.dc.html",
+    "S22-utilizatori--parola-copiata.dc.html",
+    "S22-utilizatori--copiere-esuata.dc.html",
+    "S22-utilizatori--meniu-dezactivat.dc.html",
+    "S22-utilizatori--reactivat.dc.html",
+    "S22-utilizatori--editeaza-dezactivat.dc.html"
   ],
   "notes": {},
   "designSystems": [
