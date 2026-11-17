@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 14:05 · Last commit: 9ac7251
+Updated: 2026-11-17 14:05 · Last commit: c041aea
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 42 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished) · Building: S2; all SYS jobs done
+Done 43 / 68 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 (states next) · Building: S2S; all SYS jobs done
 
 ## Just finished
+- S2 Acasă: vet phone (x 0), manager phone (x 470), manager desktop (x 940), owner desktop (x 2460), row y 20922, all 16.11.2026 figures from extracts; D86, D87 (manager also gets Introdus azi → S2S); passed first review (c041aea)
 - S10P Vânzare polish: ghost "Toate secțiunile" key (§34, aria-pressed tri-state), partial-sale D39 board (H4 sold, cycle continues) at x 2350, desktop → x 2820; SaveBars 2 lines; D85; passed first review (9ac7251)
 - S10 Vânzare: whole Hîrbovăț flock sold 16.11 (D39) + confirmation dialog (cycle closes sapt. 40), refuzat, salvat, eroare, desktop panel; row y 18734; sstate_css gained FX/MODAL/OPT; D84 ("Toate secțiunile" key queued for S10P); 1 fix round (8bd72bb)
 - S9P Transfer polish: "alege secțiunea" phone BottomSheet (§33, components.md entry), "ciclu nou" D39 board, error board Banner + preview above SaveBar; S9 row now 7 boards, desktop x 2820; 1 fix round (a3ed7ac)
@@ -25,7 +26,7 @@ Done 42 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S2 → S2P → S14 → S14P → S8 (all system jobs done; screens only from here)
+- S2S → S2P → S14 → S14P → S8 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - None blocking. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
@@ -41,6 +42,7 @@ Done 42 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - project/S9-transfer{,--salvat,--refuzat,--eroare-la-salvare,--alege-sectiunea,--ciclu-nou,--desktop}.dc.html (row y 17590, phones x 0…2350, desktop x 2820) + canvas.json + additions.css (§33)
 - project/S10-vanzare{,--confirmare,--refuzat,--salvat,--eroare-la-salvare,--desktop}.dc.html (row y 18734, x 0…2350) + canvas.json
 - S10P: project/additions.css (§34) + project/S10-vanzare{,--confirmare,--refuzat,--salvat,--eroare-la-salvare,--partiala,--desktop}.dc.html (desktop now x 2820) + canvas.json
+- S2: project/S2-acasa{,--manager,--manager-desktop,--proprietar-desktop}.dc.html (row y 20922) + canvas.json (S2S will rebuild the manager boards)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
