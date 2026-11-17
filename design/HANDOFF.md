@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 23:30 · Last commit: ef43e92
+Updated: 2026-11-18 00:15 · Last commit: 2bc8647
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 65 / 76 · Screens done: S19 + 9 boards, S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S19S next; all SYS jobs done
+Done 66 / 76 · Screens done: S19 + 21 states, S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S19P next; all SYS jobs done
 
 ## Just finished
+- S19S Ferme și secțiuni states: 12 desktops x 13680–30400 (se încarcă, eroare la încărcare, fără acces, salvat, eroare la salvare, nume gol, nume folosit, ghid listă, adaugă compartiment, cod duplicat, redenumește cod gol, retrasă + mutată), phone moved to x 31920; D111; rebuild s19_build --canvas then s19s_build --canvas; 1 fix round (Ghid not required, error copy, Banner icon on first line) (2bc8647)
 - S19 Ferme și secțiuni: row y 34557, 9 desktops x 0–12160 (list, Hîrbovăț/Telița SidePanel with SYS10 SectionTree, H5-2 menu, Retrage blocked H1.1, Retrage Dialog D39, fără ghid D39, ghid nepotrivit D39, fără ferme D39, fermă nouă) + read-only phone x 13680; D110 (Claude, to review); S19S queued; 1 fix round (Ciclu cell wraps only at "·") (ef43e92)
 - S18P Serii polish: Toast in B4 words + Anulează, EffectPreview comma as C3/S9, note cut, 560 track first label dropped when crowded, focus after save → Serie nouă; phone heights 1048/1476/1624; D109; 1 fix round (bfe41e7)
 - S18S Serii states: 8 desktops x 3040–13680, S18 phones moved to x 15200–16140, 2 new phones x 16610/17080 (row y 32813); salvat Toast keeps Anulează; D108; 1 fix round. Rebuild: s18_build --canvas then s18s_build --canvas (a09e1b1)
@@ -48,7 +49,7 @@ Done 65 / 76 · Screens done: S19 + 9 boards, S15 + 7 states (polished), S16 + 9
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S19S → S19P → S20 → S20P → S21 → S21P → S22 → S22P → S1 → S1P → FIN (all system jobs done; screens only from here) (all system jobs done; screens only from here)
+- S19P → S20 → S20P → S21 → S21P → S22 → S22P → S1 → S1P → FIN (all system jobs done; screens only from here) (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -88,6 +89,7 @@ Done 65 / 76 · Screens done: S19 + 9 boards, S15 + 7 states (polished), S16 + 9
 - S18S: project/S18-serii--{se-incarca,eroare-la-incarcare,fara-acces,desktop-scris,desktop-erori,desktop-refuzat,salvat,inchide-seria,telefon-eroare-la-salvare,telefon-alege-sectiunea}.dc.html + canvas.json (S18 phones x 3040… → 15200/15670/16140)
 - S18P: 11 changed project/S18-serii*.dc.html (all but se-incarca, eroare-la-incarcare, fara-acces, desktop-scris… see notes/S18P.md) + canvas.json (3 phone heights)
 - S19: project/S19-ferme-sectiuni{,--hirbovat,--telita,--retragere-blocata,--retrage-sectiunea,--fara-ghid,--ghid-nepotrivit,--fara-ferme,--ferma-noua,--telefon}.dc.html + canvas.json
+- S19S: project/S19-ferme-sectiuni--{se-incarca,eroare-la-incarcare,fara-acces,salvat,eroare-la-salvare,nume-gol,nume-folosit,ghid-lista,adauga-compartiment,cod-duplicat,redenumeste-cod-gol,retrasa-mutata}.dc.html + --ferma-noua (rebuilt) + canvas.json (phone x 31920)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
