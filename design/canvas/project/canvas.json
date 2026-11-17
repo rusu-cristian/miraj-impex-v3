@@ -812,6 +812,27 @@
       "w": 390,
       "h": 925,
       "title": "S8 · Cântărire · gol · Telița 24.02.2026"
+    },
+    "S15-introdus-azi.dc.html": {
+      "x": 0,
+      "y": 27292,
+      "w": 390,
+      "h": 1636,
+      "title": "S15 · Introdus azi · vet"
+    },
+    "S15-introdus-azi--gol.dc.html": {
+      "x": 470,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · gol · manager"
+    },
+    "S15-introdus-azi--sterge-confirmare.dc.html": {
+      "x": 940,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · vet · Șterge · confirmare"
     }
   },
   "order": [
@@ -922,7 +943,10 @@
     "S8-cantarire--zi-trecuta.dc.html",
     "S8-cantarire--ferma-fara-pasari.dc.html",
     "S8-cantarire--deja-introdus.dc.html",
-    "S8-cantarire--gol-telita.dc.html"
+    "S8-cantarire--gol-telita.dc.html",
+    "S15-introdus-azi.dc.html",
+    "S15-introdus-azi--gol.dc.html",
+    "S15-introdus-azi--sterge-confirmare.dc.html"
   ],
   "notes": {},
   "designSystems": [
