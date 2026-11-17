@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 19:30 · Last commit: 8bd72bb
+Updated: 2026-11-17 14:05 · Last commit: 9ac7251
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 41 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polish next) · Building: none (handover after S10); all SYS jobs done
+Done 42 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished) · Building: S2; all SYS jobs done
 
 ## Just finished
+- S10P Vânzare polish: ghost "Toate secțiunile" key (§34, aria-pressed tri-state), partial-sale D39 board (H4 sold, cycle continues) at x 2350, desktop → x 2820; SaveBars 2 lines; D85; passed first review (9ac7251)
 - S10 Vânzare: whole Hîrbovăț flock sold 16.11 (D39) + confirmation dialog (cycle closes sapt. 40), refuzat, salvat, eroare, desktop panel; row y 18734; sstate_css gained FX/MODAL/OPT; D84 ("Toate secțiunile" key queued for S10P); 1 fix round (8bd72bb)
 - S9P Transfer polish: "alege secțiunea" phone BottomSheet (§33, components.md entry), "ciclu nou" D39 board, error board Banner + preview above SaveBar; S9 row now 7 boards, desktop x 2820; 1 fix round (a3ed7ac)
 - S9 Transfer: phone replay 28.02.2026 Telița H2 → Hîrbovăț H4.2 + salvat, refuzat (D39), eroare; desktop SidePanel beside S4; row y 17590; side-panel/rec/effect CSS now shared in sstate_css.py; D83; 2 fix rounds (bb7eddf)
@@ -24,7 +25,7 @@ Done 41 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S10P → S2 → S2P → S14 → S14P (all system jobs done; screens only from here)
+- S2 → S2P → S14 → S14P → S8 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - None blocking. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
@@ -39,6 +40,7 @@ Done 41 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - project/S4-ferma--{pasari,hrana,greutate,productie}.dc.html (y 800, x 13680/15200/16720/18240) + project/S4-ferma-rezumat{,--*}.dc.html (all 9 rebuilt by S4TP; fără ghid h 1938) + project/canvas.json: every row below S4 moved +595 (redo on the live canvas.json, then add the 4 boards)
 - project/S9-transfer{,--salvat,--refuzat,--eroare-la-salvare,--alege-sectiunea,--ciclu-nou,--desktop}.dc.html (row y 17590, phones x 0…2350, desktop x 2820) + canvas.json + additions.css (§33)
 - project/S10-vanzare{,--confirmare,--refuzat,--salvat,--eroare-la-salvare,--desktop}.dc.html (row y 18734, x 0…2350) + canvas.json
+- S10P: project/additions.css (§34) + project/S10-vanzare{,--confirmare,--refuzat,--salvat,--eroare-la-salvare,--partiala,--desktop}.dc.html (desktop now x 2820) + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
@@ -46,4 +48,4 @@ Done 41 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - Helpers may be refused the impeccable/intent skills; they then work from craft.md, PRODUCT.md and DESIGN.md.
 - Generators live in design/canvas/scripts/ (s4s_build.py shared desktop shell; s7_build.py phone pattern; s11_build.py price/error classes reused by S12; s13_build.py imports s7s/s7/s11/s4s and rewrites S7 boards byte-identical). Shots use fallback fonts.
 - New components: components.md › Additions and design/system/components/additions.css (§1–33).
-- FIN backlog: 10px SVG track text; S3's local th.num rule redundant; ip-crumbs links 14px tall (D46 wants ≥24px); S3/S11 row-header classes → one DataTable class; FeedTotals preview summary text (D62); SectionTree aria-controls → [role=menu] like SYS09, menu + disabled Retrage share one aria-describedby note (read twice); S13 panel Fermă select offers Telița (no open cycle), no board for that case; S11 tables → system `.ip-tablescroll` (sticky first column; tall Consum shows its scrollbar only at the bottom); SaveBar summary class `ip-ftot-sum` (FeedTotals name, used by S6/S7) → neutral SaveBar-summary class; SYS11 nits a–c in notes/SYS11.md; Toast-with-undo and Banner-with-action layouts (sstate_css.py) → additions.css; SYS12 nits in notes/SYS12.md; S3/S11/ip-cost/ip-sparktable row-header copies → §32 .ip-table--rowheads; S4 ciclu ales wraps 2 Stats + sub-line at 1280; Producție Pe hale scrolls ~6px at 1280; Rezumat lists are div links (tabs use ul/li); S4 needs a narrow layout beside a SidePanel (CycleTrack blocks 21px at 1280 on S9 desktop; S9 board rule for now); no board shows Anulează after a save; S6P FIN: "din ♀ n" nowrap into HallCard .ip-eggs__sub (drop .s6-nobr), EntryCardPlus/HallCard previews adopt section-first aria-labelledby naming.
+- FIN backlog: 10px SVG track text; S3's local th.num rule redundant; ip-crumbs links 14px tall (D46 wants ≥24px); S3/S11 row-header classes → one DataTable class; FeedTotals preview summary text (D62); SectionTree aria-controls → [role=menu] like SYS09, menu + disabled Retrage share one aria-describedby note (read twice); S13 panel Fermă select offers Telița (no open cycle), no board for that case; S11 tables → system `.ip-tablescroll` (sticky first column; tall Consum shows its scrollbar only at the bottom); SaveBar summary class `ip-ftot-sum` (FeedTotals name, used by S6/S7) → neutral SaveBar-summary class; SYS11 nits a–c in notes/SYS11.md; Toast-with-undo and Banner-with-action layouts (sstate_css.py) → additions.css; SYS12 nits in notes/SYS12.md; S3/S11/ip-cost/ip-sparktable row-header copies → §32 .ip-table--rowheads; S4 ciclu ales wraps 2 Stats + sub-line at 1280; Producție Pe hale scrolls ~6px at 1280; Rezumat lists are div links (tabs use ul/li); S4 needs a narrow layout beside a SidePanel (CycleTrack blocks 21px at 1280 on S9 desktop; S9 board rule for now); no board shows Anulează after a save; S6P FIN: "din ♀ n" nowrap into HallCard .ip-eggs__sub (drop .s6-nobr), EntryCardPlus/HallCard previews adopt section-first aria-labelledby naming; §34 key box 1px right of the rows' Toate box (subtract --ip-hair in the negative margin); S10 "mixed" key state out of view on the 844 refuzat/parțială boards.
