@@ -1,17 +1,16 @@
 # Handoff
-Updated: 2026-11-16 23:40 · Last commit: 7b723f8
+Updated: 2026-11-17 11:05 · Last commit: c6bff04
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 28 / 64 · Screens done: S4, S7, S3, S11 (all polished), S12 (polish next) · Building: S12P, SYS09
+Done 26 / 65 · Screens done: S4, S7, S3, S11 (+S11M), S12 (all polished), S13 (polish next) · Building: S13P
 
 ## Just finished
-- S12 Prețuri hrană: default + în lucru (D68 labelled sample 9,22 lei/kg) + toate au preț + eroare la încărcare (D67); 2 fix rounds
-- SYS08 Acasă blocks: MissingRow, EntryKeys, UnpricedCount (2 fix rounds; defaults D65, D66); no canvas boards, system previews in design/system/components/<Name>/
-- S11P Rapoarte · Hrană polish + audit (1 fix round: dates/counts in ip-num, observer Livrări table fit); additions.css §22 th.num back to Sans (commits with SYS08)
+- S13 Livrare hrană: phone form + salvat, cantitate lipsă, eroare la salvare; desktop SidePanel beside S11 (D73, D74)
+- S11M owner changes a saved price with Motiv (D69, D72); S12P polish + se încarcă board; SYS09 EventRow actions + ChangeRow (D70, D71)
 
 ## Next up
-- S12P → S13 → S13P → S6 (SYS05 done); SYS09 building in parallel
+- S13P → S6 → S6S → S6P → S4T (SYS05, SYS06 done); SYS10–SYS13 can run in parallel
 
 ## Waiting on the user
 - None blocking. 16.11.2026 resume: user chose to keep defaults D14–D64 and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64).
@@ -21,6 +20,9 @@ Done 28 / 64 · Screens done: S4, S7, S3, S11 (all polished), S12 (polish next) 
 - project/additions.css now also holds §23–25 (SYS08)
 - project/S11-rapoarte-hrana.dc.html, S11-rapoarte-hrana--se-incarca.dc.html, --manager, --observator, --fara-livrari-in-perioada; project/additions.css; project/canvas.json
 - project/S12-preturi-hrana.dc.html, --in-lucru, --toate-livrarile-au-pret, --eroare (canvas.json has them at y 10133)
+- project/S11-rapoarte-hrana--modifica-pret.dc.html, --modifica-pret--eroare (and all 7 S11 boards rebuilt by S11M); all 5 S12 boards rebuilt (S12 row now y 10303)
+- project/S13-livrare-hrana.dc.html, --salvat, --cantitate-lipsa, --eroare-la-salvare, --desktop (row y 11447)
+- project/additions.css now also holds §26–27 (SYS09)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember

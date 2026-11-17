@@ -26,9 +26,10 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S11 | screen | S11 Rapoarte · Hrană (Stoc · Livrări · Consum · Cost), owner view + manager/viewer read-only note | SYS04, S3P | screens.md#s11; spec.md#d4, #c5, #c6; components.md#datatable, #tag, #textfield, #pageheader, #tabs, #filterbar; extracts: feed-deliveries, feed-daily-telita, feed-types, sample-hirbovat-2026 | done | 6c15ca0 |
 | S11P | polish | S11 polish + audit | S11 | screens.md#s11; spec.md#d4; DESIGN.md#dos-and-donts | done | a884384 |
 | S12 | screen | S12 Prețuri hrană (owner) + "Toate livrările au preț" + error | S11P | screens.md#s12; spec.md#c6; components.md#datatable, #textfield, #button, #emptystate, #toast; extracts: feed-deliveries | done | 7b723f8 |
-| S12P | polish | S12 polish + audit | S12 | screens.md#s12; spec.md#c6 | building | |
-| S13 | screen | S13 Livrare hrană (manager; phone + desktop side panel) + saved toast | S12P | screens.md#s13; spec.md#c5; components.md#select, #datefield, #textfield, #button, #sidepanel, #toast; extracts: feed-deliveries, feed-types, sample-hirbovat-2026 | todo | |
-| S13P | polish | S13 polish + audit | S13 | screens.md#s13; spec.md#c5 | todo | |
+| S12P | polish | S12 polish + audit | S12 | screens.md#s12; spec.md#c6 | done | b2f47e9 |
+| S11M | screen | S11 Livrări: owner changes a saved price ("Modifică" inline row + required Motiv + "rămâne în jurnal", D69) + validation error; align Lei/kg & Total lei header text with the input edge (S12P) | S12P | screens.md#s11; spec.md#c6, #d4; components.md#datatable, #textfield, #button, #toast; design/notes/S11P.md, S12P.md; extracts: feed-deliveries, sample-hirbovat-2026 | done | b58c66d |
+| S13 | screen | S13 Livrare hrană (manager; phone + desktop side panel) + saved toast | S11M | screens.md#s13; spec.md#c5; components.md#select, #datefield, #textfield, #button, #sidepanel, #toast; extracts: feed-deliveries, feed-types, sample-hirbovat-2026 | done | c6bff04 |
+| S13P | polish | S13 polish + audit | S13 | screens.md#s13; spec.md#c5 | building | |
 | SYS05 | system | For S6: EntryCard yesterday-mortality hint + hall card with Ouă group | SYS00 | components.md#entrycard, #countinput, #checkbox; screens.md#s6; spec.md#c1 | done | 40702f8 |
 | S6 | screen | S6 Zilnic (phone 390), Hîrbovăț | SYS05, S13P | screens.md#s6; spec.md#c1; components.md#formheader, #datefield, #entrycard, #countinput, #select, #checkbox, #savebar, #toast; extracts: farms-sections, counts-latest, sample-hirbovat-2026 | todo | |
 | S6S | screen | S6 states: se încarcă, deja introdus (Editează), zi trecută pentru vet, avertisment 3×, refuz peste vii, eroare cu reîncercare, fermă fără păsări, salvat | S6 | spec.md#c1 (Rules, States) | todo | |
@@ -48,7 +49,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S14P | polish | S14 polish + audit | S14 | screens.md#s14; spec.md#d3 | todo | |
 | S8 | screen | S8 Cântărire (phone) + live comparison states | S14P | screens.md#s8; spec.md#c7; components.md#select, #segmentedcontrol, #textfield, #formheader, #savebar; extracts: weighings-weekly, guide-growth | todo | |
 | S8P | polish | S8 polish + audit | S8 | screens.md#s8; spec.md#c7 | todo | |
-| SYS09 | system | EventRow actions (Editează / Șterge / Corectează, "modificat de"), ChangeRow (old → new) | SYS06 | components.md#eventrow, #iconbutton, #tag; spec.md#c8, #e1, #e2 | building | |
+| SYS09 | system | EventRow actions (Editează / Șterge / Corectează, "modificat de"), ChangeRow (old → new) | SYS06 | components.md#eventrow, #iconbutton, #tag; spec.md#c8, #e1, #e2 | done | 4c71c06 |
 | S15 | screen | S15 Introdus azi (phone) + empty | SYS09, S8P | screens.md#s15; spec.md#c8; components.md#eventrow, #emptystate, #dialog | todo | |
 | S15P | polish | S15 polish + audit | S15 | screens.md#s15; spec.md#c8 | todo | |
 | S16 | screen | S16 Corectează (desktop side panel + phone sheet) + refused + delete dialog | S15P | screens.md#s16; spec.md#e1; components.md#sidepanel, #effectpreview, #banner, #dialog, #textfield, #countinput | todo | |
