@@ -20,6 +20,36 @@ def rnd(v, dec=0):
     d = Decimal(repr(float(v))).quantize(Decimal('1e-9')).quantize(Decimal(1).scaleb(-dec), rounding=ROUND_HALF_UP)
     return float(d) if dec else int(d)
 
+# S16P fix 1: DROP = (date, section, sex) of a deleted Mortalitate record, set on the module before it runs (only the S16
+# after-delete board does, through s4t_build); unset, nothing changes. The record's deaths go back into the birds alive
+# from that day on, and every stored total that counts them is recomputed in memory (the extracts stay untouched).
+DROP = globals().get('DROP')
+def drop_mortality(S, CL, day, sec, sx):
+    rows = sorted((r for r in S['daily'] if r['section'] == sec and r['sex'] == sx and r['date'] >= day), key=lambda r: r['date'])
+    q = rows[0]['mortality']; assert rows[0]['date'] == day and q > 0
+    for r in rows:
+        if r['date'] == day: r['mortality'] = 0
+        else: r['alive_start'] += q
+        r['alive_end'] += q
+    def pcts(d):  # mortality_pct / removals_pct of a stored total, 2 decimals as stored
+        d['mortality_pct'] = round(d['mortality'] / d['start'] * 100, 2)
+        d['removals_pct'] = round((d['mortality'] + d['culls'] + d['sexing_errors']) / d['start'] * 100, 2)
+    st = next(r for r in S['section_totals'] if r['section'] == sec and r['sex'] == sx)
+    st['mortality'] -= q; st['alive'] += q; pcts(st)
+    # feed rows (allocations, kg) and egg rows are records of their own, saved with that day's count: they stay as entered
+    fm = CL['farms'][0]
+    cs = next(x for x in fm['sections'] if x['section'] == sec); cs[sx] += q
+    cs['detail'][sx]['mortality'] -= q; cs['detail'][sx]['alive'] += q; pcts(cs['detail'][sx])
+    next(h for h in fm['halls'] if h['hall'] == sec.split('.')[0])[sx] += q
+    fm['totals'][sx] += q; fm['totals']['all'] += q
+    cy = fm['cycle']; rm = cy['removals'][sx]; rm['mortality'] -= q; st0 = cy['start_counts'][sx]
+    cy['mortality_pct'][sx] = round(rm['mortality'] / st0 * 100, 2)
+    cy['removals_pct'][sx] = round((rm['mortality'] + rm['culls'] + rm['sexing_errors']) / st0 * 100, 2)
+    sm = S['summary_today']; sm['alive'][sx] += q; sm['alive']['total'] += q
+    sm['cumulative_mortality_pct'][sx] = cy['mortality_pct'][sx]; sm['cumulative_removals_pct'][sx] = cy['removals_pct'][sx]
+    return q
+DROPQ = drop_mortality(S, CL, *DROP) if DROP else 0
+
 def n(v, dec=0):
     v = rnd(v, dec)
     s = f'{abs(v):,.{dec}f}'.replace(',', 'X').replace('.', ',').replace('X', NB)

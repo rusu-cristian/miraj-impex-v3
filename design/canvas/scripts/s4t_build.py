@@ -9,7 +9,10 @@ asserted against the figure the S4 board already shows. Writes design/canvas/pro
 import sys, re, json, pathlib, importlib.util, collections as C, datetime as dt
 
 _spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__).resolve().with_name('s4s_build.py'))
-s4 = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
+s4 = importlib.util.module_from_spec(_spec)
+DROP = globals().get('DROP')   # S16P fix 1: a deleted Mortalitate record (S16 after-delete board only); unset by default
+if DROP: s4.DROP = DROP
+_spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
 
 n, sgn, ddate, pct, icon, tile, ico, hen, roo, pair, lamp, sg = s4.n, s4.sgn, s4.ddate, s4.pct, s4.icon, s4.tile, s4.ico, s4.hen, s4.roo, s4.pair, s4.lamp, s4.sg
 F, M, NB = s4.F, s4.M, s4.NB
@@ -207,12 +210,13 @@ def tb_pasari():
     def fget(key, sx):
         if key == 'mortality_pct': return sum(ST[(s, sx)]['mortality'] for s in SECTIONS) / STARTC[sx] * 100
         return sum(ST[(s, sx)][key] for s in SECTIONS)
-    assert (round(fget('mortality_pct', 'F'), 2), round(fget('mortality_pct', 'M'), 2)) == (5.54, 11.93)
+    assert (round(fget('mortality_pct', 'F'), 2), round(fget('mortality_pct', 'M'), 2)) == ((5.54, 11.93) if not DROP else tuple(CL['farms'][0]['cycle']['mortality_pct'][x] for x in 'FM'))
     assert (fget('alive', 'F'), fget('alive', 'M')) == (tot['F'], tot['M'])
     body += f'<tbody><tr class="is-total"><th scope="row">Total fermă</th>{cells(fget)}</tr></tbody>'
     t = tbox(f'Păsări pe secțiuni, Hîrbovăț, ciclul Seria 2026, 10.02.2026 – 16.11.2026', f'<thead>{h1}{h2}</thead>{body}')
     return block('h-psec', 'Pe secțiuni', f'ciclul curent · {num("10.02.2026 – 16.11.2026")} · SAPT {WK}', t
-                 + foot(f'Mortalitate % din sosire. Fără vânzări în ciclu. Cifrele includ corecția din {num("15.11.2026")} (H4.1 {num("14.11")}: {hen(n(AUD["old_values"]["qty"]))} → {s4.hen_v(n(AUD["new_values"]["qty"]))}).'))
+                 + foot(f'Mortalitate % din sosire. Fără vânzări în ciclu. Cifrele includ corecția din {num("15.11.2026")} (H4.1 {num("14.11")}: {hen(n(AUD["old_values"]["qty"]))} → {s4.hen_v(n(AUD["new_values"]["qty"]))}).'
+                        if not DROP else f'Mortalitate % din sosire. Fără vânzări în ciclu. Cifrele nu mai includ rândul șters azi (H4.1 {num("14.11")}: {hen(n(-s4.DROPQ))}).'))
 
 # --- Pe săptămâni (spec D1: alive and mortality per day or week; Pas = Săpt.), from the daily section rows ---
 PW = C.defaultdict(lambda: C.Counter())
@@ -276,12 +280,12 @@ PAGE = 15
 SD = C.defaultdict(lambda: {'F': 0, 'M': 0})
 for r in S['daily']:
     if r['mortality']: SD[(r['date'], r['section'])][r['sex']] += r['mortality']
-assert SD[('2026-11-14', 'H4.1')]['F'] == -AUD['new_values']['qty']
+assert SD[('2026-11-14', 'H4.1')]['F'] == -AUD['new_values']['qty'] if not DROP else (DROP == ('2026-11-14', 'H4.1', 'F') and ('2026-11-14', 'H4.1') not in SD)
 SAVE = {e['at'][:10]: e for e in S['event_log'] if e['record'] == 'mortality' and e['action'] == 'create'}
 for d, e in SAVE.items():  # the Zilnic save total = its section-day deaths + that day's culls (− the 15.11 correction on 14.11)
     f = sum(v['F'] for (dd, _), v in SD.items() if dd == d); m = sum(v['M'] for (dd, _), v in SD.items() if dd == d)
     cf = sum(c['qty'] for c in culls if c['date'] == d and c['sex'] == 'F'); cm = sum(c['qty'] for c in culls if c['date'] == d and c['sex'] == 'M')
-    fix = 2 if d == '2026-11-14' else 0
+    fix = (2 if not DROP else 2 - s4.DROPQ) if d == '2026-11-14' else 0  # deleted (S16P): the save's 3 are gone too
     sf, sm = re.search(r'♀ (−?\d+) · ♂ (−?\d+)', e['summary']).groups()
     assert (int(sf.replace('−', '-')), int(sm.replace('−', '-'))) == (-(f + cf - fix), -(m + cm)), (d, e['summary'])
 def xfer_days():
@@ -312,7 +316,7 @@ def log_rows():
             out.append(evrow(tile('cull'), f'Sacrificare · {c["section"]} · {fig} · {c["reason"]}', f'<span class="ip-num">{ddate(c["date"])} · {at[11:]} · SAPT {cw(c["date"])}</span> · {c["created_by"]}',
                              f'Sacrificare {c["section"]}, {ddate(c["date"])}'))
         else: raise AssertionError(p)  # page 1 holds only Zilnic records (14–16.11)
-    assert len(out) == PAGE and '#istoric-H4.1-14.11' in ''.join(out)
+    assert len(out) == PAGE and ('#istoric-H4.1-14.11' in ''.join(out)) == (not DROP)
     return out, recs
 def moves_rows():
     out = []

@@ -1,5 +1,6 @@
 """S16 · Corectează (spec E1, screens.md S16): the entry with its record icon, editable fields, the effect preview, the reason
-(Motiv, required, <= 200 characters), Salvează corecția / Șterge (reason + Dialog). Manager and owner only (spec §1).
+(Motiv, required, 200 characters as a soft limit: no maxlength, the counter stays, over 200 = "Scurtează-l cu n"
+and save disabled, D102/S16P), Salvează corecția / Șterge (reason + Dialog). Manager and owner only (spec §1).
 Content: the one real change in the extracts (sample-hirbovat-2026.json audit_log, SYS09): Mortalitate Hîrbovăț H4.1 ♀ of
 14.11.2026 (Zilnic saved by Dr. Ceban at 08:36), corrected 3 → 5 by Ion Rusu on 15.11.2026 at 10:12, reason "Numărătoare
 refăcută: 2 găini găsite moarte sub hrănitoare." The daily rows hold the corrected figure (5), so the values before the
@@ -78,7 +79,8 @@ NOW = alive_by_day(DDAY, NEW); assert NOW[DDAY] == s4.alive[(SEC, 'F')] == 4117 
 def rec(k='mortality', size=14): return f'<span class="ip-rec ip-rec--{k} s13-rec">{icon(k, size)}</span>'
 TILE = f'<span class="ip-tile ip-rec ip-rec--mortality" aria-hidden="true">{icon("mortality")}</span>'
 TITLE = f'Corectează Mortalitate {SEC}'
-CTX = f'Hîrbovăț · {dd(RDAY)} · SAPT {WK}'
+CTX = f'{"Hîrbovăț".upper()} · {dd(RDAY)} · SAPT {WK}'   # S16P: the Mono context line in caps, as the S9/S10/S13 panel heads
+assert CTX == 'HÎRBOVĂȚ · 14.11.2026 · SAPT 40'
 def head(touch):
     t = ' ip-iconbtn--touch' if touch else ''
     return (f'<div class="ip-sidepanel__head"><div class="ip-row s13-phead">{TILE}<div><h2 class="ip-t-heading s13-m0" id="cp-t">{TITLE}</h2>'
@@ -87,12 +89,14 @@ BY = f'<p class="ip-note s13-m0">Introdus de {ENTRY["user"]} · {num(dd(RDAY) + 
 MOD = (f'<div class="ip-ev__mod"><span class="ip-tag ip-tag--neutral">corectat</span><span>{hen(n(-OLD))} → {hen_v(n(-NEW))}</span>'
        f'<a class="ip-link" href="#istoric-H4.1-14.11">modificat de {AUD["user"]} · {num(dd(AT_D) + ", " + AT_T)}<span class="ip-sr">, vezi istoricul</span></a></div>')
 
-def counts(f, m, saved_f, saved_m, touch, err=False):
-    """Mortalitate ♀ / ♂ of the record: two CountInputs side by side, the saved value under each (hint)."""
+def counts(f, m, saved_f, saved_m, touch, err=False, focus=False):
+    """Mortalitate ♀ / ♂ of the record: two CountInputs side by side, the saved value under each (hint).
+    focus: the sheet / panel just opened, focus on the first CountInput (S16P; demo is-focus + autofocus)."""
     md = '' if touch else ' ip-count--md'
     fa = ' aria-invalid="true"' if err else ''
     fd = 'cf-fh cf-e' if err else 'cf-fh'
-    fe = ' is-error' if err else ''
+    fe = ' is-error' if err else ' is-focus' if focus else ''
+    if focus: fa += ' autofocus="autofocus"'
     def fld(i, sx, v, saved, extra='', cls='', dsc=''):
         c, s, w = ('hen', '♀', 'găini') if sx == 'F' else ('rooster', '♂', 'cocoși')
         return (f'<div class="ip-field"><label class="ip-label" for="{i}">Mortalitate <span class="ip-sex ip-sex--{c}" aria-hidden="true">{s}</span><span class="ip-sr">{w}</span></label>'
@@ -104,16 +108,42 @@ def counts(f, m, saved_f, saved_m, touch, err=False):
                 f'la începutul zilei de {num(dd(RDAY))}. Scrie cel mult {num(n(MOST))}.</span></p>')
     return out
 
-def motiv(text='', touch=True, err=False):
+LIM = 200   # Motiv soft limit (spec E1 "≤ 200 characters", D102): no maxlength, so a paste is never cut silently
+def cnt(k, word):  # Romanian: "de" after numbers whose last two digits are 00 or 20–99 (12 caractere, 212 caractere, 262 de zile)
+    return f'{num(k)} {"" if 0 < k % 100 < 20 or k < 20 else "de "}{word}'
+assert cnt(212, 'caractere').endswith('</span> caractere') and cnt(262, 'zile').endswith('</span> de zile') and cnt(200, 'x').endswith(' de x')
+def over_msg(i, text, verb='salva'):  # the soft-limit error: the length, the limit and how much to cut
+    return (f'<p class="ip-err ip-fieldmsg" id="{i}">{icon("alert", 14)}<span>Motivul are {cnt(len(text), "caractere")}; cel mult {num(LIM)}. '
+            f'Scurtează-l cu {num(len(text) - LIM)} ca să poți {verb}.</span></p>')
+def motiv(text='', touch=True, err=False, rows=3):
+    """Motiv of the sheet / panel. err: missing (on blur / save). Over LIM characters: the soft-limit error (save disabled
+    by the caller, aria-describedby="cw-e")."""
+    over = len(text) > LIM; assert not (err and over)
     t = ' ip-input--touch' if touch else ''
-    cls = ' is-error is-focus' if err else ''
-    dsc = 'cw-e cw-h' if err else 'cw-h'
-    inv = ' aria-invalid="true"' if err else ''
+    cls = ' is-error is-focus' if err else ' is-error' if over else ''
+    dsc = 'cw-e cw-h' if err or over else 'cw-h'
+    inv = ' aria-invalid="true"' if err or over else ''
     msg = (f'<p class="ip-err ip-fieldmsg" id="cw-e">{icon("alert", 14)}<span>Motiv lipsă. Scrie de ce se schimbă {SEC} {s4.F} pe {num(dd(RDAY))} din {num(OLD)} în {num(NEW)}; '
-           f'fără motiv corecția nu se salvează.</span></p>') if err else ''
+           f'fără motiv corecția nu se salvează.</span></p>') if err else over_msg('cw-e', text) if over else ''
     return (f'<div class="ip-field"><label class="ip-label" for="cw">Motiv</label><span class="ip-input ip-input--area{t}{cls}">'
-            f'<textarea id="cw" rows="3" maxlength="200" required="required" aria-required="true"{inv} aria-describedby="{dsc}">{text}</textarea></span>{msg}'
-            f'<span class="ip-hint" id="cw-h">Obligatoriu, cel mult 200 de caractere · {num(f"{len(text)}/200")} · apare în Istoric modificări</span></div>')
+            f'<textarea id="cw" rows="{rows}" required="required" aria-required="true"{inv} aria-describedby="{dsc}">{text}</textarea></span>{msg}'
+            f'<span class="ip-hint" id="cw-h">Obligatoriu, cel mult {LIM} de caractere · {num(f"{len(text)}/{LIM}")} · apare în Istoric modificări</span></div>')
+def dlg_motiv(text='', touch=True):
+    """Motiv of the Șterge Dialog: prefilled from the sheet's Motiv when one was typed (S16P), else empty; the same soft
+    limit and counter. Returns (field markup, Șterge key attributes): disabled with the reason until Motiv has text, or
+    while it is over the limit."""
+    t = ' ip-input--touch' if touch else ''
+    over = len(text) > LIM
+    why = (f'Obligatoriu, cel mult {LIM} de caractere · {num(f"{len(text)}/{LIM}")}'
+           + ('' if text else ' · scrie motivul ca să poți șterge'))
+    err = over_msg('dlg-why-e', text, 'șterge') if over else ''
+    dsc = 'dlg-why-e dlg-why-h' if over else 'dlg-why-h'
+    inv = ' aria-invalid="true"' if over else ''
+    f = (f'<div class="ip-field"><label class="ip-label" for="dlg-why">Motiv</label><span class="ip-input ip-input--area{t}{" is-error" if over else ""}">'
+         f'<textarea id="dlg-why" rows="3" required="required" aria-required="true"{inv} aria-describedby="{dsc}">{text}</textarea></span>'
+         f'{err}<span class="ip-hint" id="dlg-why-h">{why}</span></div>')
+    key = f' disabled aria-describedby="{dsc}"' if (not text or over) else ''
+    return f, key
 
 ARROW = '<span class="s9-to" aria-hidden="true">→</span><span class="ip-sr">după corecție</span>'
 def fxline(label, a, b):
@@ -153,16 +183,17 @@ boards.append(('', 'telefon · reluare 15.11.2026', screen(sheet([BY, counts(n(N
 boards.append(('motiv-lipsa', 'motiv lipsă · exemplu de stare (D39)', screen(sheet([BY, counts(n(NEW), '0', OLD, 0, True), motiv(err=True), effect()], save_off('cw-e')))))
 # 3 · refuzat — ♀ 4 130 typed (D39): below 0 on 14.11 and on every later day; preview → fault Banner, save disabled
 boards.append(('refuzat', 'refuzat · sub 0 · exemplu de stare (D39)', screen(sheet([BY, counts(n(TRY), '0', OLD, 0, True, err=True), motiv(), effect('refuz')], save_off('fx')))))
-# 4 · Șterge · confirmare — Dialog over the untouched sheet (♀ 3 · ♂ 0, nothing typed); reason required (spec E1), focus on Anulează
+# 4 · Șterge · confirmare — Dialog over the untouched sheet (♀ 3 · ♂ 0, nothing typed); reason required (spec E1), focus on Anulează.
+#   Its Motiv takes the sheet's Motiv when one was typed (S16P); here none was, so it opens empty and Șterge waits for it.
+DMOT, DKEY = dlg_motiv('')
 dlg = (f'<div class="ip-scrim ip-scrim--phone"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Șterge Mortalitate {SEC} din {num(dd(RDAY))}</h2>'
        f'<p class="ip-dialog__note" id="dlg-n">Se șterge rândul introdus de {ENTRY["user"]} la {num(ENTRY["at"][11:])}: {hen(n(-OLD))} · {roo("0")}. '
        f'Găini în viață în {SEC} de pe {num(dd(RDAY))}: {hen(n(PRE[RDAY]))} → {hen(n(DEL[RDAY]))}. Ștergerea rămâne în Istoric modificări.</p>'
-       f'<div class="ip-field"><label class="ip-label" for="dlg-why">Motiv</label><span class="ip-input ip-input--area ip-input--touch">'
-       f'<textarea id="dlg-why" rows="3" maxlength="200" required="required" aria-required="true" aria-describedby="dlg-why-h"></textarea></span>'
-       f'<span class="ip-hint" id="dlg-why-h">Obligatoriu, cel mult 200 de caractere. Scrie motivul ca să poți șterge.</span></div>'
+       f'{DMOT}'
        f'<div class="ip-dialog__keys ip-dialog__keys--stack"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button>'
-       f'<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch" disabled aria-describedby="dlg-why-h">Șterge</button></div></div></div>')  # fix 1: off until Motiv has text (E1)
+       f'<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch"{DKEY}>Șterge</button></div></div></div>')  # fix 1: off until Motiv has text (E1)
+assert DKEY == ' disabled aria-describedby="dlg-why-h"'
 untouched = sheet([BY, counts(n(OLD), '0', OLD, 0, True), motiv(), effect('empty')], save_off('fx'), inert=True)
 boards.append(('sterge-confirmare', 'Șterge · confirmare · exemplu de stare (D39)', screen(untouched, dlg)))
 
@@ -177,16 +208,18 @@ assert PG.count('<main class="s4-main">') == 1
 if SCROLL: PG = PG.replace('<main class="s4-main">', f'<main class="s4-main" style="margin-top:calc(-1 * {SCROLL}px)">')
 DESK = f'<div class="s13-vp s16-vp">{PG}</div>'
 DSAVE = '<button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="fx">Salvează corecția</button>'
-PANEL = f'''<aside class="ip-sidepanel s13-panel" id="cp" aria-labelledby="cp-t">
+def panel(focus):  # focus: just opened from the Jurnal key, focus on the first CountInput (S16P); Esc / Închide return it to that key
+    return f'''<aside class="ip-sidepanel s13-panel" id="cp" aria-labelledby="cp-t">
 {head(False)}
 <div class="ip-sidepanel__body s13-pbody">
 <div>{BY}{MOD}</div>
-{counts(n(NEW), '0', NEW, 0, False)}
+{counts(n(NEW), '0', NEW, 0, False, focus=focus)}
 {motiv(touch=False)}
 {effect('empty')}
 </div>
 <div class="ip-sidepanel__foot"><button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Șterge</button><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{DSAVE}</div></div>
 </aside>'''
+PANEL = panel(True)
 
 # ---------- CSS (screen only, tokens only) ----------
 PAIR = '''
