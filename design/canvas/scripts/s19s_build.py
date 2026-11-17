@@ -22,7 +22,8 @@ Boards
   --redenumeste-cod-gol   D39: Telița, Redenumește H5-2 with the code cleared: error, focus in the field
   --retrasa-mutata        D39: Telița after the Retrage H5-2 Dialog (H5-2 retrasă, listed last, no key) and then Mută în
                           sus on H3 (a 2-a din 5; focus stays on H3's key; live region)
-No new system class: screen CSS `.s19-*` (desktop Toast position, table skeleton cells, Banner action key). Fix 1: every
+Screen CSS `.s19-*` (desktop Toast position, Banner action key: FIN, with s7s-toast/s7s-banner); S19P: the skeleton rows
+are the system `tr.ip-table__skel` (additions.css §42), the Tip error uses §41, the tree error line gets the alert icon. Fix 1: every
 multi-line Banner puts its icon on the first line (s7s-banner); Ghid on Fermă nouă is not required (s19_build).
 python3 -I s19s_build.py <repo_root> [--canvas]   run after any `s19_build --canvas` (which resets the phone's x).
 Renders: s19_render.py <stems> (the new boards are appended to /tmp/s19/boards.json: shots S19-10 … S19-21)."""
@@ -55,11 +56,11 @@ def shell(main, sidebar=None, hdr=HDR):
 
 # ---- loading: the Ferme block with a framed table skeleton (the real columns, two farm rows)
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
-SK_R = ('<tr><th scope="row">' + skel('w2') + '</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w2', 'w3', 'w3', 'w2'))
-        + f'<td class="s19-act">{skel("w3")}</td></tr>')
+SK_R = ('<tr class="ip-table__skel"><th scope="row">' + skel('w3') + '</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w2', 'w2', 'w2'))
+        + f'<td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghidul și secțiunile lor.</p>'
            f'<section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed s19-skt" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table">'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table">'
            f'{M.COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Fermă nouă stays (the name check runs on save)
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
@@ -91,9 +92,7 @@ def tip_err():
     a = 'aria-required="true">'; assert f.count(a) == 1
     f = f.replace(a, 'aria-required="true" aria-invalid="true" aria-describedby="fp-tip-e">')
     return f[:-6] + err('fp-tip-e', 'Alege tipul fermei: Creștere sau Ouat. Lista de ghiduri depinde de el.') + '</div>'
-NEW_GHID_OUAT = ('<div class="ip-field"><label class="ip-label" for="fp-ghid">Ghid <span class="s13-opt">(opțional)</span></label>'
-                 + M.gsel(GUIDE['g-laying'], '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Se aplică de la primul ciclu al fermei.</span>')
-                 + '</div>')
+NEW_GHID_OUAT = M.gbox(GUIDE['g-laying'], '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Se aplică de la primul ciclu al fermei.</span>', 'laying')
 def save_banner(text):
     return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fp-err">{icon("alert", 16)}<div class="s7s-banner__body">'
             f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
@@ -108,10 +107,12 @@ def edit(level, label, value, e=None, focus=True, is_last=True):
     if e:   # the error row keeps the focus in its field (Enter = Salvează ran the check)
         a = 'class="ip-input ip-stree__in is-error"'; assert r.count(a) == 1
         r = r.replace(a, 'class="ip-input ip-stree__in is-error is-focus"')
+        a = f'<p class="ip-err" id="st-e-err">{e}</p>'; assert r.count(a) == 1   # S19P: alert icon, as the panel field errors
+        r = r.replace(a, err('st-e-err', e))
     return r
 TREE_BANNER = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s4-grow">'
                '<p class="s4s-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
-               '<p class="s4s-m0">Codul scris rămâne în rând. Verifică conexiunea și apasă din nou Salvează.</p></div></div>')
+               '<p class="s4s-m0">Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă din nou Salvează.</p></div></div>')
 ORDER_UP = ['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2']
 assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
 MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
@@ -119,9 +120,6 @@ MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
 # ================================================================= CSS (screen only, tokens only)
 CSS19S = '''
 .s19-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, over the page (as S18S) */
-.s19-skt .ip-skel{display:block;max-width:100%}
-.s19-skt td,.s19-skt th{vertical-align:middle}
-.s19-skt td.s19-act .ip-skel{margin-left:auto}
 .s19-bkey{flex:none;align-self:center} /* multi-line Banners: icon on the first line (s7s-banner), the action key stays centred */'''
 CSS_D = M.CSS_DESK + SC.TOAST + CSS19S
 
@@ -152,7 +150,7 @@ TOAST = (f'<div class="s19-toastwrap"><div class="ip-toast s7s-toast" role="stat
 desk('--salvat', f'salvat · {D39}: ghidul Teliței ales din „fără ghid”', SAVED + TOAST, hd('--salvat'))
 # 5 · eroare la salvare (D39, the same edit): draft kept, Banner + Reîncearcă (focus) under the fields it covers
 BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),
-        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Ghidul ales, {GUIDE["g-growth"]}, rămâne aici; verifică internetul, apoi reîncearcă.'),
+        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou. Verifică conexiunea la internet, apoi reîncearcă.'),
         M.tree_farm('telita', noguide=True)]
 desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales din „fără ghid”',
      M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)
@@ -190,7 +188,7 @@ try:
     VP = M.vp('telita')
 finally:
     M.tree_of = keep
-assert '<span class="ip-num">5</span> secțiuni' in VP and 'H5-2' not in VP.split('Telița</th>')[1].split('</tr>')[0]
+assert '<span class="ip-num">5</span> secțiuni' in VP and 'H5-2' not in VP.split('<span class="s19-fn">Telița</span>')[1].split('</tr>')[0]
 desk('--retrasa-mutata', f'Telița · H5-2 retrasă, apoi H3 mutată în sus · {D39} · anunț live „{MOVED}”',
      VP + M.fpanel('telita', TEL_TIP, M.ghid_field('telita'),
                    tree_x('telita', note=ST['farm_note']('telita', 1), live=MOVED, order=ORDER_UP, retired=('H5-2',), kstates={'H3': 'ip-focus'})), PH)

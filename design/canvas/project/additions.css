@@ -1436,3 +1436,22 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * The split chip (Eroare sexare) keeps its tighter left edge for the 20px split tile. */
 .ip-chip--touch{height:var(--control-h-touch);gap:var(--space-2);padding:0 var(--space-4) 0 var(--space-3)}
 .ip-chip--touch.ip-chip--split{padding-left:var(--space-2)}
+
+/* =====================================================================================================
+ * S19P · SegmentedControl error, DataTable skeleton row. Spec: components.md › Additions › S19P.
+ * ===================================================================================================== */
+
+/* ---------- 41. SegmentedControl · error (S19P) ---------- */
+/* A required choice left unset after save (span.ip-seg[role=radiogroup][aria-invalid=true][aria-describedby=<error id>],
+ * demo class .is-error): the track takes the TextField error edge, a hair fault border, with the track padding cut by
+ * the same hair so the control keeps its size and the segments stay put. The error line under it is the field message
+ * (p.ip-err.ip-fieldmsg, section 38, alert icon). Segments, selected look and focus ring are unchanged. */
+.ip-seg[aria-invalid="true"],.ip-seg.is-error{border:var(--ip-hair) solid var(--fault);padding:var(--ip-hair)}
+
+/* ---------- 42. DataTable · skeleton row (S19P) ---------- */
+/* While a DataTable loads: its real head row, then two tr.ip-table__skel rows, one static ip-skel bar per cell (width
+ * class by the column's usual content), centred in the row; .ip-skel--end sets a bar at the cell's right edge (numbers,
+ * the action column). The region is aria-hidden, the block aria-busy, and a hidden role=status line says what loads. */
+.ip-table__skel > th,.ip-table__skel > td{vertical-align:middle}
+.ip-table__skel .ip-skel{display:block;max-width:100%}
+.ip-table__skel .ip-skel--end{margin-left:auto}

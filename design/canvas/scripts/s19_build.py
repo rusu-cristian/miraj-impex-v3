@@ -21,6 +21,8 @@ Boards (row below S18: y 32813 + 1624 + 120 = 34557; x step w + 80; D110):
   --ferma-noua                               the list beside an empty "Fermă nouă" panel (Tip unset, Ghid waits for it,
                                              sections after the first save)
   --telefon                                  phone, read-only list (D110: editing is desktop only, D75)
+S19P: the list region is a size container: under 760px (beside the panel: 558 at 1280, 718 at 1440) Tip and Ciclu fold
+under the farm name, so Editează stays in view. Ghid is one ARIA select-only combobox on every board (D112, as S9's Din).
 python3 -I s19_build.py <repo_root> [s19_heights.json] [--canvas]
 Writes design/canvas/project/S19-ferme-sectiuni[--<state>].dc.html, /tmp/s19/<stem>.html, /tmp/s19/boards.json; --canvas
 adds the boards to canvas.json (new row, nothing else changes). Renders: s19_render.py [--measure] [stems]."""
@@ -76,6 +78,8 @@ def cyc_cell(fid):
     if fid == 'hirbovat':
         return f'<span class="s19-cyc">{lamp("ok", "deschis")}<span class="ip-note ip-num"><span class="s19-nw">SAPT {WK}</span> · <span class="s19-nw">din {dd(cH["start_date"])}</span></span></span>'
     return f'<span class="s19-cyc">{lamp("off", "goală")}<span class="ip-note ip-num"><span class="s19-nw">din {dd(cT["end_date"])}</span></span></span>'
+def fold(fid):   # S19P: Tip + Ciclu under the farm name while the list region is narrow (beside the panel, container query)
+    return f'<span class="s19-fold"><span class="s19-ftip">{TYPE_RO[FARM[fid]["type"]]}</span>{cyc_cell(fid)}</span>'
 def gtag(fid, noguide=False):
     return f'<span class="ip-tag ip-tag--neutral">{"fără ghid" if noguide else GUIDE[FARM[fid]["guide_id"]]}</span>'
 
@@ -108,19 +112,19 @@ def editkey(fid, pressed=False):
     nm = FARM[fid]['name']
     p = ' is-pressed" aria-expanded="true" aria-controls="fp' if pressed else ''
     return f'<button type="button" class="ip-btn ip-btn--ghost{p}">Editează<span class="ip-sr"> {nm}</span></button>'
-COLS = ('<thead><tr><th scope="col">Fermă</th><th scope="col">Tip</th><th scope="col">Ghid</th><th scope="col">Secțiuni</th>'
-        '<th scope="col">Ciclu</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
+COLS = ('<thead><tr><th scope="col">Fermă</th><th scope="col" class="s19-ctip">Tip</th><th scope="col">Ghid</th><th scope="col">Secțiuni</th>'
+        '<th scope="col" class="s19-ccyc">Ciclu</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
 def frow(fid, open_=None, noguide=()):
     f = FARM[fid]
-    return (f'<tr><th scope="row" class="s19-fname">{f["name"]}</th><td>{TYPE_RO[f["type"]]}</td><td>{gtag(fid, fid in noguide)}</td>'
+    return (f'<tr><th scope="row" class="s19-fname"><span class="s19-fn">{f["name"]}</span>{fold(fid)}</th><td class="s19-ctip">{TYPE_RO[f["type"]]}</td><td>{gtag(fid, fid in noguide)}</td>'
             f'<td><span class="s19-secs"><span>{sec_count(fid)}</span><span class="ip-note ip-num">{sec_codes(fid)}</span></span></td>'
-            f'<td>{cyc_cell(fid)}</td><td class="s19-act">{editkey(fid, open_ == fid)}</td></tr>')
+            f'<td class="s19-ccyc">{cyc_cell(fid)}</td><td class="s19-act">{editkey(fid, open_ == fid)}</td></tr>')
 def flist(open_=None, noguide=()):
     rows = ''.join(frow(fid, open_, noguide) for fid in ORDER)
     note = ('<p class="ip-note s4s-m0">Un ghid nou se aplică de la ciclul următor al fermei. Secțiunile cu păsări nu se pot retrage.</p>')
     return (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
             f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
-            f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-fer">'
+            f'<div class="ip-tablescroll ip-tablescroll--framed s19-region" tabindex="0" role="region" aria-labelledby="h-fer">'
             f'<table class="ip-table ip-table--rowheads s19-table"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'
             f'{COLS}<tbody>{rows}</tbody></table></div>{note}</section>')
 def page(body, open_=None, pressed_new=False, farms=True, inert=False, noguide=()):
@@ -145,44 +149,60 @@ def tip_field(fid=None, sel=None, focus=False, readonly=False):
         its += (f'<span class="ip-seg__item{" is-selected" if on else ""}{f}" role="radio" aria-checked="{"true" if on else "false"}" '
                 f'tabindex="{0 if first else -1}">{TYPE_RO[k]}</span>')
     return (f'<div class="ip-field"><span class="ip-label" id="fp-tip-l">Tip</span>'
-            f'<span class="ip-seg" role="radiogroup" aria-labelledby="fp-tip-l" aria-required="true">{its}</span></div>')
-def gsel(text, hint, state='', desc='fp-ghid-h', placeholder=False):
+            f'<span class="ip-seg s19-seg" role="radiogroup" aria-labelledby="fp-tip-l" aria-required="true">{its}</span></div>')
+GROUP = {'growth': 'Ghiduri de creștere', 'laying': 'Ghiduri de ouat'}
+s4.IC.setdefault('chevup', '<path d="m18 15-6-6-6 6"/>')   # Lucide chevron-up (open combobox, as S9/S18S)
+def gopts(ftype, sel, active=None):
+    """The Ghid listbox options: "Fără ghid", then the guides of the farm's type under their caption (B1 filter)."""
+    rows = [('fp-g0', 'Fără ghid', None), ('fp-g1', GUIDE['g-growth' if ftype == 'growth' else 'g-laying'], GROUP[ftype])]
+    out = ''
+    for oid, t, grp in rows:
+        if grp: out += f'<li class="ip-menu__group" role="presentation">{grp}</li>'
+        on = t == sel
+        out += (f'<li class="ip-menu__item{" is-active" if oid == active else ""}" role="option" id="{oid}" aria-selected="{"true" if on else "false"}">'
+                f'<span>{t}</span>{icon("check", 16) if on else ""}</li>')
+    return out
+def gbox(text, hint, ftype=None, state='', desc='fp-ghid-h', expanded=False, active=None):
+    """S19P (D112): the Ghid field is an APG select-only combobox on every board (as S9's Din): span label, div.ip-input
+    [role=combobox] + its ul.ip-menu[role=listbox] (hidden while closed). No type yet (Fermă nouă) = aria-disabled, focusable,
+    no list (nothing to open); the hint says why. A guide of the other type stays shown and flagged (is-error, aria-invalid)."""
     st = f' {state}' if state else ''
-    dis = ' disabled="disabled"' if state == 'is-disabled' else ''
+    lbl = f'<span class="ip-label" id="fp-ghid-l">Ghid {OPT}</span>'
     inv = ' aria-invalid="true"' if state == 'is-error' else ''
-    opt = f'<option value=""{" selected=\"selected\"" if placeholder else ""}>{text}</option>' if placeholder else f'<option selected="selected">{text}</option>'
-    req = ''   # S19S fix 1: Ghid is optional, so no required (the placeholder option stays)
-    return (f'<span class="ip-input{st}"><select id="fp-ghid" aria-describedby="{desc}"{dis}{inv}{req}>{opt}</select>{icon("chev", 16)}</span>{hint}')
+    if state == 'is-disabled':
+        combo = (f'<div class="ip-input is-disabled s19-combo" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" '
+                 f'aria-disabled="true" aria-labelledby="fp-ghid-l" aria-describedby="{desc}"><span class="s4-grow">{text}</span>{icon("chev", 16)}</div>')
+        return f'<div class="ip-field">{lbl}<div class="s19-anchor">{combo}</div>{hint}</div>'
+    ex = 'true' if expanded else 'false'
+    ad = f' aria-activedescendant="{active}"' if active else ''
+    combo = (f'<div class="ip-input{st} s19-combo" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{ex}" '
+             f'aria-controls="fp-glist"{ad} aria-labelledby="fp-ghid-l" aria-describedby="{desc}"{inv}>'
+             f'<span class="s4-grow">{text}</span>{icon("chevup" if expanded else "chev", 16)}</div>')
+    lst = (f'<ul class="ip-menu s19-pop" role="listbox" id="fp-glist" aria-labelledby="fp-ghid-l" tabindex="-1"{"" if expanded else " hidden"}>'
+           f'{gopts(ftype, text, active)}</ul>')
+    return f'<div class="ip-field">{lbl}<div class="s19-anchor">{combo}{lst}</div>{hint}</div>'
 def ghid_field(fid, mode='set'):
-    lbl = f'<label class="ip-label" for="fp-ghid">Ghid {OPT}</label>'
     if mode == 'set' and fid == 'hirbovat':   # open cycle: the B1 next-cycle rule, the current cycle changes from its panel (B4)
         h = (f'<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Un ghid nou se aplică de la ciclul următor; pe cel curent '
-             f'(SAPT {WK}) îl schimbi din panoul ciclului, pe pagina fermei.</span>')
-        return f'<div class="ip-field">{lbl}{gsel(GUIDE["g-laying"], h)}</div>'
+             f'(sapt. {WK}) îl schimbi din panoul ciclului, pe pagina fermei.</span>')
+        return gbox(GUIDE["g-laying"], h, 'laying')
     if mode == 'set':                          # empty farm: the next cycle is the first one to use it
         h = '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de creștere. Se aplică de la următorul ciclu al fermei.</span>'
-        return f'<div class="ip-field">{lbl}{gsel(GUIDE["g-growth"], h)}</div>'
+        return gbox(GUIDE["g-growth"], h, 'growth')
     if mode == 'wrong':                        # D39: Tip switched back to Creștere, the ouat guide kept and flagged
         e = (f'<p class="ip-err ip-fieldmsg" id="fp-ghid-e">{ERRI}<span>Ghidul „{GUIDE["g-laying"]}” este pentru ouat. '
              f'Ferma {FARM[fid]["name"]} este de creștere. Alege un ghid de creștere sau schimbă tipul.</span></p>')
-        return f'<div class="ip-field">{lbl}{gsel(GUIDE["g-laying"], e, "is-error", "fp-ghid-e")}</div>'
+        return gbox(GUIDE["g-laying"], e, 'growth', 'is-error', 'fp-ghid-e')
     if mode == 'new':                          # no type yet: the guide list waits for it
         h = '<span class="ip-hint" id="fp-ghid-h">Alege întâi tipul: lista arată doar ghidurile de tipul fermei.</span>'
-        return f'<div class="ip-field">{lbl}{gsel("Alege un ghid", h, "is-disabled", placeholder=True)}</div>'
+        return gbox('Alege un ghid', h, state='is-disabled')
     if mode == 'open':                         # D39 fără ghid: the open list, filtered by the farm's type
-        items = (f'<li class="ip-menu__item is-active" role="option" id="fp-g0" aria-selected="true"><span>Fără ghid</span>{icon("check", 16)}</li>'
-                 f'<li class="ip-menu__group" role="presentation">Ghiduri de creștere</li>'
-                 f'<li class="ip-menu__item" role="option" id="fp-g1" aria-selected="false"><span>{GUIDE["g-growth"]}</span></li>')
-        combo = (f'<div class="ip-input is-focus s19-combo" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="true" '
-                 f'aria-controls="fp-glist" aria-activedescendant="fp-g0" aria-labelledby="fp-ghid-l" aria-describedby="fp-ghid-h">'
-                 f'<span class="s4-grow">Fără ghid</span>{icon("chev", 16)}</div>')
         h = '<span class="ip-hint" id="fp-ghid-h">Fără ghid, graficele fermei arată doar valorile reale.</span>'
-        return (f'<div class="ip-field"><span class="ip-label" id="fp-ghid-l">Ghid {OPT}</span><div class="s19-anchor">{combo}'
-                f'<ul class="ip-menu s19-pop" role="listbox" id="fp-glist" aria-labelledby="fp-ghid-l">{items}</ul></div>{h}</div>')
+        return gbox('Fără ghid', h, 'growth', 'is-focus', expanded=True, active='fp-g0')
     if mode == 'none':                         # D39 fără ghid: closed, so the actuals-only line stays in view
         h = ('<span class="ip-hint" id="fp-ghid-h">Fără ghid, graficele fermei arată doar valorile reale. '
              'Lista are doar ghiduri de creștere.</span>')
-        return f'<div class="ip-field">{lbl}{gsel("Fără ghid", h)}</div>'
+        return gbox('Fără ghid', h, 'growth')
     raise ValueError(mode)
 def tree_farm(fid, noguide=False, **kw):
     fr = ST['farm_row'](fid, tag=gtag(fid, True) if noguide else None)
@@ -249,17 +269,35 @@ CSS19 = '''
 .s19-table td{vertical-align:middle;white-space:normal}
 .s19-nw{white-space:nowrap}
 .s19-fname{font-weight:500}
+.s19-region{container:s19-ferme / inline-size}
+.s19-fold{display:none}
+/* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip and
+ * Ciclu fold under the farm name and Editează stays in view; the list alone (998px+ at 1280) keeps all six columns. */
+@container s19-ferme (max-width: 759.98px){
+  .s19-table .s19-ctip,.s19-table .s19-ccyc{display:none}
+  .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:normal}
+  .s19-fn{display:block;color:var(--ink)}
+}
 .s19-secs{display:flex;flex-direction:column;gap:0}
 .s19-cyc{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
 .s19-act{text-align:right;white-space:nowrap}
 .s19-anchor{position:relative}
+.s19-seg{align-self:flex-start} /* S19P fix 1: the track fits its two segments (the field is a flex column, it would stretch) */
 .s19-combo{cursor:pointer}
+.s19-combo > .s4-grow{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s19-combo > .ip-icon{flex:none;color:var(--ink-secondary)}
+.s19-combo[aria-expanded="true"]{border-color:var(--ink)}
+.s19-combo.is-disabled{cursor:not-allowed}
+.s19-combo.is-disabled > .ip-icon{color:inherit}
+.s19-combo.is-disabled:focus-visible{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)} /* aria-disabled keeps focus (the hint says why) */
 .s19-pop{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:4;list-style:none;margin:0}
+.s19-pop[hidden]{display:none}
 .s19-pbody{position:relative}
 .s19-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center} /* the Dialog over the whole desktop page (as S16S/S18S) */'''
 CSS_DESK = T.CSS_DESK + SC.OPT + CSS19
 CSS_PL = T.CSS_PL + CSS19 + '''
 .s19-ptable td{height:auto;padding-block:var(--space-2)}
+.s14-phead .ip-crumbs a{padding-inline:var(--space-1);margin-inline:calc(-1 * var(--space-1))} /* S19P fix 1: "Setări" tap area 50×46 (≥44), line unchanged */
 .s19-ptable .ip-table__child{width:calc(var(--space-12) * 2);vertical-align:middle}'''
 
 # ================================================================= write

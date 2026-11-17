@@ -160,12 +160,29 @@
 .s19-table td{vertical-align:middle;white-space:normal}
 .s19-nw{white-space:nowrap}
 .s19-fname{font-weight:500}
+.s19-region{container:s19-ferme / inline-size}
+.s19-fold{display:none}
+/* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip and
+ * Ciclu fold under the farm name and Editează stays in view; the list alone (998px+ at 1280) keeps all six columns. */
+@container s19-ferme (max-width: 759.98px){
+  .s19-table .s19-ctip,.s19-table .s19-ccyc{display:none}
+  .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:normal}
+  .s19-fn{display:block;color:var(--ink)}
+}
 .s19-secs{display:flex;flex-direction:column;gap:0}
 .s19-cyc{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
 .s19-act{text-align:right;white-space:nowrap}
 .s19-anchor{position:relative}
+.s19-seg{align-self:flex-start} /* S19P fix 1: the track fits its two segments (the field is a flex column, it would stretch) */
 .s19-combo{cursor:pointer}
+.s19-combo > .s4-grow{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s19-combo > .ip-icon{flex:none;color:var(--ink-secondary)}
+.s19-combo[aria-expanded="true"]{border-color:var(--ink)}
+.s19-combo.is-disabled{cursor:not-allowed}
+.s19-combo.is-disabled > .ip-icon{color:inherit}
+.s19-combo.is-disabled:focus-visible{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)} /* aria-disabled keeps focus (the hint says why) */
 .s19-pop{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:4;list-style:none;margin:0}
+.s19-pop[hidden]{display:none}
 .s19-pbody{position:relative}
 .s19-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center} /* the Dialog over the whole desktop page (as S16S/S18S) */
 .s7s-toastwrap{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);z-index:3}
@@ -174,9 +191,6 @@
 .s7s-toast__txt{flex:1;min-width:0}
 .s7s-undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
 .s19-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, over the page (as S18S) */
-.s19-skt .ip-skel{display:block;max-width:100%}
-.s19-skt td,.s19-skt th{vertical-align:middle}
-.s19-skt td.s19-act .ip-skel{margin-left:auto}
 .s19-bkey{flex:none;align-self:center} /* multi-line Banners: icon on the first line (s7s-banner), the action key stays centred */</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
