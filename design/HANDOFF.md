@@ -3,7 +3,7 @@ Updated: 2026-11-17 19:30 · Last commit: 8bd72bb
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 41 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polish next) · Building: S10P; all SYS jobs done
+Done 41 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polish next) · Building: none (handover after S10); all SYS jobs done
 
 ## Just finished
 - S10 Vânzare: whole Hîrbovăț flock sold 16.11 (D39) + confirmation dialog (cycle closes sapt. 40), refuzat, salvat, eroare, desktop panel; row y 18734; sstate_css gained FX/MODAL/OPT; D84 ("Toate secțiunile" key queued for S10P); 1 fix round (8bd72bb)
