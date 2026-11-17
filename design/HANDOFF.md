@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 14:05 · Last commit: 4f42545
+Updated: 2026-11-17 14:05 · Last commit: 5621133
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 46 / 69 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V) · Building: S14; all SYS jobs done
+Done 47 / 70 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 (states next) · Building: S14S; all SYS jobs done
 
 ## Just finished
+- S14 Rapoarte · Producție: 5 desktop boards, row y 23214, x 0…6080 (default 16.11.2026, se încarcă, fără date în perioadă, fără ghid, Seria 2025 closed cycle h 1716); D92; 1 fix round (emptying-only weeks "–", not 0) (5621133). s14_build.py --canvas needs the heights file passed too
 - S2V Observator Acasă: phone (x 13820, 390×2172) + desktop (x 14290, 1440×1116) in the S2 row; phone CycleTrack drawn at 358px; D91 (D06 viewer prices read-only stays; spec §1 table says "no prices" — user to correct); passed first review (4f42545)
 - S2P Acasă polish: §35 (`.ip-list--alerts` phone alert row, BottomTabBar disabled key, `.ip-scrim--phone` + `.ip-dialog__keys`, `.ip-readouts__skel`, `.ip-trackskel`); all 16 S2 boards rebuilt (vet h 900, manager phone h 1876); D90; D89 queues S2V (Observator Acasă); 1 fix round + shots retaken (9d23a4c)
 - S2S Acasă: manager Introdus azi (empty, D87), "2 FERME", 12 state boards (8 phones from x 3980, 4 desktops from x 7740, row y 20922); D88; 1 fix round (menu focus, disabled tab key) (3219a79). Rebuild the row with s2s_build.py --canvas, never s2_build.py --canvas
@@ -29,7 +30,7 @@ Done 46 / 69 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S14 → S14P → S8 → S8P → S15 (all system jobs done; screens only from here)
+- S14S → S14P → S8 → S8P → S15 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -49,6 +50,7 @@ Done 46 / 69 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S2: project/S2-acasa{,--manager,--manager-desktop,--proprietar-desktop}.dc.html (row y 20922) + canvas.json + S2S: S2-acasa--{se-incarca,inainte-de-12,zi-trecuta-blocat,sterge-confirmare,dupa-2359,ferma-goala,fara-acces,eroare-la-incarcare,manager-desktop--se-incarca,manager-desktop--zi-trecuta-stoc-sub-0,proprietar-desktop--se-incarca,proprietar-desktop--toate-cu-pret}.dc.html (manager + owner defaults rebuilt)
 - S2P: project/additions.css (§35) + all 16 S2-acasa*.dc.html + canvas.json (heights)
 - S2V: project/S2-acasa--observator{,-desktop}.dc.html + canvas.json
+- S14: project/S14-rapoarte-productie{,--se-incarca,--fara-date-in-perioada,--fara-ghid,--seria-2025}.dc.html + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
