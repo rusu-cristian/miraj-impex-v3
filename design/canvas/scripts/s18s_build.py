@@ -5,8 +5,8 @@ phones follow them. Today = 16.11.2026 (D23/D24) unless the board is a replay of
 Boards
   --se-incarca                  header kept, CycleTrack skeleton (S2P ip-trackskel) + framed table skeleton, hidden status
   --eroare-la-incarcare         header kept (Serie nouă stays), fault Banner + Reîncearcă in place of track and table
-  --fara-acces                  Observator Sidebar, title only, EmptyState "Nu ai acces la Serii." + "Deschide Seria 2026"
-                                (a manager or a vet gets the same picture with his own nav: not drawn, one board)
+  --fara-acces                  Observator Sidebar, title only, EmptyState "Nu ai acces la Serii." + "Înapoi la Acasă"
+                                (a manager or a vet: the same picture with their own nav and role sentence; not drawn, one board)
   --desktop-scris               replay 07.10.2025: the list as it was before the creation (Seria 2025 only, Hîrbovăț open
                                 SAPT 31) beside the SidePanel with the real creation typed (H1 ♀ 14 080 · H2 ♀ 14 000 ·
                                 H5-1 ♂ 3 510), Creează seria live
@@ -16,7 +16,7 @@ Boards
                                 Hîrbovăț, so the list beside it is drawn on the same premise (the move not entered: Telița
                                 open SAPT 58, no Hîrbovăț cycle in Seria 2026); fault Banner, Creează seria disabled
   --salvat                      replay 07.10.2025 after Creează seria: panel closed, Seria 2026 in the list (Telița open,
-                                SAPT 1, populare), Toast "Seria 2026 creată …" (no undo: the creation is cycle-changing)
+                                SAPT 1, populare), Toast in B4 words + Anulează, focus back on Serie nouă
   --inchide-seria               16.11.2026, D39: Seria 2025 as if not closed yet (its last cycle ended 28.01.2026), its
                                 Închide seria pressed, Dialog "Închide Seria 2025" over the inert page, focus on Anulează
   --telefon-eroare-la-salvare   replay 07.10.2025: the typed sheet kept, fault Banner + Reîncearcă right above the
@@ -89,11 +89,7 @@ def scene_svg(TW, sc):
         yh = ly[f] + 5
         g += (f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{ro_w}" height="16" rx="2"/>'
               f'<text class="rotxt" x="{round(xt + 4 + ro_w / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {w_}</text>')
-    tk = ''; step = 3 if TW <= 720 else 2
-    for d, lbl in T.months(d0, d1):
-        x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
-        tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 6}"/>'
-        if (d.month - 2) % step == 0 and (d.year, d.month) != (d1.year, d1.month): tk += f'<text class="month" x="{x}" y="{H + 20}" text-anchor="{anc}">{lbl}</text>'
+    tk = T.month_axis(d0, d1, tx, LX, H, 3 if TW <= 720 else 2)
     return (f'<svg class="ip-track s18-track s18-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
             f'<desc>{sc["desc"]}</desc>{g}{tk}</svg>')
 LEG_NOTR = re.sub(r'<span><i class="ip-rec ip-rec--transfer"></i>transfer <span class="ip-num">[^<]*</span></span>', '', T.LEG)
@@ -113,11 +109,12 @@ def b_tel(day, label, left=False):
     return dict(farm='telita', a=cT['start_date'], b=None, open=True, label=label, place=True, left=left, href='#/ferme/telita?ciclu=cyc-telita-2026',
                 aria=f'Telița, Seria 2026, creștere, din {dd(cT["start_date"])}, deschis, azi SAPT {wk(cT["start_date"], day)}. Început prin populare ({PLACE_TXT}). Deschide ferma la acest ciclu.')
 D1_REPLAY = dt.date(2026, 1, 1)   # the replay axis runs to the end of 2025 (then on by whole months until the readout fits)
-SC_BEFORE = dict(day=REPLAY, d1=D1_REPLAY, no25=True, blocks=[B25_OPEN], ro=[('hirbovat', WK_P)],
+LEG_BEFORE = re.sub(r'<span><i class="ip-rec ip-rec--placement"></i>populare</span>', '', LEG_NOTR); assert LEG_BEFORE != LEG_NOTR   # S18P: no placement mark yet
+SC_BEFORE = dict(day=REPLAY, d1=D1_REPLAY, no25=True, blocks=[B25_OPEN], ro=[('hirbovat', WK_P)], leg=LEG_BEFORE,
                  sub=f'{num(1)} serie · {num(2)} ferme · {num(1)} ciclu',
                  desc=(f'1 serie, 2 ferme, 1 ciclu. Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, deschis, azi {dd(REPLAY)}, '
                        f'SAPT {WK_P}; la Telița fără date.'))
-SC_AFTER = dict(SC_BEFORE, blocks=[B25_OPEN, b_tel(REPLAY, TXT['tel0'], left=True)], ro=[('telita', WK_T0), ('hirbovat', WK_P)],
+SC_AFTER = dict(SC_BEFORE, leg=LEG_NOTR, blocks=[B25_OPEN, b_tel(REPLAY, TXT['tel0'], left=True)], ro=[('telita', WK_T0), ('hirbovat', WK_P)],
                 sub=f'{num(2)} serii · {num(2)} ferme · {num(2)} cicluri',
                 desc=(f'2 serii, 2 ferme, 2 cicluri. Seria 2026, deschisă: Telița creștere din {dd(REPLAY)}, început prin populare ({PLACE_TXT}), azi SAPT {WK_T0}. '
                       f'Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, azi SAPT {WK_P}; la Telița fără date.'))
@@ -165,8 +162,8 @@ G25_OPEN = (gro('seria-2025', lamp('ok', 'deschisă'), NOTE25_OPEN, acts('seria-
             + crow_at('hirbovat', open_(cP), T.START_P, WK_P, dedus=True) + T.crow('telita'))
 G26_NEW = (gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată {num(dd(REPLAY))} la Telița', acts('seria-2026', 'off'))
            + crow_at('telita', open_(cT), T.START_T, WK_T0))
-TBL_BEFORE = stable([G25_OPEN], [why('seria-2025', 'Hîrbovăț', WK_P), T.RO_NOTE], f'{num(1)} serie')
-TBL_AFTER = stable([G26_NEW, G25_OPEN], [why('seria-2026', 'Telița', WK_T0), why('seria-2025', 'Hîrbovăț', WK_P), T.RO_NOTE], f'{num(2)} serii · cele mai noi întâi')
+TBL_BEFORE = stable([G25_OPEN], [why('seria-2025', 'Hîrbovăț', WK_P)], f'{num(1)} serie')   # S18P: no closed series, no read-only note
+TBL_AFTER = stable([G26_NEW, G25_OPEN], [why('seria-2026', 'Telița', WK_T0), why('seria-2025', 'Hîrbovăț', WK_P)], f'{num(2)} serii · cele mai noi întâi')
 G26_D39 = (gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată {num(dd(REPLAY))} la Telița', acts('seria-2026', 'off'))
            + crow_at('telita', open_(cT), T.START_T, WK_T39))
 G25_REAL = T.grow('seria-2025') + T.crow('hirbovat', cP, T.START_P, dedus=True) + T.crow('telita')
@@ -348,10 +345,16 @@ body = T.form(TODAY, False, T.NEWNAME, T.NEWYEAR, state='refuz')
 desk('--desktop-refuzat', 'Serie nouă · desktop · refuzat: Telița are încă păsări · exemplu de stare (D39): transferul la Hîrbovăț neintrodus',
      vp(scene_track(SC_D39), TBL_D39) + T.panel(body, TODAY, RKEY), SC.SIDE_H)
 # 7 · salvat: replay 07.10.2025, panel closed, the new series in the list, Toast
-TOAST = (f'<div class="s18s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">{NAME26} creată · Telița '
-         f'♀ {num(n(PLC["F"]))} · ♂ {num(n(PLC["M"]))} · ciclu nou, sapt. {num(WK_T0)}</span>'
-         f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')   # fix 1: undo until 23:59 (owner), as S9/S10
-desk('--salvat', f'salvat · reluare {dd(REPLAY)}', page(scene_track(SC_AFTER), TBL_AFTER, when='after') + TOAST, hd('--salvat'))
+TOAST = (f'<div class="s18s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">{NAME26} creată · '
+         f'ciclu nou la Telița · sapt. {num(WK_T0)} de la {num(dd(REPLAY))} · ghid {GUIDE["g-growth"]}</span>'
+         f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')   # fix 1: undo until 23:59 (owner), as S9/S10; S18P: B4 words
+assert WK_T0 == 1 and GUIDE[cT['guide_id']] == GUIDE['g-growth'] == 'Ross 308 creștere'
+NEWKEY = T.newkey(); assert NEWKEY.count('class="ip-btn ip-btn--secondary"') == 1
+FOCUS_NOTE = ('<!-- S18P focus after Creează seria: the panel closes and focus returns to Serie nouă, the key that opened it; '
+              'the Toast (role=status) announces the save and keeps Anulează in the tab order. -->')
+SAVED = page(scene_track(SC_AFTER), TBL_AFTER, when='after'); assert SAVED.count(NEWKEY) == 1
+SAVED = SAVED.replace(NEWKEY, FOCUS_NOTE + NEWKEY.replace('class="ip-btn ip-btn--secondary"', 'class="ip-btn ip-btn--secondary ip-focus"'))
+desk('--salvat', f'salvat · reluare {dd(REPLAY)}', SAVED + TOAST, hd('--salvat'))
 # 8 · Închide seria Dialog (D39: Seria 2025 not closed yet), over the inert page, focus on Anulează
 DLG = (f'<div class="ip-scrim s18s-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Închide Seria 2025</h2>'

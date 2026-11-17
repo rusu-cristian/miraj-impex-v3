@@ -91,6 +91,22 @@ def months(d0, d1):
         out.append((dt.date(y, m, 1), f'{m:02d}.{str(y)[2:]}')); y, m = (y + 1, 1) if m == 12 else (y, m + 1)
     return out
 LBL = {'telita': 'TELIȚA', 'hirbovat': 'HÎRBOVĂȚ'}
+MONTH_W, MONTH_GAP = 6.6, 8   # 11px Plex Mono: 0.6em a figure; at least space-2 between two month labels
+def month_axis(d0, d1, tx, LX, H, step):
+    """Ticks every month, labels every <step> months (none on the axis end). S18P: when the first label (start-anchored at
+    the axis start) would sit closer than space-2 to the second (560 drawing: 02.25 | 05.25), the first label is dropped;
+    its tick stays."""
+    out, lbls = [], []
+    for d, lbl in months(d0, d1):
+        x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
+        out.append(f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 6}"/>')
+        if (d.month - 2) % step == 0 and (d.year, d.month) != (d1.year, d1.month):
+            w = len(lbl) * MONTH_W; a = x if anc == 'start' else x - w / 2
+            lbls.append((a, a + w, len(out))); out.append(f'<text class="month" x="{x}" y="{H + 20}" text-anchor="{anc}">{lbl}</text>')
+    if len(lbls) > 1 and lbls[1][0] - lbls[0][1] < MONTH_GAP:
+        out[lbls[0][2]] = ''; lbls = lbls[1:]
+    assert all(b[0] - a[1] >= MONTH_GAP for a, b in zip(lbls, lbls[1:])), lbls
+    return ''.join(out)
 TWS = (1160, 1000, 720, 560)   # 1:1 for the content box at 1440, at 1280, and beside the SidePanel at 1440 (1160 − panel-w 440) and 1280 (1000 − 440)
 # block labels per drawing width (11px track text): long where the block is wide enough, short where not
 TXT = {
@@ -144,12 +160,7 @@ def track_svg(TW):
     assert xt + 4 + ro_w <= TW, (TW, xt)
     g += (f'<line class="today" x1="{xt}" x2="{xt}" y1="{top}" y2="{H + 4}"/><text class="todaylbl" x="{xt}" y="{top - 3}" text-anchor="middle">azi {dd(TODAY)[:5]}</text>'
           f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{ro_w}" height="16" rx="2"/><text class="rotxt" x="{round(xt + 4 + ro_w / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {WK}</text>')
-    tk = ''
-    step = 6 if phone else 3 if TW <= 720 else 2   # month labels: every 2nd month, quarterly at 720, half-yearly on phone
-    for d, lbl in months(d0, d1):
-        x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
-        tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 6}"/>'
-        if (d.month - 2) % step == 0 and (d.year, d.month) != (d1.year, d1.month): tk += f'<text class="month" x="{x}" y="{H + 20}" text-anchor="{anc}">{lbl}</text>'
+    tk = month_axis(d0, d1, tx, LX, H, 6 if phone else 3 if TW <= 720 else 2)   # every 2nd month, quarterly at 720 and 560, half-yearly on phone
     desc = (f'2 serii, 2 ferme, 3 cicluri. Seria 2025, închisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, '
             f'{cP["weeks"]} săpt.; la Telița fără date. Seria 2026, deschisă: Telița creștere {dd(cT["start_date"])}–{dd(cT["end_date"])}, {cT["weeks"]} săpt., '
             f'început prin populare; transfer Telița → Hîrbovăț {dd(X0D)[:5]}–{dd(X1D)}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}; '
@@ -202,7 +213,7 @@ def acts(sid, touch):
         a += f'<button type="button" class="ip-btn ip-btn--secondary{t}" disabled="disabled" aria-describedby="why-{sid}">Închide seria<span class="ip-sr"> {SER[sid]["name"]}</span></button>'
     return a
 WHY26 = f'<p class="ip-note s4s-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț (deschis, SAPT {WK}).</p>'
-RO_NOTE = '<p class="ip-note s4s-m0">O serie închisă e doar citire. Ciclurile noi pornesc la populare sau la primul transfer într-o fermă goală.</p>'
+RO_NOTE = '<p class="ip-note s4s-m0">O serie închisă e doar citire.</p>'   # S18P: the cycle-start sentence cut (B4 rule, said by the EffectPreview)
 def ptable():
     """Phone (fix 1): one framed scroll table per series (group row + its cycles); the series keys sit under it, outside the
     scroll area, with Închide seria's reason right under its key."""
@@ -335,7 +346,7 @@ def effect(state, day, name='', year='', rows=()):
             f'<span class="s9-fxline"><b class="s9-strong">Telița · {dd(day)}</b><span class="s9-fxval">{pair(0, 0)}{ARROW}{pair(sf, sm)}</span></span>'
             f'<span class="s9-fxsub">{num(len(rows))} secțiuni · {codes}</span>'
             f'<span class="s9-fxcyc">{cmark("start", "place", f"Ciclu nou la Telița, sapt. 1")}</span>'
-            f'<span class="s9-fxsub">creștere · ghid {GUIDE["g-growth"]} · ciclul pornește la populare</span></div></div>')
+            f'<span class="s9-fxsub">ghid {GUIDE["g-growth"]}</span></div></div>')   # S18P: the guide line (it names the type); mark wording as C3/S9
 
 def form(day, touch, name='', year='', rows=((None, None, None),), state='empty', focus=False):
     u = 'p' if touch else 'd'
