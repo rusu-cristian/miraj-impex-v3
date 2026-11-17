@@ -62,7 +62,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | SYS10 | system | SectionTree editor (S19) | SYS00 | components.md#datatable, #iconbutton, #tag; screens.md#s19; spec.md#b1 | done | dc5ed3d |
 | S19 | screen | S19 Ferme și secțiuni + states | SYS10, S18P | screens.md#s19; spec.md#b1; components.md#sidepanel, #select, #segmentedcontrol, #banner, #emptystate; extracts: farms-sections | todo | |
 | S19P | polish | S19 polish + audit | S19 | screens.md#s19; spec.md#b1 | todo | |
-| SYS11 | system | GuideImportPreview (DataTable with row errors) | SYS06 | components.md#datatable, #filedrop, #banner; screens.md#s20; spec.md#b2 | building | |
+| SYS11 | system | GuideImportPreview (DataTable with row errors) | SYS06 | components.md#datatable, #filedrop, #banner; screens.md#s20; spec.md#b2 | done | 94c1d59 |
 | S20 | screen | S20 Ghiduri: list, import panel, guide detail + states | SYS11, S19P | screens.md#s20; spec.md#b2; components.md#guidechart, #datatable, #filedrop; extracts: guide-growth, guide-laying | todo | |
 | S20P | polish | S20 polish + audit | S20 | screens.md#s20; spec.md#b2 | todo | |
 | S21 | screen | S21 Tipuri de hrană | S20P | screens.md#s21; data-model.md#tables; components.md#datatable, #sidepanel, #segmentedcontrol, #checkbox; extracts: feed-types | todo | |
