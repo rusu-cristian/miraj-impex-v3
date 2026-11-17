@@ -770,6 +770,48 @@
       "w": 390,
       "h": 1113,
       "title": "S8 · Cântărire · eroare la salvare"
+    },
+    "S8-cantarire--se-incarca.dc.html": {
+      "x": 3290,
+      "y": 26059,
+      "w": 390,
+      "h": 908,
+      "title": "S8 · Cântărire · se încarcă"
+    },
+    "S8-cantarire--alege-sectiunea.dc.html": {
+      "x": 3760,
+      "y": 26059,
+      "w": 390,
+      "h": 844,
+      "title": "S8 · Cântărire · alege secțiunea"
+    },
+    "S8-cantarire--zi-trecuta.dc.html": {
+      "x": 4230,
+      "y": 26059,
+      "w": 390,
+      "h": 1036,
+      "title": "S8 · Cântărire · zi trecută (medic) · Telița 17.02.2026"
+    },
+    "S8-cantarire--ferma-fara-pasari.dc.html": {
+      "x": 4700,
+      "y": 26059,
+      "w": 390,
+      "h": 844,
+      "title": "S8 · Cântărire · fermă fără păsări"
+    },
+    "S8-cantarire--deja-introdus.dc.html": {
+      "x": 5170,
+      "y": 26059,
+      "w": 390,
+      "h": 990,
+      "title": "S8 · Cântărire · deja introdus"
+    },
+    "S8-cantarire--gol-telita.dc.html": {
+      "x": 5640,
+      "y": 26059,
+      "w": 390,
+      "h": 925,
+      "title": "S8 · Cântărire · gol · Telița 24.02.2026"
     }
   },
   "order": [
@@ -874,7 +916,13 @@
     "S8-cantarire--abatere.dc.html",
     "S8-cantarire--valoare-refuzata.dc.html",
     "S8-cantarire--salvat.dc.html",
-    "S8-cantarire--eroare-la-salvare.dc.html"
+    "S8-cantarire--eroare-la-salvare.dc.html",
+    "S8-cantarire--se-incarca.dc.html",
+    "S8-cantarire--alege-sectiunea.dc.html",
+    "S8-cantarire--zi-trecuta.dc.html",
+    "S8-cantarire--ferma-fara-pasari.dc.html",
+    "S8-cantarire--deja-introdus.dc.html",
+    "S8-cantarire--gol-telita.dc.html"
   ],
   "notes": {},
   "designSystems": [

@@ -5,7 +5,10 @@ import asyncio, json, pathlib, sys
 from playwright.async_api import async_playwright
 R = pathlib.Path('/home/claude/miraj-impex-v3')
 ORDER = ['S8-cantarire', 'S8-cantarire--gol', 'S8-cantarire--in-norma', 'S8-cantarire--abatere',
-         'S8-cantarire--valoare-refuzata', 'S8-cantarire--salvat', 'S8-cantarire--eroare-la-salvare']
+         'S8-cantarire--valoare-refuzata', 'S8-cantarire--salvat', 'S8-cantarire--eroare-la-salvare',
+         # S8S (s8s_build.py): shots S8-7 … S8-12; the sheet board is one 844 screen (s7s-vp)
+         'S8-cantarire--se-incarca', 'S8-cantarire--alege-sectiunea', 'S8-cantarire--zi-trecuta',
+         'S8-cantarire--ferma-fara-pasari', 'S8-cantarire--deja-introdus', 'S8-cantarire--gol-telita']
 CHECK = """() => {
  const ids = [...document.querySelectorAll('[id]')].map(e => e.id); const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls]')].flatMap(e =>
