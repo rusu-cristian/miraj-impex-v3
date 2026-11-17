@@ -1090,25 +1090,103 @@
       "title": "S18 · Serii · Serie nouă · desktop"
     },
     "S18-serii--telefon.dc.html": {
-      "x": 3040,
+      "x": 15200,
       "y": 32813,
       "w": 390,
       "h": 1064,
       "title": "S18 · Serii · telefon"
     },
     "S18-serii--telefon-serie-noua.dc.html": {
-      "x": 3510,
+      "x": 15670,
       "y": 32813,
       "w": 390,
       "h": 1492,
       "title": "S18 · Serii · Serie nouă · telefon · reluare 07.10.2025"
     },
     "S18-serii--telefon-refuzat.dc.html": {
-      "x": 3980,
+      "x": 16140,
       "y": 32813,
       "w": 390,
       "h": 1200,
       "title": "S18 · Serii · Serie nouă · telefon · refuzat: Telița are încă păsări · exemplu de stare (D39)"
+    },
+    "S18-serii--se-incarca.dc.html": {
+      "x": 3040,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · se încarcă"
+    },
+    "S18-serii--eroare-la-incarcare.dc.html": {
+      "x": 4560,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · eroare la încărcare"
+    },
+    "S18-serii--fara-acces.dc.html": {
+      "x": 6080,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · observator · fără acces"
+    },
+    "S18-serii--desktop-scris.dc.html": {
+      "x": 7600,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · Serie nouă · desktop · scris · reluare 07.10.2025"
+    },
+    "S18-serii--desktop-erori.dc.html": {
+      "x": 9120,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · Serie nouă · desktop · erori în câmpuri · exemplu de stare (D39)"
+    },
+    "S18-serii--desktop-refuzat.dc.html": {
+      "x": 10640,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · Serie nouă · desktop · refuzat: Telița are încă păsări · exemplu de stare (D39): transferul la Hîrbovăț neintrodus"
+    },
+    "S18-serii--salvat.dc.html": {
+      "x": 12160,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · salvat · reluare 07.10.2025"
+    },
+    "S18-serii--inchide-seria.dc.html": {
+      "x": 13680,
+      "y": 32813,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S18 · Serii · Închide seria · exemplu de stare (D39)"
+    },
+    "S18-serii--telefon-eroare-la-salvare.dc.html": {
+      "x": 16610,
+      "y": 32813,
+      "w": 390,
+      "h": 1640,
+      "title": "S18 · Serii · Serie nouă · telefon · eroare la salvare · reluare 07.10.2025"
+    },
+    "S18-serii--telefon-alege-sectiunea.dc.html": {
+      "x": 17080,
+      "y": 32813,
+      "w": 390,
+      "h": 844,
+      "title": "S18 · Serii · Serie nouă · telefon · alege secțiunea · reluare 07.10.2025"
     }
   },
   "order": [
@@ -1259,7 +1337,17 @@
     "S18-serii--serie-noua.dc.html",
     "S18-serii--telefon.dc.html",
     "S18-serii--telefon-serie-noua.dc.html",
-    "S18-serii--telefon-refuzat.dc.html"
+    "S18-serii--telefon-refuzat.dc.html",
+    "S18-serii--se-incarca.dc.html",
+    "S18-serii--eroare-la-incarcare.dc.html",
+    "S18-serii--fara-acces.dc.html",
+    "S18-serii--desktop-scris.dc.html",
+    "S18-serii--desktop-erori.dc.html",
+    "S18-serii--desktop-refuzat.dc.html",
+    "S18-serii--salvat.dc.html",
+    "S18-serii--inchide-seria.dc.html",
+    "S18-serii--telefon-eroare-la-salvare.dc.html",
+    "S18-serii--telefon-alege-sectiunea.dc.html"
   ],
   "notes": {},
   "designSystems": [

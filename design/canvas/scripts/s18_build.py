@@ -488,7 +488,7 @@ pathlib.Path('/tmp/s18/boards.json').write_text(json.dumps([{k: b[k] for k in ('
 if CANVAS:  # new row below the lowest other row (row y + tallest h + 120); desktops first (a Setări page, as S17), 80 px gaps
     cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
     mine = {f'{b["stem"]}.dc.html' for b in out}
-    others = {k: v for k, v in c['boards'].items() if k not in mine}
+    others = {k: v for k, v in c['boards'].items() if k not in mine and not k.startswith('S18-')}   # S18S boards share the row (s18s_build)
     ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
     assert (ly, y) == (30164, 32813), (ly, y)
     x = 0
