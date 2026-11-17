@@ -1272,3 +1272,23 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-login__eye:focus-visible,.ip-login__eye.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
 .ip-input.ip-login__pw:has(> .ip-login__eye:focus-visible),.ip-input.ip-login__pw.is-eye{outline:none}
 .ip-login__pw > input::-ms-reveal,.ip-login__pw > input::-ms-clear{display:none}
+
+/* ---------- 32. DataTable · row headers + framed scroll region (S4T fix 1) ---------- */
+/* Opt-in: table.ip-table.ip-table--rowheads, for DataTables whose rows are named by th[scope=row] (group rows by
+ * th[scope=rowgroup]). Row headers read as body text (13/18 Sans 400, ink, raised, row-h), not as the uppercase caption
+ * headers of thead; group rows (tr.is-group) and totals (tr.is-total) give their th what bundle.css gives their td
+ * (sunken / 500; line-strong top edge on panel). th.ip-table__child indents a row under its group row. Two-row heads:
+ * a first column spanning both rows (th[rowspan]) sits at the bottom, colgroup heads align right over their figures
+ * on a rule, and inside .ip-tablescroll the second head row's first cell does not stick (it is not the first column).
+ * The older copies (.ip-cost__table, .ip-sparktable, S3 screen rules) stay as they are until FIN folds them in. */
+.ip-table--rowheads tbody th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;background:var(--raised);padding:var(--space-1) var(--space-3);height:var(--row-h);border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-table--rowheads tr.is-group > th{background:var(--sunken);font-weight:500}
+.ip-table--rowheads tr.is-total > th{font-weight:500;background:var(--panel);border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
+.ip-table--rowheads th.ip-table__child{padding-left:var(--space-6)}
+.ip-table--rowheads thead th[rowspan]{vertical-align:bottom}
+.ip-table--rowheads thead th[scope=colgroup]{text-align:right;border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-tablescroll > .ip-table--rowheads thead tr + tr > th:first-child{position:static;border-right:0}
+/* Framed: div.ip-tablescroll.ip-tablescroll--framed draws the table's box (1px line, radius-md, clipped by the scroll
+ * region); the last row drops its rule against the frame. Focus stays the system ring on the region. */
+.ip-tablescroll--framed{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.ip-tablescroll--framed > .ip-table > tbody:last-child > tr:last-child > :is(th,td){border-bottom:0}

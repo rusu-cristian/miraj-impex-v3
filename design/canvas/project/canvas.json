@@ -89,65 +89,97 @@
       "expand": "fill",
       "title": "S4 · Fermă · Rezumat · ciclu nou"
     },
+    "S4-ferma--pasari.dc.html": {
+      "x": 13680,
+      "y": 800,
+      "w": 1440,
+      "h": 2529,
+      "expand": "fill",
+      "title": "S4 · Fermă · Păsări"
+    },
+    "S4-ferma--hrana.dc.html": {
+      "x": 15200,
+      "y": 800,
+      "w": 1440,
+      "h": 1408,
+      "expand": "fill",
+      "title": "S4 · Fermă · Hrană"
+    },
+    "S4-ferma--greutate.dc.html": {
+      "x": 16720,
+      "y": 800,
+      "w": 1440,
+      "h": 1668,
+      "expand": "fill",
+      "title": "S4 · Fermă · Greutate"
+    },
+    "S4-ferma--productie.dc.html": {
+      "x": 18240,
+      "y": 800,
+      "w": 1440,
+      "h": 1335,
+      "expand": "fill",
+      "title": "S4 · Fermă · Producție"
+    },
     "S7-hrana-zilnica.dc.html": {
       "x": 0,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 3162,
       "title": "S7 · Hrană zilnică"
     },
     "S7-hrana-zilnica--fara-zi-anterioara.dc.html": {
       "x": 470,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · fără zi anterioară"
     },
     "S7-hrana-zilnica--abatere.dc.html": {
       "x": 940,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · abatere"
     },
     "S7-hrana-zilnica--valoare-in-afara-limitei.dc.html": {
       "x": 1410,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · valoare în afara limitei"
     },
     "S7-hrana-zilnica--stoc-sub-0.dc.html": {
       "x": 1880,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · stoc sub 0 · exemplu de stare (D39)"
     },
     "S7-hrana-zilnica--salvat.dc.html": {
       "x": 2350,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · salvat"
     },
     "S7-hrana-zilnica--eroare-la-salvare.dc.html": {
       "x": 2820,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · eroare la salvare"
     },
     "S7-hrana-zilnica--se-incarca.dc.html": {
       "x": 3290,
-      "y": 2854,
+      "y": 3449,
       "w": 390,
       "h": 844,
       "title": "S7 · Hrană zilnică · se încarcă"
     },
     "S3-seria-2026.dc.html": {
       "x": 0,
-      "y": 6260,
+      "y": 6855,
       "w": 1440,
       "h": 1134,
       "expand": "fill",
@@ -155,7 +187,7 @@
     },
     "S3-seria-2026--se-incarca.dc.html": {
       "x": 1520,
-      "y": 6260,
+      "y": 6855,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -163,7 +195,7 @@
     },
     "S3-seria-2026--seria-inchisa.dc.html": {
       "x": 3040,
-      "y": 6260,
+      "y": 6855,
       "w": 1440,
       "h": 1028,
       "expand": "fill",
@@ -171,7 +203,7 @@
     },
     "S3-seria-2026--fara-acces.dc.html": {
       "x": 4560,
-      "y": 6260,
+      "y": 6855,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -179,7 +211,7 @@
     },
     "S11-rapoarte-hrana.dc.html": {
       "x": 0,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 2499,
       "expand": "fill",
@@ -187,7 +219,7 @@
     },
     "S11-rapoarte-hrana--se-incarca.dc.html": {
       "x": 1520,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 1241,
       "expand": "fill",
@@ -195,7 +227,7 @@
     },
     "S11-rapoarte-hrana--manager.dc.html": {
       "x": 3040,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 2467,
       "expand": "fill",
@@ -203,7 +235,7 @@
     },
     "S11-rapoarte-hrana--observator.dc.html": {
       "x": 4560,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 2057,
       "expand": "fill",
@@ -211,7 +243,7 @@
     },
     "S11-rapoarte-hrana--fara-livrari-in-perioada.dc.html": {
       "x": 6080,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 1121,
       "expand": "fill",
@@ -219,7 +251,7 @@
     },
     "S12-preturi-hrana.dc.html": {
       "x": 0,
-      "y": 10303,
+      "y": 10898,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -227,7 +259,7 @@
     },
     "S12-preturi-hrana--se-incarca.dc.html": {
       "x": 1520,
-      "y": 10303,
+      "y": 10898,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -235,7 +267,7 @@
     },
     "S12-preturi-hrana--in-lucru.dc.html": {
       "x": 3040,
-      "y": 10303,
+      "y": 10898,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -243,7 +275,7 @@
     },
     "S12-preturi-hrana--toate-livrarile-au-pret.dc.html": {
       "x": 4560,
-      "y": 10303,
+      "y": 10898,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -251,7 +283,7 @@
     },
     "S12-preturi-hrana--eroare.dc.html": {
       "x": 6080,
-      "y": 10303,
+      "y": 10898,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -259,7 +291,7 @@
     },
     "S11-rapoarte-hrana--modifica-pret.dc.html": {
       "x": 7600,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 2621,
       "expand": "fill",
@@ -267,7 +299,7 @@
     },
     "S11-rapoarte-hrana--modifica-pret--eroare.dc.html": {
       "x": 9120,
-      "y": 7514,
+      "y": 8109,
       "w": 1440,
       "h": 2669,
       "expand": "fill",
@@ -275,35 +307,35 @@
     },
     "S13-livrare-hrana.dc.html": {
       "x": 0,
-      "y": 11447,
+      "y": 12042,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · telefon"
     },
     "S13-livrare-hrana--salvat.dc.html": {
       "x": 470,
-      "y": 11447,
+      "y": 12042,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · salvat"
     },
     "S13-livrare-hrana--cantitate-lipsa.dc.html": {
       "x": 940,
-      "y": 11447,
+      "y": 12042,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · cantitate lipsă"
     },
     "S13-livrare-hrana--eroare-la-salvare.dc.html": {
       "x": 1410,
-      "y": 11447,
+      "y": 12042,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · eroare la salvare"
     },
     "S13-livrare-hrana--desktop.dc.html": {
       "x": 1880,
-      "y": 11447,
+      "y": 12042,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -311,70 +343,70 @@
     },
     "S6-zilnic.dc.html": {
       "x": 0,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 4284,
       "title": "S6 · Zilnic"
     },
     "S6-zilnic--se-incarca.dc.html": {
       "x": 470,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · se încarcă"
     },
     "S6-zilnic--deja-introdus.dc.html": {
       "x": 940,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · deja introdus"
     },
     "S6-zilnic--zi-trecuta.dc.html": {
       "x": 1410,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · zi trecută (medic)"
     },
     "S6-zilnic--abatere.dc.html": {
       "x": 1880,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · abatere 3× · exemplu de stare (D39)"
     },
     "S6-zilnic--refuzat.dc.html": {
       "x": 2350,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · refuzat · peste cei în viață · exemplu de stare (D39)"
     },
     "S6-zilnic--eroare-la-salvare.dc.html": {
       "x": 2820,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · eroare la salvare"
     },
     "S6-zilnic--ferma-fara-pasari.dc.html": {
       "x": 3290,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · fermă fără păsări"
     },
     "S6-zilnic--salvat.dc.html": {
       "x": 3760,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · salvat"
     },
     "S6-zilnic--motiv-lipsa.dc.html": {
       "x": 4230,
-      "y": 12591,
+      "y": 13186,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · motiv lipsă · Mai mult deschis · exemplu de stare (D39)"
@@ -391,6 +423,10 @@
     "S4-ferma-rezumat--ciclu-meniu.dc.html",
     "S4-ferma-rezumat--ciclu-ales.dc.html",
     "S4-ferma-rezumat--ciclu-nou.dc.html",
+    "S4-ferma--pasari.dc.html",
+    "S4-ferma--hrana.dc.html",
+    "S4-ferma--greutate.dc.html",
+    "S4-ferma--productie.dc.html",
     "S7-hrana-zilnica.dc.html",
     "S7-hrana-zilnica--fara-zi-anterioara.dc.html",
     "S7-hrana-zilnica--abatere.dc.html",
