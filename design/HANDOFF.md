@@ -15,7 +15,7 @@ Done 29 / 66 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished) �
 - S6 (review) → S6S → S6P → S4T; SYS11 in parallel; then SYS12, SYS13
 
 ## Waiting on the user
-- None blocking. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64).
+- None blocking. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64).
 
 ## Unpublished on the canvas (publish with publish_files, mode patch, "as" = project/<file>)
 - Since 16.11.2026 sessions have network access off and did not make the canvas, so no tool here can write to it (get_artifact → network_off_limit). Publish from a chat opened from the canvas page, or from a session with network access on.
