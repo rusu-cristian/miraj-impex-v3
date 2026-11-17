@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 03:30 · Last commit: 7eac13b
+Updated: 2026-11-18 04:20 · Last commit: fff55b3
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 70 / 77 · Screens done: S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S21; all SYS jobs done
+Done 71 / 77 · Screens done: S21 + 14 states, S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S21P; all SYS jobs done
 
 ## Just finished
+- S21 Tipuri de hrană: row y 38201, 14 desktops x 0–19760 (list, Breeder 2 / Starter panels, retragere refuzată, tip nou, nume gol, nume folosit, salvat, eroare la salvare, Șterge Dialog, se încarcă, eroare la încărcare, fără acces, niciun tip) + read-only phone x 21280; all 5 types in use (none deletable); D116; 1 fix round (read-only Pentru = S8/S19 read-only TextField) (fff55b3)
 - S20P Ghiduri polish: SYS11 one-decimal %, §42 skeleton rows with ch-sized bars (`ip-gimp__sk1…4`), prose "sapt.", empty file one "Alege alt fișier", scroll box +2 hair; §43 `ip-drop--paste`; detail_page(name, cycles, pressed); unused guide Folosit de one line; heights inlocuieste-fisier/-lipit 1084, ghid-nou 1100; D115; passed first review (7eac13b)
 - S20S Ghiduri states: 14 desktops x 12160–31920 (se încarcă, eroare la încărcare, fără acces, niciun ghid, se citește, format greșit, necitibil, gol, refuzate filtru, nume gol, nume folosit, ghid nou, eroare la salvare, șterge Dialog), phone moved to x 33440; D114; rebuild s20_build --canvas then s20s_build --canvas; 1 fix round (Nume example must be a free name) (965e15f)
 - S20 Ghiduri: row y 35701, 8 desktops x 0–10640 (list, Ross 308 ouat detail, Ross 308 creștere detail with gaps, importă ghid, înlocuiește fișier / refuzate / lipit (D39), salvat) + read-only phone x 12160; detail + import are sub-pages with crumbs (SYS11 ≥672px); D113; S20S queued; 1 fix round (prose "sapt.", Folosit de farm links, one-line cycles) (77b3490)
@@ -53,7 +54,7 @@ Done 70 / 77 · Screens done: S20 + 22 states (polished), S19 + 21 states (polis
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S21 → S21P → S22 → S22P → S1 → S1P → FIN (screens only from here)
+- S21P → S22 → S22P → S1 → S1P → FIN (screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -98,6 +99,7 @@ Done 70 / 77 · Screens done: S20 + 22 states (polished), S19 + 21 states (polis
 - S20: project/S20-ghiduri{,--ross-308-ouat,--ross-308-crestere,--importa-ghid,--inlocuieste-fisier,--inlocuieste-refuzate,--inlocuieste-lipit,--salvat,--telefon}.dc.html + canvas.json
 - S20S: project/S20-ghiduri--{se-incarca,eroare-la-incarcare,fara-acces,niciun-ghid,se-citeste,format-gresit,necitibil,gol,refuzate-filtru,nume-gol,nume-folosit,ghid-nou,eroare-la-salvare,sterge}.dc.html + canvas.json (phone x 33440)
 - S20P: project/additions.css (§29 amended, §43) + 17 changed project/S20-ghiduri*.dc.html + canvas.json (3 heights); GuideImportPreview preview.html
+- S21: project/S21-tipuri-hrana*.dc.html (15 boards) + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
