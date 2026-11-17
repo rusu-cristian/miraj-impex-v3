@@ -913,12 +913,79 @@
       "title": "S16 · Corectează · Șterge · confirmare · exemplu de stare (D39)"
     },
     "S16-corecteaza--desktop.dc.html": {
-      "x": 1880,
+      "x": 4230,
       "y": 29020,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
       "title": "S16 · Corectează · desktop"
+    },
+    "S16-corecteaza--salvat.dc.html": {
+      "x": 1880,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · salvat · 15.11.2026, 10:12"
+    },
+    "S16-corecteaza--eroare-la-salvare.dc.html": {
+      "x": 2350,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · eroare la salvare"
+    },
+    "S16-corecteaza--se-incarca.dc.html": {
+      "x": 2820,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · se încarcă"
+    },
+    "S16-corecteaza--vet-blocat.dc.html": {
+      "x": 3290,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · vet · zi trecută · blocat"
+    },
+    "S16-corecteaza--ciclu-transfer.dc.html": {
+      "x": 3760,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · transfer · ciclul Telița rămâne deschis · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--desktop-scris.dc.html": {
+      "x": 5750,
+      "y": 29020,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S16 · Corectează · desktop · scris · motiv peste 200 de caractere · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--desktop-refuzat.dc.html": {
+      "x": 7270,
+      "y": 29020,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S16 · Corectează · desktop · refuzat · sub 0 · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--desktop-sterge-confirmare.dc.html": {
+      "x": 8790,
+      "y": 29020,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S16 · Corectează · desktop · Șterge · confirmare · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--desktop-dupa-stergere.dc.html": {
+      "x": 10310,
+      "y": 29020,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S16 · Corectează · desktop · după ștergere · exemplu de stare (D39)"
     }
   },
   "order": [
@@ -1044,7 +1111,16 @@
     "S16-corecteaza--motiv-lipsa.dc.html",
     "S16-corecteaza--refuzat.dc.html",
     "S16-corecteaza--sterge-confirmare.dc.html",
-    "S16-corecteaza--desktop.dc.html"
+    "S16-corecteaza--desktop.dc.html",
+    "S16-corecteaza--salvat.dc.html",
+    "S16-corecteaza--eroare-la-salvare.dc.html",
+    "S16-corecteaza--se-incarca.dc.html",
+    "S16-corecteaza--vet-blocat.dc.html",
+    "S16-corecteaza--ciclu-transfer.dc.html",
+    "S16-corecteaza--desktop-scris.dc.html",
+    "S16-corecteaza--desktop-refuzat.dc.html",
+    "S16-corecteaza--desktop-sterge-confirmare.dc.html",
+    "S16-corecteaza--desktop-dupa-stergere.dc.html"
   ],
   "notes": {},
   "designSystems": [
