@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 20:10 · Last commit: 320a02f
+Updated: 2026-11-17 20:40 · Last commit: e0b5e58
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 53 / 72 · Screens done: S15 (default + empty + delete dialog), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
+Done 54 / 72 · Screens done: S15 + 7 states, S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
 
 ## Just finished
+- S15S Introdus azi states: 6 phones x 1410…3760 (se încarcă, eroare la încărcare, Acțiuni deschis, după ștergere, după 23:59 + modificat la 09:52, manager 10.11) + vet desktop x 4230 1440×1492 (Sidebar Înregistrează expanded); D99; 1 fix round (e0b5e58)
 - S15 Introdus azi: 3 phone boards, row y 27292, x 0/470/940 (vet Dr. Ceban 16.11, 22 record rows by type, h 1636; manager Ion Rusu empty; delete Dialog Mortalitate H4.2); abatere Lamp on Ouă H3 + Hrană H1.2 ♂ rows; tab bar marks Înregistrează; D98; S15S queued for leftover states; 1 fix round (320a02f)
 - S8P Cântărire polish: §38 (`ip-readout__live`, `ip-seg--fill`, `ip-fieldmsg`), weight-field descriptions read the lamp word once, "Nescrisă la cântărire." hint, author-name rule (D96), copy fixes; heights valoare refuzată 959, zi trecută 1056; D97; 1 fix round (0c9eae1)
 - S8S Cântărire states: se încarcă, alege secțiunea (390×844 sheet), zi trecută (Telița 17.02), fermă fără păsări, deja introdus, gol Telița; x 3290…5640 in the S8 row; D96; passed first review (01b6deb)
@@ -36,7 +37,7 @@ Done 53 / 72 · Screens done: S15 (default + empty + delete dialog), S4, S7, S3,
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S15S → S15P → S16 → S16P → S17 (all system jobs done; screens only from here)
+- S15P → S16 → S16P → S17 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -64,6 +65,7 @@ Done 53 / 72 · Screens done: S15 (default + empty + delete dialog), S4, S7, S3,
 - S8S: project/S8-cantarire--{se-incarca,alege-sectiunea,zi-trecuta,ferma-fara-pasari,deja-introdus,gol-telita}.dc.html + canvas.json
 - S8P: project/additions.css (§38) + all 13 S8-cantarire*.dc.html + canvas.json (heights)
 - S15: project/S15-introdus-azi{,--gol,--sterge-confirmare}.dc.html + canvas.json
+- S15S: project/S15-introdus-azi--{se-incarca,eroare-la-incarcare,actiuni-deschis,dupa-stergere,dupa-2359,manager-10-11,desktop}.dc.html + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
