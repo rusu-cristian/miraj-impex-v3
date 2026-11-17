@@ -1410,3 +1410,17 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * size on the first line (as section 12's .ip-entry__msg). */
 .ip-fieldmsg{margin:0;align-items:flex-start}
 .ip-fieldmsg > .ip-icon{flex:none;margin-top:var(--ip-hair)}
+
+/* =====================================================================================================
+ * S16 · SidePanel as the phone full-screen sheet (Corectează). Spec: components.md › Additions › S16.
+ * ===================================================================================================== */
+
+/* ---------- 39. SidePanel · phone full-screen sheet (S16) ---------- */
+/* components.md › SidePanel: "A full-screen sheet on phone". aside.ip-sidepanel.ip-sidepanel--sheet[role=dialog]
+ * [aria-modal=true] fills the phone screen (its parent sets the height): no left edge or overlay shadow (nothing beside
+ * it), the head (record tile + title + touch IconButton "Închide …") and the foot stay put, the body scrolls between them.
+ * The foot keys share its width (Șterge first, the primary last). A Dialog opened from it sits over it in an
+ * ip-scrim--phone (section 35) and the sheet is inert. */
+.ip-sidepanel--sheet{width:100%;max-width:none;height:100%;border-left:0;box-shadow:none}
+.ip-sidepanel--sheet > .ip-sidepanel__body{flex:1;min-height:0;overflow:auto}
+.ip-sidepanel--sheet > .ip-sidepanel__foot > .ip-btn{flex:1 1 0;min-width:0}

@@ -883,6 +883,42 @@
       "h": 1508,
       "expand": "fill",
       "title": "S15 · Introdus azi · vet · desktop"
+    },
+    "S16-corecteaza.dc.html": {
+      "x": 0,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · telefon · reluare 15.11.2026"
+    },
+    "S16-corecteaza--motiv-lipsa.dc.html": {
+      "x": 470,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · motiv lipsă · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--refuzat.dc.html": {
+      "x": 940,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · refuzat · sub 0 · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--sterge-confirmare.dc.html": {
+      "x": 1410,
+      "y": 29020,
+      "w": 390,
+      "h": 844,
+      "title": "S16 · Corectează · Șterge · confirmare · exemplu de stare (D39)"
+    },
+    "S16-corecteaza--desktop.dc.html": {
+      "x": 1880,
+      "y": 29020,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S16 · Corectează · desktop"
     }
   },
   "order": [
@@ -1003,7 +1039,12 @@
     "S15-introdus-azi--dupa-stergere.dc.html",
     "S15-introdus-azi--dupa-2359.dc.html",
     "S15-introdus-azi--manager-10-11.dc.html",
-    "S15-introdus-azi--desktop.dc.html"
+    "S15-introdus-azi--desktop.dc.html",
+    "S16-corecteaza.dc.html",
+    "S16-corecteaza--motiv-lipsa.dc.html",
+    "S16-corecteaza--refuzat.dc.html",
+    "S16-corecteaza--sterge-confirmare.dc.html",
+    "S16-corecteaza--desktop.dc.html"
   ],
   "notes": {},
   "designSystems": [

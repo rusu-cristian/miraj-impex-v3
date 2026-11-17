@@ -625,3 +625,11 @@ CSS in additions.css section 38 (both copies, identical), moved out of the S8 sc
 - **SegmentedControl · fill** (`.ip-seg--fill`): the track spans its field and the segments share it equally, label centred (phone ♀/♂ choice). Touch height unchanged (`ip-seg--touch`).
 - **Field message that may wrap** (`p.ip-err.ip-fieldmsg` / `p.ip-warnline.ip-fieldmsg` under a field): no paragraph margin, icon keeps its size on the first line (as section 12's `.ip-entry__msg`).
 - **Tokens:** existing only (`space-*`, `--ip-hair`); no new values. No other board uses these classes, so nothing else re-renders.
+
+### S16 · SidePanel phone full-screen sheet, 17.11.2026
+CSS in additions.css section 39 (both copies, identical). Used by S16 Corectează (phone boards); to copy into the system's SidePanel README with HANDOFF (D32). Decided by default (user, 17.11.2026: "go on with what you recommend"), to review.
+
+- **Anatomy:** `aside.ip-sidepanel.ip-sidepanel--sheet[role=dialog][aria-modal=true]` (labelled by its title) filling the phone screen: head (record tile · title 16/22 "Corectează Mortalitate H4.1" + Mono note "Hîrbovăț · 14.11.2026 · SAPT 40" · touch IconButton "Închide Corectează", Lucide "x") · body (scrolls) · foot (Șterge destructive, then the primary, both touch, sharing the width).
+- **Desktop** keeps the system SidePanel beside the page (non-modal, page reflowed, nothing under it, as S9/S10/S13).
+- **Over it:** the Șterge Dialog sits in `ip-scrim--phone` (section 35, keys stacked, focus on Anulează); the sheet is `inert` meanwhile. Its Motiv is required and empty on open, so its Șterge key is `disabled` with `aria-describedby` = the Motiv hint ("Obligatoriu, cel mult 200 de caractere. Scrie motivul ca să poți șterge.") until Motiv has text (spec E1; fix round 1).
+- **Tokens:** existing only (`panel`, `line`, `control-h-touch`, `space-*`); no new values. No other board uses the class.
