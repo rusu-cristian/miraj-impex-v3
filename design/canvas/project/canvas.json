@@ -371,6 +371,13 @@
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · salvat"
+    },
+    "S6-zilnic--motiv-lipsa.dc.html": {
+      "x": 4230,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · motiv lipsă · Mai mult deschis · exemplu de stare (D39)"
     }
   },
   "order": [
@@ -421,7 +428,8 @@
     "S6-zilnic--refuzat.dc.html",
     "S6-zilnic--eroare-la-salvare.dc.html",
     "S6-zilnic--ferma-fara-pasari.dc.html",
-    "S6-zilnic--salvat.dc.html"
+    "S6-zilnic--salvat.dc.html",
+    "S6-zilnic--motiv-lipsa.dc.html"
   ],
   "notes": {},
   "designSystems": [

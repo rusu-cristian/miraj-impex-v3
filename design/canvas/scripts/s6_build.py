@@ -35,6 +35,8 @@ B.IC.update({
  'eggs': '<path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/>',
  'check': '<path d="M20 6 9 17l-5-5"/>',
  'alert': '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',   # Banner fault / ip-err (S6S states)
+ 'sexerr': '<circle cx="8" cy="12" r="4" stroke="var(--rec-hen)"/><circle cx="16" cy="12" r="4" stroke="var(--rec-rooster)"/>',  # S6M: Eroare sexare (split tile rings)
+ 'chevup': '<path d="m18 15-6-6-6 6"/>',  # S6M: Mai mult open
 })
 icon = B.icon
 
@@ -59,7 +61,9 @@ def cnt(v):
     return f'{n(v)}'
 def field(kind, sec, sx, uid, val, ro, hint_html='', st=None, msg_id=None):
     # st (S6S state boards only): 'warn' / 'error' on the CountInput, msg_id = the row message it is described by
-    rk, lbl, pre = ('mortality', 'Mortalitate', 'm') if kind == 'm' else ('cull', 'Sacrificare', 'c')
+    # kind 'x' (S6M only): Eroare sexare under Mai mult, led by the split-tile rings (no single record colour, D04)
+    rk, lbl, pre = {'m': ('mortality', 'Mortalitate', 'm'), 'c': ('cull', 'Sacrificare', 'c'), 'x': ('sexerr', 'Eroare sexare', 'x')}[kind]
+    rec = f'<span class="ip-rec ip-rec--{rk}">{icon(rk, 14)}</span>' if kind != 'x' else f'<span class="ip-rec">{icon(rk, 14)}</span>'
     fid = f'{pre}{"0" if sx == "F" else "1"}-{uid}'
     ids = ([f'h{CLS[sx][0]}-{uid}'] if hint_html else []) + ([msg_id] if msg_id else [])
     desc = f' aria-describedby="{" ".join(ids)}"' if ids else ''
@@ -67,18 +71,21 @@ def field(kind, sec, sx, uid, val, ro, hint_html='', st=None, msg_id=None):
     stc = f' is-{st}' if st else ''
     inv = ' aria-invalid="true"' if st == 'error' else ''
     # accessible name = the card's section heading + the field label ("H1.1 Mortalitate găini"); <label for> keeps the tap target
-    return (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{fid}" id="l-{fid}"><span class="ip-rec ip-rec--{rk}">{icon(rk, 14)}</span>{lbl} '
+    return (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{fid}" id="l-{fid}">{rec}{lbl} '
             f'<span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
             f'<span class="ip-input ip-count ip-count--{CLS[sx]}{stc}"><input id="{fid}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{cnt(val)}" aria-labelledby="t-{uid} l-{fid}"{" readonly" if ro else ""}{inv}{desc}></span>{hint_html}</div>')
 
-def entry(sec, d=TODAY, ov=None, saved=None):
+def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
     # Default S6 board: entry(sec). S6S state boards: d = the chosen day, ov = {('mortality', 'F'): 4, ...} typed values
     # (D39 state examples), saved = the saved meta html (read-only card, Tag "salvat", foot = meta; Editează is form-level).
+    # S6M (D79): reasons = {sx: '' | reason} draws the editable Motiv Select (empty = "Motiv lipsă", a refusal, D53);
+    # more = Mai mult open with the Eroare sexare CountInputs.
     uid = sec.replace('.', '')
     t = {sx: dict(day(sec, sx, d)) for sx in 'FM'}
     for (k, sx), v in (ov or {}).items(): t[sx][k] = v
     refused = {sx: removed(t[sx]) > t[sx]['alive_start'] for sx in 'FM'}
     warned = {sx: t[sx]['mortality'] > 3 * hint(sec, sx, d)[1] and saved is None for sx in 'FM'}  # a saved day is not re-validated
+    missing = {sx: reasons is not None and t[sx]['culls'] > 0 and not reasons.get(sx) for sx in 'FM'}  # D53: no cull reason = refusal
     if ov is None and saved is None and d == TODAY:
         for sx in 'FM':  # D53: refusal = removals per sex above alive at the start of the day; warning = mortality > 3 × 7-day mean
             assert not refused[sx]
@@ -104,13 +111,26 @@ def entry(sec, d=TODAY, ov=None, saved=None):
                      f'de peste 3 ori media pe 7 zile (<span class="ip-num">{n(hint(sec, sx, d)[1], 1)}</span>). Verifică numărătoarea; poți salva.</span></p>')
     motiv = ''
     for sx in 'FM':  # SYS05: Sacrificare > 0 shows its Motiv under it (read-only on a saved day: label + readonly input)
-        if t[sx]['culls'] > 0:
+        if t[sx]['culls'] > 0 and reasons is not None:  # S6M: the editable Select (boală, șchiopătare, altul; D36), placeholder "Alege"
+            r, rv = f'r{"0" if sx == "F" else "1"}-{uid}', reasons.get(sx) or ''
+            em = f'e-{uid}-r{"0" if sx == "F" else "1"}'
+            opts = '<option value=""' + (' selected' if not rv else '') + ' disabled hidden>Alege</option>' + ''.join(
+                f'<option{" selected" if o == rv else ""}>{o}</option>' for o in ('boală', 'șchiopătare', 'altul'))
+            aria = f' aria-invalid="true" aria-describedby="{em}"' if missing[sx] else ''
+            motiv += (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{r}" id="l-{r}">Motiv <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
+                      f'<span class="ip-input ip-input--touch{" is-error" if missing[sx] else ""}"><select id="{r}" required aria-labelledby="t-{uid} l-{r}"{aria}>{opts}</select>{icon("chev", 16)}</span></div>')
+            if missing[sx]:  # spans the row under the Select (SYS05); refusals name the section, the number, the day and the fix
+                motiv += (f'<p class="ip-err ip-entry__msg s7-m0" id="{em}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Motiv lipsă pentru <span class="ip-num">{n(t[sx]["culls"])}</span> {WORD[sx]} sacrificate pe <span class="ip-num">{dd(d)}</span>. '
+                          f'Alege motivul: boală, șchiopătare sau altul.</span></p>')
+        elif t[sx]['culls'] > 0:
             rsn = next(c['reason'] for c in S['culls'] if c['date'] == d.isoformat() and c['section'] == sec and c['sex'] == sx)
             motiv += (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="r{"0" if sx == "F" else "1"}-{uid}" id="l-r{"0" if sx == "F" else "1"}-{uid}">Motiv <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
                       f'<span class="ip-input ip-input--touch"><input id="r{"0" if sx == "F" else "1"}-{uid}" type="text" value="{rsn}" aria-labelledby="t-{uid} l-r{"0" if sx == "F" else "1"}-{uid}" readonly></span></div>')
     grid = (field('m', sec, 'F', uid, t['F']['mortality'], ro, hints['F'], st['F'], mid['F']) + field('m', sec, 'M', uid, t['M']['mortality'], ro, hints['M'], st['M'], mid['M'])
             + msgs + field('c', sec, 'F', uid, t['F']['culls'], ro) + field('c', sec, 'M', uid, t['M']['culls'], ro) + motiv)
-    if any(refused.values()): tag = '<span class="ip-tag ip-tag--fault">refuzat</span>'
+    panel = ' hidden>' if not more else ('><div class="ip-entry__grid">' + field('x', sec, 'F', uid, t['F']['sexing_errors'], ro)
+                                         + field('x', sec, 'M', uid, t['M']['sexing_errors'], ro) + '</div>')
+    if any(refused.values()) or any(missing.values()): tag = '<span class="ip-tag ip-tag--fault">refuzat</span>'
     elif any(warned.values()): tag = '<span class="ip-tag ip-tag--warn">abatere</span>'
     elif saved is not None: tag = '<span class="ip-tag ip-tag--neutral">salvat</span>'
     else: tag = '<span class="ip-tag ip-tag--neutral">fără pierderi</span>' if nolosses else ''
@@ -118,7 +138,7 @@ def entry(sec, d=TODAY, ov=None, saved=None):
     chk = f'<label class="ip-check{" is-checked" if nolosses else ""}"><input type="checkbox" class="ip-sr" aria-labelledby="t-{uid} fp-{uid}"{" checked" if nolosses else ""}>{box}<span id="fp-{uid}">Fără pierderi azi</span></label>'
     html = f'''<section class="ip-panel ip-entry" aria-labelledby="t-{uid}"><div class="ip-entry__head"><h3 class="ip-entry__code" id="t-{uid}">{sec}</h3>{tag}<span class="ip-entry__alive">în viață <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>{n(t["F"]["alive_start"])}</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>{n(t["M"]["alive_start"])}</b></span></span></span></div>
 <div class="ip-entry__grid">{grid}</div>
-<button type="button" class="ip-btn ip-btn--touch ip-btn--ghost ip-entry__more" id="mm-{uid}" aria-labelledby="t-{uid} mm-{uid}" aria-expanded="false" aria-controls="more-{uid}">{icon("chev", 16)}Mai mult · Eroare sexare</button><div class="ip-entry__panel" id="more-{uid}" hidden></div>
+<button type="button" class="ip-btn ip-btn--touch ip-btn--ghost ip-entry__more" id="mm-{uid}" aria-labelledby="t-{uid} mm-{uid}" aria-expanded="{"true" if more else "false"}" aria-controls="more-{uid}">{icon("chevup" if more else "chev", 16)}Mai mult · Eroare sexare</button><div class="ip-entry__panel" id="more-{uid}"{panel}</div>
 <div class="ip-entry__foot">{chk if saved is None else saved}</div></section>'''
     return html, t, nolosses
 

@@ -1,4 +1,4 @@
-"""python3 s6s_render.py [--measure] : render the S6S state boards (390×844, from /tmp/s6s, built by s6s_build.py) to
+"""python3 s6s_render.py [--measure] [--only <slug>] : render the S6S state boards (390×844, from /tmp/s6s, built by s6s_build.py) to
 design/shots/S6S-<i>.png and report sideways overflow, duplicate ids, broken ARIA/label refs and the SaveBar height.
 --measure: for boards with a target card (boards.json "target" = the card heading id), measure with the form unscrolled
 how far it must scroll so the card ends 16 px above the SaveBar (never past its top), and write the offsets to
@@ -8,6 +8,7 @@ from playwright.async_api import async_playwright
 R = pathlib.Path('/home/claude/miraj-impex-v3')
 HP = R / 'design/canvas/scripts/s6s_heights.json'
 MEASURE = '--measure' in sys.argv
+ONLY = sys.argv[sys.argv.index('--only') + 1] if '--only' in sys.argv else None  # --only <slug>: render (and measure) one board
 BOARDS = json.loads(pathlib.Path('/tmp/s6s/boards.json').read_text())
 CHECK = """() => {
  const ids = [...document.querySelectorAll('[id]')].map(e => e.id); const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
@@ -31,6 +32,7 @@ async def main():
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome')
         pg = await b.new_page(viewport={'width': 390, 'height': 844})
         for i, bd in enumerate(BOARDS, 1):
+            if ONLY and bd['slug'] != ONLY: continue
             await pg.goto(f'file:///tmp/s6s/{bd["stem"]}.html'); await pg.wait_for_timeout(600)
             if MEASURE and bd['target']:
                 sc[bd['slug']] = await pg.evaluate(SCROLL, bd['target'])

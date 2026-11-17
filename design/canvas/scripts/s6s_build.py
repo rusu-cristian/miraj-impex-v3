@@ -25,11 +25,11 @@ VH = 844
 EV = {e['at'][:10]: e for e in S['event_log'] if e['record'] == 'mortality' and e['action'] == 'create'}
 
 # ---------- halls for a day and a state ----------
-def halls(d=TODAY, ov=None, saved=None, ro=False):
+def halls(d=TODAY, ov=None, saved=None, ro=False, kw=None):  # kw (S6M): {section: entry() keywords, e.g. reasons / more}
     parts, ALL, EG = [], [], []
     for hl in B.HALLS:
         h = hl['code']; secs = [s['code'] for s in B.SECS[hl['id']]]
-        cards = [B.entry(s, d, (ov or {}).get(s), saved) if (ov or saved or d != TODAY) else B.entry(s) for s in secs]
+        cards = [B.entry(s, d, (ov or {}).get(s), saved, **(kw or {}).get(s, {})) if (ov or saved or d != TODAY) else B.entry(s) for s in secs]
         ALL += list(zip(secs, cards))
         af = sum(c[1]['F']['alive_start'] for c in cards); am = sum(c[1]['M']['alive_start'] for c in cards)
         eh, tot, lay, ok = B.eggs(h, secs, af, d, ro); EG.append((h, tot, lay, ok))
@@ -159,6 +159,18 @@ boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([date(TODAY
 toast = f'''<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀ <span class="ip-num">{MINUS}{r2[0]}</span> · ♂ <span class="ip-num">{MINUS}{r2[1]}</span></span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, h2], SAVED_BAR, 'salvat', view_cls='s7s-view--end', overlay=toast)))
 
+# 9 · motiv lipsă (S6M, D79) — D39 state example: H1.1 ♀ Sacrificare 2 typed, Motiv left on "Alege" (refusal, D53: blocks
+# save) and Mai mult open on that card with the Eroare sexare fields (16.11 values, 0). The 2 culls without a reason are
+# left out of the SaveBar totals (refused value, as S7S / D77); Salvează disabled, described by the SaveBar line.
+SEC9, SX9, Q9 = 'H1.1', 'F', 2
+assert B.day(SEC9, SX9)['culls'] == 0 and all(B.day(SEC9, x)['sexing_errors'] == 0 for x in 'FM')
+h9, A9, E9 = halls(ov={SEC9: {('culls', SX9): Q9}}, kw={SEC9: {'reasons': {SX9: ''}, 'more': True}})
+t9 = dict(A9)[SEC9][1][SX9]; assert t9['culls'] == Q9 and B.removed(t9) <= t9['alive_start']
+r9 = removals(A9); r9 = (r9[0] - Q9, r9[1]); assert r9 == removals(B.ALL)  # = the default board's ♀ −8 · ♂ −1
+sv9 = S7.savebar(line1(A9, r9), f'{lamp("fault", "refuzat")}<span>{SEC9} <span class="ip-sex ip-sex--{B.CLS[SX9]}">{B.SIGN[SX9]}</span> · Motiv lipsă</span>', save_off())
+boards.append(('motiv-lipsa', 'motiv lipsă · Mai mult deschis · exemplu de stare (D39)', screen([B.DATE, h9], sv9, 'motiv-lipsa')))
+TARGET['motiv-lipsa'] = 't-H11'
+
 CSS = B.CSS + SC.VIEW + SC.BANNER  # S7S's screen CSS (sstate_css), class names kept s7s- as S6 keeps s7-screen/s7-main
 CSS_EXTRA = {
  'salvat': SC.TOAST,
@@ -207,4 +219,4 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
     meta.append({'stem': stem, 'slug': slug, 'title': title, 'target': TARGET.get(slug)})
     print('ok', stem, title, len(dc), 'scroll', SCROLL.get(slug, 0))
 pathlib.Path('/tmp/s6s/boards.json').write_text(json.dumps(meta, ensure_ascii=False))
-print('removals', r2, r3, r4, r5)
+print('removals', r2, r3, r4, r5, r9)

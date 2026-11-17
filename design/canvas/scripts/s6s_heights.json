@@ -7,8 +7,10 @@
  "S6-zilnic--eroare-la-salvare": 844,
  "S6-zilnic--ferma-fara-pasari": 844,
  "S6-zilnic--salvat": 844,
+ "S6-zilnic--motiv-lipsa": 844,
  "scroll": {
   "abatere": 0,
-  "refuzat": 335
+  "refuzat": 335,
+  "motiv-lipsa": 98
  }
 }
