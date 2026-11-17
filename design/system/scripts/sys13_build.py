@@ -77,6 +77,8 @@ def card(p, login='', pw='', phone=False, focus=None, shown=False, busy=False, m
     gcls = 'ip-btn ip-btn--primary' + tb + ' ip-login__go' + (' ip-focus' if focus == 'go' else '')
     ga = (f' aria-disabled="true" aria-describedby="{m}"' if locked else '')
     spin = '<span class="ip-spin" aria-hidden="true"></span>' if busy else ''
+    if busy:   # Button › Loading / section 37: the key itself is busy (graphite kept), repeat presses ignored (S1P fix 1)
+        ga += ' aria-busy="true" aria-disabled="true"'
     go = f'<button type="submit" class="{gcls}"{ga}>{spin}Intră</button>'
     hint = '<p class="ip-hint ip-login__hint">Ai uitat parola? Vorbește cu administratorul.</p>'
     b = ' aria-busy="true"' if busy else ''
@@ -111,7 +113,7 @@ PH = [
 
 COLW = 'var(--panel-w)'
 DESK_W = 'calc(var(--space-12) * 22)'          # 1056: a desktop page band
-DESK_H = 'calc(var(--space-12) * 12)'          # 576
+DESK_H = 'calc(var(--space-12) * 16)'          # 768: the card's top edge sits at space-12 x 4 (section 46, S1P)
 PHONE_H = 'calc(var(--space-12) * 17 + var(--space-6) + var(--space-1))'   # 844
 FRAME = 'border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);overflow:hidden'
 

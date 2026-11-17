@@ -1511,3 +1511,24 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * line-strong frame drawn inside it, so it reads apart from hover (sunken, no frame); text, lamps and keys unchanged
  * (ink-muted 4.7:1 and the ok word 4.6:1 on sunken). No colour bar, no green. */
 .ip-table tr:has([aria-current="true"]),.ip-table tr.is-current{background:var(--sunken);outline:var(--ip-hair) solid var(--line-strong);outline-offset:calc(-1 * var(--ip-hair))}
+
+/* =====================================================================================================
+ * S1P · Button loading spinner reads as busy; LoginCard Banner icon on its line; login page at the optical third.
+ * Spec: components.md › Additions › S1P.
+ * ===================================================================================================== */
+
+/* ---------- 46. Button · loading spinner, LoginCard Banner icon and page position (S1P) ---------- */
+/* Spinner (span.ip-spin inside a Button, label kept): bundle.css draws a 3/4 ring open on the right, which on a still
+ * board reads as the letter "C" before the label. It becomes a quarter arc in the label colour (currentColor) on a quiet
+ * full track, the arc turned to the top right: the common busy mark. Track = line on light keys (secondary, ghost,
+ * destructive), ink-muted on the graphite primary key. Same 14px box and 2px stroke; no animation (craft §4). */
+.ip-spin{flex:none;border-color:var(--line);border-top-color:currentColor;transform:rotate(45deg)}
+.ip-btn--primary .ip-spin{border-color:var(--ink-muted);border-top-color:currentColor}
+/* LoginCard Banner (div.ip-banner.ip-login__msg): its 16px icon sits on the centre of the first 18px text line (the
+ * section 38 field message rule). Every Banner has the same 1px offset (bundle.css .ip-banner: 16px icon at the top of
+ * an 18px line); the system-wide rule .ip-banner > .ip-icon--16 waits for FIN, so other screens' boards don't change. */
+.ip-login__msg > .ip-icon{margin-top:var(--ip-hair)}
+/* Login page, desktop (section 31 amendment): the card's top edge sits at space-12 × 4 (192), so at 1024 high the card
+ * rests on the upper third of the page instead of hugging the top; still top-anchored, so a Banner grows the card
+ * downward and the wordmark and fields above it don't move. Phone (--phone) unchanged. */
+.ip-login-page:not(.ip-login-page--phone){padding-top:calc(var(--space-12) * 4)}

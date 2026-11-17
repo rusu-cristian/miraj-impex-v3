@@ -1,0 +1,10 @@
+# S1P · Autentificare polish + audit (D121 line, components.md › Additions › S1P) · 18.11.2026 · not published
+- additions.css §46 (both copies identical): spinner = quarter arc on a quiet track (`line`; `ink-muted` on primary), arc top right, label kept; LoginCard Banner icon +`--ip-hair` (centred on the first 18px line); desktop login page top `space-12`×4 (192, upper third of 1024, still top-anchored).
+- Banner offset is system-wide (bundle.css, 16px icon on an 18px line; 48 boards on 18 screens): fixed only for `.ip-login__msg`. FIN: `.ip-banner > .ip-icon--16{margin-top:var(--ip-hair)}` and re-render those boards.
+- Spinner fix is system-wide: also alters S14 `--observator-se-exporta` (ghost Exportă .xlsx) and the Button / LoginCard previews (HTML unchanged, not re-rendered: FIN). LoginCard preview's desktop band gets the 192 top too.
+- Rejected: "Se intră…" label (Button › Loading: the label stays); vertical centring (a Banner would move the wordmark); tagline/footer on the empty ground (craft §4).
+- D121 line: sign-in page exempt from the craft §1 template test (steel panel, graphite key, uppercase wordmark carry it).
+- Audit, 10 boards (390; 1440 + 1280 for the 2 desktops): checks clean (contrast, ≥24/44 targets, names, refs, ids, overflow), all fit 1024/844; A1 copy word for word, ș/ț comma-below, no "!"; 4px rhythm (24 wordmark→form, 16 fields, 24 to Intră, 16 hint); focus drawn on each state's target.
+- S1 HTML unchanged (no rebuild diff); shots S1.png, S1-1, S1-4, S1-6…9 changed, S1-2/3/5 identical. IBM Plex not available locally (no font files in design/system; Google Fonts unreachable): fallback Inter.
+- Leftovers (D121): keyboard-open phone, retry after offline, Intră re-enabled after 5 minutes.
+- Fix round 1: Intră busy = `aria-busy` + `aria-disabled` (sys13 `card(busy=True)`; S1 --se-intra + LoginCard preview rebuilt, S1-4 pixel-identical); preview desktop band 768 (`space-12`×16), README × 4 = 192; S14-5.png / S14-5-1280.png re-rendered (only the 14px spinner differs). Other boards byte-identical. Preview body 3096 high vs its dsCard height=2400 (already over before: FIN).
