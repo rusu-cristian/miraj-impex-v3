@@ -27,6 +27,7 @@ sys.argv = ['s14_build.py', str(ROOT), str(HERE / 's14_heights.json')]
 sp = importlib.util.spec_from_file_location('s14_build', HERE / 's14_build.py')
 X = importlib.util.module_from_spec(sp); sp.loader.exec_module(X)   # writes nothing on import
 sys.path.insert(0, str(HERE))
+import sstate_css as SS                                              # S14P: phone viewport + modal anchor for the sheet board
 sys.argv = ['s2_build.py', str(ROOT), str(HERE / 's2_heights.json')]
 A = importlib.import_module('s2_build')                              # rewrites the S2 default boards (and S7) unchanged
 s4, s11, t4, num, icon = X.s4, X.s11, X.t4, X.num, X.icon
@@ -38,8 +39,7 @@ assert X.filterbar().count(EXP) == 1
 EXP_RUN = ('<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end" aria-busy="true" aria-disabled="true" aria-describedby="exp-st">'  # Button · loading (system preview): spinner, label kept; busy + aria-disabled while it runs (LoginCard busy pattern: repeat presses ignored)
            '<span class="ip-spin" aria-hidden="true"></span>Exportă .xlsx</button>'
            f'<span class="ip-sr" role="status" id="exp-st">Se pregătește fișierul .xlsx: Producție Hîrbovăț, ciclul curent, SAPT {X.WEEKS_ALL[0]}–{X.WK}.</span>')
-CSS_EXP = X.CSS + '''
-.ip-filterbar .ip-btn--ghost[aria-busy="true"]{background:transparent;color:var(--ink);cursor:progress} /* busy, not refused: keeps Button · loading's look over additions.css aria-disabled grey */'''
+# S14P: the busy key's look (variant colours kept over the aria-disabled grey, cursor:progress) is additions.css section 37
 def page_viewer_export():
     pg = X.page()
     assert pg.count(X.sidebar()) == 1 and pg.count(EXP) == 1
@@ -84,16 +84,52 @@ def p_readout():  # the Readout without its GuideChart (chart, keyboard help, li
         ro, k = re.subn(pat, '', ro, count=1, flags=re.S); assert k == 1, pat
     assert 'ip-chart' not in ro and 'lay-' not in ro
     return ro
-def p_header():
+CRUMB = '<a href="#rapoarte">Rapoarte</a>'
+def p_header():  # S14P: the crumb text sits in its own span, which takes the focus ring (the link keeps its 46px tap area)
     h = X.header().replace('<header class="ip-pagehead">', '<header class="ip-pagehead s2-phead s14-phead">', 1)
-    return h
-def phone_page():
+    assert h.count(CRUMB) == 1
+    return h.replace(CRUMB, '<a href="#rapoarte"><span class="s14-crumb">Rapoarte</span></a>')
+def phone_page(sheet=False):
     top = t4.top('h-key', 'Producție față de ghid, ciclul curent', p_readout(), X.stats_cur())
-    body = A.phone([p_header(), p_filter(), f'<div class="s14-page">{top}{X.tb_weeks()}</div>'])
+    pf = p_filter()
+    if sheet:  # the key that opened the sheet: expanded, controls it
+        k = 'aria-haspopup="dialog" aria-expanded="false"'; assert pf.count(k) == 1
+        pf = pf.replace(k, 'aria-haspopup="dialog" aria-expanded="true" aria-controls="pf-sheet"')
+    body = A.phone([p_header(), pf, f'<div class="s14-page">{top}{X.tb_weeks()}</div>'])
     body = body.replace('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"', 1)
     body = body.replace('class="ip-tabbar__item" href="#rapoarte"', 'class="ip-tabbar__item is-current" href="#rapoarte" aria-current="page"', 1)
     assert body.count('is-current') == 1 and 'href="#rapoarte" aria-current="page"' in body
     return body.replace('<div class="s7-screen s2-phone">', '<div class="s7-screen s2-phone s14-phone">', 1)
+
+# ================================================================= phone · filters open (S14P): the system BottomSheet over the page
+X_ICON = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'  # Lucide x (as the S9P sheet's Închide)
+def p_sheet():
+    seg = s4.seg('Perioadă', s4.PERIODS, 0)
+    a = '<span class="ip-seg" role="radiogroup" aria-label="Perioadă">'; assert seg.startswith(a)
+    seg = ('<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):]).replace(
+        '<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1)  # focus starts on the chosen period
+    farm = ('<div class="ip-field"><label class="ip-label" for="pf-farm">Fermă</label><span class="ip-input ip-input--touch s11-select"><select id="pf-farm">'
+            '<option selected="selected">Hîrbovăț</option><option disabled="disabled">Telița · creștere, fără ouă</option></select>'
+            f'{icon("chev", 16)}</span></div>')
+    exp = ('<div class="s14-fsheet__exp"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-describedby="pf-exp">'
+           f'{icon("download", 16)}Exportă .xlsx</button>'
+           f'<p class="ip-hint" id="pf-exp">Tabelul pe săptămâni și hale cu filtrele de mai sus: Hîrbovăț, ciclul curent, <span class="ip-num">SAPT {X.WEEKS_ALL[0]}–{X.WK}</span>.</p></div>')
+    return ('<div class="ip-scrim ip-scrim--sheet">'
+            '<div class="ip-sheet s14-fsheet" role="dialog" aria-modal="true" id="pf-sheet" aria-labelledby="pf-t" aria-describedby="pf-d">'
+            '<div class="ip-sheet__handle" aria-hidden="true"></div>'
+            '<div class="ip-sheet__head"><div><h2 class="ip-t-heading ip-sheet__title" id="pf-t">Filtrează sau exportă</h2>'
+            '<p class="ip-note ip-sheet__sub" id="pf-d">Raportul se schimbă la fiecare alegere.</p></div>'
+            f'<button type="button" class="ip-iconbtn ip-iconbtn--touch" aria-label="Închide filtrele"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true">{X_ICON}</svg></button></div>'
+            f'<div class="s14-fsheet__body"><div class="ip-field"><span class="ip-label" id="pf-per">Perioadă</span>{seg}</div>{farm}{exp}</div>'
+            '</div></div>')
+def phone_sheet():  # 390×844: the page (scrolled to its top) and tab bar inert under the scrim, the sheet at the foot
+    b = phone_page(sheet=True)
+    for a, z in (('<div class="s7-screen s2-phone s14-phone">', '<div class="s7-screen s2-phone s14-phone s7s-vp s9-modal">'),
+                 ('<main class="s7-main s2-main">', '<div class="s7s-view" inert="inert"><main class="s7-main s2-main">'),
+                 ('</main>', '</main></div>'), ('<nav class="ip-tabbar', '<nav inert="inert" class="ip-tabbar')):
+        assert b.count(a) == 1, a; b = b.replace(a, z)
+    assert b.endswith('</div>')
+    return b[:-len('</div>')] + p_sheet() + '</div>'
 
 CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
 .s14-phone .s4-top,.s14-phone .s4-stats{grid-template-columns:minmax(0,1fr)} /* phone: Readout, then the Stats one per line */
@@ -104,7 +140,18 @@ CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
 .s14-phone .s4t-lk{min-height:var(--control-h-touch)} /* touch: 48px target */
 .s14-phead .s4-meta{margin-top:var(--space-2)}
 .s14-pfilter{gap:var(--space-2) var(--space-3)}
-.s14-phead .ip-crumbs a{position:relative;display:inline-flex;align-items:center;padding-block:var(--space-4);margin-block:calc(-1 * var(--space-4))} /* touch: 46px hit area, line unchanged; positioned so the h1 drawn after it does not take taps on its lower part */'''
+.s14-phead .ip-crumbs a{position:relative;display:inline-flex;align-items:center;padding-block:var(--space-4);margin-block:calc(-1 * var(--space-4))} /* touch: 46px hit area, line unchanged; positioned so the h1 drawn after it does not take taps on its lower part */
+.s14-phead .ip-crumbs a:focus-visible{outline:none} /* S14P: the ring hugs the word (its span), not the 46px tap area that crosses the title */
+.s14-phead .ip-crumbs a:focus-visible > .s14-crumb,.s14-phead .ip-crumbs a.ip-focus > .s14-crumb{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset);border-radius:var(--radius-xs)}'''
+CSS_SHEET = CSS_PHONE + SS.VIEW + SS.MODAL + '''
+.s14-fsheet{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0} /* S14P: phone FilterBar sheet, as the section 33 sheet */
+.s14-fsheet__body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-5);padding:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
+.s14-fsheet .ip-seg{display:flex}
+.s14-fsheet .ip-seg__item{flex:1 1 auto;justify-content:center}
+.s14-fsheet .s11-select{width:100%}
+.s14-fsheet__exp{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-5);border-top:var(--ip-hair) solid var(--rule)}
+.s14-fsheet__exp > .ip-btn{width:100%}
+.s14-fsheet__exp > .ip-hint{margin:0}'''
 
 # ================================================================= boards (x after the 5 S14 boards: 7600, desktops then the phone)
 DESK = [
@@ -112,14 +159,15 @@ DESK = [
  (STEM + '--eroare-la-incarcare', 'S14 · Rapoarte · Producție · eroare la încărcare', page_error),
  (STEM + '--fara-ferma-de-ouat', 'S14 · Rapoarte · Producție · fără fermă de ouat · exemplu de stare (D39)', page_nolay),
 ]
-PHONE = [(STEM + '--telefon', 'S14 · Rapoarte · Producție · telefon', phone_page)]
+PHONE = [(STEM + '--telefon', 'S14 · Rapoarte · Producție · telefon', phone_page),
+         (STEM + '--telefon-filtre', 'S14 · Rapoarte · Producție · telefon · filtre și export', phone_sheet)]
 out = []
 for stem, title, fn in DESK:
     h = HEIGHTS.get(stem, 1024)
-    s4.write(stem, title, fn(), '', H=h, css=CSS_EXP if fn is page_viewer_export else X.CSS); out.append((stem, title, h, 1440))
+    s4.write(stem, title, fn(), '', H=h, css=X.CSS); out.append((stem, title, h, 1440))
 for stem, title, fn in PHONE:
     A.HEIGHTS[stem] = HEIGHTS.get(stem, 844)
-    out.append(A.write_phone(stem, title, fn(), css=CSS_PHONE))
+    out.append(A.write_phone(stem, title, fn(), css=CSS_SHEET if fn is phone_sheet else CSS_PHONE))
 
 if CANVAS:
     cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)

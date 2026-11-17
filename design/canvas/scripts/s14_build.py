@@ -63,6 +63,14 @@ fr = [r for r in S['daily'] if r['sex'] == 'F' and r['g_per_bird'] is not None]
 FEED_F = sum(r['kg'] for r in fr) * 1000 / sum(r['alive_end'] for r in fr)
 FEED_GF = sum(GF[(r['cycle_week'], 'F')] * r['alive_end'] for r in fr) / sum(r['alive_end'] for r in fr)
 FEED_DEV = (FEED_F / FEED_GF - 1) * 100
+# S14P: egg weight over the cycle, weighted by eggs (daily hall rows; the 6 rows without a weight have no eggs)
+_ew = [r for r in S['eggs_daily'] if r['total_eggs']]
+assert all(r['avg_egg_weight_g'] is not None for r in _ew) and sum(r['total_eggs'] for r in _ew) == eggs_cyc
+EGG_W = sum(r['avg_egg_weight_g'] * r['total_eggs'] for r in _ew) / eggs_cyc
+EGG_WK = sorted({r['cycle_week'] for r in _ew}); assert (EGG_WK[0], EGG_WK[-1]) == (4, WK)
+# S14P: peak lay over the cycle (farm weeks), for the no-guide board where the Readout already gives SAPT 40
+PEAK = max((w for w in WEEKS_ALL if EW[('all', w)]['total_eggs']), key=lambda w: EW[('all', w)]['lay_pct'])
+assert (PEAK, EW[('all', PEAK)]['lay_pct']) == (18, 90.6)
 cyc = s4.cum
 
 # ================================================================= shell (Rapoarte current, as S11)
@@ -109,26 +117,29 @@ def filterbar(mode='default'):
 # ================================================================= top: Readout (S4 Producție GuideChart) + period Stats
 def stats_cur(ng=False):
     st, sx = t4.stat, t4.stats
-    a40 = EW[('all', WK)]
-    dev_line = (f'hale: H3 {num(f"SAPT {WK}")} · {num(sgn(EW[("H3", WK)]["diff_pts"]) + " pct")} {lamp("warn", "abatere")}')
-    s_dev = (st('eggs', f'Ouat · SAPT {WK}', f'{n(a40["lay_pct"], 1)}<small>%</small>', NOG, f'{num(n(a40["total_eggs"]))} ouă · 3 hale') if ng else
+    # S14P fix 2: at 1280 the lamp wrapped alone ("● abatere" as the last line); it now runs in the text, kept with "−4,0 pct"
+    # (Chrome breaks before an inline-flex lamp even after a no-break space, so the pair sits in a nowrap span)
+    dev_line = (f'hale: H3 {num(f"SAPT {WK}")} · <span class="s14-nw">{num(sgn(EW[("H3", WK)]["diff_pts"]) + " pct")} {lamp("warn", "abatere")}</span>')
+    pk = EW[('all', PEAK)]
+    s_dev = (st('eggs', 'Vârf de ouat', f'{n(pk["lay_pct"], 1)}<small>%</small>', NOG, f'{num(f"SAPT {PEAK} · " + span(pk["from"], pk["to"]))} · fermă') if ng else
              st('eggs', 'Săptămâni în abatere', f'{len(FARM_DEV)} din {len(GWEEKS)}<small>săpt. · fermă</small>',
-                f'ghid {num("±3 pct")} · {num(f"SAPT{NBSP}{GWEEKS[0]}–{WK}")}', dev_line))
+                f'ghid {num("±3 pct")} · {num(f"SAPT{NBSP}{GWEEKS[0]}–{WK}")}', 'S14DEV').replace('<span>S14DEV</span>', f'<span>{dev_line}</span>', 1))
+    assert ng or s_dev.count(dev_line) == 1
     fd = abs(FEED_DEV) <= 10
     g_feed = NOG if ng else f'ghid {num(n(FEED_GF, 1) + " g")} · {num(sgn(FEED_DEV, 1) + "%")} {lamp("ok" if fd else "warn", "în normă" if fd else "abatere")}'
     first = t4.first_egg
     return sx(
-        st('eggs', 'Ouă în ciclu', n(eggs_cyc), f'{num("01.03–16.11.2026")} · Cat. 1–3 + incubabile', f'{num(f"primul ou {ddate(first)} · SAPT {t4.cw(first)}")}'),
+        st('eggs', 'Ouă în ciclu', n(eggs_cyc), f'{num("01.03–16.11.2026")} · Cat.{NBSP}1–⁠3{NBSP}+{NBSP}incubabile', f'primul ou {num(ddate(first))} · {num(f"SAPT {t4.cw(first)}")}'),
         s_dev,
         st('eggs', 'Incubabile în ciclu', f'{n(hatch_cyc / eggs_cyc * 100, 1)}<small>%</small>', NOG if ng else NOGD, f'{num(n(hatch_cyc))} din {num(n(eggs_cyc))} ouă'),
-        st('eggs', f'Masă medie ou · SAPT {WK}', f'{n(a40["avg_egg_weight_g"], 1)}<small>g</small>', NOG if ng else NOGD, f'{num(f"SAPT {WK - 1}: " + n(EW[("all", WK - 1)]["avg_egg_weight_g"], 1) + " g")}'),
+        st('eggs', 'Masă medie ou în ciclu', f'{n(EGG_W, 1)}<small>g</small>', NOG if ng else NOGD, f'medie pe ouă · {num(f"SAPT {EGG_WK[0]}–{WK}")}'),
         st('mortality', 'Mortalitate cumulată', f'{s4.pair(n(cyc["mortality_pct"]["F"], 2), n(cyc["mortality_pct"]["M"], 2))}<small>%</small>', NOG if ng else NOGD,
            f'din 10.02.2026 {s4.pair(n(-cyc["removals"]["F"]["mortality"]), n(-cyc["removals"]["M"]["mortality"]))}'),
-        st('feed', f'Hrană {F} în ciclu', f'{n(FEED_F, 1)}<small>g/pasăre/zi</small>', g_feed, f'medie pe găini · fără {F} H4.2 {num("16.11")} (lipsă)'))
+        st('feed', f'Hrană {F} în ciclu', f'{n(FEED_F, 1)}<small>g/pasăre/zi</small>', g_feed, f'medie pe găini · fără {F} H4.2 {num("16.11")}{NBSP}(lipsă)'))  # S14P fix 2: "(lipsă)" no longer alone at 1280
 
 def top(mode='default'):
     if mode == 'noguide': return t4.top('h-key', 'Producție, ciclul curent', s4.readout(True), stats_cur(True))
-    if mode == 'past': return t4.top('h-key', 'Producție, Seria 2025', s4.readout_past(), s4.stats_past())
+    if mode == 'past': return t4.top('h-key', 'Producție, Seria 2025', readout_past(), stats_past())
     return t4.top('h-key', 'Producție față de ghid, ciclul curent', t4.ro_productie(), stats_cur())
 
 # ================================================================= the weekly table (spec D3), Seria 2026
@@ -176,9 +187,9 @@ def tb_weeks(ng=False):
     note = (f'Hîrbovăț · {num(f"SAPT {SHOW[-1]}–{WK}")} ({num(ddate(EW[("all", SHOW[-1])]["from"]) + " – " + ddate(TODAY))}) din {num(f"SAPT {WEEKS_ALL[0]}–{WK}")} · cele mai noi întâi · '
             + ('ciclul nu are ghid, nu se compară' if ng else f'ghid Ross 308 ouat · toleranță ouat {num("±3 pct")}'))
     fnote = (f'Rândul săptămânii = ferma; halele dedesubt (ouăle se înregistrează pe hală). {num(f"SAPT {WK}")} include azi, {num(ddate(TODAY))}. Găini = în viață la sfârșitul săptămânii. '
-             f'Ouat = ouă (Cat. 1–3 + incubabile, fără cele jos) ÷ găini la începutul zilei. Mortalitate = morți; sacrificările sunt în Fermă › Păsări. '
+             f'Ouat = ouă (Cat.\u00a01–\u20603 + incubabile, fără ouăle de jos) ÷ găini la începutul zilei. Mortalitate = morți; sacrificările sunt în Fermă › Păsări. '
              f'Hrană {F} = medie pe găini, din zilele cu rânduri; {num(f"SAPT {WK}")} fără H4.2 {F} {num("16.11")} (lipsă).'
-             + ('' if ng else f' Incubabile, masa oului și mortalitatea: {NOGD}.'))
+             + ('' if ng else f' Incubabile, masa oului și mortalitatea: – fără date în{NBSP}ghid.'))  # S14P fix 2: "ghid." no longer alone at 1280
     return t4.block('h-psapt', 'Pe săptămâni și hale', note, t + t4.foot(fnote, (f'Vezi toate săptămânile ({len(WEEKS_ALL)})', '#productie-saptamani')))
 
 # ================================================================= Seria 2025 (real previous-flock data, D51/D52/D54)
@@ -199,6 +210,30 @@ def pmortc(k, w, sx):
         return f'<td class="num {t4.SXC[sx]}"><span class="s4t-muted">{DASH}</span><span class="ip-sr"> necunoscut, golire</span></td>'
     return mortc(pm[(k, w)][sx], sx)
 assert sum(v['F'] for (k, _), v in pm.items() if k == 'all') == s4.PMORT['F']
+# S14P fix 1: the Seria 2025 Stat "Masă medie ou · SAPT 47" repeated its table row; it becomes the cycle's egg-weighted
+# mean egg weight (daily hall rows with a weight; the 15 rows of 04–08.04.2025 have none: "Masa" 0 in the sheet = null)
+_pw = [r for r in PD['rows'] if r['avg_egg_weight_g'] is not None]
+PEGG_NOW = sum(r['total_eggs'] for r in PD['rows'] if r['avg_egg_weight_g'] is None)
+PEGG_W = sum(r['avg_egg_weight_g'] * r['total_eggs'] for r in _pw) / sum(r['total_eggs'] for r in _pw)
+PEGG_WK = sorted({r['cycle_week'] for r in _pw if r['total_eggs']})
+assert PEGG_NOW == 9314 and sum(r['total_eggs'] for r in _pw) + PEGG_NOW == PD['meta']['totals']['total_eggs'] == 4606935
+assert (PEGG_WK[0], PEGG_WK[-1]) == (5, s4.PFIN) == (5, 47) and n(PEGG_W, 1) == '62,0' and abs(PEGG_W - 61.9677) < 1e-4
+OLD_EGGW = '<span class="ip-stat__val">69,9<small>g</small></span>'
+def stats_past():
+    sp = s4.stats_past()
+    old = [d for d in sp.split('\n') if 'Masă medie ou · SAPT' in d]
+    assert len(old) == 1 and OLD_EGGW in old[0], old
+    new = t4.stat('eggs', 'Masă medie ou în ciclu', f'{n(PEGG_W, 1)}<small>g</small>', NOGD,
+                  f'medie pe ouă · {num(f"SAPT {PEGG_WK[0]}–{PEGG_WK[-1]}")}', f'fără {num(n(PEGG_NOW))} ouă fără masă')  # two lines: one wrapped line left "fără masă" alone
+    out = sp.replace(old[0], new); assert out.count('Masă medie ou') == 1 and 'SAPT 5: 47,0 g' not in out
+    # S14P fix 2: no word alone on a Stat's last line at 1280 (S4's own stats_past untouched)
+    for a, z in ((f' · {s4.PDAYS} zile</span>', f' · {s4.PDAYS}{NBSP}zile</span>'), (', nu se calculează</span>', f', nu se{NBSP}calculează</span>')):
+        assert out.count(a) == 1, a; out = out.replace(a, z)
+    return out
+def readout_past():  # S14P fix 2: "după 22.01)" stays together on the Readout's sub line (S4's readout_past untouched)
+    ro = s4.readout_past(); a = f' fără ouă după {s4.ddate(s4.PLAST["H1"])[:5]})</div>'
+    assert ro.count(a) == 1 and a.startswith(' fără ouă după 22.01)'), a
+    return ro.replace(a, a.replace(' după ', f' după{NBSP}'))
 def dep_week(h): return (dt.date.fromisoformat(DEP[h]) - dt.date.fromisoformat(s4.c25['start_date'])).days // 7 + 1
 assert {h: dep_week(h) for h in HALLS} == {'H1': 45, 'H3': 46, 'H4': 46}
 def pnote(k, w):
@@ -279,7 +314,7 @@ S11_LINES = [l for l in s11.CSS.split('\n') if l.startswith(('.s11-farm', '.s11-
 assert len(S11_LINES) == 6, S11_LINES
 CSS = (s4.CSS + '\n' + s4.CSS_STATES + '\n' + s4.CSS_S4 + t4.CSS[len(_t4_base):] + '\n' + '\n'.join(l for l in S11_LINES if not l.startswith('.ip-input > select'))
        + '\n.s14-page{display:flex;flex-direction:column;gap:var(--space-6)}'
-       + '\n.s14-page .ip-tablescroll{position:relative} /* hidden ip-sr header text stays inside the scroll box (no page sideways scroll at 1280); to fold into additions.css §32 */')
+       + '\n.s14-nw{white-space:nowrap} /* S14P fix 2: a figure and its lamp stay on one line */')  # S14P: the scroll region's position:relative is now additions.css section 36
 
 STEM = 'S14-rapoarte-productie'
 BOARDS = [

@@ -1373,3 +1373,23 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-trackskel{display:flex;flex-direction:column;gap:var(--space-2)}
 .ip-trackskel > .ip-skel{display:block;width:100%;height:var(--space-5)}
 .ip-trackskel > .ip-skel:last-child{width:30%;height:var(--space-3)}
+
+/* =====================================================================================================
+ * S14P · DataTable scroll region contains its hidden text; Button busy keeps its look. Spec: components.md › Additions › S14P.
+ * ===================================================================================================== */
+
+/* ---------- 36. DataTable · scroll region holds its hidden text (section 32 amendment, S14P) ---------- */
+/* div.ip-tablescroll is the containing block of everything inside it, so hidden .ip-sr text in head cells beyond the
+ * region's width (e.g. the "găini"/"cocoși" words after ♀/♂) is clipped by the region instead of widening the page.
+ * No z-index: no stacking context, the sticky first column keeps its z-index:1 inside the region. */
+.ip-tablescroll{position:relative}
+
+/* ---------- 37. Button · busy (S14P) ---------- */
+/* A key whose action is running (button.ip-btn[aria-busy="true"], spinner span.ip-spin + label kept, usually also
+ * aria-disabled="true" so repeat presses are ignored) keeps its variant's own surface, text and edge, not the section 1
+ * aria-disabled grey: it is working, not refused. cursor:progress. Hover/pressed stay off through the aria-disabled guard. */
+.ip-btn[aria-busy="true"]{cursor:progress}
+.ip-btn--primary[aria-busy="true"]{background:var(--control);color:var(--on-control);border-color:transparent;box-shadow:var(--shadow-key)}
+.ip-btn--secondary[aria-busy="true"]{background:var(--raised);color:var(--ink);border-color:var(--line-strong);box-shadow:var(--shadow-key)}
+.ip-btn--ghost[aria-busy="true"]{background:transparent;color:var(--ink);border-color:transparent;box-shadow:none}
+.ip-btn--destructive[aria-busy="true"]{background:var(--raised);color:var(--fault);border-color:var(--fault);box-shadow:none}

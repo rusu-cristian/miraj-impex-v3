@@ -9,8 +9,10 @@ ORDER = ['S14-rapoarte-productie', 'S14-rapoarte-productie--se-incarca', 'S14-ra
          'S14-rapoarte-productie--fara-ghid', 'S14-rapoarte-productie--seria-2025',
          # S14S (s14s_build.py; heights in s14s_heights.json): shots S14-5 … S14-8; the phone renders at 390 from /tmp/s2
          'S14-rapoarte-productie--observator-se-exporta', 'S14-rapoarte-productie--eroare-la-incarcare',
-         'S14-rapoarte-productie--fara-ferma-de-ouat', 'S14-rapoarte-productie--telefon']
-PHONE = {'S14-rapoarte-productie--telefon'}
+         'S14-rapoarte-productie--fara-ferma-de-ouat', 'S14-rapoarte-productie--telefon',
+         'S14-rapoarte-productie--telefon-filtre']  # S14P: phone filters open (fixed 390×844, shot S14-9.png)
+PHONE = {'S14-rapoarte-productie--telefon', 'S14-rapoarte-productie--telefon-filtre'}
+FIXED = {'S14-rapoarte-productie--telefon-filtre'}
 async def main():
     args = sys.argv[1:]; hp = pathlib.Path(args.pop(0)); W = 1440
     if args and args[0] == '--w': args.pop(0); W = int(args.pop(0))
@@ -30,7 +32,7 @@ async def main():
             ids = await pg.evaluate("(()=>{const c={};document.querySelectorAll('[id]').forEach(e=>c[e.id]=(c[e.id]||0)+1);const d=Object.keys(c).filter(k=>c[k]>1);const refs=[];document.querySelectorAll('[aria-describedby],[aria-labelledby],[aria-controls]').forEach(e=>['aria-describedby','aria-labelledby','aria-controls'].forEach(a=>(e.getAttribute(a)||'').split(/\\s+/).filter(Boolean).forEach(i=>{if(!document.getElementById(i))refs.push(a+':'+i)})));return {dup:d,broken:refs}})()")
             print(st, w, 'main h', mh, 'regions [client, scroll]', tw, 'clip', clip, ids)
             i = ORDER.index(st); name = 'S14' + (f'-{i}' if i else '') + ('' if W == 1440 or ph else f'-{W}') + '.png'
-            if ph: hs[st] = max(mh, 844)
+            if ph: hs[st] = 844 if st in FIXED else max(mh, 844)
             elif W == 1440: hs[st] = max(mh, 1024)
             await pg.screenshot(path=str(R / 'design/shots' / name), full_page=True)
             await pg.close()
