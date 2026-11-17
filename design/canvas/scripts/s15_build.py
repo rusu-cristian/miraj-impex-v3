@@ -80,7 +80,8 @@ def egg_rows():
         diff = r['lay_pct'] - r['guide_lay_pct']
         dev = '' if abs(diff) <= 3 else (f' · {A.nw("ghid " + num(pct(r["guide_lay_pct"])))} · '   # D19 ±3 points, S6 wording
                                          f'{A.nw(num(("+" if diff > 0 else MINUS) + n(abs(diff), 1)) + " puncte " + A.lamp("warn", "abatere"))}')
-        meta = f'{A.nw("ouat " + num(pct(r["lay_pct"])))}{dev} · {A.nw("incubabile " + num(n(r["hatching_eggs"])))}'
+        # S15P: incubabile first, then ouat · ghid · deviation (the comparison reads in one run, the lamp ends the meta)
+        meta = f'{A.nw("incubabile " + num(n(r["hatching_eggs"])))} · {A.nw("ouat " + num(pct(r["lay_pct"])))}{dev}'
         out.append(row('eggs', title, meta, f'Ouă {h}', f'#zilnic-oua-{h}'))
     return out
 def feed_rows():
@@ -88,8 +89,7 @@ def feed_rows():
     dv = DEV
     meta = (f'{A.nw("fără H3.2 " + M + ", H4.2 " + F)} · '
             f'{A.nw(dv["section"] + " " + M + " " + num(str(dv["g"]) + NB + "g"))} · {A.nw("ghid " + num(str(dv["guide_g"]) + NB + "g"))} · '
-            f'{A.nw(num("+" + n(dv["deviation_pct"]) + "%") + " " + A.lamp("warn", "abatere"))} · '
-            f'{A.nw("Breeder 2 · " + num(n(FT["ft-breeder2"], 1) + NB + "kg"))} · {A.nw("Cocoși · " + num(n(FT["ft-cocosi"], 1) + NB + "kg"))}')
+            f'{A.nw(num("+" + n(dv["deviation_pct"]) + "%") + " " + A.lamp("warn", "abatere"))}')
     return [row('feed', title, meta, 'Hrană zilnică de azi', '#hrana-zilnica')]
 def wt_rows():
     out = []
@@ -101,16 +101,21 @@ def wt_rows():
         out.append(row('weighing', title, meta, f'Cântărire {s} {WORD[sx]}', f'#cantarire-{s}-{sx}'))
     return out
 
+# S15P: group-head notes, shared with s15s_build (each head carries its group's totals; Hrană zilnică: kg per feed type)
+NOTE_MO = lambda d: f'Zilnic · salvat la {num(t(LOG["mortality"]))} · {pair(n(-d["F"]), n(-d["M"]))}'
+NOTE_OU = f'Zilnic · salvat la {num(t(LOG["eggs"]))} · {num(n(A.EGG_T))} ouă · ouat {num(s4.pct(A.LAY))}'
+NOTE_HR = (f'salvat la {num(t(LOG["feed"]))} · {A.nw("Breeder 2: " + num(n(FT["ft-breeder2"], 1) + NB + "kg"))} · '   # S7 wording: name + colon
+           f'{A.nw("Cocoși: " + num(n(FT["ft-cocosi"], 1) + NB + "kg"))}')
+NOTE_CA = f'salvat la {num(t(LOG["weighing"]))} · {num(6)} secțiuni · {num(12)} rânduri'
 def group(gid, cap, note, rows):
     return (f'<section class="s2-block" aria-labelledby="{gid}">{A.head(cap, note, gid)}'
             f'<ul class="ip-list ip-list--act" aria-labelledby="{gid}">{"".join(rows)}</ul></section>')
 def groups():
-    lm = LOG['mortality']
     return [
-        group('g-mo', 'Mortalitate', f'Zilnic · salvat la {num(t(lm))} · {pair(n(-A.D16["F"]), n(-A.D16["M"]))}', mort_rows()),
-        group('g-ou', 'Ouă', f'Zilnic · salvat la {num(t(LOG["eggs"]))} · {num(n(A.EGG_T))} ouă · ouat {num(s4.pct(A.LAY))}', egg_rows()),
-        group('g-hr', 'Hrană zilnică', f'salvat la {num(t(LOG["feed"]))}', feed_rows()),
-        group('g-ca', 'Cântărire', f'salvat la {num(t(LOG["weighing"]))} · {num(6)} secțiuni · {num(12)} rânduri', wt_rows()),
+        group('g-mo', 'Mortalitate', NOTE_MO(A.D16), mort_rows()),
+        group('g-ou', 'Ouă', NOTE_OU, egg_rows()),
+        group('g-hr', 'Hrană zilnică', NOTE_HR, feed_rows()),
+        group('g-ca', 'Cântărire', NOTE_CA, wt_rows()),
     ]
 
 def pagehead(ctx, note):
@@ -130,6 +135,7 @@ I[0] = 0
 EMPTY_1 = 'Nu ai salvat nimic azi.'
 EMPTY_2 = f'Ce salvezi azi apare aici, pe tipuri; poți modifica sau șterge până la {num("23:59")}.'
 step = '<a class="ip-btn ip-btn--secondary ip-btn--touch" href="#inregistreaza">Înregistrează</a>'
+assert A.INTRO_MGR == f'{EMPTY_1} {EMPTY_2}'  # S15P: S2's manager Introdus azi empty block says the same (D98)
 box = s4.empty_box('nimic introdus', [EMPTY_1, EMPTY_2], step, 'Introdus azi')
 HEAD_M = pagehead(A.CTX_MGR, 'Ion Rusu')
 GOL = Z.pscreen([HEAD_M, box], vet=False)

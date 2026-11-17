@@ -522,7 +522,7 @@
       "x": 470,
       "y": 20922,
       "w": 390,
-      "h": 1876,
+      "h": 1856,
       "title": "S2 · Acasă · manager · telefon"
     },
     "S2-acasa--manager-desktop.dc.html": {
@@ -817,7 +817,7 @@
       "x": 0,
       "y": 27292,
       "w": 390,
-      "h": 1636,
+      "h": 1608,
       "title": "S15 · Introdus azi · vet"
     },
     "S15-introdus-azi--gol.dc.html": {
@@ -880,7 +880,7 @@
       "x": 4230,
       "y": 27292,
       "w": 1440,
-      "h": 1492,
+      "h": 1508,
       "expand": "fill",
       "title": "S15 · Introdus azi · vet · desktop"
     }

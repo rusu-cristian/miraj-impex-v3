@@ -194,7 +194,7 @@ def introdus_empty(line, u=''):
     return (f'<section class="s2-block" aria-labelledby="{u}ia">{head("Introdus azi", num(D), u + "ia")}'
             f'<ul class="ip-list ip-list--act" aria-labelledby="{u}ia"><li class="ip-list__empty"><span class="ip-lamp ip-lamp--off">nimic introdus</span>'
             f'<span>{line}</span></li></ul></section>')
-INTRO_MGR = f'Nu ai salvat nimic azi. Transferurile, vânzările și livrările pe care le salvezi apar aici; le poți modifica sau șterge până la {num("23:59")}.'
+INTRO_MGR = f'Nu ai salvat nimic azi. Ce salvezi azi apare aici, pe tipuri; poți modifica sau șterge până la {num("23:59")}.'  # S15P: the S15 gol sentence (D98)
 
 FARM_P = '<div class="ip-ev__main">Hîrbovăț · '
 def alerts(owner=False, u=''):

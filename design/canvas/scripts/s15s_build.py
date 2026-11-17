@@ -79,12 +79,11 @@ def groups(mort_kw=None, skip=None):
     finally:
         Q.SECS = secs
     d = AFTER if skip else D16
-    lm = Q.LOG['mortality']
-    return [
-        group('g-mo', 'Mortalitate', f'Zilnic · salvat la {num(Q.t(lm))} · {pair(n(-d["F"]), n(-d["M"]))}', mo),
-        group('g-ou', 'Ouă', f'Zilnic · salvat la {num(Q.t(Q.LOG["eggs"]))} · {num(n(A.EGG_T))} ouă · ouat {num(s4.pct(A.LAY))}', egg_rows()),
-        group('g-hr', 'Hrană zilnică', f'salvat la {num(Q.t(Q.LOG["feed"]))}', feed_rows()),
-        group('g-ca', 'Cântărire', f'salvat la {num(Q.t(Q.LOG["weighing"]))} · {num(6)} secțiuni · {num(12)} rânduri', wt_rows()),
+    return [  # the S15 group heads (s15_build NOTE_*)
+        group('g-mo', 'Mortalitate', Q.NOTE_MO(d), mo),
+        group('g-ou', 'Ouă', Q.NOTE_OU, egg_rows()),
+        group('g-hr', 'Hrană zilnică', Q.NOTE_HR, feed_rows()),
+        group('g-ca', 'Cântărire', Q.NOTE_CA, wt_rows()),
     ]
 def fresh(): Q.I[0] = 0
 fresh(); _g = groups(); fresh(); assert _g == Q.groups()  # unchanged options → the S15 default's rows exactly
@@ -160,7 +159,13 @@ def vet_sidebar():
     sb = sb.replace(par, par + subs, 1)
     assert sb.count('is-current') == 1 and sb.count('class="ip-nav') == 6 and 'href="#introdus-azi" aria-current="page"' in sb
     return sb
+# S15P: breadcrumb above the h1, as the S4 / S11 / S14 desktop heads (parent › this page); S15 opens from Acasă's
+# Introdus azi block ("Vezi pe secțiuni", S2), so the parent is Acasă
+CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#acasa">Acasă</a><span aria-hidden="true">›</span>'
+          '<span aria-current="page">Introdus azi</span></nav>')
 HEAD_D = Q.pagehead(A.CTX_VET, Q.LEAD).replace(' s2-phead', '', 1)
+assert HEAD_D.count('<div><h1>') == 1
+HEAD_D = HEAD_D.replace('<div><h1>', f'<div>{CRUMBS}<h1>', 1)
 DESK = f'<div class="s4-shell">{vet_sidebar()}<main class="s4-main s15s-desk">\n{"".join([HEAD_D] + groups())}\n</main></div>'
 boards.append(('desktop', 'vet · desktop', 'd', DESK))
 
