@@ -1680,6 +1680,141 @@
       "h": 1024,
       "expand": "fill",
       "title": "S21 · Tipuri de hrană · Starter activ din nou · salvat · exemplu de stare (D39)"
+    },
+    "S22-utilizatori.dc.html": {
+      "x": 0,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--ion-rusu.dc.html": {
+      "x": 1520,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Ion Rusu · panoul utilizatorului · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--utilizator-nou.dc.html": {
+      "x": 3040,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Utilizator nou · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--erori.dc.html": {
+      "x": 4560,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Utilizator nou · nume gol, login greșit, fără rol, fără fermă · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--login-folosit.dc.html": {
+      "x": 6080,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Utilizator nou · login deja folosit · exemplu de stare (D39): Petrea, cont dezactivat"
+    },
+    "S22-utilizatori--parola-cont-nou.dc.html": {
+      "x": 7600,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Observator exemplu adăugat · parola temporară, o singură dată · exemplu de stare (D39), parola exemplu"
+    },
+    "S22-utilizatori--salvat.dc.html": {
+      "x": 9120,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Dr. Ceban salvat · exemplu de stare (D39): Telița adăugată"
+    },
+    "S22-utilizatori--eroare-la-salvare.dc.html": {
+      "x": 10640,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Dr. Ceban · eroare la salvare · exemplu de stare (D39): Telița bifată"
+    },
+    "S22-utilizatori--contul-tau.dc.html": {
+      "x": 12160,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · contul tău · singurul proprietar, nu se dezactivează · Petrea: exemplu de stare (D39)"
+    },
+    "S22-utilizatori--dezactiveaza.dc.html": {
+      "x": 13680,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Dezactivează contul lui Petrea · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--dezactivat.dc.html": {
+      "x": 15200,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Petrea dezactivat · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--parola-resetata.dc.html": {
+      "x": 16720,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · Ion Rusu · parolă resetată, o singură dată · exemplu de stare (D39), parola exemplu"
+    },
+    "S22-utilizatori--se-incarca.dc.html": {
+      "x": 18240,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · se încarcă"
+    },
+    "S22-utilizatori--eroare-la-incarcare.dc.html": {
+      "x": 19760,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · eroare la încărcare"
+    },
+    "S22-utilizatori--fara-acces.dc.html": {
+      "x": 21280,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · observator · fără acces"
+    },
+    "S22-utilizatori--doar-tu.dc.html": {
+      "x": 22800,
+      "y": 39345,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S22 · Utilizatori · doar tu · exemplu de stare (D39)"
+    },
+    "S22-utilizatori--telefon.dc.html": {
+      "x": 24320,
+      "y": 39345,
+      "w": 390,
+      "h": 844,
+      "title": "S22 · Utilizatori · telefon · doar citire · Petrea: exemplu de stare (D39)"
     }
   },
   "order": [
@@ -1902,7 +2037,24 @@
     "S21-tipuri-hrana--niciun-tip.dc.html",
     "S21-tipuri-hrana--telefon.dc.html",
     "S21-tipuri-hrana--retras-stoc-0.dc.html",
-    "S21-tipuri-hrana--reactivat.dc.html"
+    "S21-tipuri-hrana--reactivat.dc.html",
+    "S22-utilizatori.dc.html",
+    "S22-utilizatori--ion-rusu.dc.html",
+    "S22-utilizatori--utilizator-nou.dc.html",
+    "S22-utilizatori--erori.dc.html",
+    "S22-utilizatori--login-folosit.dc.html",
+    "S22-utilizatori--parola-cont-nou.dc.html",
+    "S22-utilizatori--salvat.dc.html",
+    "S22-utilizatori--eroare-la-salvare.dc.html",
+    "S22-utilizatori--contul-tau.dc.html",
+    "S22-utilizatori--dezactiveaza.dc.html",
+    "S22-utilizatori--dezactivat.dc.html",
+    "S22-utilizatori--parola-resetata.dc.html",
+    "S22-utilizatori--se-incarca.dc.html",
+    "S22-utilizatori--eroare-la-incarcare.dc.html",
+    "S22-utilizatori--fara-acces.dc.html",
+    "S22-utilizatori--doar-tu.dc.html",
+    "S22-utilizatori--telefon.dc.html"
   ],
   "notes": {},
   "designSystems": [

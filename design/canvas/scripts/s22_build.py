@@ -1,0 +1,400 @@
+"""S22 · Utilizatori (spec A2 Users and access, owner; screens.md S22; nav map: Setări › Utilizatori). Desktop-led like
+S18–S21 (a Setări page): desktops first, then the phone. Today = 16.11.2026 (D23/D24).
+The list is the SYS12 UserRow (additions.css §30) and the passwords are the SYS12 OneTimePassword: their markup helpers
+are read from design/system/scripts/sys12_build.py (the part above its preview blocks, so nothing is written there).
+D78 (departs from spec A2's field list): the app generates the temporary password and shows it once after the user is
+added (or after Resetează parola); the add form has no password field. D118: the S22 screen calls (logged in decisions).
+People: Proprietar (you, the owner; no name in the kit, D96/D104), Ion Rusu (manager), Dr. Ceban (vet) as on the earlier
+boards (craft §7, illustrative); Petrea (spec A2's dialog sample) and Observator exemplu are D39 state examples (SYS12),
+named in the board titles, as are every sign-in time and both passwords. Farms real (farms-sections.json).
+Boards (row below S21: y 38201 + 1024 + 120 = 39345; x step w + 80; desktops first, then the phone):
+  S22-utilizatori          list: PageHeader (Setări › Utilizatori, title only), UserRow list (Adaugă utilizator in its head)
+  --ion-rusu               list beside the non-modal user SidePanel: Nume (focus), Login read-only, Rol Select + what the
+                           role does, Ferme checkboxes, Cont block (Resetează parola, Dezactivează contul)
+  --utilizator-nou         empty panel: Nume (focus), Login, Rol unset, Ferme unticked, the generated-password note
+  --erori                  D39: Adaugă utilizatorul with Nume empty, Login with a space and diacritics, no Rol, no farm
+  --login-folosit          D39: Petrea back, Petrea's deactivated account still holds „petrea” (A2 duplicate login)
+  --parola-cont-nou        D39: Observator exemplu added: the list with the new row under the OneTimePassword Dialog
+  --salvat                 D39: Dr. Ceban given Telița too: panel closed, row updated, Toast + Anulează
+  --eroare-la-salvare      D39: the same change, save failed: fault Banner + Reîncearcă (focus), draft kept
+  --contul-tau             your own account: Rol read-only (the only active owner), Ferme "toate", Dezactivează disabled
+  --dezactiveaza           D39: Dezactivează contul lui Petrea Dialog (A2 sentence), focus on Anulează
+  --dezactivat             D39: Petrea listed last, off lamp, Toast + Anulează, focus back on his key
+  --parola-resetata        D39: Resetează parola from Ion Rusu's panel: the new password, shown once
+  --se-incarca             SYS12 loading rows (aria-busy), header without counts
+  --eroare-la-incarcare    SYS12 load failed (fault Banner + Reîncearcă, no table)
+  --fara-acces             Observator (a manager or a vet: same picture, own nav and role sentence)
+  --doar-tu                D39 first use: your row + "Doar tu ai acces. Adaugă primul utilizator." (A2 Empty)
+  --telefon                phone, read-only list ("îi adaugi și îi editezi pe calculator", as S19–S21)
+The list region is a size container: under 760px (beside the panel: 558 at 1280, 718 at 1440) Login, Ferme and Ultima
+intrare fold under the name so Rol, Stare and the Acțiuni key stay in view (S19P rule).
+python3 -I s22_build.py <repo_root> [s22_heights.json] [--canvas]
+Imports s19_build (rewrites the S19 boards and, through s18_build, S18/S17/S14S/S2/S7, byte-identical). Writes
+design/canvas/project/S22-utilizatori[--<state>].dc.html, /tmp/s22/<stem>.html, /tmp/s22/boards.json; --canvas adds the
+row to canvas.json (nothing else changes). Renders: s22_render.py [--w 1280] [stems]."""
+import sys, re, json, pathlib, importlib.util, io, contextlib
+
+ARGS = sys.argv[1:]
+CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
+ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().parent
+HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's22_heights.json'
+HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
+sys.path.insert(0, str(HERE))
+sys.argv = ['s19_build.py', str(ROOT)]
+sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
+M = importlib.util.module_from_spec(sp)
+with contextlib.redirect_stdout(io.StringIO()):
+    sp.loader.exec_module(M)   # rewrites the S19 boards (and through s18_build S18/S17/S14S/S2/S7) byte-identical
+T, SC, Q, s4, A = M.T, M.SC, M.Q, M.s4, M.A
+icon, lamp, num, NB = M.icon, M.lamp, M.num, M.NB
+
+# SYS12 helpers (UserRow + OneTimePassword): the code above the preview blocks only (no file is written)
+SRC = (ROOT / 'design/system/scripts/sys12_build.py').read_text(encoding='utf-8')
+CUT = '# ------------------------------------------------------------------ blocks'
+assert SRC.count(CUT) == 1
+U = {'__name__': 'sys12_parts'}
+exec(compile(SRC.split(CUT)[0], 'sys12_build.py', 'exec'), U)
+# the loading rows and the empty row are SYS12 preview blocks (below the cut): read the same markup from its source
+BLK = SRC.split(CUT)[1]
+m = re.search(r"\nEMPTY = \((.*?)\)\n", BLK, re.S); U['EMPTY'] = eval('(' + m.group(1) + ')')
+m = re.search(r"\nSK = (''\.join\(.*?for _ in range\(4\)\))\n", BLK, re.S); U['SK'] = eval(m.group(1), {})
+assert 'Doar tu ai acces. Adaugă primul utilizator.' in U['EMPTY'] and U['SK'].count('ip-users__skel') == 4
+
+# ================================================================= people (kit names; D39 examples marked in the titles)
+FS = M.FS
+assert [f['name'] for f in FS['farms']] == ['Telița', 'Hîrbovăț']   # real farms; listed in this order everywhere
+assert U['RUSU']['farms'] == 'Telița, Hîrbovăț' and U['CEBAN']['farms'] == 'Hîrbovăț'
+OWN = {**U['OWNER'], 'name': 'Proprietar'}   # the owner account as on every earlier board (sidebar "Proprietar", D104)
+RUSU, CEBAN = dict(U['RUSU']), dict(U['CEBAN'])
+PETREA = {**U['PETREA'], 'active': True}     # D39: Petrea (spec A2 sample) before his account is deactivated
+PETREA_OFF = dict(U['PETREA'])
+OBS = dict(U['VIEW'])                        # D39: the new user, Observator exemplu (SYS12)
+CEBAN2 = {**CEBAN, 'farms': 'Telița, Hîrbovăț'}   # D39: the edit saved on --salvat
+ROLE_ORDER = ['Proprietar', 'Manager', 'Veterinar', 'Observator']
+def order(us):   # SYS12: active rows by role then name, deactivated rows last
+    return sorted(us, key=lambda u: (not u['active'], ROLE_ORDER.index(u['role']), u['name']))
+BASE = order([OWN, RUSU, CEBAN, PETREA])
+assert [u['name'] for u in BASE] == ['Proprietar', 'Ion Rusu', 'Dr. Ceban', 'Petrea']
+OFFL = order([OWN, RUSU, CEBAN, PETREA_OFF])
+assert OFFL[-1]['name'] == 'Petrea' and not OFFL[-1]['active']
+# D78 passwords: 12 characters, a–z without i l o + 2–9; plainly sample values (alphabet runs), D39
+PW_NEW, PW_RESET = 'abcd2345efgh', 'mnpq6789rstu'
+ALPHA = set('abcdefghjkmnpqrstuvwxyz23456789')
+assert all(len(p) == 12 and set(p) <= ALPHA for p in (PW_NEW, PW_RESET))
+assert U['CTX_NEW'].startswith('Cont nou · Observator · Hîrbovăț')
+
+# ================================================================= list (desktop): SYS12 UserRow + the S19P fold
+CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a><span aria-hidden="true">›</span>'
+          '<span aria-current="page">Utilizatori</span></nav>')
+META = '<div class="ip-row s4-meta"><span class="ip-note">Cine intră în aplicație, cu ce rol și la ce ferme</span></div>'
+HEADER = f'<header class="ip-pagehead">\n<div>\n{CRUMBS}\n<h1>Utilizatori</h1>\n{META}\n</div>\n</header>'   # title only (D78)
+def sidebar():
+    sb = M.sidebar_owner()
+    for a, z in (('class="ip-nav ip-nav--sub is-current" href="#ferme" aria-current="page"', 'class="ip-nav ip-nav--sub" href="#ferme"'),
+                 ('class="ip-nav ip-nav--sub" href="#utilizatori"', 'class="ip-nav ip-nav--sub is-current" href="#utilizatori" aria-current="page"')):
+        assert sb.count(a) == 1, a; sb = sb.replace(a, z)
+    assert sb.count('is-current') == 1
+    return sb
+def sub(s, a, z, n=1):
+    assert s.count(a) == n, (a, s.count(a)); return s.replace(a, z)
+CX = ' s22-cx'   # columns that fold under the name beside the panel
+def fold(u):
+    fm = u['farms'] or 'toate fermele'
+    seen = f'<span class="ip-num s22-nw">{u["seen"]}</span>' if u['seen'] else '<span class="s22-nw">– încă n-a intrat</span>'
+    return f'<span class="s22-fold"><span class="ip-num">{u["login"]}</span> · {fm} · {seen}</span>'
+def row(p, u, focus=False):
+    """The SYS12 row, unchanged except: the name cell carries the fold line, three cells the fold class."""
+    r = U['row'](p, u, focus=focus)
+    r = sub(r, '<td><span class="ip-user__name">', '<td class="s22-name"><span class="ip-user__name">')
+    r = re.sub(r'(<span class="ip-user__name">.*?</span>)</td>', lambda m: m.group(1) + fold(u) + '</td>', r, count=1)
+    for c in ('ip-user__login', 'ip-user__farms', 'ip-user__seen'):
+        r = sub(r, f'<td class="{c}">', f'<td class="{c}{CX}">')
+    return r
+HEAD = U['HEAD']
+for h in ('Login', 'Ferme', 'Ultima intrare'):
+    HEAD = sub(HEAD, f'<th scope="col">{h}</th>', f'<th scope="col" class="s22-cx">{h}</th>')
+def users(p, body, sumline, add='closed', **kw):
+    """SYS12 users() with the page's heading level (h2 under the h1), the add key opening the non-modal SidePanel
+    (aria-expanded/-controls instead of a dialog) and the list box as the fold container."""
+    s = U['users'](p, body, sumline, **kw)
+    s = sub(s, f'<h3 class="ip-cap" id="{p}-h">Utilizatori</h3>', f'<h2 class="ip-cap" id="{p}-h">Utilizatori</h2>')
+    st = ' is-pressed" aria-expanded="true" aria-controls="up' if add == 'open' else '" aria-expanded="false'
+    s = sub(s, '<button type="button" class="ip-btn ip-btn--primary" aria-haspopup="dialog">',
+            f'<button type="button" class="ip-btn ip-btn--primary{st}">')
+    if kw.get('table', True):
+        s = sub(s, U['HEAD'], HEAD)
+        s = sub(s, '<div class="ip-users__box">', '<div class="ip-users__box s22-region">')
+    return s
+NOTE = ('<p class="ip-note s4s-m0">Un cont dezactivat nu mai poate intra; ce a introdus rămâne în rapoarte și în Istoric modificări. '
+        'Conturile nu se șterg.</p>')
+def ulist(us=BASE, focus=None, add='closed', p='u'):
+    body = ''.join(row(p, u, focus=(u['key'] == focus)) for u in us)
+    return f'<div class="s4-block">{users(p, body, U["counts"](us), add)}{NOTE}</div>'
+def shell(main, sb=None, inert=False):
+    i = ' inert="inert"' if inert else ''
+    return f'<div class="s4-shell"{i}>{sb or sidebar()}<main class="s4-main">\n{HEADER}\n{main}\n</main></div>'
+def vp(main, inert=False):
+    return f'<div class="s13-vp s18-vp">{shell(main, inert=inert)}</div>'
+
+# ================================================================= user panel (SidePanel beside the page, as S19/S21)
+ERRI = icon('alert', 14)
+def err(i, text): return f'<p class="ip-err ip-fieldmsg" id="{i}">{ERRI}<span>{text}</span></p>'
+def with_err(f, iid, eid, text):   # TextField / Select in error: fault edge, aria-invalid, the field message names the fix
+    f = re.sub(r'class="ip-input( [^"]*)?"', lambda m: f'class="ip-input{(m.group(1) or "").replace(" is-error", "")} is-error"', f, count=1)
+    f = re.sub(rf'(<(?:input|select) id="{iid}")', rf'\1 aria-invalid="true"', f, count=1)
+    f = re.sub(r' aria-describedby="[^"]*"', '', f)
+    f = sub(f, f'id="{iid}" aria-invalid="true"', f'id="{iid}" aria-invalid="true" aria-describedby="{eid}"')
+    f = re.sub(r'<span class="ip-hint"[^>]*>.*?</span>', '', f)
+    return f[:-6] + err(eid, text) + '</div>'
+def name_field(val='', focus=False, e=None):
+    f = T.tfield('up-name', 'Nume', val, hint='Cum apare în listă și în Istoric modificări; cel mult 60 de caractere.', touch=False, focus=focus)
+    return with_err(f, 'up-name', 'up-name-e', e) if e else f
+LOGIN_H = 'Cu el intră în aplicație: litere mici fără diacritice, cifre și punct, 3–40 caractere, de exemplu ion.rusu.'
+def login_field(val='', e=None, ro=False, focus=False):
+    if ro:   # D118: the login is fixed once the account exists (A2 step 3 changes role, farms, password, state)
+        return (f'<div class="ip-field"><label class="ip-label" for="up-login">Login</label><span class="ip-input is-readonly ip-num">'
+                f'<input id="up-login" type="text" readonly="readonly" value="{val}" aria-describedby="up-login-h"/></span>'
+                f'<span class="ip-hint" id="up-login-h">Loginul nu se schimbă după ce contul e creat.</span></div>')
+    f = T.tfield('up-login', 'Login', val, hint=LOGIN_H, touch=False, mono=True, focus=focus)
+    f = sub(f, '<input id="up-login" type="text"', '<input id="up-login" type="text" spellcheck="false" autocapitalize="off"')
+    return with_err(f, 'up-login', 'up-login-e', e) if e else f
+ROLE_DO = {   # what each role does (spec §1 roles table, D03/D06); the hint under Rol
+    'Veterinar': 'Introduce mortalitatea, hrana zilnică, cântăririle și ouăle la fermele bifate; nu vede prețuri.',
+    'Observator': 'Vede paginile și rapoartele fermelor bifate; prețurile doar le vede; nu introduce nimic.',
+    'Manager': 'Introduce tot ce introduce veterinarul, plus livrări, transferuri, vânzări și cicluri noi la fermele bifate; '
+               'corectează cu motiv. Prețurile doar le vede.',
+    'Proprietar': 'Vede și modifică tot, la toate fermele: prețuri, utilizatori, ferme și ghiduri.'}
+ROLES = ['Veterinar', 'Observator', 'Manager', 'Proprietar']   # spec order vet / viewer / manager / owner
+def role_field(sel=None, e=None, ro=None):
+    if ro:   # your own role while you are the only active owner (A2 rule; D78 "must stop")
+        return (f'<div class="ip-field"><label class="ip-label" for="up-role">Rol</label><span class="ip-input is-readonly">'
+                f'<input id="up-role" type="text" readonly="readonly" value="{sel}" aria-describedby="up-role-h"/></span>'
+                f'<span class="ip-hint" id="up-role-h">{ro}</span></div>')
+    opts = ('' if sel else '<option value="" selected="selected">Alege rolul</option>') + ''.join(
+        f'<option{" selected=\"selected\"" if r == sel else ""}>{r}</option>' for r in ROLES)
+    hint = ROLE_DO[sel] if sel else 'De rol depinde ce vede și ce introduce.'
+    f = (f'<div class="ip-field"><label class="ip-label" for="up-role">Rol</label><span class="ip-input">'
+         f'<select id="up-role" required="required" aria-describedby="up-role-h">{opts}</select>{icon("chev", 16)}</span>'
+         f'<span class="ip-hint" id="up-role-h">{hint}</span></div>')
+    return with_err(f, 'up-role', 'up-role-e', e) if e else f
+def farms_field(on=(), e=None, owner=False):
+    if owner:
+        return ('<div class="ip-field"><label class="ip-label" for="up-farms">Ferme</label><span class="ip-input is-readonly">'
+                '<input id="up-farms" type="text" readonly="readonly" value="Toate fermele" aria-describedby="up-farms-h"/></span>'
+                '<span class="ip-hint" id="up-farms-h">Proprietarul vede toate fermele, și pe cele adăugate mai târziu.</span></div>')
+    d = 'up-farms-e' if e else 'up-farms-h'
+    inv = ' aria-invalid="true"' if e else ''
+    boxes = ''
+    for f in FS['farms']:
+        c = f['name'] in on
+        boxes += (f'<label class="ip-check{" is-checked" if c else ""}"><input type="checkbox" class="ip-sr" id="up-f-{f["id"]}"'
+                  f'{" checked=\"checked\"" if c else ""} aria-describedby="{d}"{inv}/>'
+                  f'<span class="ip-check__box">{icon("check", 14) if c else ""}</span>{f["name"]}</label>')
+    msg = err('up-farms-e', e) if e else '<span class="ip-hint" id="up-farms-h">Vede și introduce doar la fermele bifate; cel puțin una.</span>'
+    return (f'<div class="ip-field" role="group" aria-labelledby="up-farms-l"><span class="ip-label" id="up-farms-l">Ferme</span>'
+            f'<div class="s22-checks">{boxes}</div>{msg}</div>')
+def acct(u, pressed=None):
+    """Cont: state + last sign-in, then Resetează parola and Dezactivează contul (both open a Dialog); on your own account
+    Dezactivează is aria-disabled with the SYS12 reason (A2: you can't deactivate yourself)."""
+    seen = f'ultima intrare <span class="ip-num">{u["seen"]}</span>' if u['seen'] else '– încă n-a intrat'
+    pr = ' is-pressed' if pressed == 'reset' else ''
+    keys = f'<button type="button" class="ip-btn ip-btn--secondary{pr}" aria-haspopup="dialog">Resetează parola</button>'
+    why = ''
+    if u.get('me'):
+        keys += '<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="up-off-why">Dezactivează contul</button>'
+        why = '<p class="ip-note s4s-m0" id="up-off-why">Nu îți poți dezactiva propriul cont.</p>'
+    else:
+        keys += '<button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Dezactivează contul</button>'
+    return (f'<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap s4s-m0" id="up-acct-h">Cont</h3>'
+            f'<p class="s4s-m0 s22-state">{lamp("ok", "activ")}<span>{seen}</span></p>'
+            f'<p class="ip-note s4s-m0">Resetează parola dacă a uitat-o: cea veche nu mai merge, iar cea nouă se arată o singură dată. '
+            f'Un cont dezactivat nu mai poate intra; îl reactivezi din listă.</p>'
+            f'<div class="s22-keys">{keys}</div>{why}</section>')
+NEWPW = ('<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap s4s-m0" id="up-acct-h">Parolă</h3>'
+         '<p class="s4s-m0">Parola temporară se generează la salvare și se arată o singură dată.</p></section>')
+SAVE = '<button type="button" class="ip-btn ip-btn--primary">Salvează</button>'
+ADD = '<button type="button" class="ip-btn ip-btn--primary">Adaugă utilizatorul</button>'
+def ctx(u):
+    fm = (u['farms'] or 'toate fermele').upper()
+    return f'{u["role"].upper()} · {"ACTIV" if u["active"] else "DEZACTIVAT"} · {fm}'
+def panel(title, note, body, key=SAVE, inert=False):
+    i = ' inert="inert"' if inert else ''
+    nt = f'<p class="ip-note ip-num s13-m0">{note}</p>' if note else ''
+    return (f'<aside class="ip-sidepanel s13-panel" id="up" aria-labelledby="up-t"{i}>\n<div class="ip-sidepanel__head"><div>'
+            f'<h2 class="ip-t-heading s13-m0" id="up-t">{title}</h2>{nt}</div>'
+            f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul utilizatorului">{icon("x")}</button></div>\n'
+            f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
+            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
+def upanel(u, farms_on=None, focus=False, extra='', inert=False, pressed=None, title=None):
+    fo = (u['farms'] or '').split(', ') if farms_on is None else farms_on
+    return panel(title or u['name'] + (' (tu)' if u.get('me') else ''), ctx(u),
+                 [name_field(u['name'], focus), login_field(u['login'], ro=True), role_field(u['role']), farms_field(fo), extra, acct(u, pressed)],
+                 inert=inert)
+def save_banner(text):
+    return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="up-err">{icon("alert", 16)}<div class="s7s-banner__body">'
+            f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
+
+# ================================================================= dialogs (SYS12), Toast, states
+def scrim(dlg): return f'<div class="ip-scrim s19-scrim">{dlg}</div>'
+BTN = U['btn']
+def dlg_off(u):   # A2: the sentence, then SYS12's undo line; focus on Anulează
+    body = f'<p id="do-n">{u["name"]} nu va mai putea intra. Datele introduse de el rămân. Poți reactiva contul oricând.</p>'
+    return U['dialog']('do', f'Dezactivează contul lui {u["name"]}', body,
+                       BTN('Anulează', focus=True, extra=' autofocus="autofocus"') + BTN('Dezactivează', 'destructive'), desc='do-n')
+def dlg_pw(p, title, ctx_, pw, name):   # OneTimePassword in its Dialog; focus on Copiază parola (SYS12)
+    return U['dialog'](p, title, U['otp'](p, ctx_, pw, name, focus='copy'), BTN('Închide', 'primary'))
+FOCUS_NOTE = ('<!-- Focus after {what}: {where}; the Toast (role=status) announces it and keeps Anulează in the tab order. -->')
+def toast(text, what, where):
+    return (FOCUS_NOTE.format(what=what, where=where) + f'<div class="s22-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}'
+            f'<span class="s7s-toast__txt">{text}</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+LOADING = f'<div class="s4-block">{users("u", U["SK"] + "<tr><td colspan=\"7\" class=\"ip-users__srcell\"><span class=\"ip-sr\">Se încarcă utilizatorii</span></td></tr>", "<span class=\"ip-users__wait\">Se încarcă.</span>", busy=True)}</div>'
+FAIL = (f'<div class="ip-banner ip-banner--fault">{U["svg"](U["IC"]["fault"])}<div class="ip-users__bnrow"><p class="ip-users__bn">'
+        '<b>Utilizatorii nu s-au încărcat.</b> Verifică conexiunea la internet, apoi reîncearcă.</p>'
+        f'{BTN("Reîncearcă", "secondary")}</div></div>')
+LOADERR = (f'<div class="s4-block">{users("u", "", "– lista nu s-a încărcat", extra=FAIL, table=False, live="Utilizatorii nu s-au încărcat.")}</div>')
+def noaccess():
+    step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
+    box = s4.empty_box('fără acces', ['Nu ai acces la Utilizatori.',
+                                      'Conturile și accesul la ferme le setează proprietarul. Rolul tău, Observator, vede paginile seriilor '
+                                      'și ale fermelor, și rapoartele.'], step, 'Acces')
+    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Utilizatori</h1></div></header>\n{box}\n</main></div>'
+EMPTY = f'<div class="s4-block">{users("u", row("u", OWN) + U["EMPTY"], U["counts"]([OWN]))}</div>'
+
+# ================================================================= phone list (owner, read-only, as S19–S21)
+def phone_list():
+    rows = ''.join(f'<tr{" class=\"s22-poff\"" if not u["active"] else ""}><th scope="row" class="s19-fname"><span class="s22-pn">{u["name"]}'
+                   f'{" <span class=\"ip-note\">(tu)</span>" if u.get("me") else ""}</span>'
+                   f'<span class="ip-note s22-pm">{u["role"]} · {u["farms"] or "toate fermele"}</span></th>'
+                   f'<td class="s22-nw">{lamp("ok", "activ") if u["active"] else lamp("off", "dezactivat")}</td></tr>' for u in BASE)
+    blk = (f'<section class="s4-block" aria-labelledby="h-usr"><div class="s4-head"><h2 class="ip-t-heading" id="h-usr">Utilizatori</h2>'
+           f'<span class="ip-note">{U["counts"](BASE)}</span></div>'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-usr">'
+           f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s22-ptable"><caption class="ip-sr">Utilizatorii, cu rolul, fermele și starea lor</caption>'
+           f'<thead><tr><th scope="col">Nume · rol · ferme</th><th scope="col">Stare</th></tr></thead><tbody>{rows}</tbody></table></div>'
+           f'<p class="ip-note s4s-m0">Utilizatorii îi adaugi și îi editezi pe calculator.</p></section>')
+    cr = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="s14-crumb">Setări</span></a>')
+    body = A.phone([f'<header class="ip-pagehead s2-phead s14-phead"><div>{cr}<h1>Utilizatori</h1></div></header>', blk])
+    for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
+                 ('class="ip-tabbar__item" href="#mai-mult"', 'class="ip-tabbar__item is-current" href="#mai-mult" aria-current="page"')):
+        body = sub(body, a, z)
+    assert body.count('is-current') == 1
+    return body
+
+# ================================================================= CSS (screen-only; tokens only; system classes untouched)
+CSS22 = '''
+.s22-nw{white-space:nowrap}
+.s22-region{container:s22-users / inline-size}
+.s22-name{white-space:normal}
+.s22-fold{display:none}
+/* S19P rule: beside the panel the list is under 760px (558 at 1280, 718 at 1440), so Login, Ferme and Ultima intrare fold
+ * under the name and Rol, Stare and the Acțiuni key stay in view; the list alone keeps all seven columns. */
+@container s22-users (max-width: 759.98px){
+  .s22-cx{display:none}
+  .s22-fold{display:block;color:var(--ink-secondary)}
+}
+.s22-checks{display:flex;flex-wrap:wrap;gap:0 var(--space-6);margin-block:calc(-1 * var(--space-3))} /* two farm boxes side by side: 44px targets, 20px text line in the form rhythm (as §44) */
+.s22-acct{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
+.s22-state{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--space-3)}
+.s22-keys{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-1)}
+.s22-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, as S18S–S21 (FIN) */'''
+CSS_DESK = M.CSS_DESK + SC.TOAST + SC.BANNER + CSS22
+CSS_PL = M.CSS_PL + CSS22 + '''
+.s22-pn{display:block}
+.s22-pm{display:block;font-weight:400}
+.s22-poff .s22-pn{color:var(--ink-secondary)}'''
+
+# ================================================================= write
+pathlib.Path('/tmp/s22').mkdir(exist_ok=True)
+def write(stem, title, root, css, w, h):
+    r = M.write(stem, title, root, css, w, h)   # S19's writer: the .dc.html + /tmp/s19/<stem>.html; moved into /tmp/s22
+    src = pathlib.Path(f'/tmp/s19/{stem}.html'); (pathlib.Path('/tmp/s22') / src.name).write_text(src.read_text(encoding='utf-8'), encoding='utf-8'); src.unlink()
+    return r
+STEM, TT = 'S22-utilizatori', 'S22 · Utilizatori'
+D39 = 'exemplu de stare (D39)'
+PH = SC.SIDE_H
+out = []
+def desk(stem, title, root, h=None):
+    h = h or HEIGHTS.get(STEM + stem, 1024)
+    out.append(write(STEM + stem, f'{TT}{" · " + title if title else ""}', f'<div class="ip-root s4s-rel" style="padding:0; min-height:{h}px">{root}</div>', CSS_DESK, 1440, h))
+
+# 1 · the list
+desk('', f'Petrea: {D39}', shell(ulist()))
+# 2 · Ion Rusu's panel (Editează from his row menu): Nume (focus), Login fixed, Rol + what it does, Ferme, Cont
+desk('--ion-rusu', f'Ion Rusu · panoul utilizatorului · Petrea: {D39}', vp(ulist()) + upanel(RUSU, focus=True), PH)
+# 3 · Adaugă utilizator: empty panel, the generated-password note (D78)
+NEWBODY = lambda **e: [name_field('', True, e.get('name')), login_field(e.get('login_v', ''), e.get('login')), role_field(e.get('role_v'), e.get('role')),
+                       farms_field(e.get('farms_v', ()), e.get('farms')), NEWPW]
+desk('--utilizator-nou', f'Utilizator nou · Petrea: {D39}', vp(ulist(add='open')) + panel('Utilizator nou', '', NEWBODY(), ADD), PH)
+# 4 · field errors (D39): Adaugă utilizatorul pressed with Nume empty, a login with a space and diacritics, no role, no farm
+E = dict(name='Scrie numele persoanei, cum vrei să apară în listă, de exemplu Ion Rusu.',
+         login_v='observator hîrbovăț',
+         login='Loginul are un spațiu și diacritice. Folosește doar litere mici fără diacritice, cifre și punct, de exemplu observator.hirbovat.',
+         role='Alege rolul: Veterinar, Observator, Manager sau Proprietar. De el depinde ce vede și ce introduce.',
+         farms='Bifează cel puțin o fermă, de exemplu Hîrbovăț. Doar proprietarul vede toate fermele fără bifă.')
+desk('--erori', f'Utilizator nou · nume gol, login greșit, fără rol, fără fermă · {D39}', vp(ulist(add='open')) + panel('Utilizator nou', '', NEWBODY(**E), ADD), PH)
+# 5 · duplicate login (A2 State, D39): Petrea comes back; his deactivated account still holds „petrea”
+DUP = ('Loginul „petrea” este deja folosit, de contul dezactivat al lui Petrea. Reactivează-l din listă sau alege alt login, '
+       'de exemplu petrea.2.')
+desk('--login-folosit', f'Utilizator nou · login deja folosit · {D39}: Petrea, cont dezactivat',
+     vp(ulist(OFFL, add='open')) + panel('Utilizator nou', '', [name_field('Petrea'), login_field('petrea', DUP, focus=True), role_field('Veterinar'),
+                                                               farms_field(('Telița',)), NEWPW], ADD), PH)
+# 6 · after Adaugă utilizatorul (D39 Observator exemplu): the panel closed, the new row listed, the password Dialog over it
+WITH_OBS = order(BASE + [OBS])
+PW_NOTE = ('<!-- After Adaugă utilizatorul: the panel closes, the new row is listed and the password Dialog opens with focus on '
+           'Copiază parola; Închide discards the password (no Toast, D78) and focus goes to the new row\'s Acțiuni key. -->')
+desk('--parola-cont-nou', f'Observator exemplu adăugat · parola temporară, o singură dată · {D39}, parola exemplu',
+     shell(ulist(WITH_OBS), inert=True) + PW_NOTE + scrim(dlg_pw('pn', 'Parola temporară pentru Observator exemplu', U['CTX_NEW'], PW_NEW, 'Observator exemplu')))
+# 7 · salvat (D39): Dr. Ceban given Telița as well: panel closed, row updated, focus on his key, Toast + Anulează
+WITH_C2 = order([OWN, RUSU, CEBAN2, PETREA])
+desk('--salvat', f'Dr. Ceban salvat · {D39}: Telița adăugată',
+     shell(ulist(WITH_C2, focus='ceban')) + toast('Dr. Ceban salvat · Veterinar la Telița și Hîrbovăț', 'Salvează',
+                                                   "the panel closes and focus goes back to Dr. Ceban's Acțiuni key"))
+# 8 · eroare la salvare (D39): the same change, draft kept, Banner + Reîncearcă (focus) under the fields
+SAVE_ERR = save_banner('Modificările lui Dr. Ceban nu s-au salvat: conexiunea s-a întrerupt. Ce ai bifat rămâne în panou. '
+                       'Verifică conexiunea la internet, apoi reîncearcă.')
+desk('--eroare-la-salvare', f'Dr. Ceban · eroare la salvare · {D39}: Telița bifată',
+     vp(ulist()) + upanel(CEBAN, farms_on=('Telița', 'Hîrbovăț'), extra=SAVE_ERR), PH)
+# 9 · your own account: the only active owner keeps the role (A2), farms "toate", Dezactivează aria-disabled with the reason
+ONLY_OWNER = ('Ești singurul proprietar activ, așa că rolul tău rămâne Proprietar. Ca să-l schimbi, dă întâi rolul Proprietar '
+              'altui utilizator, de exemplu lui Ion Rusu.')
+desk('--contul-tau', f'contul tău · singurul proprietar, nu se dezactivează · Petrea: {D39}',
+     vp(ulist()) + panel('Proprietar (tu)', ctx(OWN), [name_field(OWN['name'], True), login_field(OWN['login'], ro=True),
+                                                      role_field('Proprietar', ro=ONLY_OWNER), farms_field(owner=True), acct(OWN)]), PH)
+# 10 · Dezactivează (A2 Dialog, D39 Petrea) from his row menu: page inert, focus on Anulează
+desk('--dezactiveaza', f'Dezactivează contul lui Petrea · {D39}', shell(ulist(), inert=True) + scrim(dlg_off(PETREA)))
+# 11 · dezactivat (D39): Petrea last with the off lamp, Toast + Anulează, focus back on his key
+desk('--dezactivat', f'Petrea dezactivat · {D39}',
+     shell(ulist(OFFL, focus='petrea')) + toast('Contul lui Petrea e dezactivat · datele introduse de el rămân', 'Dezactivează',
+                                                 "the Dialog closes and focus goes back to Petrea's Acțiuni key (his row now listed last)"))
+# 12 · Resetează parola from Ion Rusu's panel (after its confirmation): the new password, shown once (D78, D39 value)
+desk('--parola-resetata', f'Ion Rusu · parolă resetată, o singură dată · {D39}, parola exemplu',
+     vp(ulist(), inert=True) + upanel(RUSU, inert=True, pressed='reset')
+     + '<!-- Închide: focus goes back to Resetează parola in the panel. -->'
+     + scrim(dlg_pw('pr', 'Parola nouă pentru Ion Rusu', U['CTX_RESET'], PW_RESET, 'Ion Rusu')), PH)
+# 13 · se încarcă (SYS12 loading rows)
+desk('--se-incarca', 'se încarcă', shell(LOADING))
+# 14 · eroare la încărcare (SYS12 load failed)
+desk('--eroare-la-incarcare', 'eroare la încărcare', shell(LOADERR))
+# 15 · fără acces (Observator; a manager or a vet: same picture)
+desk('--fara-acces', 'observator · fără acces', noaccess())
+# 16 · doar tu (A2 Empty, D39 first use)
+desk('--doar-tu', f'doar tu · {D39}', shell(EMPTY))
+# 17 · phone, read-only list
+h = HEIGHTS.get(STEM + '--telefon', 844)
+out.append(write(STEM + '--telefon', f'{TT} · telefon · doar citire · Petrea: {D39}', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL, 390, h))
+pathlib.Path('/tmp/s22/boards.json').write_text(json.dumps([{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
+
+if CANVAS:  # new row below the S21 row (row y + tallest h + 120); desktops first (a Setări page), 80 px gaps
+    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
+    others = {k: v for k, v in c['boards'].items() if not k.startswith('S22-')}
+    ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
+    assert (ly, y) == (38201, 39345), (ly, y)
+    x = 0
+    for b in out:
+        k = f'{b["stem"]}.dc.html'
+        e = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']} if b['w'] == 1440 else {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'title': b['title']}
+        c['boards'][k] = e; x += b['w'] + 80
+        if k not in c['order']: c['order'].append(k)
+    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
+    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
+    print('canvas: S22 row y', y, 'ends at x', x - 80)
