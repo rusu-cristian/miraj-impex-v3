@@ -1,0 +1,14 @@
+{
+ "S6-zilnic--se-incarca": 844,
+ "S6-zilnic--deja-introdus": 844,
+ "S6-zilnic--zi-trecuta": 844,
+ "S6-zilnic--abatere": 844,
+ "S6-zilnic--refuzat": 844,
+ "S6-zilnic--eroare-la-salvare": 844,
+ "S6-zilnic--ferma-fara-pasari": 844,
+ "S6-zilnic--salvat": 844,
+ "scroll": {
+  "abatere": 0,
+  "refuzat": 335
+ }
+}

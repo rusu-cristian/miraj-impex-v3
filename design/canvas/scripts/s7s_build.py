@@ -11,6 +11,7 @@ ROOT = pathlib.Path(sys.argv[1])
 sys.argv = ['s7_build.py', str(ROOT), '3162']
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 B = importlib.import_module('s7_build')
+import sstate_css as SC  # viewport / Toast-undo / Banner-action / skeleton CSS, shared with s6s_build
 n, dd, icon, sexv, pair, lamp = B.n, B.dd, B.icon, B.sexv, B.pair, B.lamp
 NB, MINUS, TODAY, YDAY, WEEK, START = B.NB, B.MINUS, B.TODAY, B.YDAY, B.WEEK, B.START
 GUIDE, FTN, FTS, HB, ROWS = B.GUIDE, B.FTN, B.FTS, B.HB_TYPES, B.ROWS
@@ -217,24 +218,8 @@ sk = f'''<p class="ip-sr" role="status">Se încarcă rândurile pentru <span cla
 sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol" aria-hidden="true">{skel("70%", SK16)}{skel("45%", SK16)}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv7)))
 
-CSS = B.CSS + '''
-.s7s-vp{height:844px;min-height:0;overflow:hidden}
-.s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.s7s-view > .s7-main{flex:none}
-.s7s-view--end{justify-content:flex-end}
-.s7s-toastwrap{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);z-index:3}
-.s7s-toast{display:flex;width:100%;align-items:flex-start}
-.s7s-toast > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s7s-toast__txt{flex:1;min-width:0}
-.s7s-undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
-.s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
-.s7s-banner__body > .ip-btn{margin-top:var(--space-1)}'''
-CSS_EXTRA = {'se-incarca': '''
-.s7s-skblock{display:flex;flex-direction:column;gap:var(--space-6)}
-.s7s-skrow{align-items:start}
-.s7s-skcol{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);flex:1;min-width:0}
-.s7s-skcol--end{align-items:flex-end}'''}  # skeleton rules only on the board that uses them
+CSS = B.CSS + SC.VIEW + SC.TOAST + SC.BANNER
+CSS_EXTRA = {'se-incarca': SC.SKEL}  # skeleton rules only on the board that uses them
 
 STEM0, TITLE0 = 'S7-hrana-zilnica', 'S7 · Hrană zilnică'
 SYS = ROOT / 'design/system'

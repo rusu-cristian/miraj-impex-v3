@@ -315,6 +315,62 @@
       "w": 390,
       "h": 4284,
       "title": "S6 · Zilnic"
+    },
+    "S6-zilnic--se-incarca.dc.html": {
+      "x": 470,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · se încarcă"
+    },
+    "S6-zilnic--deja-introdus.dc.html": {
+      "x": 940,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · deja introdus"
+    },
+    "S6-zilnic--zi-trecuta.dc.html": {
+      "x": 1410,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · zi trecută (medic)"
+    },
+    "S6-zilnic--abatere.dc.html": {
+      "x": 1880,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · abatere 3× · exemplu de stare (D39)"
+    },
+    "S6-zilnic--refuzat.dc.html": {
+      "x": 2350,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · refuzat · peste cei în viață · exemplu de stare (D39)"
+    },
+    "S6-zilnic--eroare-la-salvare.dc.html": {
+      "x": 2820,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · eroare la salvare"
+    },
+    "S6-zilnic--ferma-fara-pasari.dc.html": {
+      "x": 3290,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · fermă fără păsări"
+    },
+    "S6-zilnic--salvat.dc.html": {
+      "x": 3760,
+      "y": 12591,
+      "w": 390,
+      "h": 844,
+      "title": "S6 · Zilnic · salvat"
     }
   },
   "order": [
@@ -357,7 +413,15 @@
     "S13-livrare-hrana--cantitate-lipsa.dc.html",
     "S13-livrare-hrana--eroare-la-salvare.dc.html",
     "S13-livrare-hrana--desktop.dc.html",
-    "S6-zilnic.dc.html"
+    "S6-zilnic.dc.html",
+    "S6-zilnic--se-incarca.dc.html",
+    "S6-zilnic--deja-introdus.dc.html",
+    "S6-zilnic--zi-trecuta.dc.html",
+    "S6-zilnic--abatere.dc.html",
+    "S6-zilnic--refuzat.dc.html",
+    "S6-zilnic--eroare-la-salvare.dc.html",
+    "S6-zilnic--ferma-fara-pasari.dc.html",
+    "S6-zilnic--salvat.dc.html"
   ],
   "notes": {},
   "designSystems": [
