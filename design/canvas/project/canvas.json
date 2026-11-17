@@ -522,7 +522,7 @@
       "x": 470,
       "y": 20922,
       "w": 390,
-      "h": 1764,
+      "h": 1916,
       "title": "S2 · Acasă · manager · telefon"
     },
     "S2-acasa--manager-desktop.dc.html": {
@@ -540,6 +540,94 @@
       "h": 1136,
       "expand": "fill",
       "title": "S2 · Acasă · proprietar · desktop"
+    },
+    "S2-acasa--se-incarca.dc.html": {
+      "x": 3980,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · se încarcă"
+    },
+    "S2-acasa--inainte-de-12.dc.html": {
+      "x": 4450,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · înainte de 12:00 · Acțiuni deschis"
+    },
+    "S2-acasa--zi-trecuta-blocat.dc.html": {
+      "x": 4920,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · zi trecută lipsă · blocat · exemplu de stare (D39)"
+    },
+    "S2-acasa--sterge-confirmare.dc.html": {
+      "x": 5390,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · Șterge · confirmare"
+    },
+    "S2-acasa--dupa-2359.dc.html": {
+      "x": 5860,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · după 23:59 · modificat la · exemplu de stare (D39)"
+    },
+    "S2-acasa--ferma-goala.dc.html": {
+      "x": 6330,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · fermă goală (Telița) · exemplu de stare (D39)"
+    },
+    "S2-acasa--fara-acces.dc.html": {
+      "x": 6800,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · fără acces"
+    },
+    "S2-acasa--eroare-la-incarcare.dc.html": {
+      "x": 7270,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · vet · eroare la încărcare"
+    },
+    "S2-acasa--manager-desktop--se-incarca.dc.html": {
+      "x": 7740,
+      "y": 20922,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S2 · Acasă · manager · desktop · se încarcă"
+    },
+    "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0.dc.html": {
+      "x": 9260,
+      "y": 20922,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S2 · Acasă · manager · desktop · zi trecută lipsă · stoc sub 0 · exemplu de stare (D39)"
+    },
+    "S2-acasa--proprietar-desktop--se-incarca.dc.html": {
+      "x": 10780,
+      "y": 20922,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S2 · Acasă · proprietar · desktop · se încarcă"
+    },
+    "S2-acasa--proprietar-desktop--toate-cu-pret.dc.html": {
+      "x": 12300,
+      "y": 20922,
+      "w": 1440,
+      "h": 1136,
+      "expand": "fill",
+      "title": "S2 · Acasă · proprietar · desktop · toate livrările au preț · exemplu de stare (D39)"
     }
   },
   "order": [
@@ -613,7 +701,19 @@
     "S2-acasa.dc.html",
     "S2-acasa--manager.dc.html",
     "S2-acasa--manager-desktop.dc.html",
-    "S2-acasa--proprietar-desktop.dc.html"
+    "S2-acasa--proprietar-desktop.dc.html",
+    "S2-acasa--se-incarca.dc.html",
+    "S2-acasa--inainte-de-12.dc.html",
+    "S2-acasa--zi-trecuta-blocat.dc.html",
+    "S2-acasa--sterge-confirmare.dc.html",
+    "S2-acasa--dupa-2359.dc.html",
+    "S2-acasa--ferma-goala.dc.html",
+    "S2-acasa--fara-acces.dc.html",
+    "S2-acasa--eroare-la-incarcare.dc.html",
+    "S2-acasa--manager-desktop--se-incarca.dc.html",
+    "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0.dc.html",
+    "S2-acasa--proprietar-desktop--se-incarca.dc.html",
+    "S2-acasa--proprietar-desktop--toate-cu-pret.dc.html"
   ],
   "notes": {},
   "designSystems": [

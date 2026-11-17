@@ -98,20 +98,39 @@ assert (LAY, LAYG, MH['F'], MH['M']) == (74.0, 74.1, 5.54, 11.93)
 def head(cap, note, hid):
     return f'<div class="ip-list__head"><h2 class="ip-cap" id="{hid}">{cap}</h2><p class="ip-note">{note}</p></div>'
 
-def missing(manager=False, u=''):
-    """MissingRow (SYS08): one row per section × entry × day, newest first; manager rows name the farm first."""
+def day_row(day, sec, sx):  # one section × sex × day of S['daily'] (alive at the end of that day, grams of the day before)
+    r = {(x['date'], x['section'], x['sex']): x for x in S['daily']}
+    prev = (dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat()
+    return r[(day, sec, sx)], r[(prev, sec, sx)]
+def missing(manager=False, u='', miss=None, past=(), locked=False, when=None, empty=None, scope=None):
+    """MissingRow (SYS08): one row per section × entry × day, newest first; manager rows name the farm first.
+    S2S: past = extra past-day rows (D39 state examples), locked = a vet's past day (D07: Tag "blocat", no link),
+    when = the scope note's time part (before 12:00: the clock time), empty = the sentence of the empty state."""
     rows = []
-    for day, sec, sx in sorted(MISS, key=lambda m: (m[0], m[1]), reverse=False):
-        a = alloc[(sec, sx)]; c, sign, word = ('hen', '♀', 'găini') if sx == 'F' else ('rooster', '♂', 'cocoși')
+    for day, sec, sx in sorted(list(MISS if miss is None else miss) + list(past), key=lambda m: (dt.date.fromisoformat(m[0]).toordinal() * -1, m[1])):
+        c, sign, word = ('hen', '♀', 'găini') if sx == 'F' else ('rooster', '♂', 'cocoși')
+        d0 = dt.date.fromisoformat(day); wk = (d0 - dt.date.fromisoformat(cH['start_date'])).days // 7 + 1
+        if day == TODAY.isoformat():
+            alv, gy = alive[(sec, sx)], alloc[(sec, sx)]['yesterday_g']
+        else:
+            rd, ry = day_row(day, sec, sx); alv, gy = rd['alive_end'], ry['g_per_bird']
         farm = 'Hîrbovăț · ' if manager else ''
-        rows.append(f'<a class="ip-ev ip-ev--missing" href="#hrana-zilnica-{sec}-{sx}"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>'
-                    f'<span class="ip-ev__main"><span class="ip-ev__title"><span class="ip-sr">Completează: </span>{farm}{sec} · <span class="ip-ev__type">Hrană zilnică '
-                    f'<span class="ip-sex ip-sex--{c}">{sign}</span><span class="ip-sr"> {word}</span></span></span>'
-                    f'<span class="ip-ev__meta ip-num">{dd(dt.date.fromisoformat(day))} · SAPT {WK} · <span class="ip-sex ip-sex--{c}">{sign} <b>{n(alive[(sec, sx)])}</b></span> în viață · ieri {a["yesterday_g"]}{NB}g</span></span>'
+        tl = f'<span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>'
+        typ = f'<span class="ip-ev__type">Hrană zilnică <span class="ip-sex ip-sex--{c}">{sign}</span><span class="ip-sr"> {word}</span></span>'
+        if locked and day != TODAY.isoformat():
+            rows.append(f'<div class="ip-ev ip-ev--missing is-locked">{tl}<span class="ip-ev__main"><span class="ip-ev__title">{farm}{sec} · {typ}<span class="ip-tag ip-tag--neutral">blocat</span></span>'
+                        f'<span class="ip-ev__meta ip-num">{dd(d0)} · SAPT {wk} · zi trecută · o completează managerul</span></span>'
+                        f'<span class="ip-ev__status">{lamp("warn", "lipsă")}</span><span class="ip-ev__go"></span></div>')
+            continue
+        rows.append(f'<a class="ip-ev ip-ev--missing" href="#hrana-zilnica-{sec}-{sx}{"" if day == TODAY.isoformat() else "-" + day}">{tl}'
+                    f'<span class="ip-ev__main"><span class="ip-ev__title"><span class="ip-sr">Completează: </span>{farm}{sec} · {typ}</span>'
+                    f'<span class="ip-ev__meta ip-num">{dd(d0)} · SAPT {wk} · <span class="ip-sex ip-sex--{c}">{sign} <b>{n(alv)}</b></span> în viață · ieri {gy}{NB}g</span></span>'
                     f'<span class="ip-ev__status">{lamp("warn", "lipsă")}</span><span class="ip-ev__go">{icon("go", 16)}</span></a>')
-    scope = 'fermele tale' if manager else 'Hîrbovăț'
+    if empty: rows = [f'<p class="ip-missing__empty"><span class="ip-lamp ip-lamp--off">nimic lipsă</span><span>{empty}</span></p>']
+    scope = scope or ('fermele tale' if manager else 'Hîrbovăț')
+    w = num(when) if when else f'azi de la {num("12:00")}'
     return (f'<section class="ip-missing" aria-labelledby="{u}ms"><div class="ip-missing__head"><h2 class="ip-cap" id="{u}ms">Lipsesc date</h2>'
-            f'<p class="ip-note">{scope} · azi de la {num("12:00")} · ultimele {num(7)} zile</p></div><div class="ip-list">{"".join(rows)}</div></section>')
+            f'<p class="ip-note">{scope} · {w} · ultimele {num(7)} zile</p></div><div class="ip-list">{"".join(rows)}</div></section>')
 
 KEYS = [('mortality', 'Zilnic', 'Mortalitate, sacrificare, ouă', '#zilnic'), ('feed', 'Hrană zilnică', 'Grame pe găină și cocoș', '#hrana-zilnica'),
         ('weighing', 'Cântărire', 'Greutate, CV, uniformitate', '#cantarire'), ('transfer', 'Transfer', 'Între secțiuni sau ferme', '#transfer'),
@@ -122,30 +141,57 @@ def entrykeys(manager=False, u=''):
                  for k, lb, hint, h in ks)
     return f'<section class="ip-entrykeys" aria-labelledby="{u}ek"><h2 class="ip-cap" id="{u}ek">Înregistrează</h2><ul class="ip-entrykeys__list">{li}</ul></section>'
 
-def act_row(k, i, title, meta, name):
-    """SYS09 EventRow with actions: own entry today → Editează (the form of today) + Șterge (Dialog); phone = Acțiuni menu."""
+def act_row(k, i, title, meta, name, menu='closed', off=False, edited=None):
+    """SYS09 EventRow with actions: own entry today → Editează (the form of today) + Șterge (Dialog); phone = Acțiuni menu.
+    S2S: menu='open' draws the phone menu open (first item active and focused, ip-focus); off = the 23:59 window closed while the page was open
+    (aria-disabled keys and items, the reason in the menu note); edited = the author's same-day edit time (SYS09 A)."""
     mid = f'a{i}-m'
+    dis = f' aria-disabled="true" aria-describedby="{mid}-n"' if off else ''
+    if edited: meta += f' · <span class="ip-ev__edited">modificat la {num(edited)}</span>'
+    ed_k = f'<a class="ip-btn ip-btn--ghost" role="link" tabindex="0"{dis}>' if off else f'<a class="ip-btn ip-btn--ghost" href="#editeaza-{k}">'
+    fo = ' ip-focus' if menu == 'open' else ''  # the open menu shows its focused first item (SYS09 overrides .is-active's fill)
+    ed_i = f'<a class="ip-menu__item{fo}" role="menuitem" tabindex="-1"{dis}>' if off else \
+           f'<a class="ip-menu__item{" is-active" if menu == "open" else ""}{fo}" role="menuitem" tabindex="-1" href="#editeaza-{k}">'
+    note = (f'Timpul de modificare s-a încheiat la {num("23:59")}. Managerul poate corecta.' if off else
+            f'Poți modifica sau șterge până la {num("23:59")}.')
+    shut = menu == 'closed'
     return (f'<li class="ip-ev ip-ev--act">{tile(k)}<span class="ip-ev__main"><span class="ip-ev__title">{title}</span><span class="ip-ev__meta">{meta}</span></span>'
-            f'<span class="ip-ev__acts"><a class="ip-btn ip-btn--ghost" href="#editeaza-{k}">Editează<span class="ip-sr"> {name}</span></a>'
-            f'<button type="button" class="ip-btn ip-btn--ghost" aria-haspopup="dialog">Șterge<span class="ip-sr"> {name}</span></button></span>'
-            f'<span class="ip-ev__more"><button type="button" class="ip-iconbtn ip-iconbtn--touch" aria-label="Acțiuni, {name}" aria-haspopup="menu" aria-expanded="false" aria-controls="{mid}">{icon("dots")}</button>'
-            f'<div class="ip-menu ip-ev__menu" hidden="hidden"><div class="ip-ev__items" id="{mid}" role="menu" aria-label="Acțiuni, {name}" aria-describedby="{mid}-n">'
-            f'<a class="ip-menu__item" role="menuitem" tabindex="-1" href="#editeaza-{k}">Editează</a><button type="button" class="ip-menu__item" role="menuitem" tabindex="-1">Șterge</button></div>'
-            f'<p class="ip-note" id="{mid}-n">Poți modifica sau șterge până la {num("23:59")}.</p></div></span></li>')
+            f'<span class="ip-ev__acts">{ed_k}Editează<span class="ip-sr"> {name}</span></a>'
+            f'<button type="button" class="ip-btn ip-btn--ghost" aria-haspopup="dialog"{dis}>Șterge<span class="ip-sr"> {name}</span></button></span>'
+            f'<span class="ip-ev__more"><button type="button" class="ip-iconbtn ip-iconbtn--touch" aria-label="Acțiuni, {name}" aria-haspopup="menu" aria-expanded="{"false" if shut else "true"}" aria-controls="{mid}">{icon("dots")}</button>'
+            f'<div class="ip-menu ip-ev__menu"{" hidden=\"hidden\"" if shut else ""}><div class="ip-ev__items" id="{mid}" role="menu" aria-label="Acțiuni, {name}" aria-describedby="{mid}-n">'
+            f'{ed_i}Editează</a><button type="button" class="ip-menu__item" role="menuitem" tabindex="-1"{dis}>Șterge</button></div>'
+            f'<p class="ip-note" id="{mid}-n">{note}</p></div></span></li>')
 def t_of(e): return e['at'][11:16]
-def introdus():
-    rows = [
-        act_row('mortality', 1, f'Mortalitate · Hîrbovăț · {num(6)} secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}',
-                f'{num(t_of(LOG["mortality"]))} · Dr. Ceban · Zilnic, fără sacrificări', 'Mortalitate de azi'),
-        act_row('eggs', 2, f'Ouă · H1, H3, H4 · {num(n(EGG_T))} ouă', f'{num(t_of(LOG["eggs"]))} · Dr. Ceban · ouat {num(s4.pct(LAY))}', 'Ouă de azi'),
-        act_row('feed', 3, f'Hrană zilnică · {num(len(FEED_ROWS))} din {num(12)} rânduri · {num(n(FEED_KG, 1) + NB + "kg")}',
-                f'{num(t_of(LOG["feed"]))} · Dr. Ceban · fără {M} H3.2, {F} H4.2', 'Hrană zilnică de azi'),
-        act_row('weighing', 4, f'Cântărire · {num(6)} secțiuni · {pair(n(s4.w_f), n(s4.w_m), NB + "g")}',
-                f'{num(t_of(LOG["weighing"]))} · Dr. Ceban · medii pe fermă', 'Cântărire de azi'),
-    ]
-    return (f'<section class="s2-block" aria-labelledby="ia">{head("Introdus azi", f"{num(D)} · poți modifica sau șterge până la {num("23:59")}", "ia")}'
+INTRO = ['mortality', 'eggs', 'feed', 'weighing']  # the vet's four saves of 16.11.2026, in time order
+def introdus(menu=None, off=False, edited=None):
+    """menu / edited: {record: 'open' | 'hh:mm'} for one row (S2S); off: the 23:59 window closed (every row)."""
+    menu, edited = menu or {}, edited or {}
+    spec = {
+        'mortality': (f'Mortalitate · Hîrbovăț · {num(6)} secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}',
+                      f'{num(t_of(LOG["mortality"]))} · Dr. Ceban · Zilnic, fără sacrificări', 'Mortalitate de azi'),
+        'eggs': (f'Ouă · H1, H3, H4 · {num(n(EGG_T))} ouă', f'{num(t_of(LOG["eggs"]))} · Dr. Ceban · ouat {num(s4.pct(LAY))}', 'Ouă de azi'),
+        'feed': (f'Hrană zilnică · {num(len(FEED_ROWS))} din {num(12)} rânduri · {num(n(FEED_KG, 1) + NB + "kg")}',
+                 f'{num(t_of(LOG["feed"]))} · Dr. Ceban · fără {M} H3.2, {F} H4.2', 'Hrană zilnică de azi'),
+        'weighing': (f'Cântărire · {num(6)} secțiuni · {pair(n(s4.w_f), n(s4.w_m), NB + "g")}',
+                     f'{num(t_of(LOG["weighing"]))} · Dr. Ceban · medii pe fermă', 'Cântărire de azi'),
+    }
+    rows = [act_row(k, i, *spec[k], menu=menu.get(k, 'closed'), off=off, edited=edited.get(k)) for i, k in enumerate(INTRO, 1)]
+    note = (f"{num(D)} · timpul de modificare s-a încheiat la {num('23:59')}" if off else f"{num(D)} · poți modifica sau șterge până la {num('23:59')}")
+    return (f'<section class="s2-block" aria-labelledby="ia">{head("Introdus azi", note, "ia")}'
             f'<ul class="ip-list ip-list--act" aria-labelledby="ia">{"".join(rows)}</ul>'
             f'<a class="ip-link s2-more" href="#introdus-azi">Vezi pe secțiuni</a></section>')
+
+# C8 · Introdus azi for the manager (D87): Ion Rusu's records of 16.11.2026. The sample has none (his last saves are the
+# 14.11 delivery and the 15.11 correction), so the block shows its empty state; nothing is invented.
+MGR_LOG = [e for e in S['event_log'] if e['at'].startswith(TODAY.isoformat()) and e['user'] == 'Ion Rusu']
+assert not MGR_LOG and any(e['user'] == 'Ion Rusu' for e in S['event_log'])
+def introdus_empty(line, u=''):
+    """Introdus azi with nothing saved today: the list frame keeps its place, off Lamp + word + one sentence (SYS09 li.ip-list__empty)."""
+    return (f'<section class="s2-block" aria-labelledby="{u}ia">{head("Introdus azi", num(D), u + "ia")}'
+            f'<ul class="ip-list ip-list--act" aria-labelledby="{u}ia"><li class="ip-list__empty"><span class="ip-lamp ip-lamp--off">nimic introdus</span>'
+            f'<span>{line}</span></li></ul></section>')
+INTRO_MGR = f'Nu ai salvat nimic azi. Transferurile, vânzările și livrările pe care le salvezi apar aici; le poți modifica sau șterge până la {num("23:59")}.'
 
 FARM_P = '<div class="ip-ev__main">Hîrbovăț · '
 def alerts(owner=False, u=''):
@@ -266,11 +312,13 @@ def pagehead(ctx, phone=False):
     return f'<header class="ip-pagehead{" s2-phead" if phone else ""}"><div><h1>Acasă</h1><p class="ip-note ip-num s2-m0">{ctx}</p></div></header>'
 CTX_VET = f'HÎRBOVĂȚ · {D} · SAPT {WK}'
 CTX_MGR = f'SERIA 2026 · {D} · HÎRBOVĂȚ SAPT {WK}'
-CTX_OWN = f'SERIA 2026 · {D} · 2 ferme'
+CTX_OWN = f'SERIA 2026 · {D} · 2 FERME'  # uppercase Mono context line, as S6/S7
 
-def tabbar(vet=False):
+def tabbar(vet=False, key_off=None):
+    """key_off (S2S): id of the reason text; the Înregistrează key is then aria-disabled (no href, focusable, as SYS09 Editează)."""
     it = lambda k, lbl, h, cur=False: (f'<a class="ip-tabbar__item{" is-current" if cur else ""}" href="{h}"{" aria-current=\"page\"" if cur else ""}>{icon(k, 22)}{lbl}</a>')
     key = f'<a class="ip-tabbar__item" href="#inregistreaza"><span class="ip-tabbar__key">{icon("plus", 22)}</span>Înregistrează</a>'
+    if key_off: key = key.replace('href="#inregistreaza"', f'role="link" tabindex="0" aria-disabled="true" aria-describedby="{key_off}"', 1)
     items = (it('home', 'Acasă', '#acasa', True) + key + it('user', 'Cont', '#cont')) if vet else \
             (it('home', 'Acasă', '#acasa', True) + it('layers', 'Serie', '#serie') + key + it('chart', 'Rapoarte', '#rapoarte') + it('more', 'Mai mult', '#mai-mult'))
     return f'<nav class="ip-tabbar s2-tabbar" aria-label="Navigare">{items}</nav>'
@@ -293,8 +341,8 @@ def desktop(role, parts):
     return f'<div class="s4-shell">{sidebar(role)}<main class="s4-main">\n{"".join(parts)}\n</main></div>'
 
 VET = phone([pagehead(CTX_VET, True), missing(), entrykeys(), introdus()], vet=True)
-MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True)])
-MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}{missing(True)}</div>', stock(), entrykeys(True)])
+MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True), introdus_empty(INTRO_MGR)])  # D87: Introdus azi last
+MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}{missing(True)}</div>', stock(), entrykeys(True), introdus_empty(INTRO_MGR)])
 OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols">{alerts(True)}{unpriced()}</div>', stock(cap='Stoc hrană'), farms_block()])
 
 # ---------- CSS ----------

@@ -1,6 +1,18 @@
 {
  "S2-acasa": 920,
- "S2-acasa--manager": 1764,
+ "S2-acasa--manager": 1916,
  "S2-acasa--manager-desktop": 1024,
- "S2-acasa--proprietar-desktop": 1136
+ "S2-acasa--proprietar-desktop": 1136,
+ "S2-acasa--se-incarca": 844,
+ "S2-acasa--inainte-de-12": 844,
+ "S2-acasa--zi-trecuta-blocat": 844,
+ "S2-acasa--sterge-confirmare": 844,
+ "S2-acasa--dupa-2359": 844,
+ "S2-acasa--ferma-goala": 844,
+ "S2-acasa--fara-acces": 844,
+ "S2-acasa--eroare-la-incarcare": 844,
+ "S2-acasa--manager-desktop--se-incarca": 1024,
+ "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0": 1024,
+ "S2-acasa--proprietar-desktop--se-incarca": 1024,
+ "S2-acasa--proprietar-desktop--toate-cu-pret": 1136
 }

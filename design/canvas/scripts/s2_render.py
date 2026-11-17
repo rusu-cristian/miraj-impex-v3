@@ -2,6 +2,8 @@
 /tmp/s4s, plus 1280) to design/shots/S2.png (vet phone), S2-1.png (manager phone), S2-2.png (manager desktop),
 S2-3.png (owner desktop), S2-2-1280.png, S2-3-1280.png, and report sideways scroll, duplicate ids, broken ARIA references,
 unnamed controls, text under 4.5:1, targets under 44 (phone) / 24 (desktop) and the tab order.
+--states (S2S) also renders the state boards listed by s2s_build.py in /tmp/s2/states.json (phones 390×844 from /tmp/s2,
+desktops 1440 from /tmp/s4s) to design/shots/S2-<state>.png; --only-states skips the 6 default shots.
 --heights writes each board's natural height (max of 844 / 1024 and the content, rounded up to 4) to s2_heights.json
 (then rebuild with s2_build.py)."""
 import asyncio, json, pathlib, sys
@@ -30,6 +32,10 @@ CHECK = r"""() => {
  const root = document.querySelector('.ip-root');
  return {low, small, dup, broken: refs, unnamed, sw: document.documentElement.scrollWidth, over, natural: Math.ceil(document.documentElement.scrollHeight), order};
 }"""
+if '--states' in sys.argv or '--only-states' in sys.argv:
+    if '--only-states' in sys.argv: ORDER = []
+    for b in json.loads(pathlib.Path('/tmp/s2/states.json').read_text()):
+        ORDER.append((b['stem'], b['w'], b['h'], 's2' if b['w'] == 390 else 's4s', 'S2-' + b['stem'].split('--', 1)[1] + '.png'))
 async def main():
     hs = json.loads(HJ.read_text()) if HJ.exists() else {}
     async with async_playwright() as p:
@@ -45,5 +51,5 @@ async def main():
             await pg.close()
         await b.close()
     if '--heights' in sys.argv:
-        HJ.write_text(json.dumps(new, indent=1)); print('heights', new)
+        HJ.write_text(json.dumps({**hs, **new}, indent=1)); print('heights', new)
 asyncio.run(main())
