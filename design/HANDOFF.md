@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 17:30 · Last commit: 0c9eae1
+Updated: 2026-11-17 20:10 · Last commit: 320a02f
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 52 / 71 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none (handover after S8P); all SYS jobs done
+Done 53 / 72 · Screens done: S15 (default + empty + delete dialog), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
 
 ## Just finished
+- S15 Introdus azi: 3 phone boards, row y 27292, x 0/470/940 (vet Dr. Ceban 16.11, 22 record rows by type, h 1636; manager Ion Rusu empty; delete Dialog Mortalitate H4.2); abatere Lamp on Ouă H3 + Hrană H1.2 ♂ rows; tab bar marks Înregistrează; D98; S15S queued for leftover states; 1 fix round (320a02f)
 - S8P Cântărire polish: §38 (`ip-readout__live`, `ip-seg--fill`, `ip-fieldmsg`), weight-field descriptions read the lamp word once, "Nescrisă la cântărire." hint, author-name rule (D96), copy fixes; heights valoare refuzată 959, zi trecută 1056; D97; 1 fix round (0c9eae1)
 - S8S Cântărire states: se încarcă, alege secțiunea (390×844 sheet), zi trecută (Telița 17.02), fermă fără păsări, deja introdus, gol Telița; x 3290…5640 in the S8 row; D96; passed first review (01b6deb)
 - S8 Cântărire: 7 phone boards, row y 26059, x 0…2820 step 470 (default Hîrbovăț 16.11 H1.1 ♀ 3 967 g, gol, în normă + abatere as Telița replays, valoare refuzată, salvat, eroare); D95; 2 fix rounds (live comparison announced once with its lamp word) (2596972)
@@ -35,7 +36,7 @@ Done 52 / 71 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S15 → S15P → S16 → S16P → S17 (all system jobs done; screens only from here)
+- S15S → S15P → S16 → S16P → S17 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -62,6 +63,7 @@ Done 52 / 71 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S8: project/S8-cantarire{,--gol,--in-norma,--abatere,--valoare-refuzata,--salvat,--eroare-la-salvare}.dc.html + canvas.json
 - S8S: project/S8-cantarire--{se-incarca,alege-sectiunea,zi-trecuta,ferma-fara-pasari,deja-introdus,gol-telita}.dc.html + canvas.json
 - S8P: project/additions.css (§38) + all 13 S8-cantarire*.dc.html + canvas.json (heights)
+- S15: project/S15-introdus-azi{,--gol,--sterge-confirmare}.dc.html + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
