@@ -1474,3 +1474,29 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * drawn as the link (button.ip-link, inline in its sentence). Moved from section 29's .ip-gimp scope. */
 .ip-drop--paste:focus-visible,.ip-drop--paste.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
 .ip-drop button.ip-link{padding:0;border:0;background:transparent;font:inherit}
+
+/* =====================================================================================================
+ * S21P · Checkbox disabled and error, Checkbox as a form field. Spec: components.md › Additions › S21P.
+ * ===================================================================================================== */
+
+/* ---------- 44. Checkbox · disabled, error, form field (S21P) ---------- */
+/* Disabled, only where the box truly can't change (input[disabled], or input[aria-disabled=true] kept focusable while a
+ * script ignores clicks; demo .is-disabled), with its reason under it as the hint (aria-describedby): the craft rule,
+ * sunken + ink-disabled. The box is sunken with a line edge, a ticked box keeps its check in ink-disabled (no control
+ * fill), the label text is ink-disabled, cursor not-allowed. */
+.ip-check:has(> input.ip-sr:is(:disabled,[aria-disabled="true"])),.ip-check.is-disabled{color:var(--ink-disabled);cursor:not-allowed}
+.ip-check > input.ip-sr:is(:disabled,[aria-disabled="true"]) + .ip-check__box,
+.ip-check.is-disabled > input.ip-sr + .ip-check__box{background:var(--sunken);border-color:var(--line);color:var(--ink-disabled)}
+/* Error: a choice the save refuses (input[aria-invalid=true][aria-describedby=<error id>], demo .is-error). The box takes
+ * the TextField error edge, its border in fault at the same hair width; fill, check and focus ring are unchanged. The
+ * error line under it is the field message (p.ip-err.ip-fieldmsg, section 38) naming the fix. A refused box stays live
+ * (the user ticks it back), so it is never disabled for a refusal. A ticked box in error keeps its control fill, so this
+ * edge is ~1.4:1 there: no board draws it; add an outer fault ring when a screen first needs a ticked refusal (D117). */
+.ip-check > input.ip-sr[aria-invalid="true"] + .ip-check__box,
+.ip-check.is-error > input.ip-sr + .ip-check__box{border-color:var(--fault)}
+/* Checkbox as a form field (div.ip-field > label.ip-check, then its hint or error line): the label keeps its 44px hit
+ * area but takes -space-3 above and below, so its 20px text line sits in the form rhythm (the form gap above, space-1 to
+ * its hint, as label, input and hint in a TextField), and it hugs its text (align-self start), so the empty row beside
+ * it is not a target; position:relative paints it over the hint below, so all 44px stay the target. Checkboxes outside an
+ * ip-field (SexCountRow Toate, EntryCard foot) are unchanged. */
+.ip-field > .ip-check{position:relative;align-self:flex-start;margin-block:calc(-1 * var(--space-3))}

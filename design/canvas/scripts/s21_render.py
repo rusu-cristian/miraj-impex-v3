@@ -16,7 +16,7 @@ ONLY = [a for i, a in enumerate(A) if not a.startswith('--') and not (i and A[i 
 NAT = '''() => { const r = document.querySelector('.ip-root'); const b = document.querySelector('.ip-sidepanel--sheet .ip-sidepanel__body');
   if (b) return r.clientHeight + (b.scrollHeight - b.clientHeight); return r.scrollHeight; }'''
 PANEL = ('--breeder-2', '--starter', '--retragere-refuzata', '--tip-nou', '--nume-gol', '--nume-folosit', '--salvat',
-         '--eroare-la-salvare', '--sterge')
+         '--eroare-la-salvare', '--sterge', '--retras-stoc-0', '--reactivat')
 async def main():
     boards = json.loads(pathlib.Path('/tmp/s21/boards.json').read_text())
     hs = json.loads(HJ.read_text()) if HJ.exists() else {}

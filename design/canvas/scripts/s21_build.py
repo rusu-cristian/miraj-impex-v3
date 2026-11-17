@@ -22,6 +22,8 @@ Boards (row below S20: y 35701 + 2380 + 120 = 38201; x step w + 80; desktops fir
   --eroare-la-incarcare     fault Banner + Reîncearcă in place of the table, Tip nou kept
   --fara-acces              Observator (a manager or a vet: same picture, own nav and role sentence)
   --niciun-tip              D39 first use: EmptyState + "Adaugă primul tip" (no series yet)
+  --retras-stoc-0           S21P, D39: Activ unticked on Breeder 2 with Hîrbovăț stock at 0 kg (Breeder 3 added): accepted
+  --reactivat               S21P, D39: Starter active again: the list re-sorted, Toast + Anulează, focus on its Editează
   --telefon                 phone, read-only list ("le editezi pe calculator", as S19/S20)
 The list region is a size container: under 760px (beside the panel: 558 at 1280, 718 at 1440) "Folosit la" folds under the
 type name so Editează stays in view (S19P rule).
@@ -161,13 +163,13 @@ def act_field(on, hint, e=None, focus=False):
     d = 'tp-act-e' if e else 'tp-act-h'
     inv = ' aria-invalid="true"' if e else ''
     msg = err('tp-act-e', e) if e else f'<span class="ip-hint" id="tp-act-h">{hint}</span>'
-    return (f'<div class="ip-field s21-act"><label class="ip-check{" is-checked" if on else ""}">'
+    return (f'<div class="ip-field"><label class="ip-check{" is-checked" if on else ""}">'
             f'<input type="checkbox" class="ip-sr" id="tp-act"{" checked=\"checked\"" if on else ""} aria-describedby="{d}"{inv}/>{box}Activ</label>{msg}</div>')
 ACT_ON = 'Apare în Livrare hrană și Hrană zilnică.'
 def act_used(r):   # an active type with stock: the retire rule in the hint (D116)
     return f'{ACT_ON} Îl poți retrage când stocul de la {FARM_OF[r["id"]]} ajunge la 0 kg.'
 ACT_OFF = 'Retras: nu apare în Livrare hrană și Hrană zilnică. Bifează Activ ca să-l folosești din nou.'
-def use_block(r, del_state='used', pressed=False):
+def use_block(r, del_state='used', pressed=False, stock=None):
     """Folosit la + Șterge tipul. used: aria-disabled with the reason; free: live (opens the Dialog)."""
     if del_state == 'free':
         line = f'Nefolosit: {r["name"]} nu are livrări și nici hrană zilnică.'
@@ -177,7 +179,8 @@ def use_block(r, del_state='used', pressed=False):
     else:
         f = FARM_OF[r['id']]
         if r['id'] in STOCK:
-            line = f'{f}: livrări și hrană zilnică în Seria 2026. Stoc acum: <span class="ip-num s21-nw">{n(STOCK[r["id"]])} kg</span>.'
+            kg = STOCK[r['id']] if stock is None else stock
+            line = f'{f}: livrări și hrană zilnică în Seria 2026. Stoc acum: <span class="ip-num s21-nw">{n(kg)} kg</span>.'
         else:
             line = f'{f}: livrări în Seria 2026.'
         key = '<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="tp-del-why">Șterge tipul</button>'
@@ -200,10 +203,10 @@ def panel(title, note, body, key=SAVE, inert=False):
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul tipului de hrană">{icon("x")}</button></div>\n'
             f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
-def tpanel(r, act, key=SAVE, focus_name=False, inert=False, pressed_del=False):
+def tpanel(r, act, key=SAVE, focus_name=False, inert=False, pressed_del=False, stock=None):
     used = r['id'] in FARM_OF
     return panel(r['name'], ctx(r), [name_field(r['name'], focus_name, used=used), for_ro(r) if used else for_seg(r['for_sex']), act,
-                                     use_block(r, 'used' if used else 'free', pressed_del)], key, inert)
+                                     use_block(r, 'used' if used else 'free', pressed_del, stock)], key, inert)
 def save_banner(text):
     return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="tp-err">{icon("alert", 16)}<div class="s7s-banner__body">'
             f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
@@ -261,8 +264,6 @@ CSS21 = '''
   .s21-fn{display:block}
   .s21-fold{display:block;font-weight:400;color:var(--ink-secondary)}
 }
-.s21-act{gap:var(--space-1)}
-.s21-act .ip-check{align-self:flex-start}
 .s21-use{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s21-delkey{margin-top:var(--space-1)}
 .s21-pfarm{display:block;font-weight:400}
@@ -293,8 +294,8 @@ desk('--breeder-2', 'Breeder 2 · panoul tipului', vp('ft-breeder2') + tpanel(B2
 # 3 · Starter (retired, used at Telița): tick Activ to reactivate; Șterge aria-disabled
 desk('--starter', 'Starter · tip retras', vp('ft-starter') + tpanel(ST_, act_field(False, ACT_OFF)), PH)
 # 4 · retire refused (D39 action): Activ unticked on Breeder 2 while 28 252 kg are in stock
-RET_E = (f'Breeder 2 nu se poate retrage: Hîrbovăț mai are <span class="ip-num s21-nw">{n(STOCK["ft-breeder2"])} kg</span> în stoc '
-         f'și găinile îl primesc zilnic. Bifează Activ la loc; îl retragi când stocul ajunge la 0 kg.')
+RET_E = (f'Breeder 2 nu se poate retrage: Hîrbovăț mai are <span class="ip-num s21-nw">{n(STOCK["ft-breeder2"])} kg</span> în stoc. '
+         f'Bifează Activ la loc; îl retragi când stocul ajunge la 0 kg.')
 SAVE_NO = '<button type="button" class="ip-btn ip-btn--primary" aria-disabled="true" aria-describedby="tp-act-e">Salvează tipul</button>'
 desk('--retragere-refuzata', f'Breeder 2 · retragere refuzată: stoc la Hîrbovăț · {D39}: Activ debifat',
      vp('ft-breeder2') + tpanel(B2, act_field(False, '', RET_E, focus=True), key=SAVE_NO), PH)
@@ -314,9 +315,10 @@ desk('--nume-folosit', f'Tip nou · nume deja folosit · {D39}: „cocosi”',
 ROWS3 = order(FT + [NEW])
 FOCUS_NOTE = ('<!-- Focus after Adaugă tipul: the panel closes and focus goes to the new row\'s Editează key; the Toast (role=status) '
               'announces the save and keeps Anulează in the tab order. -->')
-TOAST = (f'{FOCUS_NOTE}<div class="s21-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">'
-         'Breeder 3 adăugat · pentru găini, apare în Livrare hrană și Hrană zilnică</span>'
-         '<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+def toast(text, note=FOCUS_NOTE):
+    return (f'{note}<div class="s21-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">'
+            f'{text}</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+TOAST = toast('Breeder 3 adăugat · pentru găini, apare în Livrare hrană și Hrană zilnică')
 desk('--salvat', f'salvat · {D39}: Breeder 3 adăugat', shell(tlist(ROWS3, focus='ft-new'), header(rows=ROWS3)) + TOAST, PH)
 # 9 · eroare la salvare (D39): the same new type, draft kept, Banner + Reîncearcă (focus) under the fields
 desk('--eroare-la-salvare', f'Tip nou · eroare la salvare · {D39}: Breeder 3',
@@ -340,7 +342,20 @@ desk('--eroare-la-incarcare', 'eroare la încărcare', shell(LOADERR, header(row
 desk('--fara-acces', 'observator · fără acces', noaccess())
 # 14 · niciun tip (D39 first use, no series yet)
 desk('--niciun-tip', f'niciun tip · {D39}', shell(NOTYPES, header(rows=None, key=False), sidebar(no_series=True)))
-# 15 · phone, read-only list
+# 15 · S21P, D39: retiring is accepted once the stock is 0 kg (Breeder 2 at Hîrbovăț used up, Breeder 3 added for the hens):
+#      the counterpart of --retragere-refuzata, Activ unticked (focus) with no error, Salvează tipul live
+RET_OK = ('Stoc <span class="ip-num s21-nw">0 kg</span> la Hîrbovăț, deci îl poți retrage. După ce salvezi nu mai apare în Livrare hrană și Hrană zilnică; '
+          'livrările lui rămân în rapoarte.')
+desk('--retras-stoc-0', f'Breeder 2 · retragere cu stoc 0 kg · {D39}: stoc Hîrbovăț 0 kg, Breeder 3 adăugat',
+     vp('ft-breeder2', rows=ROWS3) + tpanel(B2, act_field(False, RET_OK, focus=True), stock=0), PH)
+# 16 · S21P, D39: a retired type made active again (Starter): panel closed, the list re-sorted, focus on its Editează, Toast
+ROWS_RE = order([{**r, 'active': True} if r['id'] == 'ft-starter' else r for r in FT])
+assert [r['name'] for r in ROWS_RE] == ['Breeder 2', 'Cocoși', 'Starter', 'Grower', 'Pre-ouat']
+RE_NOTE = FOCUS_NOTE.replace('Adaugă tipul', 'Salvează tipul').replace("the new row's", "the type's")
+desk('--reactivat', f'Starter activ din nou · salvat · {D39}',
+     shell(tlist(ROWS_RE, focus='ft-starter'), header(rows=ROWS_RE))
+     + toast('Starter activ din nou · pentru ambele sexe, apare în Livrare hrană și Hrană zilnică', RE_NOTE), PH)
+# 17 · phone, read-only list
 h = HEIGHTS.get(STEM + '--telefon', 844)
 out.append(write(STEM + '--telefon', f'{TT} · telefon · doar citire', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL, 390, h))
 pathlib.Path('/tmp/s21/boards.json').write_text(json.dumps([{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))

@@ -1659,11 +1659,27 @@
       "title": "S21 · Tipuri de hrană · niciun tip · exemplu de stare (D39)"
     },
     "S21-tipuri-hrana--telefon.dc.html": {
-      "x": 21280,
+      "x": 24320,
       "y": 38201,
       "w": 390,
       "h": 844,
       "title": "S21 · Tipuri de hrană · telefon · doar citire"
+    },
+    "S21-tipuri-hrana--retras-stoc-0.dc.html": {
+      "x": 21280,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Breeder 2 · retragere cu stoc 0 kg · exemplu de stare (D39): stoc Hîrbovăț 0 kg, Breeder 3 adăugat"
+    },
+    "S21-tipuri-hrana--reactivat.dc.html": {
+      "x": 22800,
+      "y": 38201,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S21 · Tipuri de hrană · Starter activ din nou · salvat · exemplu de stare (D39)"
     }
   },
   "order": [
@@ -1884,7 +1900,9 @@
     "S21-tipuri-hrana--eroare-la-incarcare.dc.html",
     "S21-tipuri-hrana--fara-acces.dc.html",
     "S21-tipuri-hrana--niciun-tip.dc.html",
-    "S21-tipuri-hrana--telefon.dc.html"
+    "S21-tipuri-hrana--telefon.dc.html",
+    "S21-tipuri-hrana--retras-stoc-0.dc.html",
+    "S21-tipuri-hrana--reactivat.dc.html"
   ],
   "notes": {},
   "designSystems": [
