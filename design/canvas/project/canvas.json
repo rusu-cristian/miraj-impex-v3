@@ -1362,6 +1362,77 @@
       "h": 1024,
       "expand": "fill",
       "title": "S19 · Ferme și secțiuni · Telița · H5-2 retrasă, apoi H3 mutată în sus · exemplu de stare (D39) · anunț live „H3 mutată în sus: a 2-a din 5 secțiuni la Telița.”"
+    },
+    "S20-ghiduri.dc.html": {
+      "x": 0,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri"
+    },
+    "S20-ghiduri--ross-308-ouat.dc.html": {
+      "x": 1520,
+      "y": 35701,
+      "w": 1440,
+      "h": 2380,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Ross 308 ouat · detaliu"
+    },
+    "S20-ghiduri--ross-308-crestere.dc.html": {
+      "x": 3040,
+      "y": 35701,
+      "w": 1440,
+      "h": 1672,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Ross 308 creștere · detaliu · ghid parțial"
+    },
+    "S20-ghiduri--importa-ghid.dc.html": {
+      "x": 4560,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Importă ghid"
+    },
+    "S20-ghiduri--inlocuieste-fisier.dc.html": {
+      "x": 6080,
+      "y": 35701,
+      "w": 1440,
+      "h": 1080,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · fișier citit, toate valide · exemplu de stare (D39): fișierul"
+    },
+    "S20-ghiduri--inlocuieste-refuzate.dc.html": {
+      "x": 7600,
+      "y": 35701,
+      "w": 1440,
+      "h": 1140,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · rânduri refuzate · exemplu de stare (D39): rândurile 7, 10, 12"
+    },
+    "S20-ghiduri--inlocuieste-lipit.dc.html": {
+      "x": 9120,
+      "y": 35701,
+      "w": 1440,
+      "h": 1080,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 ouat · tabel lipit · exemplu de stare (D39): lipirea"
+    },
+    "S20-ghiduri--salvat.dc.html": {
+      "x": 10640,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · salvat · exemplu de stare (D39): Ross 308 creștere înlocuit cu același fișier"
+    },
+    "S20-ghiduri--telefon.dc.html": {
+      "x": 12160,
+      "y": 35701,
+      "w": 390,
+      "h": 844,
+      "title": "S20 · Ghiduri · telefon · doar citire"
     }
   },
   "order": [
@@ -1544,7 +1615,16 @@
     "S19-ferme-sectiuni--adauga-compartiment.dc.html",
     "S19-ferme-sectiuni--cod-duplicat.dc.html",
     "S19-ferme-sectiuni--redenumeste-cod-gol.dc.html",
-    "S19-ferme-sectiuni--retrasa-mutata.dc.html"
+    "S19-ferme-sectiuni--retrasa-mutata.dc.html",
+    "S20-ghiduri.dc.html",
+    "S20-ghiduri--ross-308-ouat.dc.html",
+    "S20-ghiduri--ross-308-crestere.dc.html",
+    "S20-ghiduri--importa-ghid.dc.html",
+    "S20-ghiduri--inlocuieste-fisier.dc.html",
+    "S20-ghiduri--inlocuieste-refuzate.dc.html",
+    "S20-ghiduri--inlocuieste-lipit.dc.html",
+    "S20-ghiduri--salvat.dc.html",
+    "S20-ghiduri--telefon.dc.html"
   ],
   "notes": {},
   "designSystems": [
