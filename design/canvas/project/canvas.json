@@ -833,6 +833,56 @@
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · Șterge · confirmare"
+    },
+    "S15-introdus-azi--se-incarca.dc.html": {
+      "x": 1410,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · vet · se încarcă"
+    },
+    "S15-introdus-azi--eroare-la-incarcare.dc.html": {
+      "x": 1880,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · vet · eroare la încărcare"
+    },
+    "S15-introdus-azi--actiuni-deschis.dc.html": {
+      "x": 2350,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · vet · Acțiuni deschis"
+    },
+    "S15-introdus-azi--dupa-stergere.dc.html": {
+      "x": 2820,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · vet · după ștergere"
+    },
+    "S15-introdus-azi--dupa-2359.dc.html": {
+      "x": 3290,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · vet · după 23:59 · modificat la · exemplu de stare (D39)"
+    },
+    "S15-introdus-azi--manager-10-11.dc.html": {
+      "x": 3760,
+      "y": 27292,
+      "w": 390,
+      "h": 844,
+      "title": "S15 · Introdus azi · manager · 10.11.2026 · livrare · mai multe ferme"
+    },
+    "S15-introdus-azi--desktop.dc.html": {
+      "x": 4230,
+      "y": 27292,
+      "w": 1440,
+      "h": 1492,
+      "expand": "fill",
+      "title": "S15 · Introdus azi · vet · desktop"
     }
   },
   "order": [
@@ -946,7 +996,14 @@
     "S8-cantarire--gol-telita.dc.html",
     "S15-introdus-azi.dc.html",
     "S15-introdus-azi--gol.dc.html",
-    "S15-introdus-azi--sterge-confirmare.dc.html"
+    "S15-introdus-azi--sterge-confirmare.dc.html",
+    "S15-introdus-azi--se-incarca.dc.html",
+    "S15-introdus-azi--eroare-la-incarcare.dc.html",
+    "S15-introdus-azi--actiuni-deschis.dc.html",
+    "S15-introdus-azi--dupa-stergere.dc.html",
+    "S15-introdus-azi--dupa-2359.dc.html",
+    "S15-introdus-azi--manager-10-11.dc.html",
+    "S15-introdus-azi--desktop.dc.html"
   ],
   "notes": {},
   "designSystems": [
