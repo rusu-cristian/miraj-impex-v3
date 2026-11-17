@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 21:10 · Last commit: 47f2073
+Updated: 2026-11-17 21:50 · Last commit: 78564a6
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 55 / 72 · Screens done: S15 + 7 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
+Done 56 / 73 · Screens done: S15 + 7 states (polished), S16 (4 phones + desktop), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
 
 ## Just finished
+- S16 Corectează: row y 29020, phones x 0/470/940/1410 (sheet, motiv lipsă, refuzat, Dialog șterge), desktop x 1880 1440×1024 (S4 Păsări + SidePanel); real audit change H4.1 ♀ 14.11 3 → 5 (♀ 4 121 → 4 119); additions.css §39 `ip-sidepanel--sheet`; D101; S16S queued; 1 fix round (Dialog Șterge disabled until Motiv) (78564a6)
 - S15P Introdus azi polish: feed kg per type in the Hrană list head (S7 wording), Ouă meta 2 lines, desktop breadcrumb "Acasă › Introdus azi"; S2 manager empty copy = S15 gol sentences (3 S2 manager boards rebuilt, manager phone h 1876 → 1856); D100; 1 fix round (47f2073)
 - S15S Introdus azi states: 6 phones x 1410…3760 (se încarcă, eroare la încărcare, Acțiuni deschis, după ștergere, după 23:59 + modificat la 09:52, manager 10.11) + vet desktop x 4230 1440×1492 (Sidebar Înregistrează expanded); D99; 1 fix round (e0b5e58)
 - S15 Introdus azi: 3 phone boards, row y 27292, x 0/470/940 (vet Dr. Ceban 16.11, 22 record rows by type, h 1636; manager Ion Rusu empty; delete Dialog Mortalitate H4.2); abatere Lamp on Ouă H3 + Hrană H1.2 ♂ rows; tab bar marks Înregistrează; D98; S15S queued for leftover states; 1 fix round (320a02f)
@@ -38,7 +39,7 @@ Done 55 / 72 · Screens done: S15 + 7 states (polished), S4, S7, S3, S11 (+S11M)
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S16 → S16P → S17 (all system jobs done; screens only from here)
+- S16S → S16P → S17 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -68,6 +69,7 @@ Done 55 / 72 · Screens done: S15 + 7 states (polished), S4, S7, S3, S11 (+S11M)
 - S15: project/S15-introdus-azi{,--gol,--sterge-confirmare}.dc.html + canvas.json
 - S15S: project/S15-introdus-azi--{se-incarca,eroare-la-incarcare,actiuni-deschis,dupa-stergere,dupa-2359,manager-10-11,desktop}.dc.html + canvas.json
 - S15P: the 6 changed S15 boards (S15-introdus-azi, --sterge-confirmare, --actiuni-deschis, --dupa-stergere, --dupa-2359, --desktop) + S2-acasa--manager{,-desktop,-desktop--zi-trecuta-stoc-sub-0}.dc.html + canvas.json
+- S16: project/additions.css (§39) + project/S16-corecteaza{,--motiv-lipsa,--refuzat,--sterge-confirmare,--desktop}.dc.html + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
@@ -75,5 +77,5 @@ Done 55 / 72 · Screens done: S15 + 7 states (polished), S4, S7, S3, S11 (+S11M)
 - One screen at a time; SYS jobs can run in parallel and append to additions.css / components.md › Additions in their own headed block (re-read before each edit). Commit only a job's own files.
 - Helpers may be refused the impeccable/intent skills; they then work from craft.md, PRODUCT.md and DESIGN.md.
 - Generators live in design/canvas/scripts/ (s4s_build.py shared desktop shell; s7_build.py phone pattern; s11_build.py price/error classes reused by S12; s13_build.py imports s7s/s7/s11/s4s and rewrites S7 boards byte-identical). Shots use fallback fonts.
-- New components: components.md › Additions and design/system/components/additions.css (§1–33).
+- New components: components.md › Additions and design/system/components/additions.css (§1–39).
 - FIN backlog: 10px SVG track text; S3's local th.num rule redundant; ip-crumbs links 14px tall (D46 wants ≥24px); S3/S11 row-header classes → one DataTable class; FeedTotals preview summary text (D62); SectionTree aria-controls → [role=menu] like SYS09, menu + disabled Retrage share one aria-describedby note (read twice); S13 panel Fermă select offers Telița (no open cycle), no board for that case; S11 tables → system `.ip-tablescroll` (sticky first column; tall Consum shows its scrollbar only at the bottom); SaveBar summary class `ip-ftot-sum` (FeedTotals name, used by S6/S7) → neutral SaveBar-summary class; SYS11 nits a–c in notes/SYS11.md; Toast-with-undo and Banner-with-action layouts (sstate_css.py) → additions.css; SYS12 nits in notes/SYS12.md; S3/S11/ip-cost/ip-sparktable row-header copies → §32 .ip-table--rowheads; S4 ciclu ales wraps 2 Stats + sub-line at 1280; Producție Pe hale scrolls ~6px at 1280; Rezumat lists are div links (tabs use ul/li); S4 needs a narrow layout beside a SidePanel (CycleTrack blocks 21px at 1280 on S9 desktop; S9 board rule for now); no board shows Anulează after a save; S6P FIN: "din ♀ n" nowrap into HallCard .ip-eggs__sub (drop .s6-nobr), EntryCardPlus/HallCard previews adopt section-first aria-labelledby naming; §34 key box 1px right of the rows' Toate box (subtract --ip-hair in the negative margin); S10 "mixed" key state out of view on the 844 refuzat/parțială boards; SYS08 EntryKeys disabled links focusable like SYS09 (tabindex=0); S2 "nimic lipsă" before-12 variant + De verificat empty not drawn; system rule "meta breaks at ·" (S2 markup only; S4 s4s.alerts() wraps the same); s4s Dialog/skeleton/empty-box + sstate_css Banner/Toast-undo (s7s-*) classes still screen CSS; S8 abatere warn line reads "♂ :" (space before colon); phone FilterBar key + filter sheet body and phone Readout without GuideChart → system variants; S4 Seria 2025 "Masă medie ou · SAPT 47" Stat repeats its table row; CycleTrack "phone" variant (S2V track_svg phone) → components.md Additions entry, axis start lacks a month label, two transfer dots merge at 358px.; S15: ip-crumbs link 41×14 on every desktop head (as before); Sidebar sub-item without a record type (Introdus azi) uses an empty 14px icon slot → system rule if more vet desktop boards come.
