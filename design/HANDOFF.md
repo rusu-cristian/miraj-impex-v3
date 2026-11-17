@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 15:00 · Last commit: 01ae64f
+Updated: 2026-11-17 15:10 · Last commit: 18aa6a8
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 35 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + states (polished; S6M 9th board next) · Building: S6M (in review); all SYS jobs done
+Done 36 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states (polished) · Building: S4T; all SYS jobs done
 
 ## Just finished
+- S6M 9th Zilnic board: H1.1 ♀ Sacrificare 2 without Motiv (refuzat, D39 example) + Mai mult open, x 4230 (18aa6a8)
 - SYS13 LoginCard + text Wordmark, §31; D80 (show/hide key, no reset link, proposed hint/empty-field copy); 1 fix round (01ae64f)
 - S6P Zilnic polish: section-first accessible names, "±3" Mono, "din ♀ n" kept together, se încarcă skeleton = loaded geometry; all 9 S6 boards rebuilt; D79 queues S6M (7a663c3)
 - SYS12 UserRow list + OneTimePassword, §30; D78 (app generates the password, shown once; departs from spec A2 field list, flagged); 2 fix rounds (password field a11y, announced failures) (618b6cc)
@@ -18,7 +19,7 @@ Done 35 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S6M → S4T → S4TP → S9 (all system jobs done; screens only from here)
+- S4T → S4TP → S9 → S9P → S10 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - None blocking. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
@@ -29,7 +30,7 @@ Done 35 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - project/S11-rapoarte-hrana{,--se-incarca,--manager,--observator,--fara-livrari-in-perioada,--modifica-pret,--modifica-pret--eroare}.dc.html (all 7 rebuilt by S11M)
 - project/S12-preturi-hrana{,--se-incarca,--in-lucru,--toate-livrarile-au-pret,--eroare}.dc.html (S12 row now y 10303)
 - project/S13-livrare-hrana{,--salvat,--cantitate-lipsa,--eroare-la-salvare,--desktop}.dc.html (row y 11447; S13P rebuilt all but --cantitate-lipsa; S11X rebuilt all S11, S12 boards and S13 --desktop)
-- project/S6-zilnic.dc.html (row y 12591, x 0, 390×4284) + S6-zilnic--{se-incarca,deja-introdus,zi-trecuta,abatere,refuzat,eroare-la-salvare,ferma-fara-pasari,salvat}.dc.html (x 470…3760)
+- project/S6-zilnic.dc.html (row y 12591, x 0, 390×4284) + S6-zilnic--{se-incarca,deja-introdus,zi-trecuta,abatere,refuzat,eroare-la-salvare,ferma-fara-pasari,salvat,motiv-lipsa}.dc.html (x 470…4230)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
