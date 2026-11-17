@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 13:50 · Last commit: 618b6cc
+Updated: 2026-11-17 14:20 · Last commit: 7a663c3
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 33 / 66 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + states (polish next) · Building: S6P, SYS13
+Done 34 / 67 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + states (polished; S6M 9th board next) · Building: S6M, SYS13
 
 ## Just finished
+- S6P Zilnic polish: section-first accessible names, "±3" Mono, "din ♀ n" kept together, se încarcă skeleton = loaded geometry; all 9 S6 boards rebuilt; D79 queues S6M (7a663c3)
 - SYS12 UserRow list + OneTimePassword, §30; D78 (app generates the password, shown once; departs from spec A2 field list, flagged); 2 fix rounds (password field a11y, announced failures) (618b6cc)
 - S6S Zilnic 8 state boards, row y 12591 x 470…3760 (D77: one Editează for the form); shared state CSS sstate_css.py with S7S; 1 fix round (615c3a6)
 - SYS11 GuideImportPreview, 9 states, §29; D76 (refused rows block saving; one preview row per file row); passed first review (94c1d59)
@@ -16,7 +17,7 @@ Done 33 / 66 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S6P → S4T; SYS13 in parallel
+- S6M → S4T → S4TP → S9; SYS13 in parallel
 
 ## Waiting on the user
 - None blocking. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
@@ -35,4 +36,4 @@ Done 33 / 66 · Screens done: S4, S7, S3, S11 (+S11M), S12, S13 (all polished), 
 - Helpers may be refused the impeccable/intent skills; they then work from craft.md, PRODUCT.md and DESIGN.md.
 - Generators live in design/canvas/scripts/ (s4s_build.py shared desktop shell; s7_build.py phone pattern; s11_build.py price/error classes reused by S12; s13_build.py imports s7s/s7/s11/s4s and rewrites S7 boards byte-identical). Shots use fallback fonts.
 - New components: components.md › Additions and design/system/components/additions.css (§1–30).
-- FIN backlog: 10px SVG track text; S3's local th.num rule redundant; ip-crumbs links 14px tall (D46 wants ≥24px); S3/S11 row-header classes → one DataTable class; FeedTotals preview summary text (D62); SectionTree aria-controls → [role=menu] like SYS09, menu + disabled Retrage share one aria-describedby note (read twice); S13 panel Fermă select offers Telița (no open cycle), no board for that case; S11 tables → system `.ip-tablescroll` (sticky first column; tall Consum shows its scrollbar only at the bottom); SaveBar summary class `ip-ftot-sum` (FeedTotals name, used by S6/S7) → neutral SaveBar-summary class; SYS11 nits a–c in notes/SYS11.md; Toast-with-undo and Banner-with-action layouts (sstate_css.py) → additions.css; SYS12 nits in notes/SYS12.md.
+- FIN backlog: 10px SVG track text; S3's local th.num rule redundant; ip-crumbs links 14px tall (D46 wants ≥24px); S3/S11 row-header classes → one DataTable class; FeedTotals preview summary text (D62); SectionTree aria-controls → [role=menu] like SYS09, menu + disabled Retrage share one aria-describedby note (read twice); S13 panel Fermă select offers Telița (no open cycle), no board for that case; S11 tables → system `.ip-tablescroll` (sticky first column; tall Consum shows its scrollbar only at the bottom); SaveBar summary class `ip-ftot-sum` (FeedTotals name, used by S6/S7) → neutral SaveBar-summary class; SYS11 nits a–c in notes/SYS11.md; Toast-with-undo and Banner-with-action layouts (sstate_css.py) → additions.css; SYS12 nits in notes/SYS12.md; S6P FIN: "din ♀ n" nowrap into HallCard .ip-eggs__sub (drop .s6-nobr), EntryCardPlus/HallCard previews adopt section-first aria-labelledby naming.
