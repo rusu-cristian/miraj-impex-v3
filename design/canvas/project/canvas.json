@@ -439,8 +439,22 @@
       "h": 844,
       "title": "S9 · Transfer · eroare la salvare"
     },
-    "S9-transfer--desktop.dc.html": {
+    "S9-transfer--alege-sectiunea.dc.html": {
       "x": 1880,
+      "y": 17590,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Transfer · alege secțiunea · exemplu de stare (D39)"
+    },
+    "S9-transfer--ciclu-nou.dc.html": {
+      "x": 2350,
+      "y": 17590,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Transfer · ciclu nou · exemplu de stare (D39)"
+    },
+    "S9-transfer--desktop.dc.html": {
+      "x": 2820,
       "y": 17590,
       "w": 1440,
       "h": 1024,
@@ -506,6 +520,8 @@
     "S9-transfer--salvat.dc.html",
     "S9-transfer--refuzat.dc.html",
     "S9-transfer--eroare-la-salvare.dc.html",
+    "S9-transfer--alege-sectiunea.dc.html",
+    "S9-transfer--ciclu-nou.dc.html",
     "S9-transfer--desktop.dc.html"
   ],
   "notes": {},

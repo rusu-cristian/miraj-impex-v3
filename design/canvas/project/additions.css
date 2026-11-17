@@ -1292,3 +1292,26 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * region); the last row drops its rule against the frame. Focus stays the system ring on the region. */
 .ip-tablescroll--framed{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .ip-tablescroll--framed > .ip-table > tbody:last-child > tr:last-child > :is(th,td){border-bottom:0}
+
+/* ---------- 33. SectionSelect · phone BottomSheet (S9P) ---------- */
+/* On phone the SectionSelect combobox (aria-haspopup="dialog", aria-controls only while open) opens a modal BottomSheet:
+ * div.ip-scrim.ip-scrim--sheet (fills the screen, sheet at the bottom) > div.ip-sheet.ip-sheet--select[role=dialog][aria-modal=true]
+ * (labelled by its title) > handle · head (title 16/22 + note, close IconButton touch "Închide lista") ·
+ * div.ip-sheet__list[role=listbox][tabindex=0] of [role=group] labelled by their ip-menu__group caption (farm · type) >
+ * div.ip-menu__item[role=option]: section code, then ♀ · ♂ alive (SexCount pair) or a reason word ("sursa", "în listă" =
+ * aria-disabled, ink-disabled; "goală" = ink-muted, enabled where an empty section is a valid choice). Rows 48 (control-h-touch).
+ * Focus moves to the listbox on open with aria-activedescendant on the active option (`is-active`, sunken; the chosen one,
+ * else the first enabled); its ring is inset so the sheet head and the screen edge don't clip it. Tab stays inside the
+ * sheet, Esc or Închide closes it and focus returns to the combobox; the page behind is inert. */
+.ip-scrim--sheet{position:absolute;inset:0;z-index:4;flex-direction:column;justify-content:flex-end;padding:var(--space-12) 0 0;border-radius:0}
+.ip-sheet--select{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0}
+.ip-sheet__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-2);padding:0 var(--space-2) var(--space-2) var(--space-4)}
+.ip-sheet__title,.ip-sheet__sub{margin:0}
+.ip-sheet__list{flex:1;min-height:0;overflow:auto;padding:var(--space-1) var(--space-2) var(--space-3);border-top:var(--ip-hair) solid var(--rule)}
+.ip-sheet__list:focus-visible,.ip-sheet__list.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
+.ip-sheet__list .ip-menu__item{min-height:var(--control-h-touch);cursor:pointer}
+.ip-sheet__list .ip-menu__item[aria-disabled="true"]{cursor:not-allowed}
+.ip-sheet__list .ip-menu__item .ip-note{color:inherit}
+.ip-sheet__list .ip-menu__item:not([aria-disabled="true"]) .ip-note{color:var(--ink-muted)}
+.ip-sheet__list .ip-pair{font-size:var(--ip-fs-figure)}
+.ip-sheet__code{font-weight:500}
