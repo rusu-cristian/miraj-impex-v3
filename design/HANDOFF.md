@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 09:30 · Last commit: 50c7857
+Updated: 2026-11-18 10:15 · Last commit: 2ba4872
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 77 / 78 · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN (cross-screen review); all SYS jobs done
+Done 78 / 94 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN01; all SYS jobs done
 
 ## Just finished
+- FIN cross-screen review: 16 jobs queued (must FIN01–05: Banner icon, Toast placement, Banner with action, Dialog scrim, current row; should FIN06–12; nice FIN13–16); generator chain + closed backlog items in design/notes/FIN.md
 - S1P Autentificare polish: §46 (LoginCard Banner icon on the line centre, quarter-arc busy spinner system-wide — S14 se exportă key + Button preview change look, shots S14-5 retaken — desktop card top 192); Intră aria-busy + aria-disabled while signing in; LoginCard preview band 768; D121 template-test exemption; 1 fix round (50c7857)
 - S1 Autentificare: row y 40489 (none was reserved), desktops x 0 (default) / 1520 (greșit), phones x 3040–6330 (default, parolă vizibilă, se intră, câmpuri goale, greșit, prea multe încercări, cont dezactivat, fără conexiune); A1 refusals word for word; SYS13 card unchanged; D121; passed first review (49f5ae8)
 - S22P Utilizatori polish: one primary per view (list-head key secondary while a panel is open); §45 DataTable current row (`tr.is-current`, aria-current, steel only, no lamp) on 6 panel boards + UserRow preview; Cont note once; phone last sign-in Mono; SYS12 dialogs alertdialog (password dialogs described by "Se arată o singură dată"), copy-failed status empty, menu --up flips by room; 1280 fold wraps; D120; 1 fix round (ba78083)
@@ -60,7 +61,7 @@ Done 77 / 78 · Screens done: S1 + 9 states (polished), S22 + 25 states (polishe
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN
+- FIN01 → FIN02 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
