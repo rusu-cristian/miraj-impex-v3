@@ -1887,6 +1887,78 @@
       "h": 1024,
       "expand": "fill",
       "title": "S22 · Utilizatori · Petrea, cont dezactivat · panoul utilizatorului · exemplu de stare (D39)"
+    },
+    "S1-autentificare.dc.html": {
+      "x": 0,
+      "y": 40489,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S1 · Autentificare"
+    },
+    "S1-autentificare--gresit-desktop.dc.html": {
+      "x": 1520,
+      "y": 40489,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S1 · Autentificare · login sau parolă greșită · ion.rusu: exemplu de stare (D39)"
+    },
+    "S1-autentificare--telefon.dc.html": {
+      "x": 3040,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon"
+    },
+    "S1-autentificare--parola-vizibila.dc.html": {
+      "x": 3510,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · parola vizibilă · ion.rusu cu parola resetată în S22: exemplu de stare (D39)"
+    },
+    "S1-autentificare--se-intra.dc.html": {
+      "x": 3980,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · se intră · ceban: exemplu de stare (D39)"
+    },
+    "S1-autentificare--campuri-goale.dc.html": {
+      "x": 4450,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · câmpuri goale"
+    },
+    "S1-autentificare--gresit.dc.html": {
+      "x": 4920,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · login sau parolă greșită · ceban: exemplu de stare (D39)"
+    },
+    "S1-autentificare--prea-multe-incercari.dc.html": {
+      "x": 5390,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · prea multe încercări · ceban: exemplu de stare (D39)"
+    },
+    "S1-autentificare--cont-dezactivat.dc.html": {
+      "x": 5860,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · cont dezactivat · petrea, dezactivat în S22: exemplu de stare (D39)"
+    },
+    "S1-autentificare--fara-conexiune.dc.html": {
+      "x": 6330,
+      "y": 40489,
+      "w": 390,
+      "h": 844,
+      "title": "S1 · Autentificare · telefon · fără conexiune · ceban: exemplu de stare (D39)"
     }
   },
   "order": [
@@ -2135,7 +2207,17 @@
     "S22-utilizatori--copiere-esuata.dc.html",
     "S22-utilizatori--meniu-dezactivat.dc.html",
     "S22-utilizatori--reactivat.dc.html",
-    "S22-utilizatori--editeaza-dezactivat.dc.html"
+    "S22-utilizatori--editeaza-dezactivat.dc.html",
+    "S1-autentificare.dc.html",
+    "S1-autentificare--gresit-desktop.dc.html",
+    "S1-autentificare--telefon.dc.html",
+    "S1-autentificare--parola-vizibila.dc.html",
+    "S1-autentificare--se-intra.dc.html",
+    "S1-autentificare--campuri-goale.dc.html",
+    "S1-autentificare--gresit.dc.html",
+    "S1-autentificare--prea-multe-incercari.dc.html",
+    "S1-autentificare--cont-dezactivat.dc.html",
+    "S1-autentificare--fara-conexiune.dc.html"
   ],
   "notes": {},
   "designSystems": [

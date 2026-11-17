@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>S1 · Autentificare · telefon · câmpuri goale</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/impexlinepanel/tokens.css">
+<link rel="stylesheet" href="ds/impexlinepanel/components/bundle.css">
+<link rel="stylesheet" href="additions.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}
+.s1-root{display:flex;flex-direction:column}
+.s1-root > .ip-login-page{flex:1 0 auto;min-height:0}</style>
+</helmet>
+<!-- Intră with both fields empty: the app checks only emptiness (D80); focus on the first empty field, which reads its error line through aria-describedby. Length rules stay on the server. -->
+<div class="ip-root s1-root" style="padding:0; width:390px; min-height:844px"><main class="ip-login-page ip-login-page--phone"><section class="ip-panel ip-login" aria-labelledby="s1-h"><h1 class="ip-wordmark ip-wordmark--login" id="s1-h">Impex Line</h1><form class="ip-login__form" method="post" action="/intra" novalidate aria-labelledby="s1-h"><div class="ip-field"><label class="ip-label" for="s1-login">Login</label><div class="ip-input ip-input--touch is-error is-focus"><input id="s1-login" name="login" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" required aria-invalid="true" aria-describedby="s1-login-err"></div><p class="ip-err" id="s1-login-err">Scrie loginul.</p></div><div class="ip-field"><label class="ip-label" for="s1-pw">Parolă</label><div class="ip-input ip-login__pw ip-input--touch is-error"><input id="s1-pw" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required aria-invalid="true" aria-describedby="s1-pw-err"><button type="button" class="ip-iconbtn ip-iconbtn--touch ip-login__eye" aria-label="Arată parola" aria-pressed="false" aria-controls="s1-pw"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></div><p class="ip-err" id="s1-pw-err">Scrie parola.</p></div><button type="submit" class="ip-btn ip-btn--primary ip-btn--touch ip-login__go">Intră</button><p class="ip-hint ip-login__hint">Ai uitat parola? Vorbește cu administratorul.</p><p class="ip-sr" role="status" aria-live="polite"></p></form></section></main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
