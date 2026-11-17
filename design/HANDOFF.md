@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 21:50 · Last commit: 78564a6
+Updated: 2026-11-17 22:40 · Last commit: 6796aee
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 56 / 73 · Screens done: S15 + 7 states (polished), S16 (4 phones + desktop), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
+Done 57 / 73 · Screens done: S15 + 7 states (polished), S16 + 9 states, S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
 
 ## Just finished
+- S16S Corectează states: 5 phones x 1880–3760, S16 desktop moved to x 4230, 4 desktops x 5750–10310 (row y 29020, 844/1024); cycle board = 28.02 transfer replay (D39); Motiv soft limit decided (S16P applies); D102; 1 fix round. Always run s16s_build after s16_build (6796aee)
 - S16 Corectează: row y 29020, phones x 0/470/940/1410 (sheet, motiv lipsă, refuzat, Dialog șterge), desktop x 1880 1440×1024 (S4 Păsări + SidePanel); real audit change H4.1 ♀ 14.11 3 → 5 (♀ 4 121 → 4 119); additions.css §39 `ip-sidepanel--sheet`; D101; S16S queued; 1 fix round (Dialog Șterge disabled until Motiv) (78564a6)
 - S15P Introdus azi polish: feed kg per type in the Hrană list head (S7 wording), Ouă meta 2 lines, desktop breadcrumb "Acasă › Introdus azi"; S2 manager empty copy = S15 gol sentences (3 S2 manager boards rebuilt, manager phone h 1876 → 1856); D100; 1 fix round (47f2073)
 - S15S Introdus azi states: 6 phones x 1410…3760 (se încarcă, eroare la încărcare, Acțiuni deschis, după ștergere, după 23:59 + modificat la 09:52, manager 10.11) + vet desktop x 4230 1440×1492 (Sidebar Înregistrează expanded); D99; 1 fix round (e0b5e58)
@@ -39,7 +40,7 @@ Done 56 / 73 · Screens done: S15 + 7 states (polished), S16 (4 phones + desktop
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S16S → S16P → S17 (all system jobs done; screens only from here)
+- S16P → S17 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -70,6 +71,7 @@ Done 56 / 73 · Screens done: S15 + 7 states (polished), S16 (4 phones + desktop
 - S15S: project/S15-introdus-azi--{se-incarca,eroare-la-incarcare,actiuni-deschis,dupa-stergere,dupa-2359,manager-10-11,desktop}.dc.html + canvas.json
 - S15P: the 6 changed S15 boards (S15-introdus-azi, --sterge-confirmare, --actiuni-deschis, --dupa-stergere, --dupa-2359, --desktop) + S2-acasa--manager{,-desktop,-desktop--zi-trecuta-stoc-sub-0}.dc.html + canvas.json
 - S16: project/additions.css (§39) + project/S16-corecteaza{,--motiv-lipsa,--refuzat,--sterge-confirmare,--desktop}.dc.html + canvas.json
+- S16S: project/S16-corecteaza--{salvat,eroare-la-salvare,se-incarca,vet-blocat,ciclu-transfer,desktop-scris,desktop-refuzat,desktop-sterge-confirmare,desktop-dupa-stergere}.dc.html + canvas.json (S16 desktop x 1880 → 4230)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
