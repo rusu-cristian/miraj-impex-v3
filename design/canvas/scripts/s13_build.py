@@ -89,11 +89,11 @@ def effect(before, after, avg=None, days=None, when='acum'):
         aft = '<span>după livrare: <span class="ip-num">–</span>, scrie cantitatea</span>'
     else:
         aft = f'<span>după livrare: <b class="s13-strong">{kgs(after)}</b></span>'
-    sub = f'<span class="s13-effsub">ajunge <span class="ip-num">{n(days, 1)}</span> zile la media <span class="ip-num s13-nw">{win[0].strftime("%d")}–{dd(win[-1])}</span> (<span class="ip-num s13-nw">{n(avg)}{NB}kg/zi</span>)</span>' if days else ''
+    sub = f'<span class="s13-effsub">ajunge <span class="ip-num">{n(days, 1)}</span> zile la media <span class="ip-num s13-nw">{win[0].strftime("%d")}–{win[-1].strftime("%d.%m")}</span> (<span class="ip-num s13-nw">{n(avg)}{NB}kg/zi</span>)</span>' if days else ''
     return f'''<div class="ip-effect s13-effect" id="f-stock">{rec("delivery", 16)}<div class="s13-effbody"><span>Stoc {FTN[FT]} la Hîrbovăț {when}: {kgs(before)}</span>{aft}{sub}</div></div>'''
 
 def note(ro=False):
-    if ro: return '<div class="ip-field"><span class="ip-label">Notă <span class="s13-opt">(opțional)</span></span><span class="ip-note">– fără notă</span></div>'
+    if ro: return '<div class="ip-field"><span class="ip-label">Notă</span><span class="ip-note">– fără notă</span></div>'
     return '<div class="ip-field"><label class="ip-label" for="f-note">Notă <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--area"><textarea id="f-note" rows="2" placeholder="de ex. numărul avizului"></textarea></span></div>'
 NOPRICE = f'<p class="ip-note s13-noprice">{rec("coins")}<span>Fără preț: îl adaugă proprietarul, din factură.</span></p>'
 
@@ -124,9 +124,9 @@ boards = []
 boards.append(('', 'telefon', screen(FORM(), B.savebar(sum1(), SUM2, ADD))))
 # 2 · salvat — read-only form, C5 Toast (with undo), Livrare nouă
 toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Adăugat · '
-         f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]} · stoc Hîrbovăț: <span class="ip-num">{n(AFTER)}</span> kg · preț de adăugat de proprietar.</span>'
+         f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]} · stoc Hîrbovăț: <span class="ip-num">{n(AFTER)}</span> kg · preț de adăugat de proprietar</span>'
          f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
-saved = [farm(ro=True), DATE_RO, ftype(ro=True), qty(state='ro'), effect(AFTER, None, when='după livrare').replace('<span>după livrare: <span class="ip-num">–</span>, scrie cantitatea</span>', ''), note(ro=True), NOPRICE]
+saved = [farm(ro=True), DATE_RO, ftype(ro=True), qty(state='ro'), effect(BEFORE, AFTER, AVG3, DAYS, when='înainte'), note(ro=True), NOPRICE]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='adăugat · '), f'<span>{EV["user"]} ·</span><span><span class="ip-num">{EV["at"][11:]}</span> · fără preț</span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Livrare nouă</button>'), overlay=toast)))
 # 3 · cantitate lipsă — kg left empty (validated on blur): field error naming the fix, Adaugă disabled
 boards.append(('cantitate-lipsa', 'cantitate lipsă', screen(FORM('error', None), B.savebar(sum1(None), f'{lamp("fault", "refuzat")}<span>scrie cantitatea în kg</span>', ADD_OFF))))
@@ -168,7 +168,7 @@ PANEL = f'''<aside class="ip-sidepanel s13-panel" id="lp" aria-labelledby="lp-t"
 {note()}
 {NOPRICE}
 </div>
-<div class="ip-sidepanel__foot"><span class="ip-note" id="lp-why">Scrie cantitatea ca să poți adăuga.</span><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="lp-why">Adaugă</button></div></div>
+<div class="ip-sidepanel__foot"><span class="ip-note" id="lp-why">Scrie cantitatea în kg</span><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="lp-why">Adaugă</button></div></div>
 </aside>'''
 PANEL = re.sub(r'((?:id|for|aria-describedby)="[^"]*")', lambda m: re.sub(r'\bf-', 'p-', m.group(1)), PANEL)  # S11 page has its own f-farm
 DH = 1024
@@ -177,9 +177,15 @@ DH = 1024
 KEY_RE = r'<a class="ip-btn ip-btn--primary" href="#livrare-hrana">(.*?)Livrare hrană</a>'
 SPG = s11.page("Manager"); assert len(re.findall(KEY_RE, SPG)) == 1
 SPG = re.sub(KEY_RE, r'<button type="button" class="ip-btn ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="lp">\1Livrare hrană</button>', SPG)
+# beside the open panel the page is 440 px narrower: at 1280 the S11 tables (711 px) no longer fit their 560 px block and the
+# S11 tablebox clips their last columns. Here they scroll inside their box, as a named, focusable region (WCAG 1.4.10, 2.1.1)
+TB_RE = r'<div class="s11-tablebox"><table class="ip-table s11-table"><caption class="ip-sr">(.*?)</caption>'
+assert len(re.findall(TB_RE, SPG)) == 2
+SPG = re.sub(TB_RE, r'<div class="s11-tablebox s13-tscroll" role="region" tabindex="0" aria-label="\1"><table class="ip-table s11-table"><caption class="ip-sr">\1</caption>', SPG)
 DESK = f'<div class="s13-vp">{SPG}</div>'
 CSS_D = s11.CSS + '''
 .s13-vp{position:relative;height:''' + str(DH) + '''px;overflow:hidden;margin-right:var(--panel-w)}
+.s13-vp .s13-tscroll{overflow-x:auto}
 .s13-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w)}
 .s13-phead{gap:var(--space-2);flex-wrap:nowrap}
 .s13-pbody{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}

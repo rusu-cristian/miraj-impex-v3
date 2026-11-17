@@ -1,11 +1,11 @@
 """python3 s13_render.py : render the S13 boards (phone 390×844 from /tmp/s13, desktop 1440×1024 from /tmp/s4s) to
-design/shots/S13.png, S13-1 … S13-4.png (canvas order), and report overflow, duplicate ids and broken ARIA references."""
+design/shots/S13.png, S13-1 … S13-4.png (canvas order) + S13-4-1280.png, and report overflow, duplicate ids and broken ARIA references."""
 import asyncio, pathlib
 from playwright.async_api import async_playwright
 R = pathlib.Path('/home/claude/miraj-impex-v3')
 ORDER = [('S13-livrare-hrana', 390, 844, 's13'), ('S13-livrare-hrana--salvat', 390, 844, 's13'),
          ('S13-livrare-hrana--cantitate-lipsa', 390, 844, 's13'), ('S13-livrare-hrana--eroare-la-salvare', 390, 844, 's13'),
-         ('S13-livrare-hrana--desktop', 1440, 1024, 's4s')]
+         ('S13-livrare-hrana--desktop', 1440, 1024, 's4s'), ('S13-livrare-hrana--desktop', 1280, 1024, 's4s')]  # last: S13-4-1280.png
 CHECK = """() => {
  const ids = [...document.querySelectorAll('[id]')].map(e => e.id); const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls]')].flatMap(e =>
@@ -23,7 +23,7 @@ async def main():
             pg = await b.new_page(viewport={'width': w, 'height': h})
             await pg.goto(f'file:///tmp/{d}/{st}.html'); await pg.wait_for_timeout(1000)
             print(st, await pg.evaluate(CHECK))
-            await pg.screenshot(path=str(R / 'design/shots' / ('S13.png' if k == 0 else f'S13-{k}.png')))
+            await pg.screenshot(path=str(R / 'design/shots' / ('S13.png' if k == 0 else 'S13-4-1280.png' if w == 1280 else f'S13-{k}.png')))
             await pg.close()
         await b.close()
 asyncio.run(main())
