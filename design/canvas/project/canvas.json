@@ -1261,11 +1261,107 @@
       "title": "S19 · Ferme și secțiuni · Fermă nouă"
     },
     "S19-ferme-sectiuni--telefon.dc.html": {
-      "x": 13680,
+      "x": 31920,
       "y": 34557,
       "w": 390,
       "h": 844,
       "title": "S19 · Ferme și secțiuni · telefon · doar citire"
+    },
+    "S19-ferme-sectiuni--se-incarca.dc.html": {
+      "x": 13680,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · se încarcă"
+    },
+    "S19-ferme-sectiuni--eroare-la-incarcare.dc.html": {
+      "x": 15200,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · eroare la încărcare"
+    },
+    "S19-ferme-sectiuni--fara-acces.dc.html": {
+      "x": 16720,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · observator · fără acces"
+    },
+    "S19-ferme-sectiuni--salvat.dc.html": {
+      "x": 18240,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · salvat · exemplu de stare (D39): ghidul Teliței ales din „fără ghid”"
+    },
+    "S19-ferme-sectiuni--eroare-la-salvare.dc.html": {
+      "x": 19760,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · eroare la salvare · exemplu de stare (D39): ghidul Teliței ales din „fără ghid”"
+    },
+    "S19-ferme-sectiuni--nume-gol.dc.html": {
+      "x": 21280,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Fermă nouă · nume gol și tip lipsă · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--nume-folosit.dc.html": {
+      "x": 22800,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Fermă nouă · nume deja folosit · exemplu de stare (D39): „Hirbovat”"
+    },
+    "S19-ferme-sectiuni--ghid-lista.dc.html": {
+      "x": 24320,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița fără ghid · lista Ghid deschisă · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--adauga-compartiment.dc.html": {
+      "x": 25840,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Hîrbovăț · Adaugă compartiment H1.3 · salvarea a eșuat · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--cod-duplicat.dc.html": {
+      "x": 27360,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Hîrbovăț · Adaugă compartiment · cod deja folosit · exemplu de stare (D39): „H1.2”"
+    },
+    "S19-ferme-sectiuni--redenumeste-cod-gol.dc.html": {
+      "x": 28880,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița · Redenumește H5-2 · cod gol · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--retrasa-mutata.dc.html": {
+      "x": 30400,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița · H5-2 retrasă, apoi H3 mutată în sus · exemplu de stare (D39) · anunț live „H3 mutată în sus: a 2-a din 5 secțiuni la Telița.”"
     }
   },
   "order": [
@@ -1436,7 +1532,19 @@
     "S19-ferme-sectiuni--ghid-nepotrivit.dc.html",
     "S19-ferme-sectiuni--fara-ferme.dc.html",
     "S19-ferme-sectiuni--ferma-noua.dc.html",
-    "S19-ferme-sectiuni--telefon.dc.html"
+    "S19-ferme-sectiuni--telefon.dc.html",
+    "S19-ferme-sectiuni--se-incarca.dc.html",
+    "S19-ferme-sectiuni--eroare-la-incarcare.dc.html",
+    "S19-ferme-sectiuni--fara-acces.dc.html",
+    "S19-ferme-sectiuni--salvat.dc.html",
+    "S19-ferme-sectiuni--eroare-la-salvare.dc.html",
+    "S19-ferme-sectiuni--nume-gol.dc.html",
+    "S19-ferme-sectiuni--nume-folosit.dc.html",
+    "S19-ferme-sectiuni--ghid-lista.dc.html",
+    "S19-ferme-sectiuni--adauga-compartiment.dc.html",
+    "S19-ferme-sectiuni--cod-duplicat.dc.html",
+    "S19-ferme-sectiuni--redenumeste-cod-gol.dc.html",
+    "S19-ferme-sectiuni--retrasa-mutata.dc.html"
   ],
   "notes": {},
   "designSystems": [

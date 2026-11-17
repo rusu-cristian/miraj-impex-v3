@@ -151,7 +151,7 @@ def gsel(text, hint, state='', desc='fp-ghid-h', placeholder=False):
     dis = ' disabled="disabled"' if state == 'is-disabled' else ''
     inv = ' aria-invalid="true"' if state == 'is-error' else ''
     opt = f'<option value=""{" selected=\"selected\"" if placeholder else ""}>{text}</option>' if placeholder else f'<option selected="selected">{text}</option>'
-    req = ' required="required"' if placeholder else ''
+    req = ''   # S19S fix 1: Ghid is optional, so no required (the placeholder option stays)
     return (f'<span class="ip-input{st}"><select id="fp-ghid" aria-describedby="{desc}"{dis}{inv}{req}>{opt}</select>{icon("chev", 16)}</span>{hint}')
 def ghid_field(fid, mode='set'):
     lbl = f'<label class="ip-label" for="fp-ghid">Ghid {OPT}</label>'

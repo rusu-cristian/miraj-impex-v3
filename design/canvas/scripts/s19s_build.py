@@ -1,0 +1,219 @@
+"""S19S · Ferme și secțiuni · state boards (spec B1; D110, D75, D111). Imports s19_build (which rewrites the 10 S19 boards,
+and through s18_build the S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S19 states on the same row (y 34557).
+Desktops first (a Setări page, as S17S/S18S): the new desktops follow the nine S19 desktops; the S19 phone moves right
+(x only). Today = 16.11.2026 (D23/D24). Real: farms, types, codes, halls, Hîrbovăț open SAPT 40, Telița empty from
+28.02.2026; guide names illustrative (D22). Every edit not in the extracts is a D39 example, said in the board title.
+Boards
+  --se-incarca            header kept (no farm names in the meta yet), framed table skeleton, hidden status
+  --eroare-la-incarcare   header kept, fault Banner + Reîncearcă in place of the table
+  --fara-acces            Observator Sidebar, EmptyState "Nu ai acces la Ferme și secțiuni." + "Înapoi la Acasă"
+                          (a manager or a vet: same picture with their own nav and role sentence; one board, as S17S/S18S)
+  --salvat                D39: Telița's guide chosen from "fără ghid": panel closed, the list as it is in the extracts,
+                          Toast + Anulează, focus back on Telița's Editează
+  --eroare-la-salvare     D39: the same edit, save failed: draft kept (Ross 308 creștere), fault Banner + Reîncearcă (focus)
+                          under the fields it covers, the list still says "fără ghid"
+  --nume-gol              D39: Fermă nouă after Adaugă ferma with nothing filled: Nume (focus) + Tip errors, Ghid waits
+  --nume-folosit          D39: Fermă nouă "Hirbovat" (ouat): the name is taken by Hîrbovăț (compared without case and
+                          diacritics, D111)
+  --ghid-lista            D39: Telița without a guide, the Ghid list open (Fără ghid · Ghiduri de creștere)
+  --adauga-compartiment   D39: Hîrbovăț, Adaugă compartiment in H1, "H1.3" typed, save failed: tree Banner, code kept,
+                          focus on the row's Salvează (the retry)
+  --cod-duplicat          D39: Hîrbovăț, "H1.2" typed in the new-compartment row: error, focus in the field
+  --redenumeste-cod-gol   D39: Telița, Redenumește H5-2 with the code cleared: error, focus in the field
+  --retrasa-mutata        D39: Telița after the Retrage H5-2 Dialog (H5-2 retrasă, listed last, no key) and then Mută în
+                          sus on H3 (a 2-a din 5; focus stays on H3's key; live region)
+No new system class: screen CSS `.s19-*` (desktop Toast position, table skeleton cells, Banner action key). Fix 1: every
+multi-line Banner puts its icon on the first line (s7s-banner); Ghid on Fermă nouă is not required (s19_build).
+python3 -I s19s_build.py <repo_root> [--canvas]   run after any `s19_build --canvas` (which resets the phone's x).
+Renders: s19_render.py <stems> (the new boards are appended to /tmp/s19/boards.json: shots S19-10 … S19-21)."""
+import sys, json, pathlib, importlib.util, io, contextlib
+
+ARGS = sys.argv[1:]
+CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
+ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+sys.argv = ['s19_build.py', str(ROOT)]
+sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
+M = importlib.util.module_from_spec(sp)
+with contextlib.redirect_stdout(io.StringIO()):
+    sp.loader.exec_module(M)   # rewrites the 10 S19 boards byte-identical (no --canvas)
+T, ST, SC, Q, s4 = M.T, M.ST, M.SC, M.Q, M.s4
+icon, lamp, num, dd, NB = M.icon, M.lamp, M.num, M.dd, M.NB
+FARM, GUIDE, WK, cH, cT = M.FARM, M.GUIDE, M.WK, M.cH, M.cT
+S19_OUT = [{k: b[k] for k in ('stem', 'w', 'h')} for b in M.out]
+STEM, TT = M.STEM, M.TT
+assert [b['stem'] for b in S19_OUT][-1] == STEM + '--telefon' and len(S19_OUT) == 10
+
+# ================================================================= shared parts
+ERRI = M.ERRI
+def err(i, text): return f'<p class="ip-err ip-fieldmsg" id="{i}">{ERRI}<span>{text}</span></p>'
+HDR = M.header()
+assert HDR.count(M.meta(True)) == 1
+HDR_NOLIST = HDR.replace(M.meta(True), M.meta(False))   # before the list is in, the meta names no farm
+def shell(main, sidebar=None, hdr=HDR):
+    return f'<div class="s4-shell">{sidebar or M.sidebar_owner()}<main class="s4-main">\n{hdr}\n{main}\n</main></div>'
+
+# ---- loading: the Ferme block with a framed table skeleton (the real columns, two farm rows)
+def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
+SK_R = ('<tr><th scope="row">' + skel('w2') + '</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w2', 'w3', 'w3', 'w2'))
+        + f'<td class="s19-act">{skel("w3")}</td></tr>')
+LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghidul și secțiunile lor.</p>'
+           f'<section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
+           f'<div class="ip-tablescroll ip-tablescroll--framed s19-skt" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table">'
+           f'{M.COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
+# ---- load error: the Banner in place of the table; Fermă nouă stays (the name check runs on save)
+LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
+           f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}'
+           f'<div class="s4-grow"><p class="s4s-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
+           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
+           '<button type="button" class="ip-btn ip-btn--secondary s19-bkey">Reîncearcă</button></div></section>')
+# ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
+def noaccess():
+    step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
+    box = s4.empty_box('fără acces', ['Nu ai acces la Ferme și secțiuni.',
+                                      'Fermele, tipul, ghidul și secțiunile lor le setează proprietarul. Rolul tău, Observator, '
+                                      'vede paginile seriilor și ale fermelor, și rapoartele.'], step, 'Acces')
+    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Ferme și secțiuni</h1></div></header>\n{box}\n</main></div>'
+
+# ---- panel fields
+TEL_TIP = M.tip_field(sel='growth')
+HIR_TIP = M.tip_field('hirbovat', readonly=True)
+def name_field(val, e=None):
+    """Nume with an error: focus on it (the first error, craft §5), typed value kept."""
+    f = M.name_field(val, focus=True)
+    a = 'class="ip-input is-focus"><input id="fp-name" type="text" autocomplete="off"'
+    assert f.count(a) == 1, f
+    f = f.replace(a, 'class="ip-input is-focus is-error"><input id="fp-name" type="text" autocomplete="off" aria-invalid="true" aria-describedby="fp-name-e"')
+    assert f.endswith('</div>')
+    return f[:-6] + err('fp-name-e', e) + '</div>'
+def tip_err():
+    f = M.tip_field()
+    a = 'aria-required="true">'; assert f.count(a) == 1
+    f = f.replace(a, 'aria-required="true" aria-invalid="true" aria-describedby="fp-tip-e">')
+    return f[:-6] + err('fp-tip-e', 'Alege tipul fermei: Creștere sau Ouat. Lista de ghiduri depinde de el.') + '</div>'
+NEW_GHID_OUAT = ('<div class="ip-field"><label class="ip-label" for="fp-ghid">Ghid <span class="s13-opt">(opțional)</span></label>'
+                 + M.gsel(GUIDE['g-laying'], '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Se aplică de la primul ciclu al fermei.</span>')
+                 + '</div>')
+def save_banner(text):
+    return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fp-err">{icon("alert", 16)}<div class="s7s-banner__body">'
+            f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
+
+# ---- tree states (SYS10 helpers; one edit row open at a time)
+def tree_x(fid, noguide=False, note=None, banner='', live='', **kw):
+    fr = ST['farm_row'](fid, tag=M.gtag(fid, True) if noguide else None, note=note)
+    return ST['tree']('st', f'Secțiuni, {FARM[fid]["name"]}', [fr] + ST['section_rows']('st', fid, **kw) + [ST['add_row'](fid)],
+                      banner=banner, live=live)
+def edit(level, label, value, e=None, focus=True, is_last=True):
+    r = ST['edit_row']('st-e', level, label, value, err=e, focus=focus and not e, is_last=is_last)
+    if e:   # the error row keeps the focus in its field (Enter = Salvează ran the check)
+        a = 'class="ip-input ip-stree__in is-error"'; assert r.count(a) == 1
+        r = r.replace(a, 'class="ip-input ip-stree__in is-error is-focus"')
+    return r
+TREE_BANNER = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s4-grow">'
+               '<p class="s4s-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
+               '<p class="s4s-m0">Codul scris rămâne în rând. Verifică conexiunea și apasă din nou Salvează.</p></div></div>')
+ORDER_UP = ['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2']
+assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
+MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
+
+# ================================================================= CSS (screen only, tokens only)
+CSS19S = '''
+.s19-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, over the page (as S18S) */
+.s19-skt .ip-skel{display:block;max-width:100%}
+.s19-skt td,.s19-skt th{vertical-align:middle}
+.s19-skt td.s19-act .ip-skel{margin-left:auto}
+.s19-bkey{flex:none;align-self:center} /* multi-line Banners: icon on the first line (s7s-banner), the action key stays centred */'''
+CSS_D = M.CSS_DESK + SC.TOAST + CSS19S
+
+# ================================================================= write
+out = []
+def desk(stem, title, root, h=1024):
+    out.append(M.write(STEM + stem, f'{TT} · {title}', f'<div class="ip-root s4s-rel" style="padding:0; min-height:{h}px">{root}</div>', CSS_D, 1440, h))
+def hd(stem): return M.HEIGHTS.get(STEM + stem, 1024)
+PH = M.PH
+D39 = 'exemplu de stare (D39)'
+
+# 1 · se încarcă
+desk('--se-incarca', 'se încarcă', shell(LOADING, hdr=HDR_NOLIST), hd('--se-incarca'))
+# 2 · eroare la încărcare
+desk('--eroare-la-incarcare', 'eroare la încărcare', shell(LOADERR, hdr=HDR_NOLIST), hd('--eroare-la-incarcare'))
+# 3 · fără acces (Observator; a manager or a vet sees the same picture)
+desk('--fara-acces', 'observator · fără acces', noaccess(), hd('--fara-acces'))
+# 4 · salvat (D39): Telița's guide chosen from "fără ghid"; the list now equals the extracts; focus back on Telița's Editează
+EDK = M.editkey('telita'); assert EDK.count('class="ip-btn ip-btn--ghost"') == 1
+FOCUS_NOTE = ('<!-- Focus after Salvează ferma: the panel closes and focus returns to the Editează key that opened it; the Toast '
+              '(role=status) announces the save and keeps Anulează in the tab order. -->')
+SAVED = shell(M.flist())
+assert SAVED.count(EDK) == 1
+SAVED = SAVED.replace(EDK, FOCUS_NOTE + EDK.replace('class="ip-btn ip-btn--ghost"', 'class="ip-btn ip-btn--ghost ip-focus"'))
+TOAST = (f'<div class="s19-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Telița salvată · '
+         f'ghid {GUIDE["g-growth"]} de la următorul ciclu al fermei</span>'
+         '<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+desk('--salvat', f'salvat · {D39}: ghidul Teliței ales din „fără ghid”', SAVED + TOAST, hd('--salvat'))
+# 5 · eroare la salvare (D39, the same edit): draft kept, Banner + Reîncearcă (focus) under the fields it covers
+BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),
+        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Ghidul ales, {GUIDE["g-growth"]}, rămâne aici; verifică internetul, apoi reîncearcă.'),
+        M.tree_farm('telita', noguide=True)]
+desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales din „fără ghid”',
+     M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)
+# 6 · Nume gol (D39): Fermă nouă after Adaugă ferma with nothing filled; focus on Nume (first error)
+NEWP = f'<div class="s13-vp s18-vp">{M.page(None, pressed_new=True)}</div>'
+desk('--nume-gol', f'Fermă nouă · nume gol și tip lipsă · {D39}',
+     NEWP + M.panel('Fermă nouă', '', [name_field('', 'Scrie numele fermei, de exemplu Telița.'), tip_err(),
+                                       M.ghid_field(None, 'new'), M.NEWTREE], M.ADD), PH)
+# 7 · Nume deja folosit (D39, D111): "Hirbovat" equals Hîrbovăț without case and diacritics
+TIP_OUAT = M.tip_field(sel='laying')
+desk('--nume-folosit', f'Fermă nouă · nume deja folosit · {D39}: „Hirbovat”',
+     NEWP + M.panel('Fermă nouă', '', [name_field('Hirbovat', 'Numele e deja folosit de ferma Hîrbovăț (literele mari și diacriticele nu contează). '
+                                                  'Alege alt nume.'), TIP_OUAT, NEW_GHID_OUAT, M.NEWTREE], M.ADD), PH)
+# 8 · Ghid list open (D39 fără ghid): filtered to the farm's type
+desk('--ghid-lista', f'Telița fără ghid · lista Ghid deschisă · {D39}',
+     M.vp('telita', noguide=('telita',)) + M.fpanel('telita', TEL_TIP, M.ghid_field('telita', 'open'), M.tree_farm('telita', noguide=True)), PH)
+# 9 · Adaugă compartiment H1.3, save failed (D39): Banner over the tree, the code kept, focus on the row's Salvează
+r = edit(3, 'Compartiment nou în H1', 'H1.3', focus=False)
+a = 'class="ip-btn ip-btn--secondary">Salvează'; assert r.count(a) == 1
+r = r.replace(a, 'class="ip-btn ip-btn--secondary ip-focus">Salvează')
+desk('--adauga-compartiment', f'Hîrbovăț · Adaugă compartiment H1.3 · salvarea a eșuat · {D39}',
+     M.vp('hirbovat') + M.fpanel('hirbovat', HIR_TIP, M.ghid_field('hirbovat'), tree_x('hirbovat', banner=TREE_BANNER, after={'H1': r})), PH)
+# 10 · cod duplicat (D39): "H1.2" typed in the new-compartment row
+desk('--cod-duplicat', f'Hîrbovăț · Adaugă compartiment · cod deja folosit · {D39}: „H1.2”',
+     M.vp('hirbovat') + M.fpanel('hirbovat', HIR_TIP, M.ghid_field('hirbovat'),
+                                 tree_x('hirbovat', after={'H1': edit(3, 'Compartiment nou în H1', 'H1.2', 'H1.2 există deja în H1. Scrie alt cod, de exemplu H1.3.')})), PH)
+# 11 · Redenumește H5-2 with the code cleared (D39)
+desk('--redenumeste-cod-gol', f'Telița · Redenumește H5-2 · cod gol · {D39}',
+     M.vp('telita') + M.fpanel('telita', TEL_TIP, M.ghid_field('telita'),
+                               tree_x('telita', replace={'H5-2': edit(2, 'Cod nou pentru H5-2', '', 'Scrie codul nou al secțiunii H5-2 sau apasă Anulează.', is_last=False)})), PH)
+# 12 · after the Retrage H5-2 Dialog, then Mută în sus on H3 (D39): the list beside counts 5 active sections in the new order
+keep = M.tree_of
+M.tree_of = lambda fid: [t for t in ST['farm_tree'](fid, ORDER_UP) if t[0] != 'H5-2'] if fid == 'telita' else keep(fid)
+try:
+    VP = M.vp('telita')
+finally:
+    M.tree_of = keep
+assert '<span class="ip-num">5</span> secțiuni' in VP and 'H5-2' not in VP.split('Telița</th>')[1].split('</tr>')[0]
+desk('--retrasa-mutata', f'Telița · H5-2 retrasă, apoi H3 mutată în sus · {D39} · anunț live „{MOVED}”',
+     VP + M.fpanel('telita', TEL_TIP, M.ghid_field('telita'),
+                   tree_x('telita', note=ST['farm_note']('telita', 1), live=MOVED, order=ORDER_UP, retired=('H5-2',), kstates={'H3': 'ip-focus'})), PH)
+
+pathlib.Path('/tmp/s19/boards.json').write_text(json.dumps(S19_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
+
+if CANVAS:  # same row as S19 (y 34557): the S19 desktops, then these desktops, then the S19 phone (x moved)
+    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
+    y = c['boards'][STEM + '.dc.html']['y']; assert y == 34557
+    old = [f'{b["stem"]}.dc.html' for b in S19_OUT]
+    xs = [c['boards'][k]['x'] for k in old]
+    assert xs[:9] == [i * 1520 for i in range(9)] and xs[9] in (13680, 13680 + len(out) * 1520), xs   # after s19_build --canvas, or a rerun
+    seq = old[:9] + [f'{b["stem"]}.dc.html' for b in out] + old[9:]
+    new = {f'{b["stem"]}.dc.html': b for b in out}
+    x = 0
+    for k in seq:
+        if k in new:
+            b = new[k]
+            c['boards'][k] = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']}
+            if k not in c['order']: c['order'].append(k)
+        else:
+            c['boards'][k]['x'] = x
+        x += c['boards'][k]['w'] + 80
+    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
+    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
+    print('canvas: S19 row y', y, 'ends at x', x - 80)
