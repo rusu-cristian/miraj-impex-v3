@@ -1,0 +1,136 @@
+"""S14S · Rapoarte · Producție states (16.11.2026). Appended to the S14 row (y 23214) after its 5 boards, desktops then the phone:
+- observator · se exportă (desktop): the default page for the Observator role (Sidebar Acasă · Serie · Rapoarte, account
+  "Observator", D91/D92: same content, Producție has no prices) with Exportă .xlsx running (spinner in the key, label kept,
+  a hidden role=status line names the file's filters). Merged: Observator parity board + export in progress.
+- eroare la încărcare (desktop): crumbs + title, the FilterBar the user chose (export off: nothing to export), fault Banner
+  naming what failed + Reîncearcă (online only, spec §1).
+- fără fermă de ouat · exemplu de stare (D39) (desktop): a manager assigned only Telița (growth, no eggs) opens Producție:
+  EmptyState with the real Telița cycle and a step to Rapoarte › Hrană. "Nu ai acces la această fermă." is the same picture
+  (lamp "fără acces", that sentence, Înapoi la Acasă as S4 fara-acces), so it is not drawn twice.
+- telefon (390, owner): FilterBar collapsed to one key (FilterBar spec, BottomSheet closed), Readout without the GuideChart
+  (its 540-wide drawing would set axis text under 11px at 358), Stats, then the weekly table in its scroll box with the
+  sticky first column (DataTable spec · phone), the whole tall page with the BottomTabBar (Rapoarte current) at its foot.
+Reuses by import: s14_build (page, header, filterbar, top, tb_weeks, CSS), s11_build (sidebars), s2_build (phone screen,
+BottomTabBar, phone CSS, write_phone; importing it rewrites the S2/S7 default boards byte-identical), s4s_build (empty_box, write).
+python3 -I s14s_build.py <repo_root> [s14s_heights.json] [--canvas]
+Writes design/canvas/project/S14-rapoarte-productie--<state>.dc.html, /tmp/s4s/<stem>.html (desktops), /tmp/s2/<stem>.html (phone);
+--canvas appends/updates the 4 boards in canvas.json (S14 row, after the existing 5; nothing else moves)."""
+import sys, re, json, pathlib, importlib, importlib.util
+
+ARGS = sys.argv[1:]
+CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
+ROOT = pathlib.Path(ARGS[0]); HERE = pathlib.Path(__file__).resolve().parent
+HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's14s_heights.json'
+HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
+
+sys.argv = ['s14_build.py', str(ROOT), str(HERE / 's14_heights.json')]
+sp = importlib.util.spec_from_file_location('s14_build', HERE / 's14_build.py')
+X = importlib.util.module_from_spec(sp); sp.loader.exec_module(X)   # writes nothing on import
+sys.path.insert(0, str(HERE))
+sys.argv = ['s2_build.py', str(ROOT), str(HERE / 's2_heights.json')]
+A = importlib.import_module('s2_build')                              # rewrites the S2 default boards (and S7) unchanged
+s4, s11, t4, num, icon = X.s4, X.s11, X.t4, X.num, X.icon
+STEM = X.STEM
+
+# ================================================================= desktop · observator · se exportă
+EXP = s11.export()
+assert X.filterbar().count(EXP) == 1
+EXP_RUN = ('<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end" aria-busy="true" aria-disabled="true" aria-describedby="exp-st">'  # Button · loading (system preview): spinner, label kept; busy + aria-disabled while it runs (LoginCard busy pattern: repeat presses ignored)
+           '<span class="ip-spin" aria-hidden="true"></span>Exportă .xlsx</button>'
+           f'<span class="ip-sr" role="status" id="exp-st">Se pregătește fișierul .xlsx: Producție Hîrbovăț, ciclul curent, SAPT {X.WEEKS_ALL[0]}–{X.WK}.</span>')
+CSS_EXP = X.CSS + '''
+.ip-filterbar .ip-btn--ghost[aria-busy="true"]{background:transparent;color:var(--ink);cursor:progress} /* busy, not refused: keeps Button · loading's look over additions.css aria-disabled grey */'''
+def page_viewer_export():
+    pg = X.page()
+    assert pg.count(X.sidebar()) == 1 and pg.count(EXP) == 1
+    return pg.replace(X.sidebar(), s11.sidebar('Observator')).replace(EXP, EXP_RUN)
+
+# ================================================================= desktop · eroare la încărcare
+def head_bare():  # crumbs + title only: the cycle line comes with the report, which did not load
+    h = X.header()
+    h2, k = re.subn(r'\n<div class="ip-row s4-meta">.*?</div>\n</div>', '\n</div>', h, count=1, flags=re.S); assert k == 1
+    return h2
+FAULT = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'  # Banner fault icon (system preview, as S2S)
+def page_error():
+    fb = X.filterbar().replace(EXP, s11.export(True))
+    ban = (f'<div class="ip-banner ip-banner--fault s4s-banner" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{FAULT}</svg>'
+           '<div class="s4-grow"><p class="s4s-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
+           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă.</p></div>'
+           '<button type="button" class="ip-btn ip-btn--secondary">Reîncearcă</button></div>')
+    return f'<div class="s4-shell">{X.sidebar()}<main class="s4-main">\n{head_bare()}\n{fb}\n<div class="s14-page">{ban}</div>\n</main></div>'
+
+# ================================================================= desktop · fără fermă de ouat (manager with Telița only), D39
+cT = A.cT
+assert (cT['status'], cT['end_date'], cT['weeks']) == ('closed', '2026-02-28', 21) and A.TL['totals']['all'] == 0
+def page_nolay():
+    lines = ['Producția (ouă, ouat, incubabile) se raportează pe fermele de ouat; ferma ta, Telița, e de creștere.',
+             f'Ultimul ciclu la Telița: Seria 2026, creștere, {num(cT["weeks"])} săpt., încheiat pe {num(s4.ddate(cT["end_date"]))}. Consumul și stocul de hrană sunt în Rapoarte › Hrană.']
+    step = '<a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana">Deschide raportul Hrană</a>'
+    return (f'<div class="s4-shell">{s11.sidebar("Manager")}<main class="s4-main">\n{head_bare()}\n'
+            f'<div class="s14-page">{s4.empty_box("fără ouat", lines, step, "Producție")}</div>\n</main></div>')
+
+# ================================================================= phone · default (owner, 16.11.2026)
+SLIDERS = ('<path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/>'
+           '<path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/>')  # Lucide sliders-horizontal
+def p_filter():  # FilterBar on phone: one key opening a BottomSheet (period, farm, export); closed here
+    return ('<div class="ip-filterbar s14-pfilter" role="group" aria-label="Filtre">'
+            '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-haspopup="dialog" aria-expanded="false" aria-describedby="pf-sum">'
+            f'<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{SLIDERS}</svg>Filtrează sau exportă</button>'
+            '<span class="ip-note" id="pf-sum">Ciclul curent · Hîrbovăț</span></div>')
+def p_readout():  # the Readout without its GuideChart (chart, keyboard help, live read, hidden table, legend)
+    ro = t4.ro_productie()
+    for pat in (r'<svg class="ip-chart".*?</svg>\n?', r'<span class="ip-sr" id="lay-help">.*?</span>\n?', r'<div class="ip-chart__read".*?</div>\n?',
+                r'<table class="ip-sr">.*?</table>\n?', r'<div class="ip-chart__legend">.*?</span></div>\n?'):
+        ro, k = re.subn(pat, '', ro, count=1, flags=re.S); assert k == 1, pat
+    assert 'ip-chart' not in ro and 'lay-' not in ro
+    return ro
+def p_header():
+    h = X.header().replace('<header class="ip-pagehead">', '<header class="ip-pagehead s2-phead s14-phead">', 1)
+    return h
+def phone_page():
+    top = t4.top('h-key', 'Producție față de ghid, ciclul curent', p_readout(), X.stats_cur())
+    body = A.phone([p_header(), p_filter(), f'<div class="s14-page">{top}{X.tb_weeks()}</div>'])
+    body = body.replace('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"', 1)
+    body = body.replace('class="ip-tabbar__item" href="#rapoarte"', 'class="ip-tabbar__item is-current" href="#rapoarte" aria-current="page"', 1)
+    assert body.count('is-current') == 1 and 'href="#rapoarte" aria-current="page"' in body
+    return body.replace('<div class="s7-screen s2-phone">', '<div class="s7-screen s2-phone s14-phone">', 1)
+
+CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
+.s14-phone .s4-top,.s14-phone .s4-stats{grid-template-columns:minmax(0,1fr)} /* phone: Readout, then the Stats one per line */
+.s14-phone .ip-table--rowheads tbody th .s4t-sub{display:block} /* the week's dates under SAPT: a narrower sticky column, more figures in view */
+.s14-phone .ip-table--rowheads thead th:first-child{white-space:normal}
+.s14-phone .s4-head{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
+.s14-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.s14-phone .s4t-lk{min-height:var(--control-h-touch)} /* touch: 48px target */
+.s14-phead .s4-meta{margin-top:var(--space-2)}
+.s14-pfilter{gap:var(--space-2) var(--space-3)}
+.s14-phead .ip-crumbs a{position:relative;display:inline-flex;align-items:center;padding-block:var(--space-4);margin-block:calc(-1 * var(--space-4))} /* touch: 46px hit area, line unchanged; positioned so the h1 drawn after it does not take taps on its lower part */'''
+
+# ================================================================= boards (x after the 5 S14 boards: 7600, desktops then the phone)
+DESK = [
+ (STEM + '--observator-se-exporta', 'S14 · Rapoarte · Producție · observator · se exportă', page_viewer_export),
+ (STEM + '--eroare-la-incarcare', 'S14 · Rapoarte · Producție · eroare la încărcare', page_error),
+ (STEM + '--fara-ferma-de-ouat', 'S14 · Rapoarte · Producție · fără fermă de ouat · exemplu de stare (D39)', page_nolay),
+]
+PHONE = [(STEM + '--telefon', 'S14 · Rapoarte · Producție · telefon', phone_page)]
+out = []
+for stem, title, fn in DESK:
+    h = HEIGHTS.get(stem, 1024)
+    s4.write(stem, title, fn(), '', H=h, css=CSS_EXP if fn is page_viewer_export else X.CSS); out.append((stem, title, h, 1440))
+for stem, title, fn in PHONE:
+    A.HEIGHTS[stem] = HEIGHTS.get(stem, 844)
+    out.append(A.write_phone(stem, title, fn(), css=CSS_PHONE))
+
+if CANVAS:
+    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
+    row = [v for k, v in c['boards'].items() if k.startswith(STEM + '.') or k.startswith(STEM + '--')]
+    base = [c['boards'][f'{s}.dc.html'] for s, _, _ in X.BOARDS]
+    y = base[0]['y']; assert y == 23214 and all(b['y'] == y for b in base)
+    x = max(b['x'] + b['w'] for b in base) + 80
+    for s, t, h, w in out:
+        b = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t} if w == 1440 else {'x': x, 'y': y, 'w': w, 'h': h, 'title': t}
+        c['boards'][f'{s}.dc.html'] = b; x += w + 80
+        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
+    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
+    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
+    print('canvas: S14 row y', y, 'ends at x', x - 80)

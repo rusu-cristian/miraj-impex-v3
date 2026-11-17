@@ -683,6 +683,37 @@
       "h": 1716,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · Seria 2025 (ciclu închis)"
+    },
+    "S14-rapoarte-productie--observator-se-exporta.dc.html": {
+      "x": 7600,
+      "y": 23214,
+      "w": 1440,
+      "h": 1785,
+      "expand": "fill",
+      "title": "S14 · Rapoarte · Producție · observator · se exportă"
+    },
+    "S14-rapoarte-productie--eroare-la-incarcare.dc.html": {
+      "x": 9120,
+      "y": 23214,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S14 · Rapoarte · Producție · eroare la încărcare"
+    },
+    "S14-rapoarte-productie--fara-ferma-de-ouat.dc.html": {
+      "x": 10640,
+      "y": 23214,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S14 · Rapoarte · Producție · fără fermă de ouat · exemplu de stare (D39)"
+    },
+    "S14-rapoarte-productie--telefon.dc.html": {
+      "x": 12160,
+      "y": 23214,
+      "w": 390,
+      "h": 2709,
+      "title": "S14 · Rapoarte · Producție · telefon"
     }
   },
   "order": [
@@ -775,7 +806,11 @@
     "S14-rapoarte-productie--se-incarca.dc.html",
     "S14-rapoarte-productie--fara-date-in-perioada.dc.html",
     "S14-rapoarte-productie--fara-ghid.dc.html",
-    "S14-rapoarte-productie--seria-2025.dc.html"
+    "S14-rapoarte-productie--seria-2025.dc.html",
+    "S14-rapoarte-productie--observator-se-exporta.dc.html",
+    "S14-rapoarte-productie--eroare-la-incarcare.dc.html",
+    "S14-rapoarte-productie--fara-ferma-de-ouat.dc.html",
+    "S14-rapoarte-productie--telefon.dc.html"
   ],
   "notes": {},
   "designSystems": [
