@@ -24,12 +24,7 @@
 .s2-phone{min-height:inherit}
 .s2-phead h1{margin:0}
 .s2-more{min-height:var(--control-h-touch)} /* touch: 48px target */
-.s2-tabbar{position:sticky;bottom:0;z-index:2;max-width:none;align-items:stretch}
-.s2-tabbar .ip-tabbar__item{justify-content:center} /* the item fills the bar height: >=44px touch target */
-.s2-tabbar .ip-tabbar__item{text-decoration:none} /* links styled as the component's items */
-.s2-main .ip-ev--alert{flex-wrap:wrap;row-gap:0} /* AlertRow at 390: the action link takes its own line under the text, */
-.s2-main .ip-ev--alert > .ip-ev__main{flex:1 1 0}  /* so the title keeps the row width (tile · text · lamp column) */
-.s2-main .ip-ev--alert > .ip-ev__act{order:1;flex-basis:100%;min-height:var(--control-h-touch);padding-left:calc(var(--record-tile) + var(--space-3));margin-top:calc(-1 * var(--space-2))}
+.s2-tabbar{position:sticky;bottom:0;z-index:2;max-width:none} /* the bar spans the screen at its foot */
 .s7s-vp{height:844px;min-height:0;overflow:hidden}
 .s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .s7s-view > .s7-main{flex:none}
@@ -37,17 +32,12 @@
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
+.s9-modal{position:relative} /* the BottomSheet scrim fills the phone screen */
 .s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s2s-modal{position:relative}
-.s2s-under{display:flex;flex-direction:column;flex:1;min-height:0}
-.s2s-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center;padding:var(--space-4)}
-.s2s-dlgnote{margin:0;color:var(--ink-secondary)}
-.s2s-dlgkeys{display:flex;flex-direction:column;gap:var(--space-2)}
-.s2s-dlgkeys > .ip-btn{width:100%}
-.ip-entrykeys > .ip-note{margin:0}</style>
+.s2s-under{display:flex;flex-direction:column;flex:1;min-height:0} /* the inert page under the Dialog keeps the screen's column */</style>
 </helmet>
 <div class="ip-root" style="padding:0; width:390px; height:844px; overflow:hidden"><div class="s7-screen s7s-vp s2-phone">
 <div class="s7s-view"><main class="s7-main s2-main">

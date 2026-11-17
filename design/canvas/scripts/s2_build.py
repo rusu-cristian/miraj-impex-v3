@@ -14,7 +14,7 @@ Ion Rusu (illustrative). The page is drawn after 12:00 (MissingRow lists today's
 python3 -I s2_build.py <repo_root> [heights.json] [--canvas]
 Writes design/canvas/project/S2-acasa[--<role>].dc.html, /tmp/s2/<stem>.html (phones) and /tmp/s4s/<stem>.html (desktops);
 --canvas also sets the S2 boards in design/canvas/project/canvas.json (new row below the lowest one, phones first, D74)."""
-import sys, json, pathlib, importlib, datetime as dt
+import sys, re, json, pathlib, importlib, datetime as dt
 
 ARGS = sys.argv[1:]
 CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
@@ -29,6 +29,7 @@ sys.argv = ['s4s_build.py', str(ROOT)]
 s4 = importlib.import_module('s4s_build')                    # desktop shell (writes nothing on import)
 
 n, dd, NB, MINUS = s4.n, B.dd, s4.NB, s4.MINUS
+NB2 = '\u00a0'  # no-break space before a · separator
 lamp, pair, hen, roo, F, M = s4.lamp, s4.pair, s4.hen, s4.roo, s4.F, s4.M
 IC = dict(s4.IC)
 IC.update({
@@ -44,6 +45,7 @@ def icon(k, size=None):
 def tile(k): return f'<span class="ip-tile ip-rec ip-rec--{REC[k]}" aria-hidden="true">{icon(k)}</span>'
 def ico(k): return f'<span class="ip-rec ip-rec--{REC[k]}">{icon(k, 14)}</span>'
 def num(v): return f'<span class="ip-num">{v}</span>'
+def nw(v): return f'<span class="s2-nw">{v}</span>'  # S2P: a meta group that never splits (lines break at the · separators)
 
 # ---------- data ----------
 EX = ROOT / 'design/data/extracts'
@@ -115,16 +117,17 @@ def missing(manager=False, u='', miss=None, past=(), locked=False, when=None, em
         else:
             rd, ry = day_row(day, sec, sx); alv, gy = rd['alive_end'], ry['g_per_bird']
         farm = 'Hîrbovăț · ' if manager else ''
+        sexl = f'<span class="ip-sex ip-sex--{c}">{sign} <b>{n(alv)}</b></span>'
         tl = f'<span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>'
         typ = f'<span class="ip-ev__type">Hrană zilnică <span class="ip-sex ip-sex--{c}">{sign}</span><span class="ip-sr"> {word}</span></span>'
         if locked and day != TODAY.isoformat():
             rows.append(f'<div class="ip-ev ip-ev--missing is-locked">{tl}<span class="ip-ev__main"><span class="ip-ev__title">{farm}{sec} · {typ}<span class="ip-tag ip-tag--neutral">blocat</span></span>'
-                        f'<span class="ip-ev__meta ip-num">{dd(d0)} · SAPT {wk} · zi trecută · o completează managerul</span></span>'
+                        f'<span class="ip-ev__meta ip-num">{dd(d0)} · {nw("SAPT " + str(wk))} · {nw("zi trecută")} · {nw("o completează managerul")}</span></span>'
                         f'<span class="ip-ev__status">{lamp("warn", "lipsă")}</span><span class="ip-ev__go"></span></div>')
             continue
         rows.append(f'<a class="ip-ev ip-ev--missing" href="#hrana-zilnica-{sec}-{sx}{"" if day == TODAY.isoformat() else "-" + day}">{tl}'
                     f'<span class="ip-ev__main"><span class="ip-ev__title"><span class="ip-sr">Completează: </span>{farm}{sec} · {typ}</span>'
-                    f'<span class="ip-ev__meta ip-num">{dd(d0)} · SAPT {wk} · <span class="ip-sex ip-sex--{c}">{sign} <b>{n(alv)}</b></span> în viață · ieri {gy}{NB}g</span></span>'
+                    f'<span class="ip-ev__meta ip-num">{dd(d0)} · {nw("SAPT " + str(wk))} · {nw(sexl + " în viață")} · {nw(f"ieri {gy}{NB}g")}</span></span>'
                     f'<span class="ip-ev__status">{lamp("warn", "lipsă")}</span><span class="ip-ev__go">{icon("go", 16)}</span></a>')
     if empty: rows = [f'<p class="ip-missing__empty"><span class="ip-lamp ip-lamp--off">nimic lipsă</span><span>{empty}</span></p>']
     scope = scope or ('fermele tale' if manager else 'Hîrbovăț')
@@ -147,7 +150,7 @@ def act_row(k, i, title, meta, name, menu='closed', off=False, edited=None):
     (aria-disabled keys and items, the reason in the menu note); edited = the author's same-day edit time (SYS09 A)."""
     mid = f'a{i}-m'
     dis = f' aria-disabled="true" aria-describedby="{mid}-n"' if off else ''
-    if edited: meta += f' · <span class="ip-ev__edited">modificat la {num(edited)}</span>'
+    if edited: meta += f'{NB2}· <span class="ip-ev__edited">modificat la {num(edited)}</span>'
     ed_k = f'<a class="ip-btn ip-btn--ghost" role="link" tabindex="0"{dis}>' if off else f'<a class="ip-btn ip-btn--ghost" href="#editeaza-{k}">'
     fo = ' ip-focus' if menu == 'open' else ''  # the open menu shows its focused first item (SYS09 overrides .is-active's fill)
     ed_i = f'<a class="ip-menu__item{fo}" role="menuitem" tabindex="-1"{dis}>' if off else \
@@ -168,7 +171,7 @@ def introdus(menu=None, off=False, edited=None):
     """menu / edited: {record: 'open' | 'hh:mm'} for one row (S2S); off: the 23:59 window closed (every row)."""
     menu, edited = menu or {}, edited or {}
     spec = {
-        'mortality': (f'Mortalitate · Hîrbovăț · {num(6)} secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}',
+        'mortality': (f'Mortalitate · {num(6)} secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}',
                       f'{num(t_of(LOG["mortality"]))} · Dr. Ceban · Zilnic, fără sacrificări', 'Mortalitate de azi'),
         'eggs': (f'Ouă · H1, H3, H4 · {num(n(EGG_T))} ouă', f'{num(t_of(LOG["eggs"]))} · Dr. Ceban · ouat {num(s4.pct(LAY))}', 'Ouă de azi'),
         'feed': (f'Hrană zilnică · {num(len(FEED_ROWS))} din {num(12)} rânduri · {num(n(FEED_KG, 1) + NB + "kg")}',
@@ -200,9 +203,14 @@ def alerts(owner=False, u=''):
     # "fără preț" has its own block for the owner (UnpricedCount); the manager can't add prices (D05), so it is not his alert.
     items = [a_h3, a_h12, a_32, a_42, a_st] if owner else [a_h3, a_h12, a_st]
     items = [a.replace('<div class="ip-ev__main">', FARM_P, 1) for a in items]
+    LIM = 'limită <span class="ip-num">5 zile</span>'
+    items = [a.replace(' · ' + LIM, ' · ' + nw(LIM), 1) for a in items]
+    assert sum(LIM in a for a in items) == 1
+    # the meta breaks only at its · separators (each group stays whole, as the MissingRow meta)
+    items = [re.sub(r'(<div class="ip-ev__meta ip-num">)(.*?)(</div>)', lambda m: m[1] + ' · '.join(nw(g) for g in m[2].split(' · ')) + m[3], a, count=1) for a in items]
     assert all(a.count(FARM_P) == 1 for a in items)
     note = f'{num(len(items))} alerte · {"toate fermele" if owner else "fermele tale"} · {num(D)}'
-    return f'<section class="s2-block" aria-labelledby="{u}dv">{head("De verificat", note, u + "dv")}<div class="ip-list">{"".join(items)}</div></section>'
+    return f'<section class="s2-block" aria-labelledby="{u}dv">{head("De verificat", note, u + "dv")}<div class="ip-list ip-list--alerts">{"".join(items)}</div></section>'
 
 def stock(u='', cap='Zile de hrană'):
     def ro(fid, s, sign, word):
@@ -358,14 +366,10 @@ CSS_P = CSS7 + CSS_SHARED + '''
 .s2-phone{min-height:inherit}
 .s2-phead h1{margin:0}
 .s2-more{min-height:var(--control-h-touch)} /* touch: 48px target */
-.s2-tabbar{position:sticky;bottom:0;z-index:2;max-width:none;align-items:stretch}
-.s2-tabbar .ip-tabbar__item{justify-content:center} /* the item fills the bar height: >=44px touch target */
-.s2-tabbar .ip-tabbar__item{text-decoration:none} /* links styled as the component's items */
-.s2-main .ip-ev--alert{flex-wrap:wrap;row-gap:0} /* AlertRow at 390: the action link takes its own line under the text, */
-.s2-main .ip-ev--alert > .ip-ev__main{flex:1 1 0}  /* so the title keeps the row width (tile · text · lamp column) */
-.s2-main .ip-ev--alert > .ip-ev__act{order:1;flex-basis:100%;min-height:var(--control-h-touch);padding-left:calc(var(--record-tile) + var(--space-3));margin-top:calc(-1 * var(--space-2))}'''
+.s2-tabbar{position:sticky;bottom:0;z-index:2;max-width:none} /* the bar spans the screen at its foot */'''
 CSS_D = s4.CSS + '\n' + s4.CSS_S4 + CSS_SHARED + '''
 .s2-cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-6);align-items:start}
+.s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-small) + var(--space-2))} /* the panel's top on the alert list's top (under its head) */
 .s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}
 .ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */
 .s2-trackbox{container-type:inline-size}

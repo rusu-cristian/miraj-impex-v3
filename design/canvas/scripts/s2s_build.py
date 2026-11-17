@@ -2,7 +2,8 @@
 python3 -I s2s_build.py <repo_root> [--canvas]
 Imports s2_build (it rewrites the 4 S2 default boards and, through s7s_build, the S7 boards byte-identical) and reuses
 its blocks (missing, entrykeys, introdus, alerts, stock, unpriced, track, farms_block), shells (phone tab bar, Sidebar)
-and CSS; phone viewport / Banner CSS from sstate_css.py; desktop skeleton and empty-box classes from s4s_build.
+and CSS; phone viewport / Banner / modal anchor CSS from sstate_css.py; empty-box classes from s4s_build. S2P: phone Dialog,
+tab bar key off, StockReadout and CycleTrack skeletons are system classes (additions.css section 35).
 Phone state boards are 390×844 viewports (D60) with the BottomTabBar at the foot; desktop boards are pages (1440).
 Every figure comes from the extracts; boards whose example is not in the sample say "exemplu de stare (D39)".
 Writes design/canvas/project/S2-acasa--<state>.dc.html, /tmp/s2/<stem>.html (phones), /tmp/s4s/<stem>.html (desktops),
@@ -46,7 +47,7 @@ def pscreen(parts, vet=True, overlay='', modal=False, end=False, key_off=None):
     inner = f'<div class="s7s-view{" s7s-view--end" if end else ""}"><main class="s7-main s2-main">\n{"".join(parts)}\n</main></div>\n{A.tabbar(vet, key_off)}'
     if modal:  # the page under the Dialog is inert; the scrim covers the whole screen, tab bar included
         inner = f'<div class="s2s-under" inert="inert" aria-hidden="true">{inner}</div>'
-    return f'<div class="s7-screen s7s-vp s2-phone{" s2s-modal" if modal else ""}">\n{inner}\n{overlay}\n</div>'
+    return f'<div class="s7-screen s7s-vp s2-phone{" s9-modal" if modal else ""}">\n{inner}\n{overlay}\n</div>'
 PH = lambda ctx: A.pagehead(ctx, True)
 
 def skrow(): return ('<div class="ip-ev ip-ev--skel" aria-hidden="true"><span class="ip-skel ip-skel--tile"></span><span class="ip-ev__main">'
@@ -85,11 +86,11 @@ boards.append(('zi-trecuta-blocat', 'vet · zi trecută lipsă · blocat · exem
 
 # 4 · vet · Șterge · confirmare — Dialog over the default page (after 12:00); no reason for the author's same-day delete
 # (D70 A); the whole save goes (D86); focus starts on Anulează
-dlg = (f'<div class="ip-scrim s2s-scrim"><div class="ip-dialog s2s-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
+dlg = (f'<div class="ip-scrim ip-scrim--phone"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Șterge Hrană zilnică din <span class="ip-num">{D}</span></h2>'
-       f'<p class="s2s-dlgnote" id="dlg-n">Se șterg toate cele {num(len(A.FEED_ROWS))} rânduri salvate la {num(A.t_of(A.LOG["feed"]))} '
+       f'<p class="ip-dialog__note" id="dlg-n">Se șterg toate cele {num(len(A.FEED_ROWS))} rânduri salvate la {num(A.t_of(A.LOG["feed"]))} '
        f'({num(n(A.FEED_KG, 1) + NB + "kg")}). Secțiunile lor apar din nou în Lipsesc date. Ștergerea rămâne în Istoric modificări.</p>'
-       f'<div class="s2s-dlgkeys"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button>'
+       f'<div class="ip-dialog__keys ip-dialog__keys--stack"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button>'
        f'<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch">Șterge</button></div></div></div>')
 boards.append(('sterge-confirmare', 'vet · Șterge · confirmare', 'p', pscreen(
     [PH(A.CTX_VET), A.missing(), A.entrykeys(), A.introdus()], overlay=dlg, modal=True)))
@@ -121,7 +122,7 @@ boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscre
 # ---------- desktop pieces ----------
 sk = s4.sk
 def skreadouts(k, hid):
-    ro = f'<li><div class="s4s-skreadout s2s-skro" aria-hidden="true">{sk("s4s-w40")}{sk("s4s-w50 s4s-h28")}{sk("s4s-w100")}{sk("s4s-w100")}{sk("s4s-w80")}</div></li>'
+    ro = f'<li><div class="ip-readouts__skel" aria-hidden="true">{sk() * 5}</div></li>'
     return f'<ul class="ip-readouts" aria-labelledby="{hid}">{ro * k}</ul>'
 
 # 9 · manager · desktop · se încarcă
@@ -133,7 +134,7 @@ boards.append(('manager-desktop--se-incarca', 'manager · desktop · se încarc�
 
 # 10 · manager · desktop · zi trecută lipsă (link, D07: managers enter past days) + stoc sub 0 (D50) — D39 both
 a_neg = s4.alert('delivery', f'Breeder 2 · stoc <span class="ip-num">{n(NEG)} kg</span> · sub 0',
-                 f'{D} · consumul depășește livrările · verifică livrările', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
+                 f'{D} · consumul depășește livrările', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
 al = A.alerts()
 first = '<div class="ip-ev ip-ev--alert">'
 assert al.count(first) == 3 and f'{num(3)} alerte' in al
@@ -147,15 +148,14 @@ ro_neg = (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labe
           f'<span class="ip-sr">, pentru găini</span></span><span class="ip-rlamp ip-rlamp--warn">abatere</span></div>'
           f'<div class="ip-readout__val">{n(NEG)}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(0, 1)}<small> zile</small></dd></div>'
           f'<div><dt>medie/zi {w0[8:10]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(B2["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
-          f'<div><dt>epuizat pe</dt><dd>{D}</dd></div></dl><p class="ip-readout__sub s2-m0">stoc sub 0 · verifică livrările</p>'
-          f'<p class="ip-readout__sub s2-m0">consumul depășește livrările</p></div></li>')
+          f'<div><dt>epuizat pe</dt><dd>{D}</dd></div></dl><p class="ip-readout__sub s2-m0">stoc sub 0 · verifică livrările</p></div></li>')
 assert st.count(ro_b2) == 1
 boards.append(('manager-desktop--zi-trecuta-stoc-sub-0', 'manager · desktop · zi trecută lipsă · stoc sub 0 · exemplu de stare (D39)', 'm', A.desktop('Manager', [
     A.pagehead(A.CTX_MGR), f'<div class="s2-cols">{al}{A.missing(True, past=[PAST])}</div>', st.replace(ro_b2, ro_neg),
     A.entrykeys(True), A.introdus_empty(A.INTRO_MGR)])))
 
 # 11 · proprietar · desktop · se încarcă — track, alerts, UnpricedCount (its own skeleton), stock, farm summaries
-sktrack = f'<div class="s2s-sktrack" aria-hidden="true">{sk("s4s-w100 s4s-h20")}{sk("s4s-w100 s4s-h20")}{sk("s4s-w30")}</div>'
+sktrack = f'<div class="ip-trackskel" aria-hidden="true">{sk() * 3}</div>'  # 2 lanes + the month axis
 skup = (f'<section class="ip-unpriced" aria-labelledby="up" aria-busy="true"><div class="ip-unpriced__head">{tile("price")}<h2 class="ip-cap" id="up">Livrări fără preț</h2></div>'
         f'<div aria-hidden="true" class="ip-unpriced__skel"><span class="ip-skel ip-skel--val"></span><span class="ip-skel ip-skel--w1"></span><span class="ip-skel ip-skel--w2"></span></div></section>')
 skfs = f'<article class="ip-fsum ip-fsum--compact" aria-hidden="true">{sk("s4s-w40 s4s-h20")}{sk("s4s-w50")}{sk("s4s-w30 s4s-h20")}{sk("s4s-w100")}{sk("s4s-w80")}</article>'
@@ -175,20 +175,9 @@ boards.append(('proprietar-desktop--toate-cu-pret', 'proprietar · desktop · to
 
 # ---------- CSS ----------
 EMPTY_CSS = '\n'.join(l for l in s4.CSS_STATES.splitlines() if l.startswith(('.s4s-emptybox', '.s4s-empty-p', '.ip-empty > .ip-btn')))
-CSS_PS = A.CSS_P + SC.VIEW + SC.BANNER + '\n' + EMPTY_CSS + '''
-.s2s-modal{position:relative}
-.s2s-under{display:flex;flex-direction:column;flex:1;min-height:0}
-.s2s-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center;padding:var(--space-4)}
-.s2s-dlgnote{margin:0;color:var(--ink-secondary)}
-.s2s-dlgkeys{display:flex;flex-direction:column;gap:var(--space-2)}
-.s2s-dlgkeys > .ip-btn{width:100%}
-.ip-entrykeys > .ip-note{margin:0}'''
-KEYOFF_CSS = '''
-.s2-tabbar .ip-tabbar__item[aria-disabled=true]{color:var(--ink-disabled);cursor:default} /* disabled = sunken + ink-disabled (craft §5) */
-.s2-tabbar .ip-tabbar__item[aria-disabled=true] .ip-tabbar__key{background:var(--sunken);color:var(--ink-disabled);box-shadow:none}'''
-CSS_DS = A.CSS_D + '\n' + s4.CSS_STATES + '''
-.s2s-sktrack{display:flex;flex-direction:column;gap:var(--space-2)}
-.s2s-skro{flex:1;width:100%;min-width:0} /* the skeleton takes the readout's column width (its bars are % wide) */'''
+CSS_PS = A.CSS_P + SC.VIEW + SC.BANNER + SC.MODAL + '\n' + EMPTY_CSS + '''
+.s2s-under{display:flex;flex-direction:column;flex:1;min-height:0} /* the inert page under the Dialog keeps the screen's column */'''
+CSS_DS = A.CSS_D + '\n' + s4.CSS_STATES
 
 # ---------- write ----------
 STEM0, TITLE0 = A.STEM0, A.TITLE0
@@ -197,7 +186,7 @@ out = []
 for slug, state, kind, body in boards:
     stem, title = f'{STEM0}--{slug}', f'{TITLE0} · {state}'
     if kind == 'p':
-        css = CSS_PS + (KEYOFF_CSS if 'class="ip-tabbar__item" role="link"' in body else '')  # only the boards with the key off
+        css = CSS_PS
         root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>'
         dc = f'''<!doctype html>
 <html lang="ro">
