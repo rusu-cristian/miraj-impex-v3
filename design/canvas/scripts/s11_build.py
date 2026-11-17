@@ -120,6 +120,14 @@ def sec_head(hid, title, meta='', right=''):
     m = f'<span class="ip-note">{meta}</span>' if meta else ''
     return f'<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{m}</div>{right}</div>'
 
+def tscroll(cap, inner, fit=False):
+    """S11X: a table that scrolls sideways inside its own box wherever the content area is narrower than the table (Consum
+    1113 px; Livrări beside S13's SidePanel), as a focusable region named by its caption (WCAG 1.4.10, 2.1.1). One
+    implementation, also used by S13 (was S13P's .s13-tscroll)."""
+    f = ' s11-tablebox--fit' if fit else ''
+    return (f'<div class="s11-tablebox s11-tscroll{f}" role="region" tabindex="0" aria-label="{cap}">'
+            f'<table class="ip-table s11-table"><caption class="ip-sr">{cap}</caption>{inner}</table></div>')
+
 # ---------- 2. Stoc ----------
 def stock_ro(ft, sr):
     s = stocks[ft]; name = FT[ft]['name'].replace(' ', NBSP); ok = s['days_left'] >= 5
@@ -212,7 +220,7 @@ def sec_deliveries(role, mode='default'):
     ro = ' · prețuri doar de citit' if role == 'Manager' else ''
     return f'''<section class="s4-block" aria-labelledby="h-livrari">
 {sec_head("h-livrari", "Livrări", f'<span class="ip-num">{N_ALL}</span> livrări în Seria 2026 (Hîrbovăț <span class="ip-num">{N_HIR}</span> · Telița <span class="ip-num">{N_TEL}</span>) · cele mai noi întâi{ro}', right)}
-<div class="s11-tablebox{' s11-tablebox--fit' if viewer else ''}"><table class="ip-table s11-table"><caption class="ip-sr">Livrări hrană, cele mai noi {len(SHOWN)} din {N_ALL}</caption><thead><tr>{ths}</tr></thead><tbody>{rows}</tbody></table></div>
+{tscroll(f'Livrări hrană, cele mai noi {len(SHOWN)} din {N_ALL}', f'<thead><tr>{ths}</tr></thead><tbody>{rows}</tbody>', viewer)}
 {help_}{foot}
 </section>'''
 
@@ -254,7 +262,7 @@ def sec_consum():
     foot = '<div class="s11-foot"><span class="ip-note">g/pasăre = media zilelor cu rânduri; rândul săptămânii cântărește ♀ după găini și ♂ după cocoși. Toleranță <span class="ip-num">±10%</span>. Telița: fără consum în ciclul curent (ciclu închis pe <span class="ip-num">28.02.2026</span>).</span><a class="ip-link s11-lk" href="#consum-toate">Vezi toate săptămânile</a></div>'
     return f'''<section class="s4-block" aria-labelledby="h-consum">
 {sec_head("h-consum", "Consum", 'Hîrbovăț · pe săptămână și secțiune · <span class="ip-num">SAPT 37–40</span> · ghid Ross 308 ouat')}
-<div class="s11-tablebox"><table class="ip-table s11-table"><caption class="ip-sr">Consum Hîrbovăț pe săptămână și secțiune, SAPT 37–40, față de ghid</caption><thead><tr>{ths}</tr></thead>{rows}</table></div>
+{tscroll('Consum Hîrbovăț pe săptămână și secțiune, SAPT 37–40, față de ghid', f'<thead><tr>{ths}</tr></thead>{rows}')}
 {foot}
 </section>'''
 
@@ -286,7 +294,7 @@ def sec_loading():
         cl = lambda c: (' class="' + ' '.join(['num'] * ('num' in c.split()) + ['s11-pc'] * ('s11-thedit' in c.split())) + '"') if 'num' in c.split() else ''
         tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}</td>' for c in cols) + '</tr>' for _ in range(rows))
         if cost: return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'
-        return f'<div class="s11-tablebox"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'
+        return f'<div class="s11-tablebox s11-tscroll"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'  # aria-hidden: scrolls, not a tab stop
     return f'''<div class="s11-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Hrană pentru Seria 2026.</p>
 <section class="s4-block" aria-hidden="true">{sec_head("h-stoc", "Stoc")}<ul class="ip-readouts">{ro * 3}</ul></section>
@@ -332,6 +340,8 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s11-tablebox{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);overflow:hidden}
+.s11-tscroll{overflow-x:auto} /* S11X: scrolls inside its box where the content is narrower than the table (role=region, tabindex=0) */
+.s11-tscroll:focus-visible{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
 .s11-tablebox--fit{width:fit-content;min-width:calc(var(--space-12) * 12);max-width:100%} /* viewer Livrări: 4 columns stay together (craft §5) */
 .s11-tablebox--fit > .ip-table{width:100%}
 .s11-table > tbody:last-child > tr:last-child > *{border-bottom:0}

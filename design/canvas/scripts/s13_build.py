@@ -177,15 +177,12 @@ DH = 1024
 KEY_RE = r'<a class="ip-btn ip-btn--primary" href="#livrare-hrana">(.*?)Livrare hrană</a>'
 SPG = s11.page("Manager"); assert len(re.findall(KEY_RE, SPG)) == 1
 SPG = re.sub(KEY_RE, r'<button type="button" class="ip-btn ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="lp">\1Livrare hrană</button>', SPG)
-# beside the open panel the page is 440 px narrower: at 1280 the S11 tables (711 px) no longer fit their 560 px block and the
-# S11 tablebox clips their last columns. Here they scroll inside their box, as a named, focusable region (WCAG 1.4.10, 2.1.1)
-TB_RE = r'<div class="s11-tablebox"><table class="ip-table s11-table"><caption class="ip-sr">(.*?)</caption>'
-assert len(re.findall(TB_RE, SPG)) == 2
-SPG = re.sub(TB_RE, r'<div class="s11-tablebox s13-tscroll" role="region" tabindex="0" aria-label="\1"><table class="ip-table s11-table"><caption class="ip-sr">\1</caption>', SPG)
+# beside the open panel the page is 440 px narrower: at 1280 the S11 tables (711 px) no longer fit their 560 px block; they
+# scroll inside their box as s11_build's named, focusable regions (.s11-tscroll, S11X; was .s13-tscroll here)
+assert SPG.count('class="s11-tablebox s11-tscroll" role="region" tabindex="0"') == 2
 DESK = f'<div class="s13-vp">{SPG}</div>'
 CSS_D = s11.CSS + '''
 .s13-vp{position:relative;height:''' + str(DH) + '''px;overflow:hidden;margin-right:var(--panel-w)}
-.s13-vp .s13-tscroll{overflow-x:auto}
 .s13-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w)}
 .s13-phead{gap:var(--space-2);flex-wrap:nowrap}
 .s13-pbody{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
