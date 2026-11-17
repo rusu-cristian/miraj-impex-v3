@@ -22,9 +22,12 @@ IC = {  # Banner and FileDrop previews (Lucide)
 def cap(text):
     return f'<span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">{text}</span>'
 
-def fmt(v):
+def fmt(v, unit=''):
+    """Thin no-break thousands, true minus, decimal comma; a percentage keeps one decimal (89,0, as the guide detail)."""
     if v is None:
         return None
+    if unit == '%':
+        return f'{float(v):.1f}'.replace('.', ',')
     if isinstance(v, float) and not v.is_integer():
         return f'{v:.1f}'.replace('.', ',')
     n = int(v)
@@ -38,6 +41,7 @@ SEX = {'F': ('♀', 'hen', 'găini'), 'M': ('♂', 'rooster', 'cocoși')}
 COLS = {'growth': [('feed_g', 'Hrană g'), ('body_weight_g', 'Greutate g')],
         'laying': [('feed_g', 'Hrană g'), ('lay_pct', 'Ouat %')]}
 NAME = {'feed_g': 'hrana', 'body_weight_g': 'greutatea', 'lay_pct': 'ouat %'}
+UNIT = {'feed_g': 'g', 'body_weight_g': 'g', 'lay_pct': '%'}
 
 # ------------------------------------------------------------------ rows (as read from the file; line 1 = header)
 def growth_rows():
@@ -81,7 +85,7 @@ def reason(r):
         return (f'SAPT {r["week"]} ♂', 'greutatea „#REF!” nu e număr', 'Greutatea „#REF!” nu e număr. Scrie greutatea în grame.', 'body_weight_g')
     if k == 'dup':
         return (f'SAPT {r["week"]} ♀', f'e deja pe rândul {r["dup_of"]}',
-                f'SAPT {r["week"]} ♀ e deja pe rândul {r["dup_of"]}. Păstrează un singur rând.', 'week')
+                f'Rândul {r["dup_of"]} are deja sapt. {r["week"]} ♀. Păstrează un singur rând.', 'week')
     if k == 'nosex':
         return (f'SAPT {r["week"]}', 'lipsește sexul', 'Lipsește sexul. Scrie G (♀) sau C (♂).', 'sex')
     return None
@@ -123,7 +127,7 @@ def row_html(p, kind, r, focus_cell=None):
         if key in bad:
             cells.append(bad_td(p, r, key, bad[key], focus=fc(key)))
             continue
-        v = fmt(r['v'][key])
+        v = fmt(r['v'][key], UNIT[key])
         if v is None:
             if key == 'lay_pct' and r['sex'] == 'M':
                 cells.append('<td class="num ip-gimp__none">–<span class="ip-sr"> nu se aplică la cocoși</span></td>')
@@ -150,11 +154,23 @@ def table(p, kind, rows, label, focus=None, busy=False, body=None, sum_=True):
     return (f'<div class="ip-gimp__box" tabindex="0" role="region" aria-label="Rânduri citite, {label}">'
             f'<table class="ip-table ip-gimp__t"{d}{b}>{head(kind)}<tbody>{tb}</tbody></table></div>')
 
+# loading: six section 42 skeleton rows (tr.ip-table__skel, aria-hidden) under the real head; each bar is as wide as the
+# column's figures will be (ch of the Mono cell: Rând, SAPT, Vârstă 2; Sex 1; hrană 3; greutate, ouat % 4) and sits where
+# they will sit (numbers at the right edge, sex at the left); Verificare stays empty (a valid row has no text there).
+CH = {'line': 2, 'age': 2, 'week': 2, 'sex': 1, 'feed_g': 3, 'body_weight_g': 4, 'lay_pct': 4}
+def skel_body(kind, n=6):
+    keys = ['line'] + (['age'] if kind == 'laying' else []) + ['week', 'sex'] + [k for k, _ in COLS[kind]]
+    bar = lambda k: f'<span class="ip-skel ip-gimp__sk{CH[k]}{"" if k == "sex" else " ip-skel--end"}"></span>'
+    tds = ''.join(f'<td class="{"ip-gimp__sex" if k == "sex" else "num"}">{bar(k)}</td>' for k in keys)
+    return ''.join(f'<tr class="ip-table__skel" aria-hidden="true">{tds}<td class="ip-gimp__chk"></td></tr>' for _ in range(n))
+
 # ------------------------------------------------------------------ parts
 def src_line(p, name, note, counts, key='Alege alt fișier'):
+    """key='' leaves the key out (the empty file: the EmptyState holds the one "Alege alt fișier")."""
     c = f'<p class="ip-gimp__counts" id="{p}-sum">{counts}</p>' if counts else f'<p class="ip-gimp__counts" id="{p}-sum"></p>'
+    k = f'<button type="button" class="ip-btn ip-btn--ghost">{key}</button>' if key else ''
     return (f'<div class="ip-gimp__src"><span class="ip-gimp__file"><b>{name}</b><span class="ip-note">{note}</span></span>'
-            f'{c}<button type="button" class="ip-btn ip-btn--ghost">{key}</button></div>')
+            f'{c}{k}</div>')
 
 def counts(read, valid, refused):
     s = f'{num(read)} rânduri citite · {num(valid)} valide'
@@ -199,26 +215,35 @@ def wrap(p, inner, label):
     return f'<section class="ip-gimp" aria-label="{label}">{inner}</section>'
 
 DROP_NOTE = 'sapt · sex · hrană g · greutate g · mortalitate % · ouat % · incubabile % · masă ou g'
-DROP = (f'<div class="ip-drop">{svg(IC["upload"], "ip-icon ip-icon--22")}'
+# FileDrop as the paste target (additions section 43): focusable group, Ctrl+V pastes into it; the file button inside
+DROP_LABEL = 'Lipește tabelul aici (Ctrl+V) sau alege un fișier .xlsx sau .csv'
+DROP = (f'<div class="ip-drop ip-drop--paste" tabindex="0" role="group" aria-label="{DROP_LABEL}">{svg(IC["upload"], "ip-icon ip-icon--22")}'
         '<div>Lipește tabelul aici sau <button type="button" class="ip-link">alege un fișier</button></div>'
         f'<div class="ip-note">{DROP_NOTE}</div></div>')
+
+def empty_file(name):
+    """A file with the header only: EmptyState in the table box, its one next step "Alege alt fișier"."""
+    return ('<div class="ip-gimp__box"><div class="ip-empty"><span class="ip-lamp ip-lamp--off">fără date</span>'
+            f'<span>{name} are doar antetul, niciun rând de ghid.</span>'
+            '<button type="button" class="ip-btn ip-btn--secondary">Alege alt fișier</button></div></div>')
+EMPTY_NOTE = 'Scrie rândurile ghidului sub antet sau alege alt fișier.'
+NOHEAD = ('<p><b>{f} nu are antetul cu coloanele SAPT și Sex.</b> Pune pe primul rând numele coloanelor de sub chenar '
+          'și încarcă fișierul din nou.</p>')
 
 # ------------------------------------------------------------------ blocks
 B = []
 GF = 'Ross 308 creștere.xlsx'
 
 # 1 loading
-SK = ''.join('<tr aria-hidden="true">' + ''.join(f'<td><span class="ip-skel ip-skel--w3"></span></td>' for _ in range(5))
-             + '<td></td></tr>' for _ in range(6)) + '<tr><td colspan="6" class="ip-sr">Se citește fișierul</td></tr>'
 B.append(('Se citește fișierul (skeleton, aria-busy)', wrap('a',
     src_line('a', GF, 'fișier .xlsx · tip creștere', '<span class="ip-gimp__wait">Se citește fișierul.</span>', 'Anulează citirea')
-    + bar('a') + table('a', 'growth', [], GF, busy=True, body=SK)
-    + foot('a', False, 'Se citește fișierul.') + live(''), 'Import ghid')))
+    + bar('a') + table('a', 'growth', [], GF, busy=True, body=skel_body('growth'))
+    + foot('a', False, 'Se citește fișierul.') + live(f'Se citește {GF}.'), 'Import ghid')))
 
 # 2 all valid, growth
 gr = number(growth_rows())
 gap_lines = [r['line'] for r in gr if r['v']['body_weight_g'] is None]
-INFO_G = (f'Greutatea lipsește la SAPT 24–25 (rândurile {gap_lines[0]}–{gap_lines[-1]}), iar fișierul nu are coloanele '
+INFO_G = (f'Greutatea lipsește la sapt. 24–25 (rândurile {gap_lines[0]}–{gap_lines[-1]}), iar fișierul nu are coloanele '
           'Mortalitate %, Ouat %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid.')
 B.append(('Toate valide · creștere (real, 50 de rânduri; cutia derulează)', wrap('b',
     src_line('b', GF, 'fișier .xlsx · tip creștere', counts(len(gr), len(gr), 0))
@@ -236,7 +261,7 @@ B.append(('Toate valide · capătul tabelului (derulat): SAPT 24–25 fără gre
 er = error_rows()
 nbad = sum(1 for r in er if reason(r))
 gl = [r['line'] for r in er if r['v']['body_weight_g'] is None]
-INFO_E = (f'Greutatea lipsește la SAPT 24–25 (rândurile {gl[0]}–{gl[-1]}), iar fișierul nu are coloanele '
+INFO_E = (f'Greutatea lipsește la sapt. 24–25 (rândurile {gl[0]}–{gl[-1]}), iar fișierul nu are coloanele '
           'Mortalitate %, Ouat %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid.')
 NOTE_E = f'{nbad} rânduri refuzate: corectează fișierul și încarcă-l din nou.'
 B.append((f'Rânduri refuzate · Toate (exemple de stare D39: rândurile 7, 10, 12)', wrap('c',
@@ -254,7 +279,7 @@ B.append(('Filtru Refuzate · focus pe celula „#REF!” (după linkul din rezu
 # 5 laying, pasted: age + SAPT, lay % partial
 lr = number(laying_rows())
 LF = 'Ross 308 ouat'
-INFO_L = ('Ouat % lipsește la vârsta 19–24 și 64–65 (SAPT 1–6 și 46–47), iar tabelul nu are coloanele Greutate g, '
+INFO_L = ('Ouat % lipsește la vârsta 19–24 și 64–65 (sapt. 1–6 și 46–47), iar tabelul nu are coloanele Greutate g, '
           'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile ♀.')
 B.append(('Ouat · tabel lipit (real, 94 de rânduri): vârstă și SAPT (SAPT = vârstă − 18, D26)', wrap('e',
     src_line('e', 'Tabel lipit', 'din clipboard · tip ouat', counts(len(lr), len(lr), 0), 'Lipește alt tabel')
@@ -271,17 +296,13 @@ B.append(('Format greșit (.pdf)', wrap('f',
 
 # 7 unreadable: no header
 B.append(('Fișier necitibil: antetul nu e găsit', wrap('g',
-    banner('fault', '<p><b>În Ross 308 creștere.csv nu am găsit coloanele SAPT și Sex.</b> Pune antetul pe primul rând, '
-                    'cu numele de sub chenar, și încarcă fișierul din nou.</p>', 'g-err')
+    banner('fault', NOHEAD.format(f='Ross 308 creștere.csv'), 'g-err')
     + DROP + foot('g', False, 'Alege un fișier cu antet.'), 'Import ghid')))
 
 # 8 empty
-EMPTY = ('<div class="ip-gimp__box"><div class="ip-empty"><span class="ip-lamp ip-lamp--off">fără date</span>'
-         '<span>Ross 308 creștere.csv are doar antetul, niciun rând de ghid.</span>'
-         '<button type="button" class="ip-btn ip-btn--secondary">Alege alt fișier</button></div></div>')
 B.append(('Gol: doar antetul', wrap('h',
-    src_line('h', 'Ross 308 creștere.csv', 'fișier .csv · tip creștere', counts(0, 0, 0), 'Alege alt fișier')
-    + EMPTY + foot('h', False, 'Fișierul nu are rânduri de ghid.') + live('Fișier citit: niciun rând.'), 'Import ghid')))
+    src_line('h', 'Ross 308 creștere.csv', 'fișier .csv · tip creștere', counts(0, 0, 0), '')
+    + empty_file('Ross 308 creștere.csv') + foot('h', False, EMPTY_NOTE) + live('Fișier citit: niciun rând.'), 'Import ghid')))
 
 col = 'calc(var(--space-12) * 14)'  # 672px: two previews side by side at 1440
 grid = ''.join(f'<div style="width:{col}">{cap(t)}{h}</div>' for t, h in B)
@@ -290,7 +311,7 @@ html = ('<!-- @dsCard group="Data" height=2980 subtitle="SYS11" -->\n'
         f'<div>{cap("S20 · Ghiduri · import · desktop (lățime 672 px)")}'
         f'<div style="display:grid;grid-template-columns:repeat(2,{col});gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'
         f'<p class="ip-note" style="margin:0;max-width:calc({col} * 2)">Reale: valorile ghidurilor din guide-growth.json '
-        '(creștere, SAPT 1–25, hrană g și greutate g ♀/♂, greutatea până la SAPT 23) și guide-laying.json (ouat, vârsta 19–65, '
+        '(creștere, sapt. 1–25, hrană g și greutate g ♀/♂, greutatea până la sapt. 23) și guide-laying.json (ouat, vârsta 19–65, '
         'hrană g ♀/♂; ouat % ♀ ilustrativ, D29). Ilustrative (D22): numele ghidurilor și ale fișierelor. Exemple de stare (D39): '
         'rândul 7 cu greutatea „#REF!” (în ghid 550), rândul 10 copia rândului 8 (SAPT 4 ♀), rândul 12 fără sex (SAPT 5 ♂); '
         'fișierul .pdf, cel fără antet și cel gol.</p>\n'

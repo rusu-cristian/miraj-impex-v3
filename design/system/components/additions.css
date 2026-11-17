@@ -1120,6 +1120,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__file > b{font-weight:500;color:var(--ink)}
 .ip-gimp__counts{margin:0 0 0 auto;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
 .ip-gimp__counts .ip-num{color:var(--ink)}
+.ip-gimp__counts:last-child{margin-right:var(--space-1)} /* no key (empty file): the counts keep the left inset, space-3 (S20P) */
 /* Banner body: a lead sentence (500 on its first words) and, for refusals, the list of row links. */
 .ip-gimp__bn{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
 .ip-gimp__bn > p{margin:0}
@@ -1132,8 +1133,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__bar .ip-seg__item{font:inherit;cursor:pointer}
 .ip-gimp__bar .ip-seg__item:not(.is-selected){background:transparent}
 .ip-gimp__bar .ip-seg__item:hover:not(.is-selected){color:var(--ink)}
-/* Scroll box: at most 12 rows + the header in view, header sticky; a focusable region (tabindex 0, system ring). */
-.ip-gimp__box{position:relative;max-height:calc(var(--row-h) * 13);overflow:auto;background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+/* Scroll box: at most 12 rows + the header in view, header sticky; a focusable region (tabindex 0, system ring). The box's
+ * own hair edges are added to the 13 row heights so the 12th row is whole (S20P). */
+.ip-gimp__box{position:relative;max-height:calc(var(--row-h) * 13 + 2 * var(--ip-hair));overflow:auto;background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .ip-gimp__t{border-collapse:separate;border-spacing:0}
 .ip-gimp__t thead th{position:sticky;top:0;z-index:1}
 .ip-gimp__t tbody tr:last-child > td{border-bottom:0}
@@ -1153,11 +1155,15 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__why{display:block;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink)}
 .ip-gimp__why > .ip-lamp{margin-right:var(--space-2)}
 .ip-gimp__gap{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
-/* Loading line and skeleton rows (aria-busy on the table). */
+/* Loading line and skeleton rows (aria-busy on the table): six section 42 rows (tr.ip-table__skel, aria-hidden) under the
+ * real head, no hidden text row (the counts line says "Se citește fișierul.", the live region names the file). Each bar
+ * is as wide as the column's figures will be, in ch of the cell's Plex Mono (Rând, SAPT, Vârstă 2; Sex 1; hrană g 3;
+ * greutate g, ouat % 4), at the figures' edge (.ip-skel--end on numbers); Verificare stays empty (S20P). */
 .ip-gimp__wait{color:var(--ink-muted)}
-.ip-gimp__t .ip-skel{display:block}
-/* FileDrop inside the import (wrong or unreadable file): "alege un fișier" is a real button drawn as the link. */
-.ip-gimp .ip-drop button.ip-link{padding:0;border:0;background:transparent;font:inherit}
+.ip-gimp__t .ip-gimp__sk1{width:1ch}
+.ip-gimp__t .ip-gimp__sk2{width:2ch}
+.ip-gimp__t .ip-gimp__sk3{width:3ch}
+.ip-gimp__t .ip-gimp__sk4{width:4ch}
 .ip-gimp__box > .ip-empty{padding-block:var(--space-8)}
 /* Foot: Salvează ghidul (primary; aria-disabled while rows are refused) + Anulează, the reason note beside them. */
 .ip-gimp__foot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
@@ -1455,3 +1461,16 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table__skel > th,.ip-table__skel > td{vertical-align:middle}
 .ip-table__skel .ip-skel{display:block;max-width:100%}
 .ip-table__skel .ip-skel--end{margin-left:auto}
+
+/* =====================================================================================================
+ * S20P · FileDrop paste target. Spec: components.md › Additions › S20P.
+ * ===================================================================================================== */
+
+/* ---------- 43. FileDrop · paste target (S20P) ---------- */
+/* Where a table can be pasted (S20 Ghiduri import), the FileDrop itself takes focus so Ctrl+V lands in it:
+ * div.ip-drop.ip-drop--paste[tabindex=0][role=group][aria-label="Lipește tabelul aici (Ctrl+V) sau alege un fișier .xlsx
+ * sau .csv"] (+ aria-describedby → the file fault Banner after a wrong file). Focus = the system ring (focus, 2px, 2px
+ * offset) round the dashed box; look, icon and copy are the FileDrop's own. "alege un fișier" inside is a real button
+ * drawn as the link (button.ip-link, inline in its sentence). Moved from section 29's .ip-gimp scope. */
+.ip-drop--paste:focus-visible,.ip-drop--paste.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-drop button.ip-link{padding:0;border:0;background:transparent;font:inherit}

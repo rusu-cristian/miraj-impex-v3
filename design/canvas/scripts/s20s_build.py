@@ -10,16 +10,17 @@ Boards
   --fara-acces            Observator Sidebar, EmptyState "Nu ai acces la Ghiduri." + "Înapoi la Acasă"
                           (a manager or a vet: same picture with their own nav and role sentence; one board, as S17S–S19S)
   --niciun-ghid           D39 first use: no guide (and no series), EmptyState with the one next step "Importă primul ghid"
-  --se-citeste            D39 file: Înlocuiește Ross 308 creștere, the .xlsx being read (SYS11 skeleton, aria-busy)
+  --se-citeste            D39 file: Înlocuiește Ross 308 creștere, the .xlsx being read (SYS11 §42 rows sized like the columns)
   --format-gresit         D39 file: Ross 308 creștere.pdf → fault Banner + FileDrop
   --necitibil             D39 file: Ross 308 creștere.csv without the SAPT/Sex header
-  --gol                   D39 file: Ross 308 creștere.csv with the header only (EmptyState "fără date")
+  --gol                   D39 file: Ross 308 creștere.csv with the header only (EmptyState "fără date", its one key)
   --refuzate-filtru       D39 rows 7/10/12: filter Refuzate, focus on row 7's "#REF!" cell (reached from the Banner link)
   --nume-gol              Importă ghid, Salvează ghidul pressed with nothing filled: Nume (focus) + Tip errors (§41)
   --nume-folosit          D39: "ross 308 ouat" typed: the name is taken by Ross 308 ouat (case and diacritics ignored, D114)
   --ghid-nou              D39 name + file: "Ross 308 ouat 2027" (Tip Ouat), the real 94 laying rows read, all valid
   --eroare-la-salvare     D39: the same new guide, save failed: draft kept, fault Banner + Reîncearcă (focus) above the keys
-  --sterge                D39: Ross 308 ouat 2027 saved and used by no cycle: Șterge ghidul Dialog, focus on Anulează
+  --sterge                D39: Ross 308 ouat 2027 saved and used by no cycle (s20_build detail_page(name=, cycles=[])):
+                          compact Folosit de line, Șterge ghidul Dialog, focus on Anulează
 No phone detail (D114). Screen CSS `.s20-*` (tokens only): only `.s20-bkey` (the Banner action key, = S19S .s19-bkey, FIN).
 python3 -I s20s_build.py <repo_root> [--canvas]   run after any `s20_build --canvas` (which resets the phone's x).
 Renders: s20_render.py <stems> (the new boards are appended to /tmp/s20/boards.json: shots S20-9 … S20-22)."""
@@ -92,12 +93,10 @@ def repl(gimp, rows=len(S.gr)):
     return S.import_page(S.crumbs(S.GH, (S.slug(g), GUIDE[g]), 'Înlocuiește'), f'Înlocuiește {GUIDE[g]}', S.detail_meta(g),
                          S.fields(GUIDE[g], S.tip_ro(g)), S.repl_note(g, rows), gimp)
 def wrap(inner): return G['wrap'](P, inner, 'Import ghid')
-SK = (''.join('<tr class="ip-table__skel" aria-hidden="true">' + ''.join(f'<td>{skel("w3", e)}</td>' for e in (1, 1, 0, 1, 1))
-              + '<td></td></tr>' for _ in range(6)) + '<tr><td colspan="6" class="ip-sr">Se citește fișierul</td></tr>')
-# SYS11's loading rows (six, aria-busy table), drawn as §42 skeleton rows: a bar at the right edge under the right-aligned columns
+# SYS11's loading rows (six §42 skeleton rows, aria-busy table): each bar as wide as the column's figures, at their edge
 READING = wrap(G['src_line'](P, GF, 'fișier .xlsx · tip creștere', '<span class="ip-gimp__wait">Se citește fișierul.</span>', 'Anulează citirea')
-               + G['bar'](P) + G['table'](P, 'growth', [], GF, busy=True, body=SK)
-               + G['foot'](P, False, 'Se citește fișierul.') + G['live'](''))
+               + G['bar'](P) + G['table'](P, 'growth', [], GF, busy=True, body=G['skel_body']('growth'))
+               + G['foot'](P, False, 'Se citește fișierul.') + G['live'](f'Se citește {GF}.'))
 def fault(bid, html):   # a file fault: the Banner is announced and describes the FileDrop that takes the next file
     b = one(G['banner']('fault', html, bid), f'id="{bid}"', f'id="{bid}" role="alert"')
     d = one(S.DROP_P, 'role="group"', f'role="group" aria-describedby="{bid}"')
@@ -105,14 +104,10 @@ def fault(bid, html):   # a file fault: the Banner is announced and describes th
 GPDF, GCSV = 'Ross 308 creștere.pdf', 'Ross 308 creștere.csv'
 WRONG = wrap(fault('gi-err', f'<p><b>{GPDF} nu se poate citi.</b> Încarcă un fișier .xlsx sau .csv, sau lipește tabelul.</p>')
              + G['foot'](P, False, 'Alege un fișier .xlsx sau .csv.'))
-NOHEAD = wrap(fault('gi-err', f'<p><b>În {GCSV} nu am găsit coloanele SAPT și Sex.</b> Pune antetul pe primul rând, '
-                              'cu numele de sub chenar, și încarcă fișierul din nou.</p>')
+NOHEAD = wrap(fault('gi-err', G['NOHEAD'].format(f=GCSV))
               + G['foot'](P, False, 'Alege un fișier cu antet.'))
-EMPTY = ('<div class="ip-gimp__box"><div class="ip-empty"><span class="ip-lamp ip-lamp--off">fără date</span>'
-         f'<span>{GCSV} are doar antetul, niciun rând de ghid.</span>'
-         '<button type="button" class="ip-btn ip-btn--secondary">Alege alt fișier</button></div></div>')   # SYS11's empty file
-EMPTYF = wrap(G['src_line'](P, GCSV, 'fișier .csv · tip creștere', G['counts'](0, 0, 0), 'Alege alt fișier')
-              + EMPTY + G['foot'](P, False, 'Fișierul nu are rânduri de ghid.') + G['live']('Fișier citit: niciun rând.'))
+EMPTYF = wrap(G['src_line'](P, GCSV, 'fișier .csv · tip creștere', G['counts'](0, 0, 0), '')   # one "Alege alt fișier": the EmptyState's
+              + G['empty_file'](GCSV) + G['foot'](P, False, G['EMPTY_NOTE']) + G['live']('Fișier citit: niciun rând.'))
 er, nbad = S.er, S.nbad
 assert [r['line'] for r in er if G['reason'](r)] == [7, 10, 12]
 FILTER = wrap(G['src_line'](P, GF, 'fișier .xlsx · tip creștere', G['counts'](len(er), len(er) - nbad, nbad))
@@ -158,22 +153,9 @@ SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the f
               'the type and the rows read stay as typed and read. -->')
 
 # ---- Șterge ghidul (D39): the new guide, saved and used by no cycle; the Dialog over the inert detail page
-def unused_detail():
-    gl = 'g-laying'
-    keep = (GUIDE[gl], CYC[gl], S.WK)
-    GUIDE[gl], CYC[gl], S.WK = NEWN, [], None   # the detail of a guide like Ross 308 ouat with no cycle and no "Hîrbovăț azi" row
-    try:
-        keys = (f'<div class="s20-keyrow"><a class="ip-btn ip-btn--secondary" href="#inlocuieste">{icon("upload", 16)}Înlocuiește ghidul</a>'
-                '<button type="button" class="ip-btn ip-btn--destructive is-pressed" aria-haspopup="dialog">Șterge ghidul</button></div>')
-        hdr = S.header(S.crumbs(S.GH, NEWN), NEWN, S.detail_meta(gl), keys)
-        use = S.block('h-use', 'Folosit de', s4.empty_box('nefolosit', [f'Niciun ciclu nu folosește {NEWN}.',
-                                                                        'Îl alegi la o fermă de ouat în Ferme și secțiuni, sau îl ștergi.'], '', 'Folosit de'))
-        wk = S.weekly_block(gl)
-        wk = one(wk, ' Hîrbovăț e azi în sapt. None.', '')
-        pg = S.shell(hdr, use + '\n' + S.curves_block(gl) + '\n' + wk)
-    finally:
-        GUIDE[gl], CYC[gl], S.WK = keep
-    assert 'Hîrbovăț azi' not in pg and 'None' not in pg and GUIDE[gl] == 'Ross 308 ouat'
+def unused_detail():   # the detail of a laying guide with the new name and no cycle (s20_build parameters)
+    pg = S.detail_page('g-laying', name=NEWN, cycles=[], pressed=True)
+    assert 'azi</span>' not in pg and 'e azi în sapt.' not in pg and 'Ross 308 ouat<' not in pg
     return one(pg, '<div class="s4-shell">', '<div class="s4-shell" inert="inert">')
 DLG = (f'<div class="ip-scrim s19-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Șterge ghidul {NEWN}</h2>'

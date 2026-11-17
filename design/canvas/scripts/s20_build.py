@@ -55,10 +55,7 @@ assert GUIDE == {'g-growth': 'Ross 308 creștere', 'g-laying': 'Ross 308 ouat'}
 assert len(GROW['rows']) == 50 and len(LAY['rows']) == 94
 assert cH['guide_id'] == cP['guide_id'] == 'g-laying' and cT['guide_id'] == 'g-growth'
 assert FARM['telita']['guide_id'] == 'g-growth' and FARM['hirbovat']['guide_id'] == 'g-laying'
-def fmt(v, unit=''):
-    """SYS11's fmt (thin no-break thousands, true minus), but a percentage keeps one decimal everywhere (89,0 not 89)."""
-    if unit == '%' and v is not None: return f'{float(v):.1f}'.replace('.', ',')
-    return G['fmt'](v)
+fmt = G['fmt']   # SYS11's fmt: thin no-break thousands, true minus, a percentage keeps one decimal (89,0), as the preview
 def wk_rows(gid):
     """{week: {'F': row, 'M': row}} and the (week, age) list, by guide week (laying: cycle week, age beside, D26)."""
     out = {}
@@ -179,9 +176,12 @@ def list_page():
     return shell(header(crumbs('Ghiduri'), 'Ghiduri', LIST_META, list_key()), glist())
 
 # ================================================================= detail
-def used_block(g):
+def used_block(g, name, cyc):
+    if not cyc:   # an unused guide: the EmptyState's parts (unlit lamp, one sentence, the next step) on one line, no padded box
+        return block('h-use', 'Folosit de', f'<p class="ip-row s4s-m0">{lamp("off", "nefolosit")}<span>Niciun ciclu nu folosește {name}: '
+                     f'îl alegi la o fermă de {TYPE_LO[TYPE[g]]} în <a class="ip-link s20-flink" href="#ferme">Ferme și secțiuni</a>.</span></p>')
     rows = ''
-    for c in CYC[g]:
+    for c in cyc:
         f = FARM[c['farm_id']]['name']
         a, b = dd(c['start_date']), (dd(c['end_date']) if c['end_date'] else 'azi')
         ded = '<span class="ip-note"> · început dedus</span>' if c.get('start_inferred') else ''
@@ -191,11 +191,11 @@ def used_block(g):
             st, wk = lamp('off', 'închis'), f'{c["weeks"]} săpt.'
         rows += (f'<tr><th scope="row"><a class="ip-link s20-flink" href="#ferma-{c["farm_id"]}">{f}</a></th><td>{SER[c["series_id"]]}</td><td class="ip-num"><span class="s19-nw">{a} – {b}</span>{ded}</td>'
                  f'<td class="num">{wk}</td><td>{st}</td></tr>')
-    tb = (f'<table class="ip-table ip-table--rowheads s20-table"><caption class="ip-sr">Ciclurile care folosesc {GUIDE[g]}</caption>'
+    tb = (f'<table class="ip-table ip-table--rowheads s20-table"><caption class="ip-sr">Ciclurile care folosesc {name}</caption>'
           '<thead><tr><th scope="col">Fermă</th><th scope="col">Serie</th><th scope="col">Perioada</th><th scope="col" class="num">Săptămâni</th>'
           f'<th scope="col">Ciclu</th></tr></thead><tbody>{rows}</tbody></table>')
-    farms = sorted({FARM[c['farm_id']]['name'] for c in CYC[g]})
-    k = len(CYC[g])
+    farms = sorted({FARM[c['farm_id']]['name'] for c in cyc})
+    k = len(cyc)
     note = f'E și ghidul fermei {", ".join(farms)}: ciclul ei următor îl folosește.'
     return block('h-use', 'Folosit de', framed('h-use', tb, focus=False), note, cyc_words(k))
 
@@ -212,13 +212,13 @@ def spark(g, k, s, last_wk):
     lbl = next(l for kk, l, *_ in IND if kk == k).lower()
     u = next(u for kk, _, u, _ in IND if kk == k)
     pk = [w for w, v in pts if v == hi]
-    pkw = f'SAPT {pk[0]}' if len(pk) == 1 else f'SAPT {pk[0]}–{pk[-1]}'
+    pkw = f'sapt. {pk[0]}' if len(pk) == 1 else f'sapt. {pk[0]}–{pk[-1]}'
     wu = lambda v: f'{fmt(v, u)}%' if u == '%' else f'{fmt(v, u)} {u}'   # D46: 70,5%, but 158 g
-    al = (f'{lbl.capitalize()} {SEXW[s][2]} în ghid, SAPT {pts[0][0]}–{w1}: de la {wu(pts[0][1])} la {wu(v1)}, '
-          f'maxim {wu(hi)} în {pkw}')
+    al = (f'{lbl.capitalize()} {SEXW[s][2]} în ghid, sapt. {pts[0][0]}–{w1}: de la {wu(pts[0][1])} la {wu(v1)}, '
+          f'maxim {wu(hi)} în {pkw}')   # a sentence read aloud: "sapt." (craft §6)
     return (f'<svg class="ip-spark ip-spark--{SEXW[s][1]}" viewBox="0 0 160 48" role="img" aria-label="{al}">'
             f'<polyline class="act" points="{pl}"/><circle class="pt" cx="{X(w1):.1f}" cy="{Y(v1):.1f}" r="2"/></svg>')
-def curves_block(g):
+def curves_block(g, name):
     rows = ''
     for k, lbl, u, sexes in IND:
         if k in HAS[g]:
@@ -237,14 +237,16 @@ def curves_block(g):
         else:
             rows += (f'<tr><th scope="row"><span class="ip-sparktable__key">{lbl} {u}</span></th>'
                      f'<td colspan="5" class="s20-none">– fără date în ghid</td></tr>')
-    tb = (f'<table class="ip-table ip-sparktable"><caption class="ip-sr">{GUIDE[g]} pe indicatori: săptămânile cu cifre, prima, maximul, '
+    tb = (f'<table class="ip-table ip-sparktable"><caption class="ip-sr">{name} pe indicatori: săptămânile cu cifre, prima, maximul, '
           f'ultima și curba</caption><thead><tr><th scope="col">Indicator</th><th scope="col">Săptămâni</th><th scope="col" class="num">Prima</th>'
           f'<th scope="col" class="num">Maxim</th><th scope="col" class="num">Ultima</th><th scope="col">Curba · SAPT 1–{NWK[g]}</th></tr></thead>'
           f'<tbody>{rows}</tbody></table>')
     return block('h-cur', 'Pe indicatori', framed('h-cur', tb), '', f'{num(len(HAS[g]))} din {num(len(IND))} indicatori în ghid')
 
-def weekly_block(g):
+def weekly_block(g, name, cyc):
     lay = g == 'g-laying'
+    opn = [c for c in cyc if c['status'] == 'open']
+    today = FARM[opn[0]['farm_id']]['name'] if lay and opn else None   # the laying farm's week today, shaded (Hîrbovăț SAPT 40)
     cols = [(k, lbl, u, sexes) for k, lbl, u, sexes in IND if k in HAS[g]]
     h1 = '<th scope="col" rowspan="2">SAPT</th>' + ('<th scope="col" rowspan="2" class="num">Vârstă</th>' if lay else '')
     h1 += ''.join(f'<th scope="colgroup" colspan="{len(sexes)}">{lbl} {u}</th>' for k, lbl, u, sexes in cols)
@@ -252,8 +254,8 @@ def weekly_block(g):
     body = ''
     for w in sorted(W[g]):
         r = W[g][w]
-        now = lay and w == WK
-        rh = f'<th scope="row" class="ip-num">{w}{"<span class=\"ip-note s20-now\">Hîrbovăț azi</span>" if now else ""}</th>'
+        now = today and w == WK
+        rh = f'<th scope="row" class="ip-num">{w}{f"<span class=\"ip-note s20-now\">{today} azi</span>" if now else ""}</th>'
         cells = f'<td class="num">{r["age"]}</td>' if lay else ''
         for k, lbl, u, sexes in cols:
             for s in sexes:
@@ -261,7 +263,7 @@ def weekly_block(g):
                 cells += (f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(v, u)}</span></td>' if v is not None else
                           '<td class="num s20-dash">–<span class="ip-sr"> fără date în ghid</span></td>')
         body += f'<tr{" class=\"s20-today\"" if now else ""}>{rh}{cells}</tr>'
-    tb = (f'<table class="ip-table ip-table--rowheads s20-table s20-week"><caption class="ip-sr">{GUIDE[g]} pe săptămâni și sexe</caption>'
+    tb = (f'<table class="ip-table ip-table--rowheads s20-table s20-week"><caption class="ip-sr">{name} pe săptămâni și sexe</caption>'
           f'<thead><tr>{h1}</tr><tr>{h2}</tr></thead><tbody>{body}</tbody></table>')
     gl = []
     for k, lbl, u, sexes in cols:
@@ -270,11 +272,17 @@ def weekly_block(g):
             if gp: gl.append(f'{lbl.lower()} {SEXW[s][0]} la sapt. {", ".join(gp)}')
     note = f'„–” = fără date în ghid: {"; ".join(gl)}.' if gl else ''
     if lay:
-        note += f' Ghidul e pe vârstă; SAPT = vârstă − 18 (ciclul de ouat începe la vârsta 19). Hîrbovăț e azi în sapt. {WK}.'
+        note += ' Ghidul e pe vârstă; SAPT = vârstă − 18 (ciclul de ouat începe la vârsta 19).'
+    if today:
+        note += f' {today} e azi în sapt. {WK}.'
     return f'<div class="s20-wkcol">{block("h-wk", "Pe săptămâni", framed("h-wk", tb), note.strip(), f"{num(NWK[g])} de săptămâni · {num(NROWS[g])} de rânduri")}</div>'
 
-def detail_keys(g):
-    k = len(CYC[g])
+def detail_keys(g, cyc, pressed=False):
+    if not cyc:   # unused: Șterge ghidul is live and opens its Dialog (S20S --sterge draws it pressed)
+        p = ' is-pressed' if pressed else ''
+        return (f'<div class="s20-keyrow"><a class="ip-btn ip-btn--secondary" href="#inlocuieste">{icon("upload", 16)}Înlocuiește ghidul</a>'
+                f'<button type="button" class="ip-btn ip-btn--destructive{p}" aria-haspopup="dialog">Șterge ghidul</button></div>')
+    k = len(cyc)
     why = f'Folosit de {"un ciclu" if k == 1 else f"{k} cicluri"}: îl poți înlocui, nu șterge.'
     return (f'<div class="s20-keyrow"><a class="ip-btn ip-btn--secondary" href="#inlocuieste">{icon("upload", 16)}Înlocuiește ghidul</a>'
             f'<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="del-why">Șterge ghidul</button></div>'
@@ -282,9 +290,12 @@ def detail_keys(g):
 def detail_meta(g):
     ag = f' · vârsta {W[g][1]["age"]}–{W[g][NWK[g]]["age"]}' if g == 'g-laying' else ''
     return f'{TYPE_RO[TYPE[g]]}{NB}·{NB}SAPT 1–{NWK[g]}{ag}{NB}·{NB}{NROWS[g]} de rânduri, câte unul pe săptămână și sex'
-def detail_page(g, focus_h1=False):
-    hdr = header(crumbs(GH, GUIDE[g]), GUIDE[g], detail_meta(g), detail_keys(g), tid='g-h1' if focus_h1 else None)
-    return shell(hdr, used_block(g) + '\n' + curves_block(g) + '\n' + weekly_block(g))
+def detail_page(g, focus_h1=False, name=None, cycles=None, pressed=False):
+    """The guide detail. name/cycles default to the guide's own (GUIDE, CYC); S20S passes a new guide's name and no cycles
+    (the unused-guide detail: compact Folosit de, Șterge ghidul live)."""
+    name = name or GUIDE[g]; cyc = CYC[g] if cycles is None else cycles
+    hdr = header(crumbs(GH, name), name, detail_meta(g), detail_keys(g, cyc, pressed), tid='g-h1' if focus_h1 else None)
+    return shell(hdr, used_block(g, name, cyc) + '\n' + curves_block(g, name) + '\n' + weekly_block(g, name, cyc))
 
 # ================================================================= import (SYS11 GuideImportPreview)
 OPT = M.OPT
@@ -301,9 +312,8 @@ def tip_ro(g):
             f'<span class="ip-hint" id="gi-tip-h">Tipul rămâne {TYPE_LO[TYPE[g]]}: ghidul e folosit de {used}.</span></div>')
 def fields(name='', tip='', focus=False):
     return f'<div class="s20-fields">{T.tfield("gi-name", "Nume", name, touch=False, focus=focus)}{tip}</div>'
-DROP = G['DROP']
-a = '<div class="ip-drop">'; assert DROP.count(a) == 1
-DROP_P = DROP.replace(a, '<div class="ip-drop" tabindex="0" role="group" aria-label="Lipește tabelul aici (Ctrl+V) sau alege un fișier .xlsx sau .csv">')
+DROP_P = G['DROP']   # the system FileDrop paste target (additions section 43): focusable group, Ctrl+V pastes into it
+assert DROP_P.count('<div class="ip-drop ip-drop--paste" tabindex="0" role="group" aria-label=') == 1
 def import_page(cr, title, meta, flds, src_note, gimp):
     main = (block('h-in', 'Ghid', flds) + '\n' +
             block('h-tab', 'Tabelul ghidului', (f'<p class="ip-note s4s-m0">{src_note}</p>' if src_note else '') + gimp))
