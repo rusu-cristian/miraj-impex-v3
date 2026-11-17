@@ -270,26 +270,31 @@ def months(d0, d1):
     while dt.date(y, m, 1) < d1:
         out.append((dt.date(y, m, 1), f'{m:02d}.{str(y)[2:]}')); y, m = (y + 1, 1) if m == 12 else (y, m + 1)
     return out
-def track_svg(TW):
-    d0, d1 = dt.date(2025, 10, 1), dt.date(2027, 1, 1)
+def track_svg(TW, phone=False):
+    """phone (S2V, 358 px content box): full lanes 26 / blocks 20 spaced 48 apart, each block link with a 44 px hit rect
+    (touch target), short block labels, the axis to 03.2027 so the SAPT readout fits right of the azi line (52 px),
+    month labels on quarter starts after the first month (ticks every month)."""
+    d0, d1 = dt.date(2025, 10, 1), (dt.date(2027, 3, 1) if phone else dt.date(2027, 1, 1))
     ppd = (TW - LX) / (d1 - d0).days
     def tx(iso): return round(LX + (dt.date.fromisoformat(iso) - d0).days * ppd, 1)
-    LH, BH = 22, 16                                   # compact: lane 22, block 16 (full: 26 / 20); with the focus ring the link is 24 px (D46)
-    ly = {'telita': 18, 'hirbovat': 50}; H = ly['hirbovat'] + LH
+    LH, BH = (26, 20) if phone else (22, 16)          # compact: lane 22, block 16 (full: 26 / 20); with the focus ring the link is 24 px (D46)
+    ly = {'telita': 18, 'hirbovat': 66 if phone else 50}; H = ly['hirbovat'] + LH
+    ro_w = 52 if phone else RO_W
     g = ''.join(f'<text class="lanelbl" x="0" y="{ly[f] + 15}">{l}</text><rect class="lane" x="{LX}" y="{ly[f]}" width="{TW - LX}" height="{LH}"/>'
                 for f, l in (('telita', 'TELIȚA'), ('hirbovat', 'HÎRBOVĂȚ')))
     def block(f, a, b, label, aria, href, open_=False, marks=''):
         xa, xb = tx(a), tx(b); w = round(xb - xa, 1); y = ly[f] + 3; o = ' open' if open_ else ''
-        return (f'<a href="{href}" aria-label="{aria}"><title>{aria}</title><rect class="ring" x="{round(xa - 4, 1)}" y="{y - 4}" width="{round(w + 8, 1)}" height="{BH + 8}" rx="3"/>'
-                f'<rect class="cyc{o}" x="{xa}" y="{y}" width="{w}" height="{BH}" rx="2"/><text class="cyctxt{o}" x="{round(xa + 8, 1)}" y="{y + 12}">{label}</text>{marks}</a>')
+        hit = f'<rect x="{xa}" y="{y + BH // 2 - 22}" width="{w}" height="44" fill="none" pointer-events="all"/>' if phone else ''
+        return (f'<a href="{href}" aria-label="{aria}"><title>{aria}</title>{hit}<rect class="ring" x="{round(xa - 4, 1)}" y="{y - 4}" width="{round(w + 8, 1)}" height="{BH + 8}" rx="3"/>'
+                f'<rect class="cyc{o}" x="{xa}" y="{y}" width="{w}" height="{BH}" rx="2"/><text class="cyctxt{o}" x="{round(xa + 8, 1)}" y="{y + BH - 4}">{label}</text>{marks}</a>')
     PLC = PL['totals']; ARR = TR['arrival_totals']
     xa = tx(cT['start_date'])
     place = f'<rect class="place" x="{round(xa - 1, 1)}" y="{ly["telita"] + 3}" width="3" height="{BH}"/>'
-    g += block('telita', cT['start_date'], cT['end_date'], f'Seria 2026 · creștere · {cT["weeks"]} săpt.',
+    g += block('telita', cT['start_date'], cT['end_date'], 'creștere' if phone else f'Seria 2026 · creștere · {cT["weeks"]} săpt.',
                f'Telița, Seria 2026, creștere, {dd(dt.date.fromisoformat(cT["start_date"]))}–{dd(dt.date.fromisoformat(cT["end_date"]))}, {cT["weeks"]} săptămâni, închis. '
                f'Început prin populare (găini {n(PLC["F"])}, cocoși {n(PLC["M"])}), încheiat prin transfer la Hîrbovăț. Deschide ferma la acest ciclu.',
                '#/ferme/telita?ciclu=cyc-telita-2026', marks=place)
-    g += block('hirbovat', cH['start_date'], TODAY.isoformat(), f'Seria 2026 · ouat · din {dd(dt.date.fromisoformat(cH["start_date"]))}',
+    g += block('hirbovat', cH['start_date'], TODAY.isoformat(), f'{"" if phone else "Seria 2026 · "}ouat · din {dd(dt.date.fromisoformat(cH["start_date"]))}',
                f'Hîrbovăț, Seria 2026, ouat, din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi SAPT {WK}. Păsări sosite prin transfer de la Telița '
                f'{dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))} (găini {n(ARR["F"])}, cocoși {n(ARR["M"])}). Deschide ferma la acest ciclu.',
                '#/ferme/hirbovat?ciclu=cyc-hirbovat-2026', open_=True)
@@ -298,22 +303,27 @@ def track_svg(TW):
           f'<line class="link" x1="{xa}" y1="{ym}" x2="{xb}" y2="{ym}"/><circle class="linkdot" cx="{xa}" cy="{ym}" r="3"/><circle class="linkdot" cx="{xb}" cy="{ym}" r="3"/></g>')
     xt = tx(TODAY.isoformat()); top = ly['telita'] - 6; yh = ly['hirbovat'] + 3
     g += (f'<line class="today" x1="{xt}" x2="{xt}" y1="{top}" y2="{H + 3}"/><text class="todaylbl" x="{xt}" y="{top - 3}" text-anchor="middle">azi {D[:5]}</text>'
-          f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{RO_W}" height="{BH}" rx="2"/><text class="rotxt" x="{round(xt + 4 + RO_W / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {WK}</text>')
+          f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{ro_w}" height="{BH}" rx="2"/><text class="rotxt" x="{round(xt + 4 + ro_w / 2, 1)}" y="{yh + BH - 4}" text-anchor="middle">SAPT {WK}</text>')
     tk = ''
     for d, lbl in months(d0, d1):
         x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
-        tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 4}"/><text class="month" x="{x}" y="{H + 16}" text-anchor="{anc}">{lbl}</text>'
+        tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 4}"/>'
+        if not phone or ((d.month - 1) % 3 == 0 and d > d0): tk += f'<text class="month" x="{x}" y="{H + 16}" text-anchor="{anc}">{lbl}</text>'
     desc = (f'Seria 2026, 2 ferme. Telița: creștere {dd(dt.date.fromisoformat(cT["start_date"]))}–{dd(dt.date.fromisoformat(cT["end_date"]))}, {cT["weeks"]} săpt., închis, '
             f'început prin populare. Transfer Telița → Hîrbovăț {dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}. '
             f'Hîrbovăț: ouat din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi {D}, SAPT {WK}.')
     return (f'<svg class="ip-track s2-track s2-track--{TW}" viewBox="0 0 {TW} {H + 18}" role="group" aria-label="Ciclurile seriei 2026 pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
-def track():
+def track(phone=False):
+    """phone (S2V): one 358 px drawing, "Deschide seria" as a 48 px link under the legend instead of inside the note."""
     leg = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
            f'<span class="ip-num">{dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}</span></span><span><i class="today"></i>azi</span>')
-    note = f'{num("10.2025 – 12.2026")} · {num(2)} ferme · {num(2)} cicluri · <a class="ip-link s2-lnk" href="#/serii/seria-2026">Deschide seria</a>'
+    lnk = '<a class="ip-link s2-lnk" href="#/serii/seria-2026">Deschide seria</a>'
+    note = f'{num("10.2025 – 12.2026")} · {num(2)} ferme · {num(2)} cicluri' + ('' if phone else f' · {lnk}')
+    svgs = track_svg(358, phone=True) if phone else "".join(track_svg(tw) for tw in TWS)
+    more = lnk.replace('s2-lnk', 's2-more') if phone else ''
     return (f'<section class="s2-block" aria-labelledby="tk">{head("Seria 2026 · cicluri pe ferme", note, "tk")}'
-            f'<div class="s2-trackbox">{"".join(track_svg(tw) for tw in TWS)}</div><div class="ip-tracklegend" aria-hidden="true">{leg}</div></section>')
+            f'<div class="s2-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{leg}</div>{more}</section>')
 
 # ---------- page parts ----------
 def pagehead(ctx, phone=False):
@@ -322,21 +332,24 @@ CTX_VET = f'HÎRBOVĂȚ · {D} · SAPT {WK}'
 CTX_MGR = f'SERIA 2026 · {D} · HÎRBOVĂȚ SAPT {WK}'
 CTX_OWN = f'SERIA 2026 · {D} · 2 FERME'  # uppercase Mono context line, as S6/S7
 
-def tabbar(vet=False, key_off=None):
+def tabbar(vet=False, key_off=None, viewer=False):
     """key_off (S2S): id of the reason text; the Înregistrează key is then aria-disabled (no href, focusable, as SYS09 Editează)."""
     it = lambda k, lbl, h, cur=False: (f'<a class="ip-tabbar__item{" is-current" if cur else ""}" href="{h}"{" aria-current=\"page\"" if cur else ""}>{icon(k, 22)}{lbl}</a>')
     key = f'<a class="ip-tabbar__item" href="#inregistreaza"><span class="ip-tabbar__key">{icon("plus", 22)}</span>Înregistrează</a>'
     if key_off: key = key.replace('href="#inregistreaza"', f'role="link" tabindex="0" aria-disabled="true" aria-describedby="{key_off}"', 1)
+    if viewer:  # S2V (D89): the viewer enters nothing, so no Înregistrează key: 4 items
+        return (f'<nav class="ip-tabbar s2-tabbar" aria-label="Navigare">{it("home", "Acasă", "#acasa", True)}{it("layers", "Serie", "#serie")}'
+                f'{it("chart", "Rapoarte", "#rapoarte")}{it("more", "Mai mult", "#mai-mult")}</nav>')
     items = (it('home', 'Acasă', '#acasa', True) + key + it('user', 'Cont', '#cont')) if vet else \
             (it('home', 'Acasă', '#acasa', True) + it('layers', 'Serie', '#serie') + key + it('chart', 'Rapoarte', '#rapoarte') + it('more', 'Mai mult', '#mai-mult'))
     return f'<nav class="ip-tabbar s2-tabbar" aria-label="Navigare">{items}</nav>'
 
-def phone(parts, vet=False):
+def phone(parts, vet=False, viewer=False):
     return f'''<div class="s7-screen s2-phone">
 <main class="s7-main s2-main">
 {"".join(parts)}
 </main>
-{tabbar(vet)}
+{tabbar(vet, viewer=viewer)}
 </div>'''
 
 def sidebar(role):
@@ -380,7 +393,8 @@ CSS_D = s4.CSS + '\n' + s4.CSS_S4 + CSS_SHARED + '''
 # ---------- write ----------
 STEM0, TITLE0 = 'S2-acasa', 'S2 · Acasă'
 HEIGHTS = json.loads(HP.read_text()) if HP and HP.exists() else {}
-def write_phone(stem, title, body):
+def write_phone(stem, title, body, css=None):
+    CSS_P_ = css or CSS_P
     h = HEIGHTS.get(stem, 844)
     root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{body}</div>'
     dc = f'''<!doctype html>
@@ -397,7 +411,7 @@ def write_phone(stem, title, body):
 <x-dc>
 <helmet>
 {B.FONTS}
-<style>{CSS_P}</style>
+<style>{CSS_P_}</style>
 </helmet>
 {root}
 </x-dc>
@@ -411,7 +425,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
     SYS = ROOT / 'design/system'
     wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{title}</title>
 <link rel="stylesheet" href="file://{SYS}/tokens.css"><link rel="stylesheet" href="file://{SYS}/components/bundle.css"><link rel="stylesheet" href="file://{SYS}/components/additions.css">
-{B.FONTS}<style>{CSS_P}</style></head><body>{root}</body></html>'''
+{B.FONTS}<style>{CSS_P_}</style></head><body>{root}</body></html>'''
     pathlib.Path('/tmp/s2').mkdir(exist_ok=True)
     pathlib.Path(f'/tmp/s2/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, title, h)

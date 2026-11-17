@@ -8,7 +8,11 @@ Phone state boards are 390×844 viewports (D60) with the BottomTabBar at the foo
 Every figure comes from the extracts; boards whose example is not in the sample say "exemplu de stare (D39)".
 Writes design/canvas/project/S2-acasa--<state>.dc.html, /tmp/s2/<stem>.html (phones), /tmp/s4s/<stem>.html (desktops),
 /tmp/s2/states.json (for s2_render.py); --canvas sets every S2 board in canvas.json: row y 20922, the 4 default boards
-first, then the state boards, phones before desktops (D87), 80 px gaps."""
+first, then the state boards, phones before desktops (D87), 80 px gaps, then the 2 Observator boards (S2V, D89).
+S2V · Acasă for the viewer (D89): the owner layout without Livrări fără preț (no prices, spec §1 roles), no EntryKeys, no
+Introdus azi, no Înregistrează: CycleTrack · De verificat (the lipsă rows read-only: their link opens the section page) ·
+Stoc hrană (kg) · Ferme. Phone = a whole tall page (as the default phones), tab bar Acasă · Serie · Rapoarte · Mai mult;
+desktop Sidebar without Înregistrează and Setări (every Setări item is manager+ or owner). Writes /tmp/s2/viewer.json."""
 import sys, json, pathlib, importlib, datetime as dt
 
 ARGS = sys.argv[1:]
@@ -173,6 +177,27 @@ up0 = (f'<section class="ip-unpriced" aria-labelledby="up"><div class="ip-unpric
 boards.append(('proprietar-desktop--toate-cu-pret', 'proprietar · desktop · toate livrările au preț · exemplu de stare (D39)', 'o', A.desktop('Proprietar', [
     A.pagehead(A.CTX_OWN), A.track(), f'<div class="s2-cols">{A.alerts(True)}{up0}</div>', A.stock(cap='Stoc hrană'), A.farms_block()])))
 
+# ---------- S2V · Observator (D89) ----------
+def v_alerts(u=''):
+    al = A.alerts(True, u)  # the owner's 5 alerts: the lipsă rows link to the section page (Deschide secțiunea), never to a form
+    assert al.count('toate fermele') == 1 and 'Completează' not in al and 'preț' not in al and al.count('lipsă</span>') == 2
+    return al.replace('toate fermele', 'fermele tale')  # the viewer sees his assigned farms (spec §1); here both
+def v_sidebar():
+    sb = A.sidebar('Observator')
+    for h in ('#inregistreaza', '#setari'):
+        sb, k = __import__('re').subn(r'<a class="ip-nav" href="' + h + r'">.*?</a>', '', sb, count=1); assert k == 1
+    assert sb.count('class="ip-nav') == 3 and '<b>Observator</b>' in sb
+    return sb
+V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(cap='Stoc hrană'), A.farms_block()]
+VIEWER_P = A.phone(V_PARTS(True), viewer=True)
+VIEWER_D = f'<div class="s4-shell">{v_sidebar()}<main class="s4-main">\n{"".join(V_PARTS(False))}\n</main></div>'
+for v in (VIEWER_P, VIEWER_D):
+    assert not any(w in v for w in ('Înregistrează', 'Introdus azi', 'preț', 'lei', 'Completează', 'ip-entrykey', 'ip-unpriced', 'Dr. Ceban ·'))
+CSS_V = A.CSS_P + '''
+.s2-track .month,.s2-track .todaylbl,.s2-track .rotxt{font-size:var(--ip-fs-caption)} /* track text >= 11px, as the desktop boards */
+.s2-phone .ip-fsum__name a{display:inline-block;padding:var(--space-3) var(--space-1);margin:calc(-1 * var(--space-3)) calc(-1 * var(--space-1))} /* touch: 48px hit area, line unchanged */
+.s2-phone .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch)}'''
+
 # ---------- CSS ----------
 EMPTY_CSS = '\n'.join(l for l in s4.CSS_STATES.splitlines() if l.startswith(('.s4s-emptybox', '.s4s-empty-p', '.ip-empty > .ip-btn')))
 CSS_PS = A.CSS_P + SC.VIEW + SC.BANNER + SC.MODAL + '\n' + EMPTY_CSS + '''
@@ -224,6 +249,11 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
         h = HEIGHTS.get(stem, 1024)
         s4.write(stem, title, body, H=h, css=CSS_DS)
         out.append((stem, title, h, 1440))
+V_OUT = [A.write_phone(f'{STEM0}--observator', f'{TITLE0} · observator · telefon', VIEWER_P, css=CSS_V)]
+h = HEIGHTS.get(f'{STEM0}--observator-desktop', 1024)
+s4.write(f'{STEM0}--observator-desktop', f'{TITLE0} · observator · desktop', VIEWER_D, H=h, css=A.CSS_D)
+V_OUT.append((f'{STEM0}--observator-desktop', f'{TITLE0} · observator · desktop', h, 1440))
+pathlib.Path('/tmp/s2/viewer.json').write_text(json.dumps([{'stem': s, 'w': w, 'h': h} for s, _, h, w in V_OUT], ensure_ascii=False))
 pathlib.Path('/tmp/s2/states.json').write_text(json.dumps([{'stem': s, 'w': w, 'h': h} for s, _, h, w in out], ensure_ascii=False))
 
 if CANVAS:  # S2 row: y 20922; 4 default boards (phones first, D74), then states: phones, then desktops (D87); 80 px gaps
@@ -234,7 +264,7 @@ if CANVAS:  # S2 row: y 20922; 4 default boards (phones first, D74), then states
                 (STEM0 + '--manager-desktop', f'{TITLE0} · manager · desktop', 1440), (STEM0 + '--proprietar-desktop', f'{TITLE0} · proprietar · desktop', 1440)]
     for s, _, _ in defaults: assert c['boards'][f'{s}.dc.html']['y'] == Y
     seq = [(s, t, HEIGHTS.get(s, 844 if w == 390 else 1024), w) for s, t, w in defaults] + \
-          [b for b in out if b[3] == 390] + [b for b in out if b[3] == 1440]
+          [b for b in out if b[3] == 390] + [b for b in out if b[3] == 1440] + V_OUT  # S2V: viewer phone, then desktop
     x = 0
     for s, t, h, w in seq:
         b = {'x': x, 'y': Y, 'w': w, 'h': h, 'title': t}

@@ -4,6 +4,8 @@ S2-3.png (owner desktop), S2-2-1280.png, S2-3-1280.png, and report sideways scro
 unnamed controls, text under 4.5:1, targets under 44 (phone) / 24 (desktop) and the tab order.
 --states (S2S) also renders the state boards listed by s2s_build.py in /tmp/s2/states.json (phones 390×844 from /tmp/s2,
 desktops 1440 from /tmp/s4s) to design/shots/S2-<state>.png; --only-states skips the 6 default shots.
+--viewer (S2V) renders only the Observator phone (390, full page) and desktop (1440) to design/shots/S2-observator.png and
+S2-observator-desktop.png at their board heights.
 --heights writes each board's natural height (max of 844 / 1024 and the content, rounded up to 4) to s2_heights.json
 (then rebuild with s2_build.py)."""
 import asyncio, json, pathlib, sys
@@ -36,6 +38,9 @@ if '--states' in sys.argv or '--only-states' in sys.argv:
     if '--only-states' in sys.argv: ORDER = []
     for b in json.loads(pathlib.Path('/tmp/s2/states.json').read_text()):
         ORDER.append((b['stem'], b['w'], b['h'], 's2' if b['w'] == 390 else 's4s', 'S2-' + b['stem'].split('--', 1)[1] + '.png'))
+if '--viewer' in sys.argv:  # S2V: only the 2 Observator boards (s2s_build.py writes /tmp/s2/viewer.json), shot at their board heights
+    ORDER = [(v['stem'], v['w'], v['h'], 's2' if v['w'] == 390 else 's4s', 'S2-' + v['stem'].split('--', 1)[1] + '.png')
+             for v in json.loads(pathlib.Path('/tmp/s2/viewer.json').read_text())]
 async def main():
     hs = json.loads(HJ.read_text()) if HJ.exists() else {}
     async with async_playwright() as p:
