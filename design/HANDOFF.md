@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 01:00 · Last commit: 5e35d4a
+Updated: 2026-11-18 01:45 · Last commit: 77b3490
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 67 / 76 · Screens done: S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S20; all SYS jobs done
+Done 68 / 77 · Screens done: S20 + 8 boards, S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S20S; all SYS jobs done
 
 ## Just finished
+- S20 Ghiduri: row y 35701, 8 desktops x 0–10640 (list, Ross 308 ouat detail, Ross 308 creștere detail with gaps, importă ghid, înlocuiește fișier / refuzate / lipit (D39), salvat) + read-only phone x 12160; detail + import are sub-pages with crumbs (SYS11 ≥672px); D113; S20S queued; 1 fix round (prose "sapt.", Folosit de farm links, one-line cycles) (77b3490)
 - S19P Ferme și secțiuni polish: list folds Tip + Ciclu under the farm name when its region < 760px (Editează in view at 1280/1440 with the panel); Ghid = ARIA combobox on every board (D112); §41 SegmentedControl error edge, §42 `tr.ip-table__skel`; tree edit error icon; Tip track fits content (`.s19-seg`); phone crumb 50×46; 1 fix round (5e35d4a)
 - S19S Ferme și secțiuni states: 12 desktops x 13680–30400 (se încarcă, eroare la încărcare, fără acces, salvat, eroare la salvare, nume gol, nume folosit, ghid listă, adaugă compartiment, cod duplicat, redenumește cod gol, retrasă + mutată), phone moved to x 31920; D111; rebuild s19_build --canvas then s19s_build --canvas; 1 fix round (Ghid not required, error copy, Banner icon on first line) (2bc8647)
 - S19 Ferme și secțiuni: row y 34557, 9 desktops x 0–12160 (list, Hîrbovăț/Telița SidePanel with SYS10 SectionTree, H5-2 menu, Retrage blocked H1.1, Retrage Dialog D39, fără ghid D39, ghid nepotrivit D39, fără ferme D39, fermă nouă) + read-only phone x 13680; D110 (Claude, to review); S19S queued; 1 fix round (Ciclu cell wraps only at "·") (ef43e92)
@@ -50,7 +51,7 @@ Done 67 / 76 · Screens done: S19 + 21 states (polished), S15 + 7 states (polish
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S20 → S20P → S21 → S21P → S22 → S22P → S1 → S1P → FIN (screens only from here)
+- S20S → S20P → S21 → S21P → S22 → S22P → S1 → S1P → FIN (screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -92,6 +93,7 @@ Done 67 / 76 · Screens done: S19 + 21 states (polished), S15 + 7 states (polish
 - S19: project/S19-ferme-sectiuni{,--hirbovat,--telita,--retragere-blocata,--retrage-sectiunea,--fara-ghid,--ghid-nepotrivit,--fara-ferme,--ferma-noua,--telefon}.dc.html + canvas.json
 - S19S: project/S19-ferme-sectiuni--{se-incarca,eroare-la-incarcare,fara-acces,salvat,eroare-la-salvare,nume-gol,nume-folosit,ghid-lista,adauga-compartiment,cod-duplicat,redenumeste-cod-gol,retrasa-mutata}.dc.html + --ferma-noua (rebuilt) + canvas.json (phone x 31920)
 - S19P: project/additions.css (§41–42) + all 22 project/S19-ferme-sectiuni*.dc.html (canvas.json unchanged)
+- S20: project/S20-ghiduri{,--ross-308-ouat,--ross-308-crestere,--importa-ghid,--inlocuieste-fisier,--inlocuieste-refuzate,--inlocuieste-lipit,--salvat,--telefon}.dc.html + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
