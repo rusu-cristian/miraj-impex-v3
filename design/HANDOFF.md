@@ -58,7 +58,7 @@ Done 75 / 78 · Screens done: S22 + 25 states (polished), S21 + 16 states (polis
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S1 → S1P → FIN → S1P → FIN (screens only from here)
+- S1 → S1P → FIN
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
