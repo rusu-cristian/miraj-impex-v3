@@ -1187,6 +1187,85 @@
       "w": 390,
       "h": 844,
       "title": "S18 · Serii · Serie nouă · telefon · alege secțiunea · reluare 07.10.2025"
+    },
+    "S19-ferme-sectiuni.dc.html": {
+      "x": 0,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni"
+    },
+    "S19-ferme-sectiuni--hirbovat.dc.html": {
+      "x": 1520,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Hîrbovăț · panoul fermei"
+    },
+    "S19-ferme-sectiuni--telita.dc.html": {
+      "x": 3040,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița · panoul fermei · meniul H5-2"
+    },
+    "S19-ferme-sectiuni--retragere-blocata.dc.html": {
+      "x": 4560,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Hîrbovăț · retragere blocată: H1.1 are păsări"
+    },
+    "S19-ferme-sectiuni--retrage-sectiunea.dc.html": {
+      "x": 6080,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița · Retrage H5-2 · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--fara-ghid.dc.html": {
+      "x": 7600,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița fără ghid · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--ghid-nepotrivit.dc.html": {
+      "x": 9120,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Telița · ghid de alt tip: refuzat · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--fara-ferme.dc.html": {
+      "x": 10640,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · nicio fermă · exemplu de stare (D39)"
+    },
+    "S19-ferme-sectiuni--ferma-noua.dc.html": {
+      "x": 12160,
+      "y": 34557,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S19 · Ferme și secțiuni · Fermă nouă"
+    },
+    "S19-ferme-sectiuni--telefon.dc.html": {
+      "x": 13680,
+      "y": 34557,
+      "w": 390,
+      "h": 844,
+      "title": "S19 · Ferme și secțiuni · telefon · doar citire"
     }
   },
   "order": [
@@ -1347,7 +1426,17 @@
     "S18-serii--salvat.dc.html",
     "S18-serii--inchide-seria.dc.html",
     "S18-serii--telefon-eroare-la-salvare.dc.html",
-    "S18-serii--telefon-alege-sectiunea.dc.html"
+    "S18-serii--telefon-alege-sectiunea.dc.html",
+    "S19-ferme-sectiuni.dc.html",
+    "S19-ferme-sectiuni--hirbovat.dc.html",
+    "S19-ferme-sectiuni--telita.dc.html",
+    "S19-ferme-sectiuni--retragere-blocata.dc.html",
+    "S19-ferme-sectiuni--retrage-sectiunea.dc.html",
+    "S19-ferme-sectiuni--fara-ghid.dc.html",
+    "S19-ferme-sectiuni--ghid-nepotrivit.dc.html",
+    "S19-ferme-sectiuni--fara-ferme.dc.html",
+    "S19-ferme-sectiuni--ferma-noua.dc.html",
+    "S19-ferme-sectiuni--telefon.dc.html"
   ],
   "notes": {},
   "designSystems": [
