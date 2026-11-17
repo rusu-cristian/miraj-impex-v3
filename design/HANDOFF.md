@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 08:00 · Last commit: ba78083
+Updated: 2026-11-18 08:40 · Last commit: 49f5ae8
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 75 / 78 · Screens done: S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S1; all SYS jobs done
+Done 76 / 78 · Screens done: S1 + 9 states, S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: S1P; all SYS jobs done
 
 ## Just finished
+- S1 Autentificare: row y 40489 (none was reserved), desktops x 0 (default) / 1520 (greșit), phones x 3040–6330 (default, parolă vizibilă, se intră, câmpuri goale, greșit, prea multe încercări, cont dezactivat, fără conexiune); A1 refusals word for word; SYS13 card unchanged; D121; passed first review (49f5ae8)
 - S22P Utilizatori polish: one primary per view (list-head key secondary while a panel is open); §45 DataTable current row (`tr.is-current`, aria-current, steel only, no lamp) on 6 panel boards + UserRow preview; Cont note once; phone last sign-in Mono; SYS12 dialogs alertdialog (password dialogs described by "Se arată o singură dată"), copy-failed status empty, menu --up flips by room; 1280 fold wraps; D120; 1 fix round (ba78083)
 - S22S Utilizatori states: 9 desktops x 24320–36480 (meniu deschis după ↓, meniu contul tău, resetează parola, resetare eșuată, parolă copiată, copiere eșuată, meniu dezactivat, reactivat, editează dezactivat), phone moved to x 38000; D119; rebuild s22_build --canvas then s22s_build --canvas; 1 fix round (alertdialog, copy-failed announced once) (d4b5d94)
 - S22 Utilizatori: row y 39345, 16 desktops x 0–22800 (list, Ion Rusu panel, utilizator nou, erori, login folosit, parolă o dată, salvat, eroare la salvare, contul tău, dezactivează Dialog, dezactivat Toast, parolă resetată, se încarcă, eroare la încărcare, fără acces, doar tu) + read-only phone x 24320; D118 (D78 still departs from A2: app generates the password); S22S queued; 1 fix round (focus on login error, last sign-in in the fold, Observator prices hint) (9d9f334)
@@ -58,7 +59,7 @@ Done 75 / 78 · Screens done: S22 + 25 states (polished), S21 + 16 states (polis
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S1 → S1P → FIN
+- S1P → FIN
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -108,6 +109,7 @@ Done 75 / 78 · Screens done: S22 + 25 states (polished), S21 + 16 states (polis
 - S22: project/S22-utilizatori*.dc.html (17 boards) + canvas.json
 - S22S: project/S22-utilizatori--{meniu-deschis,meniu-contul-tau,reseteaza-parola,resetare-esuata,parola-copiata,copiere-esuata,meniu-dezactivat,reactivat,editeaza-dezactivat}.dc.html + canvas.json (phone x 38000)
 - S22P: project/additions.css (§45) + all 26 project/S22-utilizatori*.dc.html (canvas.json unchanged); UserRow + OneTimePassword previews
+- S1: project/S1-autentificare*.dc.html (10 boards) + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
