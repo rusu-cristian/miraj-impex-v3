@@ -84,15 +84,17 @@ def saved_meta(at, who, line2):
 
 boards, TARGET = [], {}
 
-# 1 · se încarcă — static Skeleton (no shimmer); header and date are known from the route. Geometry = the loaded card
-# (head: code 22 + alive 20; grid: label 16 + CountInput 56 + hint 16, twice; Mai mult key 48; foot = Checkbox row).
+# 1 · se încarcă — static Skeleton (no shimmer); header and date are known from the route. Geometry = the loaded geometry,
+# so nothing shifts when the cards arrive (as S7P; measured at 390 by the S6P audit: hall head 35, card 393, cards 12 apart,
+# SaveBar 73): head = code 22 + alive 20; grid = label 16 + CountInput 56 + hint 16, then label 16 + CountInput 56; Mai mult
+# key 48; foot = the Checkbox row itself (an aria-hidden `ip-check` box holding the bar, so it takes the system row height).
 def skel(w, h): return f'<div class="ip-skel" style="width:{w};height:{h}"></div>'
 SK16, SK20, SK22 = 'var(--ip-lh-small)', 'var(--ip-lh-figure)', 'var(--ip-lh-heading)'
 def skfield(hint=True): return f'<div class="s7s-skcol">{skel("70%", SK16)}{skel("100%", "var(--count-input-h)")}{skel("80%", SK16) if hint else ""}</div>'
 skcard = (f'<section class="ip-panel ip-entry" aria-hidden="true"><div class="s7s-skcol">{skel("20%", SK22)}{skel("55%", SK20)}</div>'
           f'<div class="ip-entry__grid">{skfield()}{skfield()}{skfield(False)}{skfield(False)}</div>'
           f'<div class="s7s-skcol">{skel("50%", "var(--control-h-touch)")}</div>'
-          f'<div class="ip-entry__foot">{skel("45%", SK20)}</div></section>')
+          f'<div class="ip-entry__foot"><span class="ip-check s6s-skcheck">{skel("calc(var(--space-12) * 3)", SK20)}</span></div></section>')
 skhall = f'<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("40%", SK22)}</div><div class="ip-hall__sections">{skcard * 2}</div></section>'
 sk = f'''<p class="ip-sr" role="status">Se încarcă secțiunile pentru <span class="ip-num">{dd(TODAY)}</span>…</p>
 <div class="s7s-skblock" aria-busy="true"><div class="ip-halls">{skhall}</div></div>'''
@@ -161,7 +163,8 @@ CSS = B.CSS + SC.VIEW + SC.BANNER  # S7S's screen CSS (sstate_css), class names 
 CSS_EXTRA = {
  'salvat': SC.TOAST,
  'se-incarca': SC.SKEL + '''
-.s7s-skcol > .ip-skel{flex:none}''',
+.s7s-skcol > .ip-skel{flex:none}
+.s6s-skcheck{cursor:default}''',
 }  # toast / skeleton rules only on the board that uses them
 
 STEM0, TITLE0 = 'S6-zilnic', 'S6 · Zilnic'

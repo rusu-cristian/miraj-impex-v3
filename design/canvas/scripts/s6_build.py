@@ -5,7 +5,8 @@ Hîrbovăț, 16.11.2026, SAPT 40 (D23/D24), Dr. Ceban after the morning round, e
 start of the day (D53); yesterday hint = 15.11 and the mean of 09–15.11 (SYS05). No 3× warning and no refusal holds on
 this day (asserted), so no card carries a Tag except H3.1 "fără pierderi"; H3's lay is 70,1% vs ghid 74,1% (abatere).
 Composed from system classes only: FormHeader, DateField (s7_build shell), HallCard, EntryCard + SYS05 additions,
-CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). Screen-only CSS: none beyond S7's.
+CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). Screen-only CSS beyond S7's: .s6-nobr
+(S6P: keeps "din ♀ 8 475" on one line). Field names = section heading + label via aria-labelledby (S6P).
 One tall phone board (canvas.md: taller h for a long scrolling form), SaveBar sticky at the foot, as S7.
 python3 -I s6_build.py <repo_root> [heights.json]
 Imports s7_build (it rewrites the S7 default board at 3162, byte-identical). Writes
@@ -65,9 +66,10 @@ def field(kind, sec, sx, uid, val, ro, hint_html='', st=None, msg_id=None):
     pat = '[0-9 &#8239;]*' if val >= 1000 else '[0-9]*'
     stc = f' is-{st}' if st else ''
     inv = ' aria-invalid="true"' if st == 'error' else ''
-    return (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{fid}"><span class="ip-rec ip-rec--{rk}">{icon(rk, 14)}</span>{lbl} '
+    # accessible name = the card's section heading + the field label ("H1.1 Mortalitate găini"); <label for> keeps the tap target
+    return (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{fid}" id="l-{fid}"><span class="ip-rec ip-rec--{rk}">{icon(rk, 14)}</span>{lbl} '
             f'<span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
-            f'<span class="ip-input ip-count ip-count--{CLS[sx]}{stc}"><input id="{fid}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{cnt(val)}"{" readonly" if ro else ""}{inv}{desc}></span>{hint_html}</div>')
+            f'<span class="ip-input ip-count ip-count--{CLS[sx]}{stc}"><input id="{fid}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{cnt(val)}" aria-labelledby="t-{uid} l-{fid}"{" readonly" if ro else ""}{inv}{desc}></span>{hint_html}</div>')
 
 def entry(sec, d=TODAY, ov=None, saved=None):
     # Default S6 board: entry(sec). S6S state boards: d = the chosen day, ov = {('mortality', 'F'): 4, ...} typed values
@@ -104,8 +106,8 @@ def entry(sec, d=TODAY, ov=None, saved=None):
     for sx in 'FM':  # SYS05: Sacrificare > 0 shows its Motiv under it (read-only on a saved day: label + readonly input)
         if t[sx]['culls'] > 0:
             rsn = next(c['reason'] for c in S['culls'] if c['date'] == d.isoformat() and c['section'] == sec and c['sex'] == sx)
-            motiv += (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="r{"0" if sx == "F" else "1"}-{uid}">Motiv <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
-                      f'<span class="ip-input ip-input--touch"><input id="r{"0" if sx == "F" else "1"}-{uid}" type="text" value="{rsn}" readonly></span></div>')
+            motiv += (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="r{"0" if sx == "F" else "1"}-{uid}" id="l-r{"0" if sx == "F" else "1"}-{uid}">Motiv <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
+                      f'<span class="ip-input ip-input--touch"><input id="r{"0" if sx == "F" else "1"}-{uid}" type="text" value="{rsn}" aria-labelledby="t-{uid} l-r{"0" if sx == "F" else "1"}-{uid}" readonly></span></div>')
     grid = (field('m', sec, 'F', uid, t['F']['mortality'], ro, hints['F'], st['F'], mid['F']) + field('m', sec, 'M', uid, t['M']['mortality'], ro, hints['M'], st['M'], mid['M'])
             + msgs + field('c', sec, 'F', uid, t['F']['culls'], ro) + field('c', sec, 'M', uid, t['M']['culls'], ro) + motiv)
     if any(refused.values()): tag = '<span class="ip-tag ip-tag--fault">refuzat</span>'
@@ -113,10 +115,10 @@ def entry(sec, d=TODAY, ov=None, saved=None):
     elif saved is not None: tag = '<span class="ip-tag ip-tag--neutral">salvat</span>'
     else: tag = '<span class="ip-tag ip-tag--neutral">fără pierderi</span>' if nolosses else ''
     box = f'<span class="ip-check__box">{icon("check", 14)}</span>' if nolosses else '<span class="ip-check__box"></span>'
-    chk = f'<label class="ip-check{" is-checked" if nolosses else ""}"><input type="checkbox" class="ip-sr"{" checked" if nolosses else ""}>{box}Fără pierderi azi<span class="ip-sr">, {sec}</span></label>'
+    chk = f'<label class="ip-check{" is-checked" if nolosses else ""}"><input type="checkbox" class="ip-sr" aria-labelledby="t-{uid} fp-{uid}"{" checked" if nolosses else ""}>{box}<span id="fp-{uid}">Fără pierderi azi</span></label>'
     html = f'''<section class="ip-panel ip-entry" aria-labelledby="t-{uid}"><div class="ip-entry__head"><h3 class="ip-entry__code" id="t-{uid}">{sec}</h3>{tag}<span class="ip-entry__alive">în viață <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>{n(t["F"]["alive_start"])}</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>{n(t["M"]["alive_start"])}</b></span></span></span></div>
 <div class="ip-entry__grid">{grid}</div>
-<button type="button" class="ip-btn ip-btn--touch ip-btn--ghost ip-entry__more" aria-expanded="false" aria-controls="more-{uid}">{icon("chev", 16)}Mai mult · Eroare sexare<span class="ip-sr">, {sec}</span></button><div class="ip-entry__panel" id="more-{uid}" hidden></div>
+<button type="button" class="ip-btn ip-btn--touch ip-btn--ghost ip-entry__more" id="mm-{uid}" aria-labelledby="t-{uid} mm-{uid}" aria-expanded="false" aria-controls="more-{uid}">{icon("chev", 16)}Mai mult · Eroare sexare</button><div class="ip-entry__panel" id="more-{uid}" hidden></div>
 <div class="ip-entry__foot">{chk if saved is None else saved}</div></section>'''
     return html, t, nolosses
 
@@ -129,12 +131,12 @@ def eggs(h, secs, hens, d=TODAY, ro=False):
     diff = round(lay - LAYG, 1); ok = abs(diff) <= 3  # D19 ±3 points
     def f(fid, lbl, v):
         pat = '[0-9 &#8239;]*' if v >= 1000 else '[0-9]*'
-        return f'<div class="ip-field"><label class="ip-label" for="{fid}-{u}">{lbl}</label><span class="ip-input ip-count"><input id="{fid}-{u}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{n(v)}"{" readonly" if ro else ""}></span></div>'
+        return f'<div class="ip-field"><label class="ip-label" for="{fid}-{u}" id="l-{fid}-{u}">{lbl}</label><span class="ip-input ip-count"><input id="{fid}-{u}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{n(v)}" aria-labelledby="t-eggs-{u} l-{fid}-{u}"{" readonly" if ro else ""}></span></div>'
     grid = (f('jos', 'Jos', e['floor_eggs']) + f('ec1', 'Cat. 1', e['cat1']) + f('ec2', 'Cat. 2', e['cat2']) + f('ec3', 'Cat. 3', e['cat3'])
             + f('inc', 'Incubabile', e['hatching_eggs'])
-            + f'<div class="ip-field"><label class="ip-label" for="w-{u}">Masa medie<span class="ip-sr"> grame</span></label><span class="ip-input ip-eggs__weight ip-input--touch"><input id="w-{u}" inputmode="decimal" placeholder="–" autocomplete="off" value="{n(e["avg_egg_weight_g"], 1)}"{" readonly" if ro else ""}><span class="suffix">g</span></span></div>')
+            + f'<div class="ip-field"><label class="ip-label" for="w-{u}" id="l-w-{u}">Masa medie<span class="ip-sr"> grame</span></label><span class="ip-input ip-eggs__weight ip-input--touch"><input id="w-{u}" inputmode="decimal" placeholder="–" autocomplete="off" value="{n(e["avg_egg_weight_g"], 1)}" aria-labelledby="t-eggs-{u} l-w-{u}"{" readonly" if ro else ""}><span class="suffix">g</span></span></div>')
     sgn = '+' if diff > 0 else (MINUS if diff < 0 else '')
-    sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else " (prag ±3)"} · din <span class="ip-sex ip-sex--hen">♀ {n(hens)}</span>'
+    sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else ' (prag <span class="ip-num">±3</span>)'} · <span class="s6-nobr">din <span class="ip-sex ip-sex--hen">♀ {n(hens)}</span></span>'
     calc = (f'<dl class="ip-eggs__calc" aria-label="Calculat din câmpuri, doar citire"><div><dt>Total ouă</dt><dd class="ip-eggs__val">{n(tot)}</dd>'
             f'<dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat (<span class="ip-num">{n(e["floor_eggs"])}</span>)</dd></div>'
             f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">{n(lay, 1)}%</dd><dd class="ip-eggs__sub">{sub}</dd>'
@@ -189,7 +191,8 @@ BODY = f'''<div class="s7-screen">
 {SAVE}
 </div>'''
 
-CSS = B.CSS
+CSS = B.CSS + '''
+.s6-nobr{white-space:nowrap} /* "din ♀ 8 475" stays together: .ip-sex is inline-flex, so a no-break space before it does not hold in Chrome */'''
 root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{BODY}</div>'
 dc = f'''<!doctype html>
 <html lang="ro">

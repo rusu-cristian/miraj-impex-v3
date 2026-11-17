@@ -25,6 +25,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s7-copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}
 .s7-savebar{position:sticky;bottom:0;z-index:2}
+.s6-nobr{white-space:nowrap} /* "din ♀ 8 475" stays together: .ip-sex is inline-flex, so a no-break space before it does not hold in Chrome */
 .s7s-vp{height:844px;min-height:0;overflow:hidden}
 .s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .s7s-view > .s7-main{flex:none}
