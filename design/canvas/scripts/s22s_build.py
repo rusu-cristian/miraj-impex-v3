@@ -2,6 +2,8 @@
 through s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the leftover S22 states on the same row
 (y 39345): the new desktops follow the 16 S22 desktops; the S22 phone moves right (x only). Today = 16.11.2026.
 Markup is the SYS12 UserRow / OneTimePassword / Dialog (additions.css §30) through the S22 helpers; no new screen CSS.
+S22P: SYS12 dialog() is role=alertdialog and otp() leaves the status region empty on a failed copy (the screen-side
+overrides are gone); panel boards mark the current row (§45) and step the add key down (D120).
 People as S22: Proprietar (you), Ion Rusu, Dr. Ceban (kit, illustrative); Petrea (A2 sample), Observator exemplu, every
 sign-in time, both passwords and every failure are D39 state examples, said in the board titles.
 Boards (desktops, 1440×1024)
@@ -58,24 +60,21 @@ MENU_NOTE = ('<!-- Row menu (SYS12, APG menu button): focus is on the item marke
 
 # ================================================================= dialogs (SYS12)
 RP_BODY = '<p id="rp-n">Parola de acum nu va mai merge. Noua parolă temporară se arată o singură dată, aici.</p>'
-def alert(d):   # a confirm Dialog is role=alertdialog, as every other confirm in the project (screen-side; SYS12 dialog() left to S22P)
-    return sub(d, 'role="dialog"', 'role="alertdialog"')
 def dlg_reset():   # SYS12 "Resetează parola · confirmare": focus on Anulează
-    return alert(U['dialog']('rp', 'Resetează parola lui Ion Rusu', RP_BODY,
+    return (U['dialog']('rp', 'Resetează parola lui Ion Rusu', RP_BODY,
                        BTN('Anulează', focus=True, extra=' autofocus="autofocus"') + BTN('Resetează parola', 'primary'), desc='rp-n'))
 def dlg_reset_failed():   # SYS12 "Resetarea nu a mers": fault Banner (no role) described by the dialog and Reîncearcă (focus)
     why = U['banner']('fault', '<b>Parola lui Ion Rusu nu s-a resetat;</b> cea veche merge în continuare. '
                                'Verifică conexiunea la internet, apoi apasă Reîncearcă.', 'rf-why')
-    return alert(U['dialog']('rf', 'Resetează parola lui Ion Rusu', why,
+    return (U['dialog']('rf', 'Resetează parola lui Ion Rusu', why,
                        BTN('Anulează') + BTN('Reîncearcă', 'primary', focus=True, extra=' autofocus="autofocus" aria-describedby="rf-why"'),
                        desc='rf-why'))
 def dlg_pw(p, title, ctx_, pw, name, **kw):
     o = U['otp'](p, ctx_, pw, name, **kw)
     if kw.get('focus') == 'pw':   # is-selected is the SYS12 preview stand-in only: a screen board draws the focus ring
         o = sub(o, ' ip-focus is-selected"', ' ip-focus"')
-    if kw.get('failed'):   # D119 (SYS13 rule): focus moves to the field, which carries the message; the status region stays empty
-        o = sub(o, '<p class="ip-sr" role="status" aria-live="polite">Copierea nu a mers. Parola e selectată.</p>',
-                '<p class="ip-sr" role="status" aria-live="polite"></p>')
+    if kw.get('failed'):   # D119 (SYS13 rule), in SYS12 otp() since S22P: the field carries the message, the status region stays empty
+        assert '<p class="ip-sr" role="status" aria-live="polite"></p>' in o
     return U['dialog'](p, title, o, BTN('Închide', 'primary'))
 RESET_NOTE = ("<!-- Opened from Ion Rusu's row menu (Resetează parola). Anulează or Esc: focus back on his Acțiuni key. "
               "Resetează parola: the same Dialog turns into the password step (as --parola-resetata, focus on Copiază parola) "
@@ -89,7 +88,7 @@ def acct_off(u):
             '<button type="button" class="ip-btn ip-btn--secondary" aria-disabled="true" aria-describedby="up-pw-why">Resetează parola</button>')
     return (f'<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap s4s-m0" id="up-acct-h">Cont</h3>'
             f'<p class="s4s-m0 s22-state">{lamp("off", "dezactivat")}<span>ultima intrare <span class="ip-num">{u["seen"]}</span></span></p>'
-            f'<p class="ip-note s4s-m0">{u["name"]} nu poate intra; ce a introdus rămâne. Rolul și fermele schimbate acum se aplică '
+            f'<p class="ip-note s4s-m0">Rolul și fermele schimbate acum se aplică '
             f'după ce îl reactivezi; reactivat, intră cu parola lui de dinainte.</p>'
             f'<div class="s22-keys">{keys}</div>'
             f'<p class="ip-note s4s-m0" id="up-pw-why">Contul e dezactivat. Reactivează-l ca să-i dai o parolă nouă.</p></section>')
@@ -125,7 +124,7 @@ desk('--parola-copiata', f'Observator exemplu · parola temporară copiată · {
      + S.scrim(dlg_pw('pc', 'Parola temporară pentru Observator exemplu', U['CTX_NEW'], S.PW_NEW, 'Observator exemplu', copied=True, focus='copy')))
 # 6 · copy failed (D39, as --parola-resetata): focus in the field, the app selects the value; the line names the fix
 desk('--copiere-esuata', f'Ion Rusu · copierea parolei nu a mers, parola selectată · {D39}, parola exemplu',
-     S.vp(S.ulist(), inert=True) + S.upanel(RUSU, inert=True, pressed='reset')
+     S.vp(S.ulist(cur='rusu'), inert=True) + S.upanel(RUSU, inert=True, pressed='reset')
      + '<!-- Copy failed: the app runs input.focus() + input.select() (the value in the ::selection colours, SYS12); a still board '
        'holds no selection, so only the focus ring is drawn. Închide: focus back on Resetează parola in the panel. -->'
      + S.scrim(dlg_pw('cf', 'Parola nouă pentru Ion Rusu', U['CTX_RESET'], S.PW_RESET, 'Ion Rusu', failed=True, focus='pw')), PH)
@@ -138,7 +137,7 @@ desk('--reactivat', f'Petrea reactivat · {D39}',
                                                      "the menu closes and focus goes back to Petrea's Acțiuni key (his row now among the active vets)"))
 # 9 · editing a deactivated user (D39 Petrea, Editează from his row menu)
 desk('--editeaza-dezactivat', f'Petrea, cont dezactivat · panoul utilizatorului · {D39}',
-     S.vp(S.ulist(OFFL)) + panel_off(PETREA_OFF), PH)
+     S.vp(S.ulist(OFFL, cur='petrea')) + panel_off(PETREA_OFF), PH)
 
 pathlib.Path('/tmp/s22/boards.json').write_text(json.dumps(S22_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 

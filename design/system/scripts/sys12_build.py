@@ -70,8 +70,8 @@ def menu(p, u, active_item=None, open_=True, up=False):
     return (f'<div class="ip-menu ip-users__menu{c}" id="{mid}-menu"{h}>'
             f'<div class="ip-users__items" role="menu" aria-label="Acțiuni pentru {u["name"]}"{db}>{"".join(out)}</div>{n}</div>')
 
-def row(p, u, open_=False, active_item=None, focus=False, up=False):
-    cls = 'ip-user' + ('' if u['active'] else ' is-off') + (' is-self' if u.get('me') else '')
+def row(p, u, open_=False, active_item=None, focus=False, up=False, cur=False):
+    cls = 'ip-user' + ('' if u['active'] else ' is-off') + (' is-self' if u.get('me') else '') + (' is-current' if cur else '')
     me = '<span class="ip-note">(tu)</span>' if u.get('me') else ''
     farms = u['farms'] if u['farms'] else '<span class="ip-user__all">toate fermele</span>'
     seen = (f'<td class="ip-user__seen">{u["seen"]}</td>' if u['seen'] else
@@ -108,9 +108,12 @@ def users(p, body, sumline, busy=False, extra='', table=True, live=''):
             f'{HEAD}<tbody>{body}</tbody></table></div>' if table else '') +
             f'<p class="ip-sr" role="status" aria-live="polite">{live}</p></section>')
 
-def list_rows(p, open_key=None, active_item=None, focus_key=None, data=ALL):
+def list_rows(p, open_key=None, active_item=None, focus_key=None, data=ALL, up=False, cur_key=None):
+    """The row menu opens downward; `up` (ip-users__menu--up) only where the room below the key, to the viewport or
+    scroll container's bottom, is less than the menu's height and the room above is larger (S22P, D120). The app
+    measures it on open; a still board or preview picks the one that fits."""
     return ''.join(row(p, u, open_=(u['key'] == open_key), active_item=active_item, focus=(u['key'] == focus_key),
-                       up=(i >= len(data) - 2)) for i, u in enumerate(data))
+                       up=up and u['key'] == open_key, cur=(u['key'] == cur_key)) for u in data)
 
 # ------------------------------------------------------------------ dialogs
 def banner(kind, body, id_=None):
@@ -118,8 +121,13 @@ def banner(kind, body, id_=None):
     return f'<div class="ip-banner ip-banner--{kind}"{i}>{svg(IC[kind])}<p class="ip-users__bn">{body}</p></div>'
 
 def dialog(p, title, body, foot, desc=None):
+    """Every SYS12 Dialog is role=alertdialog (S22P, D120): the confirms (reset, deactivate) as every confirm in the
+    project, and the password step too, because the reset confirm turns into it in place (one role, never switched)
+    and it holds a once-only warning the owner must act on (Închide)."""
+    if desc is None and f'id="{p}-once"' in body:   # the password step: the once rule is the alert (S22P fix 1)
+        desc = f'{p}-once'
     d = f' aria-describedby="{desc}"' if desc else ''
-    return (f'<div class="ip-dialog ip-users__dlg" role="dialog" aria-modal="true" aria-labelledby="{p}-t"{d}>'
+    return (f'<div class="ip-dialog ip-users__dlg" role="alertdialog" aria-modal="true" aria-labelledby="{p}-t"{d}>'
             f'<h2 id="{p}-t">{title}</h2>{body}<div class="ip-users__dfoot">{foot}</div></div>')
 
 def btn(label, kind='ghost', focus=False, extra=''):
@@ -132,9 +140,11 @@ def otp(p, ctx, pw, name, copied=False, failed=False, focus=None):
     fpw = ' ip-focus is-selected' if focus == 'pw' else ''
     fcp = ' ip-focus' if focus == 'copy' else ''
     done = '<span class="ip-lamp ip-lamp--ok">copiată</span>' if copied else ''
-    err = (f'<p class="ip-err" id="{p}-err">Copierea nu a mers. Parola e selectată: apasă Ctrl+C.</p>' if failed else '')
+    err = (f'<p class="ip-err ip-fieldmsg" id="{p}-err">{svg(IC["fault"], "ip-icon ip-icon--14")}'
+           f'<span>Copierea nu a mers. Parola e selectată: apasă Ctrl+C.</span></p>' if failed else '')
     dpw = f'{p}-once' + (f' {p}-err' if failed else '')
-    live = 'Parola a fost copiată.' if copied else ('Copierea nu a mers. Parola e selectată.' if failed else '')
+    # copy failed (SYS13 rule, D119): focus moves to the field, which reads the error line; the status region stays empty
+    live = 'Parola a fost copiată.' if copied else ''
     return (f'<div class="ip-otp">'
             f'<p class="ip-otp__ctx">{ctx}</p>'
             f'<label class="ip-label" for="{p}-pw">Parolă temporară</label>'
@@ -157,6 +167,10 @@ CTX_NEW = f'Cont nou · Observator · Hîrbovăț · login <span class="ip-num">
 L, O = [], []
 
 L.append(('Listă · implicit (proprietarul vede toți utilizatorii)', users('a', list_rows('a'), counts(ALL))))
+# current row (additions.css section 45): the user open in a panel beside the list; on a screen the row's Acțiuni key
+# carries aria-current="true" (and the head key steps down to secondary while the panel is open); the preview uses tr.is-current
+L.append(('Rând curent · Ion Rusu deschis în panou (§45; pe ecran aria-current pe cheia Acțiuni, demo tr.is-current)',
+          users('n', list_rows('n', cur_key='rusu'), counts(ALL))))
 L.append(('Meniu deschis · Ion Rusu (tastatura pe „Resetează parola”)',
           users('b', list_rows('b', 'rusu', 'Resetează parola'), counts(ALL))))
 L.append(('Rândul tău · Dezactivează indisponibil, cu motiv',
@@ -174,13 +188,13 @@ FAIL = ('<div class="ip-banner ip-banner--fault">' + svg(IC['fault']) + '<div cl
         '<b>Utilizatorii nu s-au încărcat.</b> Verifică conexiunea și apasă Reîncearcă.</p>'
         + btn('Reîncearcă', 'secondary') + '</div></div>')
 # load failed: the status region says it (the Banner has no role, so it is announced once)
-L.append(('Eroare la încărcare (fără tabel)', users('g', '', '–', extra=FAIL, table=False,
+L.append(('Eroare la încărcare (fără tabel)', users('g', '', '– lista nu s-a încărcat', extra=FAIL, table=False,
                                                      live='Utilizatorii nu s-au încărcat.')))
 
 # dialogs (the row menu's actions)
 O.append(('Resetează parola · confirmare (focus pe Anulează)', dialog('h', 'Resetează parola lui Ion Rusu',
-    '<p>Parola de acum nu va mai merge. Noua parolă temporară se arată o singură dată, aici.</p>',
-    btn('Anulează', focus=True) + btn('Resetează parola', 'primary'))))
+    '<p id="h-n">Parola de acum nu va mai merge. Noua parolă temporară se arată o singură dată, aici.</p>',
+    btn('Anulează', focus=True) + btn('Resetează parola', 'primary'), desc='h-n')))
 O.append(('Parola temporară · după resetare (focus pe Copiază parola)', dialog('i', 'Parola nouă pentru Ion Rusu',
     otp('i', CTX_RESET, PW_RESET, 'Ion Rusu', focus='copy'), btn('Închide', 'primary'))))
 O.append(('Parola temporară · cont nou, după Copiază: lampă „copiată”', dialog('j', 'Parola temporară pentru Observator exemplu',
@@ -192,21 +206,23 @@ O.append(('Resetarea nu a mers (focus pe Reîncearcă, Esc = Anulează)', dialog
            'l-why'),
     btn('Anulează') + btn('Reîncearcă', 'primary', focus=True, extra=' aria-describedby="l-why"'), desc='l-why')))
 O.append(('Dezactivează · confirmare (A2), focus pe Anulează; apoi Toast', dialog('m', 'Dezactivează contul lui Petrea',
-    '<p>Petrea nu va mai putea intra. Datele introduse de el rămân. Poți reactiva contul oricând.</p>',
-    btn('Anulează', focus=True) + btn('Dezactivează', 'destructive'))
+    '<p id="m-n">Petrea nu va mai putea intra. Datele introduse de el rămân. Poți reactiva contul oricând.</p>',
+    btn('Anulează', focus=True) + btn('Dezactivează', 'destructive'), desc='m-n')
     + '<div class="ip-toast" role="status" style="margin-top:var(--space-4)">Contul lui Petrea e dezactivat.</div>'))
 O.append(('Reactivează · fără dialog, doar Toast', '<div class="ip-toast" role="status">Contul lui Petrea e activ din nou.</div>'))
 
 W = 'calc(var(--space-12) * 22)'   # 1056px: the S22 content width at 1440 (sidebar + gutters)
 D = 'var(--panel-w)'
-lst = ''.join(f'<div style="width:{W}">{cap(t)}{h}</div>' for t, h in L)
+ROOM = {2: 'var(--space-6)', 3: 'var(--space-6)', 4: 'calc(var(--space-12) * 4)'}   # menus open below
+lst = ''.join(f'<div style="width:{W}' + (f';padding-bottom:{ROOM[i]}' if i in ROOM else '') + f'">{cap(t)}{h}</div>'
+              for i, (t, h) in enumerate(L))
 dlg = ''.join(f'<div style="width:{D}">{cap(t)}{h}</div>' for t, h in O)
 FOOT = ('<p class="ip-note" style="margin:0;max-width:{w}">Din kit: numele Ion Rusu și Dr. Ceban (ilustrative, craft.md §7), '
         'Petrea și loginul petrea (spec A1/A2); fermele Telița și Hîrbovăț (reale). Exemple de stare (D39): rândurile '
         '„Proprietar exemplu” și „Observator exemplu”, celelalte loginuri, orele ultimei intrări, contul dezactivat al lui '
         'Petrea și cele două parole.</p>')
 
-ur = ('<!-- @dsCard group="Data" height=1900 subtitle="SYS12" -->\n'
+ur = ('<!-- @dsCard group="Data" height=2432 subtitle="SYS12" -->\n'
       '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
       f'<div>{cap("S22 · Utilizatori · listă · desktop (lățime 1056 px)")}'
       f'<div class="ip-stack" style="gap:var(--space-8)">{lst}</div></div>\n'

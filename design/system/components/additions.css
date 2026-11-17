@@ -1500,3 +1500,14 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * it is not a target; position:relative paints it over the hint below, so all 44px stay the target. Checkboxes outside an
  * ip-field (SexCountRow Toate, EntryCard foot) are unchanged. */
 .ip-field > .ip-check{position:relative;align-self:flex-start;margin-block:calc(-1 * var(--space-3))}
+
+/* =====================================================================================================
+ * S22P · DataTable current row. Spec: components.md › Additions › S22P.
+ * ===================================================================================================== */
+
+/* ---------- 45. DataTable · current row (S22P) ---------- */
+/* The row whose record is open beside the list (a non-modal SidePanel): the row's own key or link carries
+ * aria-current="true" (demo tr.is-current). Steel only, no lamp: the row on sunken with a hair
+ * line-strong frame drawn inside it, so it reads apart from hover (sunken, no frame); text, lamps and keys unchanged
+ * (ink-muted 4.7:1 and the ok word 4.6:1 on sunken). No colour bar, no green. */
+.ip-table tr:has([aria-current="true"]),.ip-table tr.is-current{background:var(--sunken);outline:var(--ip-hair) solid var(--line-strong);outline-offset:calc(-1 * var(--ip-hair))}
