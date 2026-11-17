@@ -986,6 +986,53 @@
       "h": 1024,
       "expand": "fill",
       "title": "S16 · Corectează · desktop · după ștergere · exemplu de stare (D39)"
+    },
+    "S17-istoric-modificari.dc.html": {
+      "x": 0,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări"
+    },
+    "S17-istoric-modificari--filtre-fara-rezultate.dc.html": {
+      "x": 1520,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · filtre fără rezultate"
+    },
+    "S17-istoric-modificari--se-incarca.dc.html": {
+      "x": 3040,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · se încarcă"
+    },
+    "S17-istoric-modificari--eroare-la-incarcare.dc.html": {
+      "x": 4560,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · eroare la încărcare"
+    },
+    "S17-istoric-modificari--observator-fara-acces.dc.html": {
+      "x": 6080,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · observator · fără acces"
+    },
+    "S17-istoric-modificari--telefon.dc.html": {
+      "x": 7600,
+      "y": 30164,
+      "w": 390,
+      "h": 844,
+      "title": "S17 · Istoric modificări · manager · telefon"
     }
   },
   "order": [
@@ -1120,7 +1167,13 @@
     "S16-corecteaza--desktop-scris.dc.html",
     "S16-corecteaza--desktop-refuzat.dc.html",
     "S16-corecteaza--desktop-sterge-confirmare.dc.html",
-    "S16-corecteaza--desktop-dupa-stergere.dc.html"
+    "S16-corecteaza--desktop-dupa-stergere.dc.html",
+    "S17-istoric-modificari.dc.html",
+    "S17-istoric-modificari--filtre-fara-rezultate.dc.html",
+    "S17-istoric-modificari--se-incarca.dc.html",
+    "S17-istoric-modificari--eroare-la-incarcare.dc.html",
+    "S17-istoric-modificari--observator-fara-acces.dc.html",
+    "S17-istoric-modificari--telefon.dc.html"
   ],
   "notes": {},
   "designSystems": [
