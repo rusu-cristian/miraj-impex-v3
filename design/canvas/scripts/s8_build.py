@@ -3,7 +3,8 @@ comparison, Salvează. Phone boards only (screens.md S8 lists no desktop layout;
 Reuses the S7 phone form shell by import (s7s_build → s7_build: FormHeader, DateField, icons, Lamp, SexCount, SaveBar shell +
 compact two-line summary; viewport/Toast/Banner CSS from sstate_css, "(opțional)" from SC.OPT). System classes only: FormHeader,
 DateField, SectionSelect phone combobox (closed), SegmentedControl (sex), CountInput (Masa medie, ♀/♂ bar), TextField,
-Readout (+ ip-readout__kv, off lamp D59), Lamp, Banner, Toast, SaveBar. Screen CSS (s8-*) is layout with tokens.
+Readout (+ ip-readout__kv, off lamp D59, ip-readout__live §38), Lamp, Banner, Toast, SaveBar; SegmentedControl fill and
+wrapping field messages are additions.css §38 (S8P). Screen CSS (s8-*) is one-off layout with tokens.
 Content (real only):
 - Hîrbovăț boards (D23, today 16.11.2026, SAPT 40): the latest weighing in the extracts, H1.1 ♀ 3 967 g · CV 7,3% · uniformitate
   81,9% · 78 păsări (sample-hirbovat-2026.json, D27; Dr. Ceban 10:10 in the event log); previous week 09.11.2026 4 006 g.
@@ -104,15 +105,17 @@ def sex(c, ro=False):
                 f'<span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><input id="sx" type="text" value="{WORDC[sx]}" readonly{desc}/></span>{hint}</div>')
     items = ''.join(f'<span class="ip-seg__item{" is-selected" if s == sx else ""}" role="radio" aria-checked="{"true" if s == sx else "false"}" tabindex="{0 if s == sx else -1}">'
                     f'<span class="ip-sex ip-sex--{CLS[s]}" aria-hidden="true">{SIGN[s]}</span>{WORDC[s]}</span>' for s in 'FM')
-    return f'<div class="ip-field"><span class="ip-label" id="sx-l">Sex</span><span class="ip-seg ip-seg--touch s8-seg" role="radiogroup" aria-labelledby="sx-l">{items}</span></div>'
+    return f'<div class="ip-field"><span class="ip-label" id="sx-l">Sex</span><span class="ip-seg ip-seg--touch ip-seg--fill" role="radiogroup" aria-labelledby="sx-l">{items}</span></div>'
 
 def msg(kind, mid, text):
     cls, ic = ('ip-warnline', 'warn') if kind == 'warn' else ('ip-err', 'alert')
-    return f'<p class="{cls} s8-msg" id="{mid}">{icon(ic, 14)}<span>{text}</span></p>'
+    return f'<p class="{cls} ip-fieldmsg" id="{mid}">{icon(ic, 14)}<span>{text}</span></p>'
 
 def weight(c, v, ro=False, st=None):
     sx = c['sx']; mid = 'w-msg' if st else None
-    desc = ' '.join(['ro-sub'] + ([mid] if mid else []))
+    # S8P: the lamp word + the comparison ("FĂRĂ DATE ÎN GHID SAPT 40", "ÎN NORMĂ ghid SAPT 21: …"); on abatere the lamp word
+    # + the warn line, which already names the comparison ("ABATERE H5-2 ♂: …", no doubled reading; fix round 1)
+    desc = 'ro-lamp ' + mid if st == 'warn' else 'ro-lamp ro-sub'
     m = ''
     if st == 'warn':
         d = dev(c)
@@ -121,30 +124,34 @@ def weight(c, v, ro=False, st=None):
     return (f'<div class="ip-field"><label class="ip-label" for="w">Masa medie <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
             f'<span class="ip-input ip-count ip-count--{CLS[sx]}{" is-" + st if st else ""}"><input id="w" inputmode="numeric" pattern="[0-9 &#8239;]*" placeholder="–" autocomplete="off" value="{val}" aria-describedby="{desc}"{" readonly" if ro else ""}/><span class="suffix">g</span></span>{m}</div>')
 
-def tf(fid, label, v, suffix, mode='decimal', opt=True, ro=False, err=None):
+def tf(fid, label, v, suffix, mode='decimal', opt=True, ro=False, err=None, why=None):
     inv = f' aria-invalid="true" aria-describedby="{fid}-msg"' if err else ''
     o = ' <span class="s13-opt">(opțional)</span>' if opt else ''
+    if ro and v is None and why:  # S8P: read-only unknown = "–" with its reason (craft §6), no unit after a dash
+        return (f'<div class="ip-field"><label class="ip-label" for="{fid}">{label}{o}</label>'
+                f'<span class="ip-input ip-input--touch ip-num is-readonly"><input id="{fid}" type="text" value="–" readonly aria-describedby="{fid}-why"/></span>'
+                f'<span class="ip-hint" id="{fid}-why">{why}</span></div>')
     return (f'<div class="ip-field"><label class="ip-label" for="{fid}">{label}{o}</label>'
             f'<span class="ip-input ip-input--touch ip-num{" is-readonly" if ro else ""}{" is-error" if err else ""}"><input id="{fid}" type="text" inputmode="{mode}" placeholder="–" autocomplete="off" value="{v if v is not None else ""}"{" readonly" if ro else ""}{inv}/><span class="suffix">{suffix}</span></span></div>')
 
 def readout(c, v, refused=False):
     sx = c['sx']; pdte, pwk, pw = c['prev']
     if c['guide'] is None:
-        lmp = '<span class="ip-rlamp ip-rlamp--off">FĂRĂ DATE ÎN GHID</span>'
+        lmp = '<span class="ip-rlamp ip-rlamp--off" id="ro-lamp">FĂRĂ DATE ÎN GHID</span>'
         # fix 2: the lamp word already says it; the live region hears "FĂRĂ DATE ÎN GHID SAPT n" (no repeat, no bare dash)
         sub = f'<span aria-hidden="true">ghid </span>SAPT {c["wk"]}<span aria-hidden="true">: – fără date în ghid</span>'
     elif v is None:
-        lmp = '<span class="ip-rlamp ip-rlamp--off">FĂRĂ DATE</span>'
+        lmp = '<span class="ip-rlamp ip-rlamp--off" id="ro-lamp">FĂRĂ DATE</span>'
         sub = f'ghid SAPT {c["wk"]}: {n(c["guide"])} g · scrie masa medie'
     else:
         d = dev(c); ok = abs(d) <= 5  # D19 weight ±5%
-        lmp = f'<span class="ip-rlamp ip-rlamp--{"ok" if ok else "warn"}">{"ÎN NORMĂ" if ok else "ABATERE"}</span>'
+        lmp = f'<span class="ip-rlamp ip-rlamp--{"ok" if ok else "warn"}" id="ro-lamp">{"ÎN NORMĂ" if ok else "ABATERE"}</span>'
         sub = f'ghid SAPT {c["wk"]}: {n(c["guide"])} g · {n(v)} g ({pct(d)})'  # spec C7: "ghid sapt. 41: 3 460 g · 3 412 g (−1,4%)"
     val = f'{n(v)}<small> g</small>' if v is not None else '–'
     diff = f'{"+" if v - pw > 0 else MINUS if v - pw < 0 else ""}{n(abs(v - pw))}<small> g</small>' if v is not None else '–'
     return f'''<section class="ip-readout" aria-labelledby="ro-h">
 <h2 class="ip-sr" id="ro-h">Față de ghid</h2>
-<div class="s8-live" aria-live="polite" aria-atomic="true">
+<div class="ip-readout__live" aria-live="polite" aria-atomic="true">
 <div class="ip-readout__cap"><span aria-hidden="true">{c["sec"]} {WORD[sx]} · SAPT {c["wk"]}</span>{lmp}</div>
 <div class="ip-readout__val" aria-hidden="true">{val}</div>
 <div class="ip-readout__sub" id="ro-sub">{sub}</div>
@@ -152,17 +159,17 @@ def readout(c, v, refused=False):
 <dl class="ip-readout__kv"><div><dt>Săpt. trecută · {dd(pdte)}</dt><dd>{n(pw)}<small> g</small></dd></div><div><dt>Diferență</dt><dd>{diff}</dd></div></dl>
 </section>'''
 
-def values(c, cv, uni, size, ro=False, uni_err=None):
+def values(c, cv, uni, size, ro=False, uni_err=None, size_why=None):
     m = msg('error', 'uni-msg', uni_err) if uni_err else ''
     return (f'<div class="s8-pair">{tf("cv", "CV", cv, "%", ro=ro)}{tf("uni", "Uniformitate", uni, "%", ro=ro, err=uni_err)}{m}'
-            f'{tf("size", "Mărime probă", size, "păsări", mode="numeric", ro=ro)}</div>')
+            f'{tf("size", "Mărime probă", size, "păsări", mode="numeric", ro=ro, why=size_why)}</div>')
 
 def form(c, w, cv, uni, size, ro=False, st=None, uni_err=None):
     return [date(c, ro), section(c, ro), sex(c, ro), weight(c, w, ro, st), readout(c, w), values(c, cv, uni, size, ro, uni_err)]
 
 def rec14(): return f'<span class="ip-rec ip-rec--weighing">{icon("weighing", 14)}</span>'
 def what(c, w):
-    if w is None: return f'<span>{c["sec"]} <span class="ip-sex ip-sex--{CLS[c["sx"]]}">{SIGN[c["sx"]]}</span> ·</span><span>–{NB}g</span>'
+    if w is None: return f'<span>{c["sec"]} <span class="ip-sex ip-sex--{CLS[c["sx"]]}">{SIGN[c["sx"]]}</span> · –</span>'  # S8P: no unit after –
     return f'<span>{c["sec"]} {sexv(c["sx"], n(w) + NB + "g")}</span>'
 SAVE_KEY, SAVE_OFF = P.SAVE_KEY, P.SAVE_OFF
 def status(c, w):
@@ -199,13 +206,13 @@ UNI_BAD = 819
 err = (f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}</span>: uniformitate <span class="ip-num">{UNI_BAD}%</span> e peste limită. '
        f'Scrie o valoare între <span class="ip-num">0</span> și <span class="ip-num">100%</span>.')
 boards.append(('valoare-refuzata', 'valoare refuzată · exemplu de stare (D39)', screen(form(C, C['w'], dv(C['cv']), str(UNI_BAD), C['size'], uni_err=err),
-               B.savebar(rec14() + what(C, C['w']), lamp('fault', 'refuzat') + f'<span>Uniformitate <span class="ip-num">{UNI_BAD}%</span> ·</span><span>scrie <span class="ip-num">0–100%</span></span>', SAVE_OFF))))
+               B.savebar(rec14() + what(C, C['w']), lamp('fault', 'refuzat') + f'<span>uniformitate <span class="ip-num">{UNI_BAD}%</span></span>', SAVE_OFF))))
 # 5 · salvat: read-only, Toast with Anulează (same day, D07), next step "Cântărire nouă" (as S13 "Livrare nouă", D73)
 toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Salvat · {C["sec"]} '
-         f'{SIGN[C["sx"]]} · <span class="ip-num">{n(C["w"])}</span> g</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+         f'{SIGN[C["sx"]]} <span class="ip-num">{n(C["w"])}</span> g</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
 boards.append(('salvat', 'salvat', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size'], ro=True),
                B.savebar(rec14() + f'<span>salvat ·</span>{what(C, C["w"])}', '<span>poți modifica până la <span class="ip-num">23:59</span></span>',
-                         '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Cântărire nouă</button>'), overlay=toast)))
+                         '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Cântărire nouă</button>'), overlay=toast)))
 # 6 · eroare la salvare (Connectivity: online only, draft kept, retry)
 ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Nu s-a salvat cântărirea '
        f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}</span> din <span class="ip-num">{dd(C["day"])}</span> (<span class="ip-num">{n(C["w"])}</span> g). Verifică conexiunea și apasă Reîncearcă.</p>'
@@ -216,13 +223,8 @@ boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + form(C, 
 CSS = P.CSS + SC.OPT + '''
 .s8-screen{min-height:inherit}
 .s8-grow{flex:1;min-width:0}
-.s8-seg{display:flex}
-.s8-seg > .ip-seg__item{flex:1;justify-content:center}
-.s8-live{display:flex;flex-direction:column;gap:inherit;align-items:inherit} /* the live region (lamp word + comparison, fix 1): lays out as the Readout's own column */
 .s8-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4) var(--space-3)}
-.s8-pair > .s8-msg{grid-column:1 / -1}
-.s8-msg{margin:0;align-items:flex-start}
-.s8-msg .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.s8-pair > .ip-fieldmsg{grid-column:1 / -1}
 .s8-main--toast{padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--space-4) + var(--space-8))} /* the last field scrolls clear of the Toast (48 key + 2x12 padding + 16 from the edge) */'''
 
 STEM0, TITLE0 = 'S8-cantarire', 'S8 · Cântărire'

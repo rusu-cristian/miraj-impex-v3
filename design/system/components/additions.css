@@ -1393,3 +1393,20 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-btn--secondary[aria-busy="true"]{background:var(--raised);color:var(--ink);border-color:var(--line-strong);box-shadow:var(--shadow-key)}
 .ip-btn--ghost[aria-busy="true"]{background:transparent;color:var(--ink);border-color:transparent;box-shadow:none}
 .ip-btn--destructive[aria-busy="true"]{background:var(--raised);color:var(--fault);border-color:var(--fault);box-shadow:none}
+
+/* =====================================================================================================
+ * S8P · Readout live comparison, SegmentedControl fill, wrapping field message. Spec: components.md › Additions › S8P.
+ * ===================================================================================================== */
+
+/* ---------- 38. Readout live region, SegmentedControl fill, field message (S8P) ---------- */
+/* div.ip-readout__live[aria-live=polite][aria-atomic=true] wraps a Readout's caption, value and sub-line so a live guide
+ * comparison is announced once (lamp word + sub-line; the value and the caption's section · sex · SAPT are aria-hidden).
+ * It lays out as the Readout's own column (same gap and alignment), so the Readout looks as without it. One per page. */
+.ip-readout__live{display:flex;flex-direction:column;gap:inherit;align-items:inherit}
+/* SegmentedControl · fill: the track spans its field, segments share it equally, label centred (phone ♀/♂ choice). */
+.ip-seg--fill{display:flex}
+.ip-seg--fill > .ip-seg__item{flex:1;justify-content:center}
+/* Field message that may wrap (ip-err / ip-warnline under a field, p.ip-fieldmsg): no paragraph margin, icon kept at its
+ * size on the first line (as section 12's .ip-entry__msg). */
+.ip-fieldmsg{margin:0;align-items:flex-start}
+.ip-fieldmsg > .ip-icon{flex:none;margin-top:var(--ip-hair)}

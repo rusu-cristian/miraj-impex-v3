@@ -1,7 +1,7 @@
 """S8S · Cântărire state boards (spec C7 + §1 shared rules), appended to the S8 row after its 7 boards (step 470).
 python3 -I s8s_build.py <repo_root> [--canvas]
 Imports s8_build (which rewrites the 7 S8 boards and canvas.json byte-identical, and S7 through s7s_build) and reuses its
-FormHeader, DateField, SectionSelect combobox, Sex, Masa medie, Readout (one div.s8-live: lamp word + comparison, value and
+FormHeader, DateField, SectionSelect combobox, Sex, Masa medie, Readout (one div.ip-readout__live, additions §38: lamp word + comparison, value and
 caption aria-hidden), values grid, SaveBar summary and screen CSS. Viewport/Banner/skeleton CSS from sstate_css; the phone
 SectionSelect BottomSheet is additions.css §33 (S9P), its scrim anchored as S9 (SC.MODAL). System classes only.
 Content (real only, no D39 example needed):
@@ -134,7 +134,7 @@ d3 = E.date(C3); assert AZI_ON in d3
 d3 = d3.replace(AZI_ON, '<span class="ip-seg__item" role="radio" aria-checked="false" tabindex="0">Azi</span>')  # a calendar day: neither Azi nor Ieri
 ban3 = banner('past-why', 'Pentru zilele trecute cere managerului.',
               f'Cântărirea {C3["sec"]} {sexs(C3["sx"])} din <span class="ip-num">{dd(C3["day"])}</span> e salvată; o vezi doar în citire.')
-p3 = [d3, ban3, E.section(C3), E.sex(C3), E.weight(C3, C3['w'], ro=True), E.readout(C3, C3['w']), E.values(C3, E.dec(C3['cv']), E.dec(C3['uni']), None, ro=True)]
+p3 = [d3, ban3, E.section(C3), E.sex(C3), E.weight(C3, C3['w'], ro=True), E.readout(C3, C3['w']), E.values(C3, E.dec(C3['cv']), E.dec(C3['uni']), None, ro=True, size_why='Nescrisă la cântărire.')]  # S8P: – with its reason (true for imported and in-app records; fix round 1)
 sv3 = B.savebar(E.rec14() + f'<span><span class="ip-num">{dd(C3["day"])}</span> ·</span>' + E.what(C3, C3['w']), '<span>doar citire</span>', save_off('past-why'))
 boards.append(('zi-trecuta', f'zi trecută (medic) · Telița {dd(C3["day"])}', screen(p3, sv3, c=C3)))
 
