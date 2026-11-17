@@ -2,7 +2,7 @@
 Hîrbovăț · Seria 2026, period "Ciclul curent", grain "Săpt." as the S4 default board). Rezumat is the S4 default board.
 python3 -I s4t_build.py <repo_root>
 Imports the S4 shell from s4s_build.py (sidebar, header, cycle selector + track, FilterBar pieces, formats, icons, write());
-nothing in s4s_build.py changes, so S4 and its 8 state boards stay byte-identical. Figures come only from the extracts
+S4TP: the S4 boards share s4s.CSS_S4, s4s.gline (Stat lines) and s4s.rnd (.5 up, D82) with S4/S4S. Figures come only from the extracts
 (sample-hirbovat-2026.json, counts-latest.json, guide-laying.json, transfers-seria2026.json); every derived figure is
 asserted against the figure the S4 board already shows. Writes design/canvas/project/S4-ferma--<tab>.dc.html and
 /tmp/s4s/S4-ferma--<tab>.html (plain wrappers for the render script)."""
@@ -29,6 +29,7 @@ def cw(iso): return (dt.date.fromisoformat(iso) - START).days // 7 + 1
 def ddm(iso): return ddate(iso)[:5]
 def num(v): return f'<span class="ip-num">{v}</span>'
 DASH = '–'
+NBSP = '\u00a0'  # no-break space: a ♀/♂ sign, its figure and unit stay on one line
 NOGD = 'ghid: – fără date în ghid'
 HERE = pathlib.Path(__file__).resolve().parent
 HEIGHTS = json.loads((HERE / 's4t_heights.json').read_text()) if (HERE / 's4t_heights.json').exists() else {}
@@ -113,7 +114,7 @@ def rpair(f, m, unit=''):  # ♀ · ♂ figures on the dark Readout: signs in re
 # ---------------------------------------------------------------- Stat + table helpers
 def stat(k, capt, val, *lines):
     c = s4.cap(k, capt) if k != 'sexerr' else f'<span class="ip-cap s4-capi"><span class="s4-ico" aria-hidden="true">{icon("sexerr", 14)}</span>{capt}</span>'
-    return f'<div class="ip-stat">{c}<span class="ip-stat__val">{val}</span>' + ''.join(f'<span class="ip-stat__guide">{l}</span>' for l in lines) + '</div>'
+    return f'<div class="ip-stat">{c}<span class="ip-stat__val">{val}</span>' + ''.join(f'<span class="ip-stat__guide">{s4.gline(l)}</span>' for l in lines) + '</div>'
 def stats(*items): return '<div class="ip-stats s4-stats">' + ''.join(items) + '</div>'
 def top(hid, title, ro, st):
     return f'<section class="s4-top" aria-labelledby="{hid}"><h2 class="ip-sr" id="{hid}">{title}</h2>{ro}{st}</section>'
@@ -174,7 +175,7 @@ def st_pasari():
         stat(None, 'În viață', pair(n(tot['F']), n(tot['M'])), f'<span class="ip-num">total {n(tot["all"])}</span>', f'ieșiri în ciclu {pair(n(-out["F"]), n(-out["M"]))}'),
         stat('mortality', f'Mortalitate · SAPT {WK}', pair(n(-wkF), n(-wkM)), NOGD, f'<span class="ip-num">10.11–16.11.2026 · 7 zile</span>'),
         stat('cull', 'Sacrificare în ciclu', pair(n(-cullsx['F']), n(-cullsx['M'])), f'{num(len(culls))} înregistrări', f'<span>{rs}</span>'),
-        stat('sexerr', 'Eroare sexare în ciclu', pair(n(-seF), n(-seM)), f'{num(len(sexerr))} înregistrări · cocoși găsiți printre găini', f'<span class="ip-num">{sed}</span>'),
+        stat('sexerr', 'Eroare sexare în ciclu', pair(n(-seF), n(-seM)), f'{num(len(sexerr))} înregistrări · cocoși printre găini', f'<span class="ip-num">{sed}</span>'),
         stat('transfer', 'Transfer · sosire', pair(n(STARTC['F']), n(STARTC['M'])), 'Telița → Hîrbovăț', f'<span class="ip-num">22.02–28.02.2026 · 6 secțiuni</span>'),
         stat('sale', 'Vânzare', DASH, 'nicio vânzare în ciclu', f'<span class="ip-num">din 10.02.2026</span>'))
 
@@ -380,8 +381,8 @@ def ro_hrana():
     lbl = f'Consum de hrană pe zi, pe tip de hrană, Hîrbovăț Seria 2026, SAPT 3–{WK}: Breeder 2 pentru găini, Cocoși pentru cocoși'
     ch = gchart('kgzi', lbl, WK, [{'cls': 'act', 'pts': kF}, {'cls': 's2', 'pt': 'pt2', 'pts': kM}], 0, 6000, [0, 2000, 4000, 6000], lambda t: n(t), x0=44)
     return readout('kgzi', f'HRANĂ KG/ZI · BREEDER 2 ♀ · COCOȘI ♂ · SAPT {WK}', 'ok' if feed_ok else 'warn', rpair(n(kF[WK]), n(kM[WK]), 'kg/zi'),
-                   f'față de ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}% · {FEED_WK[0][8:]}–{ddate(FEED_WK[-1])} · fără {ddm(TODAY)}, incomplet',
-                   ch, f'SAPT {WK} · {ddm(FEED_WK[0])}–{ddm(FEED_WK[-1])} · ♀ {n(kF[WK])} · ♂ {n(kM[WK])} kg/zi · ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}%',
+                   f'față de ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}% · {FEED_WK[0][8:]}–{ddate(FEED_WK[-1])} · fără {ddm(TODAY)}',
+                   ch, f'SAPT {WK} · ♀ {n(kF[WK])} · ♂ {n(kM[WK])} kg/zi · ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}%',
                    ['SAPT', 'Breeder 2 ♀, kg/zi', 'Cocoși ♂, kg/zi'], rows, f'Consum mediu pe zi al săptămânii, pe tip de hrană; înregistrări din 01.03.2026 (SAPT 3); SAPT {WK} = {ddm(FEED_WK[0])}–{ddate(FEED_WK[-1])}, fără {ddate(TODAY)} (incomplet)',
                    legend([('act', f'{HB} Breeder 2'), ('s2', f'{RB} Cocoși')], f'SAPT {WK} fără {ddm(TODAY)}, incomplet'))
 
@@ -389,13 +390,13 @@ def st_hrana():
     return stats(
         stat('feed', 'Hrană azi pe pasăre', f'{pair(s4.g_f, s4.g_m)}<small>g</small>', f'ghid {pair(s4.gf_g, s4.gm_g)} {lamp("ok", "în normă")}', f'<span>fără {F} H4.2 · {M} H3.2 (lipsă azi)</span>'),
         stat('feed', 'Hrană azi', f'{n(kg_today, 1)}<small>kg</small>', f'{num(rows_today)} din {num(12)} rânduri {lamp("warn", "lipsă")}',
-             f'<span>{num(n(kg_type["ft-breeder2"], 1) + " kg")} Breeder 2 · {num(n(kg_type["ft-cocosi"], 1) + " kg")} Cocoși</span>'),
-        stat('delivery', f'Stoc Breeder 2 · {F} · zile rămase', f'{n(sb2["days_left"], 1)}<small>zile</small>', f'<span class="ip-num">până pe {ddate(sb2["run_out_date"])}</span>{lamp("ok", "în normă")}',
+             pair(n(kg_type["ft-breeder2"], 1), n(kg_type["ft-cocosi"], 1))),
+        stat('delivery', f'Stoc Breeder 2 {F}', f'{n(sb2["days_left"], 1)}<small>zile</small>', f'<span class="ip-num">până pe {ddate(sb2["run_out_date"])}</span>{lamp("ok", "în normă")}',
              f'<span class="ip-num">{n(sb2["stock_kg"])} kg · {n(sb2["avg_daily_kg_last3"])} kg/zi</span>'),
-        stat('delivery', f'Stoc Cocoși · {M} · zile rămase', f'{n(sco["days_left"], 1)}<small>zile</small>', f'<span class="ip-num">până pe {ddate(sco["run_out_date"])}</span>{lamp("warn", "abatere")}',
+        stat('delivery', f'Stoc Cocoși {M}', f'{n(sco["days_left"], 1)}<small>zile</small>', f'<span class="ip-num">până pe {ddate(sco["run_out_date"])}</span>{lamp("warn", "abatere")}',
              f'<span class="ip-num">{n(sco["stock_kg"])} kg · {n(sco["avg_daily_kg_last3"])} kg/zi</span>'),
-        stat('feed', 'Consum în ciclu', f'{n(cons_tot)}<small>kg</small>', f'<span>{num(n(cons["ft-breeder2"]))} Breeder 2 · {num(n(cons["ft-cocosi"]))} Cocoși</span>',
-             f'<span><span class="ip-num">01.03–{ddate(TODAY)}</span> · {num(ddm(TODAY))} incomplet</span>'),
+        stat('feed', 'Consum în ciclu', f'{n(cons_tot)}<small>kg</small>', pair(n(cons["ft-breeder2"]), n(cons["ft-cocosi"])),
+             f'<span class="ip-num">din 01.03 · {ddm(TODAY)}</span> incomplet'),
         stat('delivery', 'Livrări în ciclu', f'{n(del_kg)}<small>kg</small>', f'{num(len(dels))} livrări · {num(len(unp))} fără preț {lamp("info", "informație")}',
              f'<span class="ip-num">{n(s4.unpriced_kg)} kg · {ddm(unp[0]["date"])}–{ddate(unp[-1]["date"])}</span>'))
 
@@ -457,7 +458,7 @@ def ro_greutate():
     lbl = f'Greutate medie găini și cocoși, Hîrbovăț Seria 2026, SAPT 3–{WK}; ghidul de ouat nu are greutate'
     ch = gchart('wt', lbl, WK, [{'cls': 'act', 'pts': wF}, {'cls': 's2', 'pt': 'pt2', 'pts': wM}], 2000, 5000, [2000, 3000, 4000, 5000], lambda t: n(t), x0=44)
     return readout('wt', f'GREUTATE · HÎRBOVĂȚ · SAPT {WK}', 'off', rpair(n(wF[WK]), n(wM[WK]), 'g'),
-                   f'cântărit {ddate(TODAY)} · 6 secțiuni · față de SAPT {WK - 1}: ♀ {sgn(dF, 0)} · ♂ {sgn(dM, 0)} g',
+                   f'cântărit {ddate(TODAY)} · față de SAPT {WK - 1}: ♀{NBSP}{sgn(dF, 0)} · ♂{NBSP}{sgn(dM, 0)}{NBSP}g',  # S4TP fix 1: sign, figure, unit never split
                    ch, f'SAPT {WK} · ♀ {n(wF[WK])} g · ♂ {n(wM[WK])} g · ghid {DASH} fără date în ghid',
                    ['SAPT', 'Găini ♀', 'Cocoși ♂', 'Ghid'], rows, 'Greutate medie pe săptămânile ciclului (medie pe secțiuni după păsări în viață); cântăriri din 02.03.2026 (SAPT 3)',
                    legend([('act', f'{HB} găini'), ('s2', f'{RB} cocoși')], 'medie după păsări în viață'))
@@ -471,8 +472,8 @@ def st_greutate():
         stat('weighing', f'Față de SAPT {WK - 1}', f'{pair(sgn(dF, 0), sgn(dM, 0))}<small>g</small>', NOGD, f'<span class="ip-num">SAPT {WK - 1}: ♀ {n(wF[WK - 1])} · ♂ {n(wM[WK - 1])} g</span>'),
         stat('weighing', 'Uniformitate', f'{pair(n(uF, 1), n(uM, 1))}<small>%</small>', NOGD, f'păsări în {num("±10%")} din medie'),
         stat('weighing', 'Coeficient de variație', f'{pair(n(cF, 1), n(cM, 1))}<small>%</small>', NOGD, 'medie pe secțiuni după probă'),
-        stat('weighing', 'Probă cântărită', pair(n(nF), n(nM)), f'{num(6)} secțiuni · {num(12)} rânduri', f'<span class="ip-num">{pct(nF / tot["F"] * 100, 1)} din găini · {pct(nM / tot["M"] * 100, 1)} din cocoși</span>'),
-        stat('weighing', 'Cântăriri în ciclu', f'{len(WKS)}<small>săptămâni</small>', f'<span class="ip-num">SAPT 3–{WK} · {ddate(min(r["date"] for r in S["weighings"]))} – {ddate(TODAY)}</span>', 'una pe săptămână, toate secțiunile'))
+        stat('weighing', 'Probă cântărită', pair(n(nF), n(nM)), f'{num(6)} secțiuni · {num(12)} rânduri', f'din păsări {pair(pct(nF / tot["F"] * 100, 1), pct(nM / tot["M"] * 100, 1))}'),  # S4TP fix 2: "din păsări ♀ 1,7% · ♂ 12,0%" (share of birds alive)
+        stat('weighing', 'Cântăriri în ciclu', f'{len(WKS)}<small>săptămâni</small>', f'<span class="ip-num">SAPT 3–{WK} · {ddm(min(r["date"] for r in S["weighings"]))}–{ddate(TODAY)}</span>', 'una pe săptămână, toate secțiunile'))
 
 SPL, SPH = 2600, 5000
 def spark(sec, sx):
@@ -547,23 +548,24 @@ def lay_state(h, w):
     if r['guide_lay_pct'] is None: return f'<span class="s4t-muted">{DASH} fără date în ghid</span>'
     return lamp('warn', 'abatere') if abs(r['diff_pts']) > 3 else lamp('ok', 'în normă')
 def tb_halls():
-    ths = (f'<tr><th scope="col">Hala</th><th scope="col" class="num">Găini azi</th><th scope="col" class="num">{thico("eggs")}Ouă</th><th scope="col" class="num">Ouat</th>'
-           '<th scope="col" class="num">Ghid</th><th scope="col" class="num">Față de ghid</th><th scope="col">Stare</th><th scope="col" class="num">Incubabile</th>'
+    ths = (f'<tr><th scope="col">Hala</th><th scope="col" class="num">Găini</th><th scope="col" class="num">{thico("eggs")}Ouă</th><th scope="col" class="num">Ouat</th>'
+           '<th scope="col" class="num">Față de ghid</th><th scope="col">Stare</th><th scope="col" class="num">Incubabile</th>'
            '<th scope="col" class="num">Cat. 1</th><th scope="col" class="num">Cat. 2</th><th scope="col" class="num">Cat. 3</th><th scope="col" class="num">Jos</th><th scope="col" class="num">Masă ou</th></tr>')
     def row(h, th):
         r = EW[(h, WK)]; c = cat[h]
         al = sum(hall_alive.values()) if h == 'all' else hall_alive[h]
         stt = lay_state(h, WK)
         if h == 'H3': stt = f'<span class="s4t-state">{stt}<span class="s4t-muted ip-num">din 09.11</span></span>'
-        return (f'{th}<td class="num s4t-hen">{n(al)}</td><td class="num">{n(r["total_eggs"])}</td><td class="num">{pct(r["lay_pct"])}</td><td class="num s4t-muted">{pct(r["guide_lay_pct"])}</td>'
+        return (f'{th}<td class="num s4t-hen">{n(al)}</td><td class="num">{n(r["total_eggs"])}</td><td class="num">{pct(r["lay_pct"])}</td>'
                 f'<td class="num">{sgn(r["diff_pts"])} pct</td><td>{stt}</td><td class="num">{pct(r["hatching_pct"])}</td><td class="num">{n(c["cat1"])}</td><td class="num">{n(c["cat2"])}</td>'
                 f'<td class="num">{n(c["cat3"])}</td><td class="num s4t-muted">{n(r["floor_eggs"])}</td><td class="num">{n(r["avg_egg_weight_g"], 1)} g</td></tr>')
     body = '<tbody>' + ''.join(row(h, f'<tr><th scope="row">{h}</th>') for h in HALLS) + '</tbody>'
     body += '<tbody>' + row('all', '<tr class="is-total"><th scope="row">Total fermă</th>') + '</tbody>'
     assert s4.h3_since == '2026-11-09' and sum(hall_alive.values()) == tot['F']
+    assert len({EW[(h, WK)]['guide_lay_pct'] for h in HALLS + ['all']}) == 1  # one guide value for all halls → in the head
     t = tbox(f'Producție pe hale, Hîrbovăț, SAPT 40, 10.11–16.11.2026, față de ghid', f'<thead>{ths}</thead>{body}')
-    return block('h-phal', 'Pe hale', f'{num("SAPT 40 · 10.11–16.11.2026")} · ghid Ross 308 ouat · toleranță {num("±3 pct")}', t
-                 + foot(f'Ouă = Cat. 1–3 + incubabile; ouăle jos nu intră în total. Ouat = ouă ÷ găini la începutul zilei. Incubabile și masa oului: {NOGD}.'))
+    return block('h-phal', 'Pe hale', f'{num("SAPT 40 · 10.11–16.11.2026")} · ghid Ross 308 ouat {num(pct(EW[("all", WK)]["guide_lay_pct"]))} · toleranță {num("±3 pct")}', t
+                 + foot(f'Găini = în viață azi. Ouă = Cat. 1–3 + incubabile; ouăle jos nu intră în total. Ouat = ouă ÷ găini la începutul zilei. Incubabile și masa oului: {NOGD}.'))
 def tb_weeks():
     W = list(range(WK, WK - 6, -1))
     ths = ('<tr><th scope="col">Săptămâna</th><th scope="col" class="num">Ouă</th><th scope="col" class="num">Ouat fermă</th>'
@@ -586,7 +588,7 @@ def panel_productie():
     return top('h-key', 'Producție față de ghid', ro_productie(), st_productie()) + '\n' + tb_halls() + '\n' + tb_weeks()
 
 # ================================================================= CSS (screen only, tokens only) + write
-CSS = s4.CSS + '''
+CSS = s4.CSS + '\n' + s4.CSS_S4 + '''
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)}
