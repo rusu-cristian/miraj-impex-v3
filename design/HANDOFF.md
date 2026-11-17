@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 02:20 · Last commit: c820b79
+Updated: 2026-11-18 03:10 · Last commit: a09e1b1
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 62 / 75 · Screens done: S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 (2 desktops + 3 phones), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
+Done 63 / 75 · Screens done: S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states, S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
 
 ## Just finished
+- S18S Serii states: 8 desktops x 3040–13680, S18 phones moved to x 15200–16140, 2 new phones x 16610/17080 (row y 32813); salvat Toast keeps Anulează; D108; 1 fix round. Rebuild: s18_build --canvas then s18s_build --canvas (a09e1b1)
 - S18 Serii: row y 32813, desktops (list, Serie nouă SidePanel) then phones (list 1064, serie nouă 07.10.2025 replay 1492, refuzat D39 1200); 560 track drawing when the panel is open; D107; S18S queued; 1 fix round (1280 fit, 560 track, phone keys out of scroll) (c820b79)
 - S17P Istoric polish: copy (Corecții, managerilor, toate tipurile, Arată toate modificările), row meta wraps whole groups (`.s17-meta`), footnote measure capped, "Manager (tu)"; 10 S17 boards rebuilt (observator-marcaj-text unchanged); D106; passed first review (1f3fcd4)
 - S17S Istoric states: desktops x 7600–12160 (din „modificat de”, manager D39 + interval greșit, exemple rânduri D39 09:52 + pressed/focus, Observator marcaj text on S4 Păsări 2529), phone moved to x 13680, filter sheet phone x 14150; §40 `.ip-chip--touch`; D105; passed first review, small fixes to S17P (8665ec4)
@@ -45,7 +46,7 @@ Done 62 / 75 · Screens done: S15 + 7 states (polished), S16 + 9 states (polishe
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S18S → S18P → S19 (all system jobs done; screens only from here)
+- S18P → S19 → S19P (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -82,6 +83,7 @@ Done 62 / 75 · Screens done: S15 + 7 states (polished), S16 + 9 states (polishe
 - S17S: project/additions.css (§40) + project/S17-istoric-modificari--{din-modificat-de,manager-interval-gresit,exemple-randuri,observator-marcaj-text,telefon-filtre}.dc.html + canvas.json (S17 --telefon x 7600 → 13680)
 - S17P: the 10 changed project/S17-istoric-modificari*.dc.html (all but --observator-marcaj-text; canvas.json unchanged)
 - S18: project/S18-serii{,--serie-noua,--telefon,--telefon-serie-noua,--telefon-refuzat}.dc.html + canvas.json
+- S18S: project/S18-serii--{se-incarca,eroare-la-incarcare,fara-acces,desktop-scris,desktop-erori,desktop-refuzat,salvat,inchide-seria,telefon-eroare-la-salvare,telefon-alege-sectiunea}.dc.html + canvas.json (S18 phones x 3040… → 15200/15670/16140)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
