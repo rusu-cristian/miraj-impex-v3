@@ -33,8 +33,8 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S11X | screen | S11 boards: Consum table (1113px) and Livrări table scroll inside their own focusable, caption-named box where the content area is narrower (as S13P `.s13-tscroll`); regenerate S11 + S13 boards | S13P | design/notes/S11M.md, S13P.md; design/canvas/scripts/s11_build.py, s13_build.py; screens.md#s11 | done | c7e65c9 |
 | SYS05 | system | For S6: EntryCard yesterday-mortality hint + hall card with Ouă group | SYS00 | components.md#entrycard, #countinput, #checkbox; screens.md#s6; spec.md#c1 | done | 40702f8 |
 | S6 | screen | S6 Zilnic (phone 390), Hîrbovăț | SYS05, S13P | screens.md#s6; spec.md#c1; components.md#formheader, #datefield, #entrycard, #countinput, #select, #checkbox, #savebar, #toast; extracts: farms-sections, counts-latest, sample-hirbovat-2026 | done | 964a0e6 |
-| S6S | screen | S6 states: se încarcă, deja introdus (Editează), zi trecută pentru vet, avertisment 3×, refuz peste vii, eroare cu reîncercare, fermă fără păsări, salvat | S6 | spec.md#c1 (Rules, States) | building | |
-| S6P | polish | S6 polish + audit | S6S | screens.md#s6; spec.md#c1; reviewer nits from S6: "(prag ±3)" figure in Mono; H3 "din" / "♀ 8 475" line break; field accessible names lack the section (system-level, may go to FIN) | todo | |
+| S6S | screen | S6 states: se încarcă, deja introdus (Editează), zi trecută pentru vet, avertisment 3×, refuz peste vii, eroare cu reîncercare, fermă fără păsări, salvat | S6 | spec.md#c1 (Rules, States) | done | 615c3a6 |
+| S6P | polish | S6 polish + audit | S6S | screens.md#s6; spec.md#c1; reviewer nits from S6: "(prag ±3)" figure in Mono; H3 "din" / "♀ 8 475" line break; field accessible names lack the section (system-level, may go to FIN) | building | |
 | SYS06 | system | For S4 tabs: align GuideChart/GuideMissing previews to role="group" (D44); GuideChart variants (mortality %, kg/day, CV/uniformity, hatching, egg weight, small curve); RecordCode adjustment + cycle open/close marks | SYS00 | components.md#guidechart, #recordcode, #recordtile; spec.md#d1 (Tabs) | done | 63abd62 |
 | S4T | screen | S4 tabs: Păsări (type-filtered event log), Hrană, Greutate, Producție | SYS06, S6P | screens.md#s4; spec.md#d1 (Tabs, Filters); components.md#eventrow, #recordchip, #filterbar, #datatable, #guidechart, #readout; extracts: sample-hirbovat-2026, guide-laying, weighings-weekly, eggs-hirbovat-prev-weekly | todo | |
 | S4TP | polish | S4 tabs polish + audit | S4T | spec.md#d1; DESIGN.md#dos-and-donts | todo | |
@@ -67,7 +67,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S20P | polish | S20 polish + audit | S20 | screens.md#s20; spec.md#b2 | todo | |
 | S21 | screen | S21 Tipuri de hrană | S20P | screens.md#s21; data-model.md#tables; components.md#datatable, #sidepanel, #segmentedcontrol, #checkbox; extracts: feed-types | todo | |
 | S21P | polish | S21 polish + audit | S21 | screens.md#s21 | todo | |
-| SYS12 | system | UserRow list + one-time password display | SYS00 | components.md#datatable, #tag, #lamp, #textfield; spec.md#a2 | todo | |
+| SYS12 | system | UserRow list + one-time password display | SYS00 | components.md#datatable, #tag, #lamp, #textfield; spec.md#a2 | building | |
 | S22 | screen | S22 Utilizatori + form + deactivate dialog + states | SYS12, S21P | screens.md#s22; spec.md#a2; components.md#sidepanel, #select, #checkbox, #dialog, #banner, #emptystate | todo | |
 | S22P | polish | S22 polish + audit | S22 | screens.md#s22; spec.md#a2 | todo | |
 | SYS13 | system | LoginCard + Wordmark | SYS00 | components.md#sidebar, #textfield, #button, #banner; spec.md#a1 | todo | |
