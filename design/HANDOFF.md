@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-17 23:30 · Last commit: 601e1ab
+Updated: 2026-11-18 00:10 · Last commit: c3a7faf
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 58 / 73 · Screens done: S15 + 7 states (polished), S16 + 9 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
+Done 59 / 74 · Screens done: S15 + 7 states (polished), S16 + 9 states (polished), S17 + 5 states, S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; all SYS jobs done
 
 ## Just finished
+- S17 Istoric modificări: row y 30164, desktops x 0–6080 (default owner, filtre fără rezultate = Dr. Ceban, se încarcă, eroare la încărcare, Observator fără acces), phone x 7600 (manager); the one real change only; D104; S17S queued; passed first review (c3a7faf)
 - S16P Corectează polish: Motiv soft limit everywhere, Dialog Motiv prefill, focus rules (components.md › S16), uppercase panel heads, cycle preview sapt. 3 + Telița H2 0 → 16, after-delete S4 page regenerated via s4s/s4t `DROP` hook (♀ 25 257); D103; 1 fix round (601e1ab)
 - S16S Corectează states: 5 phones x 1880–3760, S16 desktop moved to x 4230, 4 desktops x 5750–10310 (row y 29020, 844/1024); cycle board = 28.02 transfer replay (D39); Motiv soft limit decided (S16P applies); D102; 1 fix round. Always run s16s_build after s16_build (6796aee)
 - S16 Corectează: row y 29020, phones x 0/470/940/1410 (sheet, motiv lipsă, refuzat, Dialog șterge), desktop x 1880 1440×1024 (S4 Păsări + SidePanel); real audit change H4.1 ♀ 14.11 3 → 5 (♀ 4 121 → 4 119); additions.css §39 `ip-sidepanel--sheet`; D101; S16S queued; 1 fix round (Dialog Șterge disabled until Motiv) (78564a6)
@@ -41,7 +42,7 @@ Done 58 / 73 · Screens done: S15 + 7 states (polished), S16 + 9 states (polishe
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- S17 → S17P → S18 (all system jobs done; screens only from here)
+- S17S → S17P → S18 (all system jobs done; screens only from here)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -74,6 +75,7 @@ Done 58 / 73 · Screens done: S15 + 7 states (polished), S16 + 9 states (polishe
 - S16: project/additions.css (§39) + project/S16-corecteaza{,--motiv-lipsa,--refuzat,--sterge-confirmare,--desktop}.dc.html + canvas.json
 - S16S: project/S16-corecteaza--{salvat,eroare-la-salvare,se-incarca,vet-blocat,ciclu-transfer,desktop-scris,desktop-refuzat,desktop-sterge-confirmare,desktop-dupa-stergere}.dc.html + canvas.json (S16 desktop x 1880 → 4230)
 - S16P: all 14 project/S16-corecteaza*.dc.html (canvas.json and additions.css unchanged)
+- S17: project/S17-istoric-modificari{,--filtre-fara-rezultate,--se-incarca,--eroare-la-incarcare,--observator-fara-acces,--telefon}.dc.html + canvas.json
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
