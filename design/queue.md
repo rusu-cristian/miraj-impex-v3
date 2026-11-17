@@ -67,10 +67,10 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S20P | polish | S20 polish + audit | S20 | screens.md#s20; spec.md#b2 | todo | |
 | S21 | screen | S21 Tipuri de hrană | S20P | screens.md#s21; data-model.md#tables; components.md#datatable, #sidepanel, #segmentedcontrol, #checkbox; extracts: feed-types | todo | |
 | S21P | polish | S21 polish + audit | S21 | screens.md#s21 | todo | |
-| SYS12 | system | UserRow list + one-time password display | SYS00 | components.md#datatable, #tag, #lamp, #textfield; spec.md#a2 | building | |
+| SYS12 | system | UserRow list + one-time password display | SYS00 | components.md#datatable, #tag, #lamp, #textfield; spec.md#a2 | done | 618b6cc |
 | S22 | screen | S22 Utilizatori + form + deactivate dialog + states | SYS12, S21P | screens.md#s22; spec.md#a2; components.md#sidepanel, #select, #checkbox, #dialog, #banner, #emptystate | todo | |
 | S22P | polish | S22 polish + audit | S22 | screens.md#s22; spec.md#a2 | todo | |
-| SYS13 | system | LoginCard + Wordmark | SYS00 | components.md#sidebar, #textfield, #button, #banner; spec.md#a1 | todo | |
+| SYS13 | system | LoginCard + Wordmark | SYS00 | components.md#sidebar, #textfield, #button, #banner; spec.md#a1 | building | |
 | S1 | screen | S1 Autentificare (phone + desktop) + 4 error states | SYS13, S22P | screens.md#s1; spec.md#a1 | todo | |
 | S1P | polish | S1 polish + audit | S1 | screens.md#s1; spec.md#a1 | todo | |
 | FIN | polish | Cross-screen consistency review | S1P | all artboards; design/system/; craft.md | todo | |
