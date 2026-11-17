@@ -410,6 +410,42 @@
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · motiv lipsă · Mai mult deschis · exemplu de stare (D39)"
+    },
+    "S9-transfer.dc.html": {
+      "x": 0,
+      "y": 17590,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Transfer · telefon · reluare 28.02.2026"
+    },
+    "S9-transfer--salvat.dc.html": {
+      "x": 470,
+      "y": 17590,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Transfer · salvat"
+    },
+    "S9-transfer--refuzat.dc.html": {
+      "x": 940,
+      "y": 17590,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Transfer · refuzat · peste cei în viață · exemplu de stare (D39)"
+    },
+    "S9-transfer--eroare-la-salvare.dc.html": {
+      "x": 1410,
+      "y": 17590,
+      "w": 390,
+      "h": 844,
+      "title": "S9 · Transfer · eroare la salvare"
+    },
+    "S9-transfer--desktop.dc.html": {
+      "x": 1880,
+      "y": 17590,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S9 · Transfer · desktop"
     }
   },
   "order": [
@@ -465,7 +501,12 @@
     "S6-zilnic--eroare-la-salvare.dc.html",
     "S6-zilnic--ferma-fara-pasari.dc.html",
     "S6-zilnic--salvat.dc.html",
-    "S6-zilnic--motiv-lipsa.dc.html"
+    "S6-zilnic--motiv-lipsa.dc.html",
+    "S9-transfer.dc.html",
+    "S9-transfer--salvat.dc.html",
+    "S9-transfer--refuzat.dc.html",
+    "S9-transfer--eroare-la-salvare.dc.html",
+    "S9-transfer--desktop.dc.html"
   ],
   "notes": {},
   "designSystems": [

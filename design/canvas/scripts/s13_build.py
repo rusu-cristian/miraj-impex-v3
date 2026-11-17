@@ -1,6 +1,6 @@
 """S13 · Livrare hrană (manager, spec C5): farm, date, feed type, kg, optional note, the stock-after line, Adaugă. No price.
 Phone boards (390×844) reuse the S7 phone form shell by import (s7_build / s7s_build: FormHeader, DateField, icons, Lamp,
-SaveBar shell + compact two-line summary, viewport/Toast/Banner CSS). The desktop board reuses the S11 manager page by
+SaveBar shell + compact two-line summary, viewport/Toast/Banner CSS; the SidePanel/rec/effect CSS lives in sstate_css). The desktop board reuses the S11 manager page by
 import (s11_build → s4s_build shell, sidebar, board writer) with the system SidePanel over it.
 Content: the phone boards replay the 10.11.2026 Breeder 2 delivery (sample-hirbovat-2026.json, D27; the spec C5 example):
 24 000 kg, stock 7 450 kg (end of 09.11) → 31 450 kg, entered by Ion Rusu at 11:52 (event log). The desktop board is a new
@@ -17,6 +17,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 sys.argv = ['s7s_build.py', str(ROOT)]
 sys.path.insert(0, str(HERE))
 P = importlib.import_module('s7s_build'); B = P.B
+import sstate_css as SC  # SidePanel-beside-the-page, record icon, EffectPreview CSS (s13- names), shared with s9_build
 # desktop shell: S11 page (manager) through s11_build → s4s_build
 sys.argv = ['s11_build.py', str(ROOT)]
 spec = importlib.util.spec_from_file_location('s11_build', HERE / 's11_build.py')
@@ -136,16 +137,11 @@ ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("
        f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + FORM(), B.savebar(sum1(), SUM2, ADD))))
 
-CSS = P.CSS + '''
-.s13-main{gap:var(--space-5)}
-.s13-rec{color:var(--c);display:inline-flex;flex:none}
-.s13-opt{font-weight:400;color:var(--ink-muted)}
-.s13-m0{margin:0}
+CSS = P.CSS + SC.MAIN + SC.REC + '''
+.s13-opt{font-weight:400;color:var(--ink-muted)}''' + SC.M0 + '''
 .s13-nw{white-space:nowrap}
 .s13-err{margin:0}
-.s13-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s13-effect{align-items:flex-start}
-.s13-effect > .s13-rec{margin-top:var(--ip-hair)}
+.s13-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}''' + SC.EFFECT + '''
 .s13-effbody{display:flex;flex-direction:column}
 .s13-effbody > span{white-space:normal}
 .s13-strong{font-weight:500;color:var(--ink)}
@@ -181,14 +177,10 @@ SPG = re.sub(KEY_RE, r'<button type="button" class="ip-btn ip-btn--secondary is-
 # scroll inside their box as s11_build's named, focusable regions (.s11-tscroll, S11X; was .s13-tscroll here)
 assert SPG.count('class="s11-tablebox s11-tscroll" role="region" tabindex="0"') == 2
 DESK = f'<div class="s13-vp">{SPG}</div>'
-CSS_D = s11.CSS + '''
-.s13-vp{position:relative;height:''' + str(DH) + '''px;overflow:hidden;margin-right:var(--panel-w)}
-.s13-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w)}
-.s13-phead{gap:var(--space-2);flex-wrap:nowrap}
-.s13-pbody{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
-.s13-pkeys{gap:var(--space-2);flex-wrap:nowrap}
+assert DH == SC.SIDE_H
+CSS_D = s11.CSS + SC.SIDE + '''
 .ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
-''' + CSS.split('.s13-main{gap:var(--space-5)}', 1)[1]
+''' + CSS.split(SC.MAIN, 1)[1]  # desktop split marker: everything after the phone main gap
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S13-livrare-hrana', 'S13 · Livrare hrană'

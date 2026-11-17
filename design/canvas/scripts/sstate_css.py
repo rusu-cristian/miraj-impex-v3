@@ -1,6 +1,9 @@
 """Screen CSS shared by the phone state boards (S7S, S6S; S13 gets it through s7s_build.CSS): the 390×844 viewport, the
 Toast with Anulează, the Banner with an action, and the skeleton columns. Class names stay `s7s-` (as S6 uses s7-screen,
 s7-main, s7-savebar). Strings are concatenated in this order by s7s_build (its boards are byte-identical to before).
+MAIN: the phone form main gap (space-5; s7-main is space-6). SIDE / M0 / REC / EFFECT: the desktop entry form in a non-modal SidePanel beside the page (D73) and the form's record icon
+and EffectPreview line-up, shared by s13_build and s9_build. Class names stay `s13-` (as S6 reuses s7s-); s13_build
+concatenates them in its own order (its boards are byte-identical to before).
 FIN: move the Toast-undo and Banner-action layouts into additions.css as system classes."""
 
 VIEW = '''
@@ -26,3 +29,25 @@ SKEL = '''
 .s7s-skrow{align-items:start}
 .s7s-skcol{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);flex:1;min-width:0}
 .s7s-skcol--end{align-items:flex-end}'''
+
+
+# the page reflows beside the panel (margin = panel width, nothing under it); board height 1024 (desktop board h)
+SIDE_H = 1024
+SIDE = '''
+.s13-vp{position:relative;height:''' + str(SIDE_H) + '''px;overflow:hidden;margin-right:var(--panel-w)}
+.s13-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w)}
+.s13-phead{gap:var(--space-2);flex-wrap:nowrap}
+.s13-pbody{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
+.s13-pkeys{gap:var(--space-2);flex-wrap:nowrap}'''
+
+MAIN = '\n.s13-main{gap:var(--space-5)}'  # the phone form main gap (s7-main is space-6)
+
+M0 = '''
+.s13-m0{margin:0}'''
+
+REC = '''
+.s13-rec{color:var(--c);display:inline-flex;flex:none}'''
+
+EFFECT = '''
+.s13-effect{align-items:flex-start}
+.s13-effect > .s13-rec{margin-top:var(--ip-hair)}'''
