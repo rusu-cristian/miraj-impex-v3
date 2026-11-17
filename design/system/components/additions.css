@@ -1233,3 +1233,42 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-otp__copy{flex:none}
 .ip-otp > .ip-err{margin:0}
 .ip-otp > .ip-banner{margin-top:var(--space-1)}
+
+/* =====================================================================================================
+ * SYS13 · LoginCard + Wordmark, for S1 Autentificare (spec A1). Spec: components.md › Additions › SYS13.
+ * ===================================================================================================== */
+
+/* ---------- 31. Wordmark + LoginCard (Autentificare) ---------- */
+/* Wordmark: the product name "Impex Line" (PRODUCT.md: no logo) as text, written "Impex Line" in the markup and set
+ * uppercase + tracked by bundle.css .ip-wordmark (Sans 500, .08em). Two sizes: Sidebar = .ip-wordmark (15/20,
+ * unchanged); login card = .ip-wordmark--login at the title style (24/30), the page's h1. No icon, no mark. */
+:root{
+  --ip-fs-title:24px;--ip-lh-title:30px; /* tokens.css .ip-t-title 24/30, named so the wordmark size beats bundle.css */
+}
+.ip-wordmark--login{margin:0;padding:0;font-size:var(--ip-fs-title);line-height:var(--ip-lh-title);color:var(--ink)}
+
+/* LoginCard: section.ip-panel.ip-login (EntryCard surface: panel, 1px line, radius-md) > h1 wordmark > form
+ * (novalidate) > [fault Banner summary, tabindex=-1] > Login (TextField, autocomplete=username) > Parolă (TextField,
+ * autocomplete=current-password, show/hide IconButton inside the field) > primary "Intră" full width > hint > status.
+ * Page: .ip-login-page on ground, the card at panel-w at the top of a centred column; phone: full width, touch sizes. */
+.ip-login-page{display:flex;justify-content:center;align-items:flex-start;min-height:100%;padding:calc(var(--space-12) * 2) var(--space-6) var(--space-6);background:var(--ground)}
+.ip-login-page--phone{align-items:stretch;flex-direction:column;justify-content:flex-start;padding:var(--space-8) var(--space-4) var(--space-4)}
+.ip-login{width:100%;max-width:var(--panel-w);padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
+.ip-login-page--phone .ip-login{max-width:none;padding:var(--space-5)}
+.ip-login__form{display:flex;flex-direction:column;gap:var(--space-4);margin:0}
+.ip-login__go{width:100%;margin-top:var(--space-2)}
+.ip-login__form[aria-busy="true"] .ip-login__go{cursor:progress} /* repeat presses are ignored while signing in */
+.ip-login__hint{margin:0}
+.ip-login .ip-err{margin:0} /* error line tight under its field (the field's own gap), not the browser p margin */
+.ip-login__bn{margin:0}
+.ip-login__bn b{font-weight:500}
+.ip-login__msg{outline-offset:var(--ip-focus-offset)} /* takes focus (tabindex=-1) when nothing in a field can fix it */
+/* Field in error: aria-invalid draws the TextField error edge too, so screens don't have to toggle is-error. */
+.ip-login .ip-input:has(> [aria-invalid="true"]){border-color:var(--fault)}
+/* Password field: the show/hide IconButton fills the field's right end (control-h wide, touch: control-h-touch);
+ * focus on it rings the key only (inset), not the whole field. Browser-drawn reveal keys are hidden (one key). */
+.ip-login__pw{padding-right:0}
+.ip-login__eye{flex:none;align-self:stretch;height:auto;border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+.ip-login__eye:focus-visible,.ip-login__eye.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
+.ip-input.ip-login__pw:has(> .ip-login__eye:focus-visible),.ip-input.ip-login__pw.is-eye{outline:none}
+.ip-login__pw > input::-ms-reveal,.ip-login__pw > input::-ms-clear{display:none}
