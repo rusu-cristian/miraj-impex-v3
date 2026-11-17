@@ -3,5 +3,9 @@
  "S17-istoric-modificari--filtre-fara-rezultate": 1024,
  "S17-istoric-modificari--se-incarca": 1024,
  "S17-istoric-modificari--eroare-la-incarcare": 1024,
- "S17-istoric-modificari--observator-fara-acces": 1024
+ "S17-istoric-modificari--observator-fara-acces": 1024,
+ "S17-istoric-modificari--din-modificat-de": 1024,
+ "S17-istoric-modificari--manager-interval-gresit": 1024,
+ "S17-istoric-modificari--exemple-randuri": 1024,
+ "S17-istoric-modificari--observator-marcaj-text": 2529
 }

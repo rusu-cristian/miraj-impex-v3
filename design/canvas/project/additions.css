@@ -1424,3 +1424,15 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-sidepanel--sheet{width:100%;max-width:none;height:100%;border-left:0;box-shadow:none}
 .ip-sidepanel--sheet > .ip-sidepanel__body{flex:1;min-height:0;overflow:auto}
 .ip-sidepanel--sheet > .ip-sidepanel__foot > .ip-btn{flex:1 1 0;min-width:0}
+
+/* =====================================================================================================
+ * S17S · RecordChip at touch height (phone filter sheet). Spec: components.md › Additions › S17S.
+ * ===================================================================================================== */
+
+/* ---------- 40. RecordChip · touch (S17S) ---------- */
+/* A filter chip on a touch screen (button.ip-chip.ip-chip--touch[role=checkbox], e.g. the phone FilterBar BottomSheet)
+ * takes the phone control height (control-h-touch, 48) like Button/IconButton/Select touch, so its whole face is the
+ * >=44px target (craft §5). Look, colours, on/off, icon and word are the chip's own; only height and side padding grow.
+ * The split chip (Eroare sexare) keeps its tighter left edge for the 20px split tile. */
+.ip-chip--touch{height:var(--control-h-touch);gap:var(--space-2);padding:0 var(--space-4) 0 var(--space-3)}
+.ip-chip--touch.ip-chip--split{padding-left:var(--space-2)}

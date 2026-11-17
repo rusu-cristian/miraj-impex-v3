@@ -1028,11 +1028,50 @@
       "title": "S17 · Istoric modificări · observator · fără acces"
     },
     "S17-istoric-modificari--telefon.dc.html": {
-      "x": 7600,
+      "x": 13680,
       "y": 30164,
       "w": 390,
       "h": 844,
       "title": "S17 · Istoric modificări · manager · telefon"
+    },
+    "S17-istoric-modificari--din-modificat-de.dc.html": {
+      "x": 7600,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · din „modificat de” · o înregistrare"
+    },
+    "S17-istoric-modificari--manager-interval-gresit.dc.html": {
+      "x": 9120,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · manager, doar Hîrbovăț · interval cu dată greșită · exemplu de stare (D39)"
+    },
+    "S17-istoric-modificari--exemple-randuri.dc.html": {
+      "x": 10640,
+      "y": 30164,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · rânduri exemplu: editat în aceeași zi, mai multe câmpuri · apăsat · focus · exemplu de stare (D39)"
+    },
+    "S17-istoric-modificari--observator-marcaj-text.dc.html": {
+      "x": 12160,
+      "y": 30164,
+      "w": 1440,
+      "h": 2529,
+      "expand": "fill",
+      "title": "S17 · Istoric modificări · observator · „modificat de” ca text (S4 · Fermă · Păsări)"
+    },
+    "S17-istoric-modificari--telefon-filtre.dc.html": {
+      "x": 14150,
+      "y": 30164,
+      "w": 390,
+      "h": 844,
+      "title": "S17 · Istoric modificări · manager · telefon · filtre"
     }
   },
   "order": [
@@ -1173,7 +1212,12 @@
     "S17-istoric-modificari--se-incarca.dc.html",
     "S17-istoric-modificari--eroare-la-incarcare.dc.html",
     "S17-istoric-modificari--observator-fara-acces.dc.html",
-    "S17-istoric-modificari--telefon.dc.html"
+    "S17-istoric-modificari--telefon.dc.html",
+    "S17-istoric-modificari--din-modificat-de.dc.html",
+    "S17-istoric-modificari--manager-interval-gresit.dc.html",
+    "S17-istoric-modificari--exemple-randuri.dc.html",
+    "S17-istoric-modificari--observator-marcaj-text.dc.html",
+    "S17-istoric-modificari--telefon-filtre.dc.html"
   ],
   "notes": {},
   "designSystems": [
