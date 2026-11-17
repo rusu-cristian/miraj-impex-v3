@@ -27,9 +27,9 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S11P | polish | S11 polish + audit | S11 | screens.md#s11; spec.md#d4; DESIGN.md#dos-and-donts | done | a884384 |
 | S12 | screen | S12 Prețuri hrană (owner) + "Toate livrările au preț" + error | S11P | screens.md#s12; spec.md#c6; components.md#datatable, #textfield, #button, #emptystate, #toast; extracts: feed-deliveries | done | 7b723f8 |
 | S12P | polish | S12 polish + audit | S12 | screens.md#s12; spec.md#c6 | done | b2f47e9 |
-| S11M | screen | S11 Livrări: owner changes a saved price with Motiv (D69, D72) + error board | S12P | screens.md#s11; spec.md#c6; components.md#datatable, #textfield | done | b58c66d |
-| S13 | screen | S13 Livrare hrană (manager; phone + desktop side panel) + saved toast | S12P | screens.md#s13; spec.md#c5; components.md#select, #datefield, #textfield, #button, #sidepanel, #toast; extracts: feed-deliveries, feed-types, sample-hirbovat-2026 | todo | |
-| S13P | polish | S13 polish + audit | S13 | screens.md#s13; spec.md#c5 | todo | |
+| S11M | screen | S11 Livrări: owner changes a saved price ("Modifică" inline row + required Motiv + "rămâne în jurnal", D69) + validation error; align Lei/kg & Total lei header text with the input edge (S12P) | S12P | screens.md#s11; spec.md#c6, #d4; components.md#datatable, #textfield, #button, #toast; design/notes/S11P.md, S12P.md; extracts: feed-deliveries, sample-hirbovat-2026 | done | b58c66d |
+| S13 | screen | S13 Livrare hrană (manager; phone + desktop side panel) + saved toast | S11M | screens.md#s13; spec.md#c5; components.md#select, #datefield, #textfield, #button, #sidepanel, #toast; extracts: feed-deliveries, feed-types, sample-hirbovat-2026 | done | c6bff04 |
+| S13P | polish | S13 polish + audit | S13 | screens.md#s13; spec.md#c5 | building | |
 | SYS05 | system | For S6: EntryCard yesterday-mortality hint + hall card with Ouă group | SYS00 | components.md#entrycard, #countinput, #checkbox; screens.md#s6; spec.md#c1 | done | 40702f8 |
 | S6 | screen | S6 Zilnic (phone 390), Hîrbovăț | SYS05, S13P | screens.md#s6; spec.md#c1; components.md#formheader, #datefield, #entrycard, #countinput, #select, #checkbox, #savebar, #toast; extracts: farms-sections, counts-latest, sample-hirbovat-2026 | todo | |
 | S6S | screen | S6 states: se încarcă, deja introdus (Editează), zi trecută pentru vet, avertisment 3×, refuz peste vii, eroare cu reîncercare, fermă fără păsări, salvat | S6 | spec.md#c1 (Rules, States) | todo | |
@@ -58,7 +58,7 @@ Screen jobs build the default artboard; `..S` jobs add the spec's state artboard
 | S17P | polish | S17 polish + audit | S17 | screens.md#s17; spec.md#e2 | todo | |
 | S18 | screen | S18 Serii + Serie nouă (incl. "Telița are încă…" refusal) | SYS07, S17P | screens.md#s18; spec.md#b3; components.md#datatable, #cycletrack, #textfield, #select, #datefield; extracts: placement-seria2026, cycles | todo | |
 | S18P | polish | S18 polish + audit | S18 | screens.md#s18; spec.md#b3 | todo | |
-| SYS10 | system | SectionTree editor (S19) | SYS00 | components.md#datatable, #iconbutton, #tag; screens.md#s19; spec.md#b1 | todo | |
+| SYS10 | system | SectionTree editor (S19) | SYS00 | components.md#datatable, #iconbutton, #tag; screens.md#s19; spec.md#b1 | building | |
 | S19 | screen | S19 Ferme și secțiuni + states | SYS10, S18P | screens.md#s19; spec.md#b1; components.md#sidepanel, #select, #segmentedcontrol, #banner, #emptystate; extracts: farms-sections | todo | |
 | S19P | polish | S19 polish + audit | S19 | screens.md#s19; spec.md#b1 | todo | |
 | SYS11 | system | GuideImportPreview (DataTable with row errors) | SYS06 | components.md#datatable, #filedrop, #banner; screens.md#s20; spec.md#b2 | todo | |
