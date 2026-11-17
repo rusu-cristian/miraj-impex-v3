@@ -1162,3 +1162,74 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* Foot: Salvează ghidul (primary; aria-disabled while rows are refused) + Anulează, the reason note beside them. */
 .ip-gimp__foot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
 .ip-gimp__foot > .ip-note{margin:0;flex:1 1 calc(var(--space-12) * 4)}
+
+/* =====================================================================================================
+ * SYS12 · UserRow list + OneTimePassword, for S22 Utilizatori (spec A2). Spec: components.md › Additions › SYS12.
+ * ===================================================================================================== */
+
+/* ---------- 30. UserRow (Utilizatori) + OneTimePassword ---------- */
+/* section.ip-users: list head (caption, counts, primary "Adaugă utilizator") → a DataTable (ip-table, unchanged), one
+ * row per user: Nume (500, "(tu)" on your own row) · Login (Mono) · Rol · Ferme ("toate fermele" for the owner) ·
+ * Ultima intrare (Mono dd.mm.yyyy, hh:mm; "– încă n-a intrat") · Stare (Lamp ok "activ" / off "dezactivat") · one
+ * IconButton "Acțiuni" → ip-menu (Editează, Resetează parola, Dezactivează / Reactivează). Rows are not targets. */
+.ip-users{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.ip-users > .ip-list__head{margin:0;align-items:center}
+.ip-users > .ip-list__head > .ip-note{margin:0 auto 0 0}
+.ip-users__box{background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)} /* no overflow clip: the open menu hangs over the rows below */
+.ip-users__t td{vertical-align:middle}
+.ip-users__t tbody tr:last-child > td{border-bottom:0}
+.ip-user__name{display:inline-flex;align-items:baseline;gap:var(--space-2)}
+.ip-user__name > b{font-weight:500;color:var(--ink)}
+.ip-users__t td.ip-user__login,.ip-users__t td.ip-user__seen{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.ip-user__never{font-family:var(--font-sans);color:var(--ink-muted)} /* unknown = "–" with its reason */
+.ip-user__all{color:var(--ink-secondary)}
+/* Deactivated row: text one ink step down (ink-secondary keeps 4.5:1), off Lamp "dezactivat"; listed after the active rows. */
+.ip-user.is-off > td,.ip-user.is-off .ip-user__name > b{color:var(--ink-secondary)}
+/* Action cell + row menu: the SectionTree pattern (SYS10). Key open = sunken + ink (aria-expanded). */
+.ip-users__t th.ip-users__acth{width:calc(var(--control-h) + 2 * var(--space-1));padding-inline:var(--space-1)}
+.ip-users__t td.ip-users__act{position:relative;width:calc(var(--control-h) + 2 * var(--space-1));padding:0 var(--space-1);text-align:right}
+.ip-users__act > .ip-iconbtn{vertical-align:middle}
+.ip-users__act > .ip-iconbtn[aria-expanded="true"]{background:var(--sunken);color:var(--ink)}
+.ip-users__menu{position:absolute;top:calc(100% + var(--space-1));right:var(--space-1);z-index:2;text-align:left;white-space:normal}
+.ip-users__menu[hidden]{display:none}
+.ip-users__menu--up{top:auto;bottom:calc(100% + var(--space-1))} /* last rows: the menu opens upward, inside the list */
+.ip-users__items{display:flex;flex-direction:column}
+.ip-users__menu .ip-menu__item{width:100%;border:0;background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.ip-users__menu .ip-menu__item.is-active{background:var(--sunken)}
+.ip-users__menu .ip-menu__item:active:not([aria-disabled="true"]),.ip-users__menu .ip-menu__item.is-pressed{background:var(--rule)}
+.ip-users__menu .ip-menu__item[aria-disabled="true"]{color:var(--ink-disabled);cursor:not-allowed}
+.ip-users__menu .ip-menu__item.is-active[aria-disabled="true"]{color:var(--ink-secondary)} /* keyboard-current disabled item stays readable on sunken */
+.ip-users__sep{height:var(--ip-hair);margin:var(--space-1) 0;background:var(--rule)}
+.ip-users__menu > .ip-note{margin:0;padding:var(--space-1) var(--space-3) var(--space-2);max-width:calc(var(--space-12) * 5)}
+/* Empty (A2): your own row, then an off Lamp "doar tu" + the spec sentence; the head's key is the next step. */
+.ip-users__t tr.ip-users__empty > td{height:auto;padding-block:var(--space-3);white-space:normal;color:var(--ink-secondary)}
+.ip-users__empty .ip-lamp{margin-right:var(--space-3)}
+/* Loading: static skeleton rows (aria-busy on the table); a hidden cell names it. Load failed: fault Banner + Reîncearcă. */
+.ip-users__skel .ip-skel{display:block}
+.ip-users__t td.ip-users__srcell{height:auto;padding:0;border:0}
+.ip-users__wait{color:var(--ink-muted)}
+.ip-users__bn{margin:0}
+.ip-users__bn b{font-weight:500}
+.ip-users__bnrow{display:flex;flex:1;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-3)}
+/* Dialogs (Resetează parola, Dezactivează, the password): Dialog unchanged; body text and the foot keys, right-aligned. */
+.ip-users__dlg > p{margin:0}
+.ip-users__dfoot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--space-2)}
+
+/* OneTimePassword: div.ip-otp inside the Dialog. Context line (what happened, login) → label[for] → the password in a
+ * real read-only TextField (input[readonly], sunken, full width), Plex Mono at the readout size, the 12 characters
+ * spaced by space-1 (no groups: a screen reader reads the value, arrow keys read it char by char) → keys line:
+ * secondary "Copiază parola" + ok Lamp "copiată" once copied → info Banner "Se arată o singură dată." A failed copy
+ * runs input.focus() + input.select() and shows an error line (Ctrl+C); selection = focus fill + raised text. */
+.ip-otp{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.ip-otp__ctx{margin:0 0 var(--space-1);color:var(--ink-secondary)}
+.ip-otp__ctx .ip-num{color:var(--ink)}
+.ip-otp > .ip-label{margin:0}
+.ip-otp__keys{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
+.ip-otp__pw{width:100%;height:auto;min-height:var(--control-h-touch);font:500 var(--ip-readout-size)/var(--ip-readout-lh) var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:var(--space-1);color:var(--ink);cursor:text}
+.ip-otp__pw:focus-visible,.ip-otp__pw.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-otp__pw::selection{background:var(--focus);color:var(--raised)} /* after select(): the whole value, clearly marked on sunken */
+.ip-otp__pw.is-selected{background:var(--focus);color:var(--raised)} /* preview-only stand-in for the selected value (no script);
+ * it fills the whole field, real ::selection only the text: screens must not use is-selected as a field style. */
+.ip-otp__copy{flex:none}
+.ip-otp > .ip-err{margin:0}
+.ip-otp > .ip-banner{margin-top:var(--space-1)}
