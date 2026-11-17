@@ -7,5 +7,19 @@
  "S20-ghiduri--importa-ghid": 1024,
  "S20-ghiduri--inlocuieste-fisier": 1080,
  "S20-ghiduri--inlocuieste-refuzate": 1140,
- "S20-ghiduri--inlocuieste-lipit": 1080
+ "S20-ghiduri--inlocuieste-lipit": 1080,
+ "S20-ghiduri--se-incarca": 1024,
+ "S20-ghiduri--eroare-la-incarcare": 1024,
+ "S20-ghiduri--fara-acces": 1024,
+ "S20-ghiduri--niciun-ghid": 1024,
+ "S20-ghiduri--se-citeste": 1024,
+ "S20-ghiduri--format-gresit": 1024,
+ "S20-ghiduri--necitibil": 1024,
+ "S20-ghiduri--gol": 1024,
+ "S20-ghiduri--refuzate-filtru": 1024,
+ "S20-ghiduri--nume-gol": 1024,
+ "S20-ghiduri--nume-folosit": 1024,
+ "S20-ghiduri--ghid-nou": 1096,
+ "S20-ghiduri--eroare-la-salvare": 1208,
+ "S20-ghiduri--sterge": 1024
 }

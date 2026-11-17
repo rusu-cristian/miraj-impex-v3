@@ -1428,11 +1428,123 @@
       "title": "S20 · Ghiduri · salvat · exemplu de stare (D39): Ross 308 creștere înlocuit cu același fișier"
     },
     "S20-ghiduri--telefon.dc.html": {
-      "x": 12160,
+      "x": 33440,
       "y": 35701,
       "w": 390,
       "h": 844,
       "title": "S20 · Ghiduri · telefon · doar citire"
+    },
+    "S20-ghiduri--se-incarca.dc.html": {
+      "x": 12160,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · se încarcă"
+    },
+    "S20-ghiduri--eroare-la-incarcare.dc.html": {
+      "x": 13680,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · eroare la încărcare"
+    },
+    "S20-ghiduri--fara-acces.dc.html": {
+      "x": 15200,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · observator · fără acces"
+    },
+    "S20-ghiduri--niciun-ghid.dc.html": {
+      "x": 16720,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · niciun ghid · exemplu de stare (D39): prima folosire"
+    },
+    "S20-ghiduri--se-citeste.dc.html": {
+      "x": 18240,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · se citește fișierul · exemplu de stare (D39): fișierul"
+    },
+    "S20-ghiduri--format-gresit.dc.html": {
+      "x": 19760,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · format greșit · exemplu de stare (D39): „Ross 308 creștere.pdf”"
+    },
+    "S20-ghiduri--necitibil.dc.html": {
+      "x": 21280,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · fișier necitibil, fără antet · exemplu de stare (D39): „Ross 308 creștere.csv”"
+    },
+    "S20-ghiduri--gol.dc.html": {
+      "x": 22800,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · fișier gol, doar antetul · exemplu de stare (D39): „Ross 308 creștere.csv”"
+    },
+    "S20-ghiduri--refuzate-filtru.dc.html": {
+      "x": 24320,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · filtru Refuzate, focus pe celula „#REF!” · exemplu de stare (D39): rândurile 7, 10, 12"
+    },
+    "S20-ghiduri--nume-gol.dc.html": {
+      "x": 25840,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Importă ghid · nume gol și tip lipsă"
+    },
+    "S20-ghiduri--nume-folosit.dc.html": {
+      "x": 27360,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Importă ghid · nume deja folosit · exemplu de stare (D39): „ross 308 ouat”"
+    },
+    "S20-ghiduri--ghid-nou.dc.html": {
+      "x": 28880,
+      "y": 35701,
+      "w": 1440,
+      "h": 1096,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Importă ghid · ghid nou, fișier citit, toate valide · exemplu de stare (D39): numele „Ross 308 ouat 2027” și fișierul"
+    },
+    "S20-ghiduri--eroare-la-salvare.dc.html": {
+      "x": 30400,
+      "y": 35701,
+      "w": 1440,
+      "h": 1208,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Importă ghid · eroare la salvare · exemplu de stare (D39): ghidul nou „Ross 308 ouat 2027”"
+    },
+    "S20-ghiduri--sterge.dc.html": {
+      "x": 31920,
+      "y": 35701,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Șterge ghidul nefolosit · exemplu de stare (D39): „Ross 308 ouat 2027”, salvat și nefolosit"
     }
   },
   "order": [
@@ -1624,7 +1736,21 @@
     "S20-ghiduri--inlocuieste-refuzate.dc.html",
     "S20-ghiduri--inlocuieste-lipit.dc.html",
     "S20-ghiduri--salvat.dc.html",
-    "S20-ghiduri--telefon.dc.html"
+    "S20-ghiduri--telefon.dc.html",
+    "S20-ghiduri--se-incarca.dc.html",
+    "S20-ghiduri--eroare-la-incarcare.dc.html",
+    "S20-ghiduri--fara-acces.dc.html",
+    "S20-ghiduri--niciun-ghid.dc.html",
+    "S20-ghiduri--se-citeste.dc.html",
+    "S20-ghiduri--format-gresit.dc.html",
+    "S20-ghiduri--necitibil.dc.html",
+    "S20-ghiduri--gol.dc.html",
+    "S20-ghiduri--refuzate-filtru.dc.html",
+    "S20-ghiduri--nume-gol.dc.html",
+    "S20-ghiduri--nume-folosit.dc.html",
+    "S20-ghiduri--ghid-nou.dc.html",
+    "S20-ghiduri--eroare-la-salvare.dc.html",
+    "S20-ghiduri--sterge.dc.html"
   ],
   "notes": {},
   "designSystems": [
