@@ -1101,3 +1101,64 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-stree__empty .ip-stree__cell{flex-direction:column;align-items:flex-start;gap:var(--space-1);color:var(--ink-secondary)}
 /* Loading: static skeleton rows (aria-busy on the table). */
 .ip-stree__skel .ip-skel{display:block}
+
+/* =====================================================================================================
+ * SYS11 · GuideImportPreview, the preview of an imported guide (paste or .xlsx/.csv) in S20 Ghiduri (spec B2).
+ * Spec: components.md › Additions › SYS11.
+ * ===================================================================================================== */
+
+/* ---------- 29. GuideImportPreview (Ghiduri · import) ---------- */
+/* section.ip-gimp: source line (file or "Tabel lipit", counts, ghost key to replace it) → fault Banner listing the
+ * refused rows as links (FileDrop: "row errors show in a fault Banner") → info Banner "Nu blochează salvarea" (missing
+ * figures = "fără date în ghid") → filter (SegmentedControl Toate / Refuzate) → the DataTable (ip-table, unchanged) in a
+ * bounded scroll box, one row per file row (week × sex) → Salvează ghidul + Anulează. Refused rows block saving
+ * (refusal); missing figures only inform (B2 partial guide). Nothing here restyles the reused components. */
+.ip-gimp{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+/* Source line: name (500) + note (format · guide type), counts in Mono figures, key on the right. */
+.ip-gimp__src{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);padding:var(--space-2) var(--space-2) var(--space-2) var(--space-3);background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.ip-gimp__file{display:flex;flex-direction:column;min-width:0}
+.ip-gimp__file > b{font-weight:500;color:var(--ink)}
+.ip-gimp__counts{margin:0 0 0 auto;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
+.ip-gimp__counts .ip-num{color:var(--ink)}
+/* Banner body: a lead sentence (500 on its first words) and, for refusals, the list of row links. */
+.ip-gimp__bn{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.ip-gimp__bn > p{margin:0}
+.ip-gimp__bn b{font-weight:500}
+.ip-gimp__errs{margin:0;padding-left:var(--space-4)}
+.ip-gimp__errs .ip-link{font-family:inherit}
+/* Filter bar: caption + SegmentedControl of toggle buttons (aria-pressed). Buttons get the control font back. */
+.ip-gimp__bar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--control-h)}
+.ip-gimp__bar > .ip-cap{margin:0}
+.ip-gimp__bar .ip-seg__item{font:inherit;cursor:pointer}
+.ip-gimp__bar .ip-seg__item:not(.is-selected){background:transparent}
+.ip-gimp__bar .ip-seg__item:hover:not(.is-selected){color:var(--ink)}
+/* Scroll box: at most 12 rows + the header in view, header sticky; a focusable region (tabindex 0, system ring). */
+.ip-gimp__box{position:relative;max-height:calc(var(--row-h) * 13);overflow:auto;background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.ip-gimp__t{border-collapse:separate;border-spacing:0}
+.ip-gimp__t thead th{position:sticky;top:0;z-index:1}
+.ip-gimp__t tbody tr:last-child > td{border-bottom:0}
+.ip-gimp__t td.ip-gimp__ln{color:var(--ink-muted)} /* file line number, as the error links name it */
+.ip-gimp__t th.ip-gimp__chkh{width:100%}
+/* Sex: the sign in its record colour + a hidden word; the row's guide figures take the same colour (craft §2). */
+.ip-gimp__t .is-hen{color:var(--rec-hen)}
+.ip-gimp__t .is-rooster{color:var(--rec-rooster)}
+.ip-gimp__t td.ip-gimp__sex{font-weight:500}
+.ip-gimp__t td.ip-gimp__none{color:var(--ink-muted)} /* "–" = fără date în ghid (B2 partial guide) */
+/* Refused cell: the value exactly as read, fault text on the fault tint inside a hair fault edge (text 4.6:1, D34a).
+ * aria-invalid + aria-describedby → the reason in the row's Verificare cell; tabindex -1 so the Banner link lands on it. */
+.ip-gimp__t td.ip-gimp__bad{background:var(--fault-bg);color:var(--fault);outline:var(--ip-hair) solid var(--fault);outline-offset:calc(-1 * var(--ip-hair))}
+.ip-gimp__t td.ip-gimp__bad:focus-visible,.ip-gimp__t td.ip-gimp__bad.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
+/* Verificare: fault Lamp "refuzat" + the reason naming the value and the fix; or the guide line "fără date în ghid: …". */
+.ip-gimp__t td.ip-gimp__chk{white-space:normal;height:auto;padding-block:var(--space-1)}
+.ip-gimp__why{display:block;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink)}
+.ip-gimp__why > .ip-lamp{margin-right:var(--space-2)}
+.ip-gimp__gap{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+/* Loading line and skeleton rows (aria-busy on the table). */
+.ip-gimp__wait{color:var(--ink-muted)}
+.ip-gimp__t .ip-skel{display:block}
+/* FileDrop inside the import (wrong or unreadable file): "alege un fișier" is a real button drawn as the link. */
+.ip-gimp .ip-drop button.ip-link{padding:0;border:0;background:transparent;font:inherit}
+.ip-gimp__box > .ip-empty{padding-block:var(--space-8)}
+/* Foot: Salvează ghidul (primary; aria-disabled while rows are refused) + Anulează, the reason note beside them. */
+.ip-gimp__foot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
+.ip-gimp__foot > .ip-note{margin:0;flex:1 1 calc(var(--space-12) * 4)}
