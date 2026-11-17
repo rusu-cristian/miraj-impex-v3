@@ -272,6 +272,42 @@
       "h": 2669,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · modifică preț · eroare"
+    },
+    "S13-livrare-hrana.dc.html": {
+      "x": 0,
+      "y": 11447,
+      "w": 390,
+      "h": 844,
+      "title": "S13 · Livrare hrană · telefon"
+    },
+    "S13-livrare-hrana--salvat.dc.html": {
+      "x": 470,
+      "y": 11447,
+      "w": 390,
+      "h": 844,
+      "title": "S13 · Livrare hrană · salvat"
+    },
+    "S13-livrare-hrana--cantitate-lipsa.dc.html": {
+      "x": 940,
+      "y": 11447,
+      "w": 390,
+      "h": 844,
+      "title": "S13 · Livrare hrană · cantitate lipsă"
+    },
+    "S13-livrare-hrana--eroare-la-salvare.dc.html": {
+      "x": 1410,
+      "y": 11447,
+      "w": 390,
+      "h": 844,
+      "title": "S13 · Livrare hrană · eroare la salvare"
+    },
+    "S13-livrare-hrana--desktop.dc.html": {
+      "x": 1880,
+      "y": 11447,
+      "w": 1440,
+      "h": 1024,
+      "expand": "fill",
+      "title": "S13 · Livrare hrană · desktop"
     }
   },
   "order": [
@@ -308,7 +344,12 @@
     "S12-preturi-hrana--se-incarca.dc.html",
     "S12-preturi-hrana--in-lucru.dc.html",
     "S12-preturi-hrana--toate-livrarile-au-pret.dc.html",
-    "S12-preturi-hrana--eroare.dc.html"
+    "S12-preturi-hrana--eroare.dc.html",
+    "S13-livrare-hrana.dc.html",
+    "S13-livrare-hrana--salvat.dc.html",
+    "S13-livrare-hrana--cantitate-lipsa.dc.html",
+    "S13-livrare-hrana--eroare-la-salvare.dc.html",
+    "S13-livrare-hrana--desktop.dc.html"
   ],
   "notes": {},
   "designSystems": [
