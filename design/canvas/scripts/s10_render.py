@@ -1,5 +1,5 @@
 """python3 s10_render.py [--heights] : render the S10 boards (phone 390 from /tmp/s10, desktop 1440×1024 + 1280 from /tmp/s4s)
-to design/shots/S10.png (the tall default, full page), S10-1 … S10-5.png (canvas order) + S10-5-1280.png, and report sideways
+to design/shots/S10.png (the tall default, full page), S10-1 … S10-6.png (canvas order) + S10-6-1280.png, and report sideways
 scroll, duplicate ids, broken ARIA references, unnamed form controls, text under 4.5:1, targets under 44 (phone) / 24
 (desktop), the tab order, the EffectPreview / Banner / Dialog vs the SaveBar, and page elements under the open SidePanel.
 --heights writes the default board's natural height to s10_heights.json (then rebuild with s10_build.py)."""
@@ -9,8 +9,9 @@ R = pathlib.Path('/home/claude/miraj-impex-v3')
 HJ = R / 'design/canvas/scripts/s10_heights.json'
 ORDER = [('S10-vanzare', 390, 844, 's10'), ('S10-vanzare--confirmare', 390, 844, 's10'), ('S10-vanzare--refuzat', 390, 844, 's10'),
          ('S10-vanzare--salvat', 390, 844, 's10'), ('S10-vanzare--eroare-la-salvare', 390, 844, 's10'),
+         ('S10-vanzare--partiala', 390, 844, 's10'),
          ('S10-vanzare--desktop', 1440, 1024, 's4s'), ('S10-vanzare--desktop', 1280, 1024, 's4s')]
-DESK = 5
+DESK = 6
 CHECK = r"""() => {
  const ids = [...document.querySelectorAll('[id]')].map(e => e.id); const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls],[aria-activedescendant]')].flatMap(e =>
@@ -34,6 +35,8 @@ CHECK = r"""() => {
  return {low, small, order, fxpos: vis('#fx'), dlg: vis('.ip-dialog'), dlgkeys: vis('.s4s-dlgfoot .ip-btn'), banpos: vis('.s7-main > .ip-banner'), dup, broken: refs, unnamed, sw: document.documentElement.scrollWidth, under,
    mainBottom: main ? Math.round(main.getBoundingClientRect().bottom) : null, parts: tall, barTop: sb ? Math.round(sb.getBoundingClientRect().top) : null,
    barH: sb ? Math.round(sb.getBoundingClientRect().height) : null,
+   sumLines: sb ? [...sb.querySelectorAll('.ip-ftot-sum__line')].map(l => Math.round(l.getBoundingClientRect().height)) : null,
+   allkey: [...document.querySelectorAll('.ip-sexrows__allkey')].map(k => k.getAttribute('aria-pressed') + ' ' + Math.round(k.getBoundingClientRect().width) + 'x' + Math.round(k.getBoundingClientRect().height)),
    natural: (() => { const m = document.querySelector('.s7-main'); return m && m.lastElementChild ? m.lastElementChild.getBoundingClientRect().bottom + parseFloat(getComputedStyle(m).paddingBottom) + sb.getBoundingClientRect().height : null })(), body: (() => { const b = document.querySelector('.s13-pbody'); return b ? [b.scrollHeight, b.clientHeight] : null })()};
 }"""
 async def main():

@@ -1315,3 +1315,15 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-sheet__list .ip-menu__item:not([aria-disabled="true"]) .ip-note{color:var(--ink-muted)}
 .ip-sheet__list .ip-pair{font-size:var(--ip-fs-figure)}
 .ip-sheet__code{font-weight:500}
+
+/* ---------- 34. SexCountRow · "Toate secțiunile" key (S10P) ---------- */
+/* Vânzare only (D84): one ghost key right under the SexCountRow head, before the list, that fills every row with
+ * everything alive (each row's Toate turns on). button.ip-btn.ip-btn--ghost.ip-sexrows__allkey[aria-pressed] >
+ * span.ip-check__box[aria-hidden] (Lucide check when "true", Lucide minus when "mixed") + "Toate secțiunile" + hidden
+ * " din Hîrbovăț". aria-pressed "true" = every row has Toate on, "mixed" = some rows, "false" = none; pressing it from
+ * "false"/"mixed" turns every row on, from "true" turns every row off (rows get their drafts back). The box is the system
+ * Checkbox box, so the key reads as the master of the rows' Toate; the key pulls left by its own padding so the box sits
+ * in the rows' Toate column, and a rule splits it from the first row. Phone ip-btn--touch (48), desktop 32. */
+.ip-sexrows__allkey{align-self:flex-start;justify-content:flex-start;padding-inline:var(--space-3);margin:calc(-1 * var(--space-2)) 0 var(--space-2) calc(-1 * var(--space-3))}
+.ip-sexrows__allkey:is([aria-pressed="true"],[aria-pressed="mixed"]) .ip-check__box{background:var(--control);border-color:var(--control)}
+:where(.ip-sexrows__allkey + .ip-sexrows__list) > .ip-sexrow:first-child{border-top:var(--ip-hair) solid var(--rule);padding-top:var(--space-4)}

@@ -11,6 +11,8 @@ Content: the extracts hold no sale. Hîrbovăț alive on 16.11.2026 (D23) is the
 in 6 sections. The phone boards show a D39 state example consistent with it: the whole flock sold on 16.11.2026 (Toate on
 every row), so the farm reaches 0 and its Seria 2026 cycle (from 10.02.2026, D25) closes in sapt. 40; refusal = H4.2 ♂ 500
 over the 476 alive (the D39 AlertRow example). The desktop board types nothing (alive per section from the sample only).
+S10P: the SexCountRow head gets the ghost "Toate secțiunile" key (additions.css §34, D84); a partial sale board (Toate on
+H4.1 and H4.2 only, all figures from counts-latest: the cycle continues); the refused/saved SaveBars fit two lines.
 python3 -I s10_build.py <repo_root> [heights.json] [--canvas]
 Writes design/canvas/project/S10-vanzare[--<state>].dc.html, /tmp/s10/<stem>.html and /tmp/s4s/<stem>.html (renders);
 --canvas also sets the S10 boards in design/canvas/project/canvas.json (boards + order)."""
@@ -56,7 +58,12 @@ RS, RTRY = 'H4.2', 500
 RF, RM = next((f, m) for s, f, m in SEC if s == RS); ROVER = RM - RTRY
 assert (RM, ROVER) == (476, -24)
 RTOT = (TOT[0], TOT[1] - RM)  # the refused value is left out of the totals (D77), the totals line says so
-USER = 'Ion Rusu'  # illustrative manager name (craft §7)
+# partial sale (D39 state example, S10P): Toate on hall H4 only (H4.1 + H4.2 alive from counts-latest), the other rows empty;
+#   the farm keeps birds, so the cycle continues (no Dialog)
+PART = ('H4.1', 'H4.2')
+PSOLD = (sum(f for s, f, m in SEC if s in PART), sum(m for s, f, m in SEC if s in PART))
+PLEFT = (TOT[0] - PSOLD[0], TOT[1] - PSOLD[1])
+assert PSOLD == (8224, 956) and PLEFT == (17028, 1729)
 
 def pair(f, m): return B.pair(n(f) if isinstance(f, int) else f, n(m) if isinstance(m, int) else m)
 def roo(v): return f'<span class="ip-sex ip-sex--rooster">♂ <b>{n(v)}</b></span>'
@@ -118,23 +125,36 @@ def srow(code, f, m, st, u='', touch=True):
     return (f'<li class="ip-sexrow"><div class="ip-sexrow__head"><span class="ip-sexrow__code" id="c-{k}">{code}</span>{alive}</div>'
             f'<div class="ip-field is-hen">{lbl("F")}{fi}</div><div class="ip-field is-rooster">{lbl("M")}{mi}</div>{msg}{allk}</li>')
 
+MINUS_I = '<svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>'
+def allkey(state, u='', touch=True):
+    """additions.css §34: the ghost "Toate secțiunile" key under the SexCountRow head (D84). aria-pressed true = every row has
+    Toate on, mixed = some rows, false = none; the box is the system Checkbox box (check / minus glyph)."""
+    glyph = {'true': CHK, 'mixed': MINUS_I, 'false': ''}[state]
+    t = ' ip-btn--touch' if touch else ''
+    return (f'<button type="button" class="ip-btn ip-btn--ghost{t} ip-sexrows__allkey" id="{u}allk" aria-pressed="{state}">'
+            f'<span class="ip-check__box" aria-hidden="true">{glyph}</span>Toate secțiunile<span class="ip-sr"> din Hîrbovăț</span></button>')
+
 def rows(mode='all', u='', touch=True):
-    """mode: all (whole farm, Toate on every row) · empty · ro · refuz (all rows Toate, except H4.2 typed with ♂ 500)."""
+    """mode: all (whole farm, Toate on every row) · empty · ro · refuz (all rows Toate, except H4.2 typed with ♂ 500) ·
+    part (Toate on H4.1 and H4.2 only, the other rows empty)."""
     items = []
     for code, f, m in SEC:
-        st = mode if not (mode == 'refuz') else ('refuz' if code == RS else 'all')
+        st = {'refuz': 'refuz' if code == RS else 'all', 'part': 'all' if code in PART else 'empty'}.get(mode, mode)
         items.append(srow(code, f, m, st, u, touch))
+    key = '' if mode == 'ro' else allkey({'all': 'true', 'empty': 'false'}.get(mode, 'mixed'), u, touch)
     if mode == 'empty':
         filled, tot, sub = 0, ('–', '–'), f'în viață {pair(*TOT)}'
     elif mode == 'refuz':
         filled, tot, sub = len(SEC), RTOT, f'fără {RS} ♂ refuzat'
+    elif mode == 'part':
+        filled, tot, sub = len(PART), PSOLD, f'în viață {pair(*TOT)}'
     else:
         filled, tot, sub = len(SEC), TOT, f'în viață {"înainte " if mode == "ro" else ""}{pair(*TOT)}'
     lg = f'<span class="ip-pair ip-pair--lg">{B.sexv("F", n(tot[0]) if isinstance(tot[0], int) else tot[0])}<span class="sep">·</span>{B.sexv("M", n(tot[1]) if isinstance(tot[1], int) else tot[1])}</span>'
     total = (f'<div class="ip-sexrows__total"><div class="ip-sexrows__tk"><span class="ip-cap">Total vânzare</span><span class="ip-sexrows__sub">'
              f'<span>{num(filled)} din {num(len(SEC))} secțiuni</span> · {sub}</span></div>{lg}</div>')
     return (f'<section class="ip-panel ip-sexrows" aria-labelledby="{u}t-px"><div class="ip-sexrows__head"><h2 class="ip-cap" id="{u}t-px">Păsări vândute</h2>'
-            f'<span class="ip-note">Hîrbovăț · {num(dd(DT))}</span></div><ol class="ip-sexrows__list">{"".join(items)}</ol>{total}</section>')
+            f'<span class="ip-note">Hîrbovăț · {num(dd(DT))}</span></div>{key}<ol class="ip-sexrows__list">{"".join(items)}</ol>{total}</section>')
 
 def buyer(ro=False, u='', touch=True):
     if ro: return '<div class="ip-field"><span class="ip-label">Cumpărător</span><span class="ip-note">– fără cumpărător</span></div>'
@@ -149,14 +169,20 @@ CLOSE = f'Ciclu închis la Hîrbovăț, sapt. {WK}'
 def effect(state='all', u=''):
     if state == 'empty':
         return (f'<div class="ip-effect s13-effect" id="{u}fx" role="status">{rec("sale", 16)}<div class="s9-fxbody"><span class="ip-cap">Efect</span>'
-                '<span>Scrie câte păsări vinzi din fiecare secțiune sau bifează Toate. Aici vezi ce rămâne în fermă și dacă ciclul se închide.</span></div></div>')
+                '<span>Scrie câte păsări vinzi din fiecare secțiune sau alege Toate secțiunile. Aici vezi ce rămâne în fermă și dacă ciclul se închide.</span></div></div>')
     if state == 'refuz':  # EffectPreview: refused becomes a fault Banner
         return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="{u}fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">'
                 f'Vânzare refuzată: Hîrbovăț › {RS} ar ajunge la {roo(ROVER)} pe {num(dd(DT))}. Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
+    if state == 'part':  # the farm keeps birds: the cycle continues (open mini block, no record bar, as S9 D83)
+        after, sub = pair(*PLEFT), f'{num(len(PART))} din {num(len(SEC))} secțiuni · {", ".join(PART)}'
+        cyc = f'{cmark("start", "", f"Ciclul la Hîrbovăț continuă, sapt. {WK}")}<span class="s9-fxsub">rămân {pair(*PLEFT)}</span>'
+    else:
+        after, sub = pair(0, 0), f'{num(len(SEC))} din {num(len(SEC))} secțiuni'
+        cyc = f'{cmark("end", "sale", CLOSE)}<span class="s9-fxsub">ferma ajunge la 0 păsări</span>'
     return f'''<div class="ip-effect s13-effect" id="{u}fx" role="status">{rec("sale", 16)}<div class="s9-fxbody"><span class="ip-cap">Efect</span>
-<span class="s9-fxline"><b class="s9-strong">Hîrbovăț</b><span class="s9-fxval">{pair(*TOT)}{ARROW}{pair(0, 0)}</span></span>
-<span class="s9-fxsub">rămân {num(0)} păsări în {num(len(SEC))} din {num(len(SEC))} secțiuni</span>
-<span class="s9-fxcyc">{cmark("end", "sale", CLOSE)}<span class="s9-fxsub">ferma ajunge la 0 păsări</span></span>
+<span class="s9-fxline"><b class="s9-strong">Hîrbovăț</b><span class="s9-fxval">{pair(*TOT)}{ARROW}{after}</span></span>
+<span class="s9-fxsub">{sub}</span>
+<span class="s9-fxcyc">{cyc}</span>
 </div></div>'''
 
 def sum1(tot=TOT, lead=''):
@@ -211,13 +237,15 @@ DLG = f'''
 boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (D39)', screen(FORM(), B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end', modal=DLG), 'vp'))
 # 3 · refuzat — H4.2 ♂ 500 typed over the 476 alive (D39 state example): row error, preview = fault Banner, key disabled;
 #   the refused value is left out of the totals and the SaveBar (D77), line 2 names it
-ref_save = B.savebar(sum1(RTOT), f'{lamp("fault", "refuzat")}<span>{RS} {roo(RTRY)} ·</span><span>cel mult {num(n(RM))}</span>', SELL_OFF)  # line 2 names the fix (as S9/S7P)
+# S10P: lamp + section + fix took 3 lines beside the long key (~130 px); while refused the bar carries only the reason, in two
+#   lines (the key is disabled, its aria-describedby reads it); the totals stay in the form's total line, minus the refused value
+ref_save = B.savebar(f'{lamp("fault", "refuzat")}<span>{RS}</span>', f'<span>cel mult {roo(RM)}</span>', SELL_OFF)
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([farm(), DATE, rows('refuz'), buyer(), note(), effect('refuz')], ref_save, view=' s7s-view--end'), 'vp'))
 # 4 · salvat — read-only form scrolled to its end, Toast with Anulează (undo the same day), Vânzare nouă
 toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Vândut · '
          f'♀ {num(n(TOT[0]))} · ♂ {num(n(TOT[1]))} · Hîrbovăț · ciclul închis</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
 saved = [farm('ro'), DATE_RO, rows('ro'), buyer(True), note(True), effect()]
-boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.savebar(sum1(lead='vândut'), f'<span>{USER} ·</span><span>poți anula până la {num("23:59")}</span>',
+boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.savebar(sum1(lead='vândut'), f'<span>poți anula până la {num("23:59")}</span>',
               '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Vânzare nouă</button>'), overlay=toast, view=' s7s-view--end'), 'vp'))
 # 5 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă right above the EffectPreview, form scrolled to its
 #   end (as S9P), typed values kept as a draft (D60), key stays enabled
@@ -225,6 +253,12 @@ ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("
        f'{pair(*TOT)}, Hîrbovăț, {num(dd(DT))}. Verifică conexiunea și apasă Reîncearcă.</p>'
        f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare · exemplu de stare (D39)', screen([farm(), DATE, rows('all'), buyer(), note(), ban, effect()], B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end'), 'vp'))
+# 6 · parțială — Toate on H4.1 and H4.2 only (D39 example from counts-latest): the farm keeps ♀ 17 028 · ♂ 1 729, the cycle
+#   continues, so Înregistrează vânzarea saves directly (no Dialog); form scrolled to its end (the preview)
+SUM2_PART = f'<span>{cmark("start", "", "ciclul continuă")}</span>'
+SELL_PART = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Înregistrează vânzarea</button>'
+boards.append(('partiala', 'parțială · ciclul continuă · exemplu de stare (D39)', screen([farm(), DATE, rows('part'), buyer(), note(), effect('part')],
+              B.savebar(sum1(PSOLD), SUM2_PART, SELL_PART), view=' s7s-view--end'), 'vp'))
 
 # the Dialog placement rules and the select chevron rule come from S4S (s4s- names kept, not copied)
 PICK = ('.s4s-scrim{', '.s4s-dialog{', '.s4s-dlgnote{', '.s4s-dlgfoot{', '.ip-input > select + .ip-icon{')
@@ -316,5 +350,8 @@ if CANVAS:  # new row below the lowest one (row y + tallest h + 120), phones fir
         if w == 1440: b = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t}
         c['boards'][f'{s}.dc.html'] = b; x += w + 80
         if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
+    # keep the S10 entries of `order` in board order (S10P inserted the partial board before the desktop one)
+    pos = [i for i, k in enumerate(c['order']) if k in mine]
+    for i, k in zip(pos, [f'{s}.dc.html' for s, _, _, _ in out]): c['order'][i] = k
     cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print('canvas row y', y)
