@@ -721,6 +721,55 @@
       "w": 390,
       "h": 844,
       "title": "S14 · Rapoarte · Producție · telefon · filtre și export"
+    },
+    "S8-cantarire.dc.html": {
+      "x": 0,
+      "y": 26059,
+      "w": 390,
+      "h": 911,
+      "title": "S8 · Cântărire"
+    },
+    "S8-cantarire--gol.dc.html": {
+      "x": 470,
+      "y": 26059,
+      "w": 390,
+      "h": 905,
+      "title": "S8 · Cântărire · gol"
+    },
+    "S8-cantarire--in-norma.dc.html": {
+      "x": 940,
+      "y": 26059,
+      "w": 390,
+      "h": 931,
+      "title": "S8 · Cântărire · în normă · Telița 24.02.2026"
+    },
+    "S8-cantarire--abatere.dc.html": {
+      "x": 1410,
+      "y": 26059,
+      "w": 390,
+      "h": 975,
+      "title": "S8 · Cântărire · abatere · Telița 17.02.2026"
+    },
+    "S8-cantarire--valoare-refuzata.dc.html": {
+      "x": 1880,
+      "y": 26059,
+      "w": 390,
+      "h": 967,
+      "title": "S8 · Cântărire · valoare refuzată · exemplu de stare (D39)"
+    },
+    "S8-cantarire--salvat.dc.html": {
+      "x": 2350,
+      "y": 26059,
+      "w": 390,
+      "h": 999,
+      "title": "S8 · Cântărire · salvat"
+    },
+    "S8-cantarire--eroare-la-salvare.dc.html": {
+      "x": 2820,
+      "y": 26059,
+      "w": 390,
+      "h": 1113,
+      "title": "S8 · Cântărire · eroare la salvare"
     }
   },
   "order": [
@@ -818,7 +867,14 @@
     "S14-rapoarte-productie--eroare-la-incarcare.dc.html",
     "S14-rapoarte-productie--fara-ferma-de-ouat.dc.html",
     "S14-rapoarte-productie--telefon.dc.html",
-    "S14-rapoarte-productie--telefon-filtre.dc.html"
+    "S14-rapoarte-productie--telefon-filtre.dc.html",
+    "S8-cantarire.dc.html",
+    "S8-cantarire--gol.dc.html",
+    "S8-cantarire--in-norma.dc.html",
+    "S8-cantarire--abatere.dc.html",
+    "S8-cantarire--valoare-refuzata.dc.html",
+    "S8-cantarire--salvat.dc.html",
+    "S8-cantarire--eroare-la-salvare.dc.html"
   ],
   "notes": {},
   "designSystems": [
