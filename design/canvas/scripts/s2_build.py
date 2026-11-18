@@ -393,8 +393,7 @@ CSS_P = CSS7 + CSS_SHARED + '''
 CSS_D = s4.CSS + CSS_LINK + '''
 .s2-cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-6);align-items:start}
 .s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-heading) + var(--space-3))} /* the panel's top on the alert list's top (under its section head, FX02) */
-.s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}
-.ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */'''  # FIN15B: the CycleTrack width box is additions.css §65 ip-trackbox
+.s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}'''  # FIN15B: the CycleTrack width box is additions.css §65 ip-trackbox; FX05: the MissingRow meta wrap is additions.css §1
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S2-acasa', 'S2 · Acasă'

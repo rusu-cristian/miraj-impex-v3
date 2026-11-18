@@ -195,6 +195,7 @@ One record in a log: RecordTile, a title with section and figures (♀/♂ colou
 - **Row:** height ≥ 48px, separated by `rule`; hover `sunken`.
 - **Filtering:** by RecordChips in the FilterBar.
 - **Locked rows** show a "blocat" tag.
+- **Figures stay whole** (FX05, additions.css §1): a `span.ip-num`, SexCount or pair child of `.ip-ev__main` never wraps inside ("70,1 %"); the MissingRow meta is the one line that wraps.
 - **Current row** (FIN05 §51): the record open in a SidePanel beside the log: `li.ip-ev.is-current` + `aria-current="true"` on its key (Corectează, not drawn pressed); the DataTable current-row look (`sunken`, hair `line-strong` frame), steel only.
 
 
@@ -323,7 +324,7 @@ An unlit lamp with one sentence and a next step, e.g. "Ferma e goală din 30.09.
 
 ## Skeleton
 
-Static `sunken` bars, no shimmer.
+Static `sunken` bars, no shimmer. Every `ip-skel` bar is a block (FX05, §42); bars on a text line are inline-block by their §54 context.
 
 - **System skeletons (Additions):** EventRow rows `ip-ev--skel` (section 23), DataTable rows `tr.ip-table__skel` (section 42), Readout `div.ip-readout.ip-readout--skel`, CycleTrack `div.ip-trackskel` (`--compact`), field `div.ip-field.ip-field--skel` and text line `span.ip-skel-line` (section 54). Bar widths: `ip-skel--w1|w2|w3` (192/144/72), `--ch1…4` (as wide as 1–4 figures, in `ch` of the cell's Mono), `--key` (an IconButton, `control-h`), `--end` (at the cell's right edge). Screens draw these, not screen copies (FIN11); generators take the markup from `design/canvas/scripts/skel.py`.
 - **The skeleton is the loaded geometry (craft S6P, FIN11G):** a skeleton uses the loaded block's own boxes, so nothing moves when data arrives. Readout: the Readout's own line elements, one bar each (StockReadout: cap, value, 3 kv rows, sub; with a GuideChart: its empty svg at the loaded viewBox); Stat `ip-stat--skel`: its own lines, guide lines as wide as the loaded ones. CycleTrack: the drawn track's height (full 120, `--compact` 90) and its legend line. Field: the field's own label line, box (sunken, no edge) and hint lines. Table: the loaded and the loading table share one head that declares the column shares (`th[style="--ip-colw:n%;--ip-colmin:…"]`, one text column takes the rest, the loaded min-content as a strut); skeleton bars never widen a column.
@@ -372,7 +373,7 @@ Phone form header: back, the title with its RecordTile, and a context line in mo
 
 ## SaveBar
 
-The sticky save area of a phone form: a summary with record icons and ♀/♂ figures, then the primary key. Disabled until there's something to save.
+The sticky save area of a phone form: a summary with record icons and ♀/♂ figures, then the primary key. Disabled until there's something to save. A page holding `ip-screen__savebar` keeps a bottom scroll-padding of the bar's height + the field's border and focus ring (78 at 390, 106 under 390), so a focused field scrolls clear of it (WCAG 2.4.11; FX05, §63).
 
 
 ## PageHeader
@@ -903,3 +904,8 @@ CSS in additions.css section 66 (new; both copies, identical); S2/S15 desktop ma
 - **Banner placement** (D141): S6, S7, S8, S13 save errors move from under the FormHeader to the end of the form (S6/S7/S13 scrolled to the end); S13's stock line no longer sits under the SaveBar. Reîncearcă is focused after a failed save on every save-error board (S6–S10, S13 added).
 - **Banner copy** (D143): lead "<Obiect> nu s-a salvat: …" / "<Obiecte> nu s-au încărcat.", retry line "Verifică conexiunea la internet, apoi apasă Reîncearcă." on 23 boards (S2, S6–S10, S12–S22); S19 Adaugă compartiment's tree Banner becomes the §49 Banner with Reîncearcă (focus; was keyless, retry on the row's Salvează).
 - **Toast copy** (D143): object first on S6–S10, S13, S15, S16 (see Toast). No CSS change; no new tokens; board heights and canvas.json unchanged.
+
+### FX05 · System rules out of the screen CSS; D143 copy in the system previews, 18.11.2026
+- **Moved** (additions.css, both copies identical; generators s4s, s2, s7): §1 the EventRow figure no-wrap `.ip-ev__main > span.ip-num, .ip-sex, .ip-pair` (was the S4 shell rule on 17 screens) with S2's MissingRow meta `white-space:normal` (S2/S15); §42 `.ip-skel{display:block}` (was the S4 state rule on 14 screens); §63 the SaveBar scroll-padding, now `html:has(.ip-screen__savebar)` (was S7's `html` rule on S6–S10, S13: the same 47 boards). They now also reach the boards that lacked them (S2/S15 phones, S3/S6–S8/S15/S16 skeletons): all 257 boards at board size + 158 desktops at 1280 pixel-identical; canvas.json and heights unchanged. Previews at 1440 identical; at 390 the AlertRow and _Interaction previews (desktop fragments) keep "70,1 %" whole.
+- **Previews/READMEs to D143** (as the boards): Banner (fault = S6 Zilnic save error, §49 with Reîncearcă, `role=alert`; failure copy + placement line), Toast (save Toast = S6 "Zilnic salvat · …" + Anulează; copy line), SectionTree (both fault Banners §49 with Reîncearcă, save error focused, S19 copy), UserRow + OneTimePassword ("Parola lui Ion Rusu nu s-a resetat; …", retry line), EntryCardPlus (state caption "Deja introdus", the S6 state name, not a verb-first "Salvat · …"). dsCard: SectionTree 3797, Banner 287 (content + 32). sys05 now writes HallCard's FIN15 `ip-eggs__base` (its preview was hand-edited), so a rerun keeps it. No new tokens; no decision.
+

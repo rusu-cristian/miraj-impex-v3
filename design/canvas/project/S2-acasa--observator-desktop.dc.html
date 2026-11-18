@@ -34,7 +34,6 @@
 .s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
 .s4-nowrap{flex-wrap:wrap}
 .s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
-.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
@@ -47,8 +46,7 @@
 .s2-more,.s2-lnk{display:inline-flex;align-items:center;min-height:var(--space-6);align-self:flex-start} /* text links keep a >=24px target (D46) */
 .s2-cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-6);align-items:start}
 .s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-heading) + var(--space-3))} /* the panel's top on the alert list's top (under its section head, FX02) */
-.s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}
-.ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */</style>
+.s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1156px"><div class="ip-shell"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>

@@ -144,14 +144,14 @@ def eggs(hall, sfx, mode='filled', md=False):
         total = ('<div><dt>Total ouă</dt><dd class="ip-eggs__val">–</dd><dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat · '
                  'completează cele 4 câmpuri</dd></div>')
         lay = (f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">–</dd><dd class="ip-eggs__sub">ghid <span class="ip-num">{GUIDE}%</span> · '
-               f'după ce introduci ouăle · din <span class="ip-sex ip-sex--hen">♀ {f_alive}</span></dd></div>')
+               f'după ce introduci ouăle · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {f_alive}</span></span></dd></div>')
     else:
         total = (f'<div><dt>Total ouă</dt><dd class="ip-eggs__val">{g(e["total"])}</dd><dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · '
                  f'Jos separat (<span class="ip-num">{e["jos"]}</span>)</dd></div>')
         lamp = '<span class="ip-lamp ip-lamp--ok">în normă</span>' if e['ok'] else '<span class="ip-lamp ip-lamp--warn">abatere</span>'
         thr = '' if e['ok'] else ' (prag ±3)'
         lay = (f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">{e["lay"]}%</dd><dd class="ip-eggs__sub">ghid <span class="ip-num">{GUIDE}%</span> · '
-               f'<span class="ip-num">{e["d"][0]}{e["d"][1]}</span> puncte{thr} · din <span class="ip-sex ip-sex--hen">♀ {f_alive}</span></dd>'
+               f'<span class="ip-num">{e["d"][0]}{e["d"][1]}</span> puncte{thr} · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {f_alive}</span></span></dd>'
                f'<dd class="ip-eggs__lamp">{lamp}</dd></div>')
     btn = 'ip-btn' if md else 'ip-btn ip-btn--touch'
     foot = ''
@@ -193,7 +193,7 @@ ec = ['<!-- @dsCard group="Entry" height=2300 subtitle="SYS05" -->', '<div class
 ec.append(ROW
     + phone('Gol · 16.11.2026 · toate „–”', entry('H1.1', 'a', 'empty'))
     + phone('Completat · 16.11.2026 (eșantion)', entry('H1.1', 'b', 'filled'))
-    + phone('Salvat · citire, Editează până la 23:59', entry('H1.1', 'c', 'saved'))
+    + phone('Deja introdus · citire, Editează până la 23:59', entry('H1.1', 'c', 'saved'))
     + '</div>')
 ec.append(ROW
     + phone('Abatere · peste 3× media 7 zile · se poate salva', entry('H1.1', 'd', 'warn', over={'mortf': 4}),

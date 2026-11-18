@@ -132,6 +132,11 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
 .ip-list > .ip-ev:is(a,button):last-child,.ip-list > li:last-child > .ip-ev:is(a,button){border-bottom-left-radius:var(--radius-md);border-bottom-right-radius:var(--radius-md)}
 .ip-list > .ip-ev:is(a,button):focus-visible,.ip-list > .ip-ev.ip-focus,.ip-list > li > .ip-ev:is(a,button):focus-visible,.ip-list > li > .ip-ev.ip-focus{position:relative;z-index:1} /* ring paints over the next row */
 .ip-list > li:has(> .ip-ev:is(a,button)) + li{border-top:var(--ip-hair) solid var(--rule)}
+/* FX05: a figure in a row's main line never splits from its unit: a bare span.ip-num (and SexCount, pair) child of
+ * .ip-ev__main stays on one line, in every EventRow variant. The MissingRow meta (S2/S15 Lipsesc date) is the one
+ * line that wraps in its column. Was the S4 shell rule on 17 screens (S2–S4, S9–S22) and S2's undo. */
+.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap}
+.ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal}
 
 /* Pressed contrast (D34a): on `rule`, ink-muted (4.4:1) and the ok lamp word (4.3:1) fall under 4.5:1, so inside a
  * pressed ghost/secondary Button, IconButton or EventRow, ink-muted text and lamp words switch to ink-secondary.
@@ -1459,6 +1464,10 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* While a DataTable loads: its real head row, then two tr.ip-table__skel rows, one static ip-skel bar per cell (width
  * class by the column's usual content), centred in the row; .ip-skel--end sets a bar at the cell's right edge (numbers,
  * the action column). The region is aria-hidden, the block aria-busy, and a hidden role=status line says what loads. */
+/* FX05: every skeleton bar is a block (bundle.css gives .ip-skel no display; bars are mostly spans), so its size applies in any
+ * parent; bars that sit on a text line say so (section 54: inline-block in a Readout, Stat, field label or ip-skel-line).
+ * Was the S4 shell state rule on 14 screens (S2, S4, S9–S14, S17–S22). */
+.ip-skel{display:block}
 .ip-table__skel > th,.ip-table__skel > td{vertical-align:middle}
 .ip-table__skel .ip-skel{display:block;max-width:100%}
 .ip-table__skel .ip-skel--end{margin-left:auto}
@@ -1905,6 +1914,13 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-screen__view > .ip-screen__main{flex:none}
 .ip-screen__view--end{justify-content:flex-end}
 .ip-screen__savebar{position:sticky;bottom:0;z-index:2}
+/* FX05: a focused field scrolls clear of the sticky SaveBar (WCAG 2.4.11). A page that holds one keeps a bottom
+ * scroll-padding of the bar's height plus the field's border and focus ring: at 390 the bar is 73 (48 key + 2 × 12
+ * padding + 1 top line; the two-line summary, 36, sits inside the key height) + 1 + 2 + 2 = 78; under 390 a summary line
+ * can wrap between segments, up to 4 lines at 360 (4 × 16 + 3 × 4 + 2 × 12 + 1 = 101) + 5 = 106. Was the S7 screen rule
+ * on html (S6–S10, S13 phone forms). */
+html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}
+@media (max-width: 389.98px){html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}}
 
 /* ---------- 64. Utilities: no wrap, muted ink (FIN15B) ---------- */
 /* .ip-nowrap keeps a run on one line: a figure with its unit or lamp, a date range, a name (white-space only; the run

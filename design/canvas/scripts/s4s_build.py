@@ -721,7 +721,6 @@ CSS = '''body{margin:0}
 .s4-miss{color:var(--ink-muted);font-family:var(--font-sans);margin-left:var(--space-1)}
 .s4-nowrap{flex-wrap:wrap}
 .s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
-.ip-ev__main > span.ip-num,.ip-ev__main > .ip-sex,.ip-ev__main > .ip-pair{white-space:nowrap} /* a figure never splits from its unit */
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
@@ -733,12 +732,12 @@ CSS = '''body{margin:0}
 }'''
 # S4 boards only (default, states, tabs): S3 and S11 reuse CSS/CSS_STATES and must stay byte-identical
 # FIN15: CSS_S4 (the S4TP section-head link rule) is now additions.css §56 `.ip-sechead > .ip-link`
+# FX05: the EventRow figure no-wrap (CSS) is additions.css §1, the block skeleton bar (CSS_STATES) §42
 # state boards only
 CSS_STATES = '''.s4s-sktile{gap:var(--space-2)}
 .s4s-sktotals{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
 .s4s-skrow{gap:var(--space-3);align-items:center}
 .s4s-skmain{display:flex;flex-direction:column;gap:var(--space-2);flex:1}
-.ip-skel{display:block}
 .s4s-sq{width:var(--record-tile);height:var(--record-tile);flex:none;border-radius:var(--radius-sm)}
 .s4s-h4{height:var(--space-1)}.s4s-h16{height:var(--space-4)}.s4s-h20{height:var(--space-5)}.s4s-h28{height:calc(var(--space-6) + var(--space-1))}
 .s4s-w15{width:15%}.s4s-w20{width:20%}.s4s-w25{width:25%}.s4s-w30{width:30%}.s4s-w40{width:40%}.s4s-w45{width:45%}.s4s-w50{width:50%}.s4s-w60{width:60%}.s4s-w70{width:70%}.s4s-w80{width:80%}.s4s-w100{width:100%}

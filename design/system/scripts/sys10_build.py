@@ -179,9 +179,14 @@ def farm(p, fid, **kw):
     live = kw.pop('live', '')
     return tree(p, f'Secțiuni, {FARMS[fid]["name"]}', [fr] + section_rows(p, fid, **kw) + [add_row(fid)], live=live)
 
-def banner(kind, text, extra=''):
-    return (f'<div class="ip-banner ip-banner--{kind}" role="alert">{svg(IC["alert"], "ip-icon")}'
-            f'<span class="ip-stack" style="gap:var(--space-2)"><span>{text}</span>{extra}</span></div>')
+def banner(kind, paras, focus=False):
+    """A failure Banner as the S19 boards draw it (FX05): the Banner with action (additions.css section 49, FIN03), role=alert,
+    16px icon on the first line, one p per sentence group, then Reîncearcă (D143: every failure Banner carries it; after a
+    failed save it takes the focus, D141). Copy D143: the object leads, then the one retry line."""
+    body = ''.join(f'<p class="ip-m0">{t}</p>' for t in paras)
+    f = ' ip-focus' if focus else ''
+    return (f'<div class="ip-banner ip-banner--{kind} ip-banner--act" role="alert">{svg(IC["alert"])}<div class="ip-banner__body">{body}</div>'
+            f'<button type="button" class="ip-btn ip-btn--secondary ip-banner__key{f}">Reîncearcă</button></div>')
 
 # ------------------------------------------------------------------ blocks
 B = []
@@ -203,11 +208,12 @@ B.append(('Cod gol (Salvează fără cod)',
                err='Scrie codul compartimentului.')})))
 B.append(('Redenumește H5-2 → H5/2 (eticheta din registru, exemplu de stare)',
           farm('h', 'telita', replace={'H5-2': edit_row('h', 2, 'Cod nou pentru H5-2', 'H5/2', focus=True)})))
-B.append(('Salvarea a eșuat: rândul rămâne deschis, cu codul scris',
+B.append(('Salvarea a eșuat: rândul rămâne deschis, cu codul scris (focus pe Reîncearcă)',
           tree('i', 'Secțiuni, Hîrbovăț',
                [farm_row('hirbovat')] + section_rows('i', 'hirbovat', after={'H1': edit_row('i', 3, 'Compartiment nou în H1', 'H1.3')})
                + [add_row('hirbovat')],
-               banner=banner('fault', 'Compartimentul H1.3 nu s-a salvat. Verifică conexiunea și apasă din nou Salvează.'))))
+               banner=banner('fault', ['Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.',
+                                       'Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă Reîncearcă.'], focus=True))))
 DIALOG = ('<div class="ip-scrim"><div class="ip-dialog" role="dialog" aria-modal="true" aria-labelledby="j-t" aria-describedby="j-d">'
           '<h2 id="j-t">Retrage secțiunea H5-2 de la Telița</h2>'
           '<p id="j-d" style="margin:0">H5-2 nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte.</p>'
@@ -231,15 +237,15 @@ SK = ('<tr class="is-group ip-stree__farm ip-stree__skel" aria-hidden="true"><td
 B.append(('Se încarcă', tree('n', 'Secțiuni', [SK], busy=True)))
 B.append(('Nu s-a încărcat',
           '<div class="ip-stree"><div class="ip-list__head"><h3 class="ip-cap">Secțiuni</h3></div>'
-          + banner('fault', 'Secțiunile fermei Hîrbovăț nu s-au încărcat. Verifică conexiunea și apasă Reîncearcă.',
-                   '<button type="button" class="ip-btn ip-btn--secondary" style="align-self:flex-start">Reîncearcă</button>') + '</div>'))
+          + banner('fault', ['Secțiunile fermei Hîrbovăț nu s-au încărcat.', 'Verifică conexiunea la internet, apoi apasă Reîncearcă.'])
+          + '</div>'))
 WIDE = tree('p', 'Secțiuni, toate fermele',
             [farm_row('telita')] + section_rows('p', 'telita') + [add_row('telita'),
              farm_row('hirbovat')] + section_rows('p2', 'hirbovat') + [add_row('hirbovat')])
 
 OPEN = ('Hîrbovăț · meniul H1.1', 'Telița · meniul H2')  # the open menu hangs below its table: reserve the room
 grid = ''.join(f'<div style="width:var(--panel-w){";padding-bottom:calc(var(--space-12) * 2)" if t.startswith(OPEN) else ""}">{cap(t)}{h}</div>' for t, h in B)
-html = ('<!-- @dsCard group="Data" height=3701 subtitle="SYS10" -->\n'
+html = ('<!-- @dsCard group="Data" height=3797 subtitle="SYS10" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
         f'<div>{cap("S19 · panoul fermei · desktop (lățime panou 440 px)")}'
         f'<div style="display:grid;grid-template-columns:repeat(3,var(--panel-w));gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'

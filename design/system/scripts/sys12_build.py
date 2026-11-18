@@ -188,9 +188,9 @@ SK = ''.join('<tr aria-hidden="true" class="ip-table__skel">' + ''.join(
 L.append(('Se încarcă (skeleton, aria-busy)', users('f', SK + '<tr><td colspan="7" class="ip-users__srcell"><span class="ip-sr">Se încarcă utilizatorii</span></td></tr>',
                                                    '<span class="ip-users__wait">Se încarcă.</span>', busy=True)))
 # FIN13: the Banner with action (additions.css §49, FIN03): role=alert, the S22 copy in two sentences, the key at the end;
-# the list's status region stays empty (the alert announces it once), as on S22 eroare la încărcare
+# the list's status region stays empty (the alert announces it once), as on S22 eroare la încărcare; FX05: the D143 retry line
 FAIL = ('<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">' + svg(IC['fault']) + '<div class="ip-banner__body">'
-        '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
+        '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi apasă Reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
         + btn('Reîncearcă', 'secondary').replace('ip-btn--secondary"', 'ip-btn--secondary ip-banner__key"') + '</div>')
 L.append(('Eroare la încărcare (fără tabel)', users('g', '', '– lista nu s-a încărcat', extra=FAIL, table=False)))
 
@@ -205,7 +205,8 @@ O.append(('Parola temporară · cont nou, după Copiază: lampă „copiată”'
 O.append(('Copierea nu a mers (focus pe parolă, selectată)', dialog('k', 'Parola nouă pentru Ion Rusu',
     otp('k', CTX_RESET, PW_RESET, 'Ion Rusu', failed=True, focus='pw'), btn('Închide', 'primary'))))
 O.append(('Resetarea nu a mers (focus pe Reîncearcă, Esc = Anulează)', dialog('l', 'Resetează parola lui Ion Rusu',
-    banner('fault', '<b>Parola nu s-a resetat;</b> cea veche merge în continuare. Verifică conexiunea și apasă Reîncearcă.',
+    banner('fault', '<b>Parola lui Ion Rusu nu s-a resetat;</b> cea veche merge în continuare. '
+                    'Verifică conexiunea la internet, apoi apasă Reîncearcă.',
            'l-why'),
     btn('Anulează') + btn('Reîncearcă', 'primary', focus=True, extra=' aria-describedby="l-why"'), desc='l-why')))
 O.append(('Dezactivează · confirmare (A2), focus pe Anulează; apoi Toast', dialog('m', 'Dezactivează contul lui Petrea',
