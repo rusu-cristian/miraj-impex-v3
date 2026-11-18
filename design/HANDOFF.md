@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: d3ee0e6
+Updated: 2026-11-18 · Last commit: e6ce7ea
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 112 / 112 (closing check running) (last pass done → FY01–FY04) (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FINAL3 closing check, then Complete; all SYS jobs done
+Complete (last pass done → FY01–FY04) (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none · COMPLETE (19.11.2026); all SYS jobs done
 
 ## Just finished
+- COMPLETE: closing check (FINAL3) clean after FZ01 (S22 reset-failed Banner per D147; 7 stale shots retaken) (e6ce7ea)
 - FY04 Banner paragraphs (D147): 29 failure Banners (24 boards, 5 previews) = lead ¶ + retry + kept ¶, text word for word; S22 Dialog Banner too (sys12 banner() takes a list); S18 telefon eroare-la-salvare h 1632; rows S19–S1 moved +8 by hand (user approved); passed review (d3ee0e6)
 - FY03: S2 observator phone FarmSummary `ip-fsum--touch` (s2s copies gone), §9 touch min-width 44 (`calc(var(--control-h-touch) - var(--space-1))`), observator h 2172→2140; rows S14–S1 moved −32 by hand (user approved), docstrings follow; 1 fix round (756841b)
 - FY02: S18 cycle column "07.10.2025–28.02.2026", "07.03.2025–28.01.2026 · început dedus", open cycle "din 07.03.2025 · început dedus" (8 boards); 13 generator docstrings match canvas.json row ys; 1 fix round (wording) (a3a9bd2)
@@ -95,6 +96,7 @@ Done 112 / 112 (closing check running) (last pass done → FY01–FY04) (final r
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
+- Nothing queued. Publish the repo's canvas files to the live canvas (see "Unpublished on the canvas"); review the "to review" decisions.
 - FX01 → FX07 in order, then one more final pass, then Complete (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
@@ -180,6 +182,7 @@ Done 112 / 112 (closing check running) (last pass done → FY01–FY04) (final r
 - FY02: 8 S18 boards
 - FY03: project/additions.css (§9) + S2-acasa--observator + canvas.json (observator h, 171 boards y −32)
 - FY04: 15 boards + 4 previews + canvas.json (S18 telefon eroare h, 98 boards y +8)
+- FZ01: S22-utilizatori--resetare-esuata
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
