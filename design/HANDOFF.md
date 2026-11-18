@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 314e6b3
+Updated: 2026-11-18 · Last commit: 5bf6af8
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 101 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX02; next FX03; all SYS jobs done
+Done 102 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX03; next FX04; all SYS jobs done
 
 ## Just finished
+- FX02 headings: S2 (7) + S15 desktops → ip-block/ip-sechead/h2.ip-t-heading 16px (MissingRow, EntryKeys too; UnpricedCount caption kept, top aligned; D144 to review); §66 focused-heading ::after ring (S20 salvat head 64); heights via --canvas S2 1176/1176/1156, S15 1552; passed review (5bf6af8)
 - FX01 panel scroll: §62 `.ip-sidepanel--dock > .ip-sidepanel__body{position:relative}` (from s18s); S10 desktop scroll 1281→1024; all 44 docked boards scroll = canvas h; passed review (314e6b3)
 - FINAL review: 7 findings → FX01–FX07 (panel scroll, desktop headings, phone gaps, Banner/Toast copy + placement, CSS dedupe, small items, nav parent); D141 Banner at form end, D142 Înregistrează is the parent, D143 object-first Toasts (all to review); see notes/FINAL.md
 - FIN16 S4 leftovers: ciclu ales Stats 116px at 1280/1440; Seria 2025 "Vârf · ouă pe zi" 22 739 (SAPT 9, 02.05–08.05.2025); Rezumat + S2 De verificat lists ul/li; De verificat empty row on S4 ciclu ales + new S2 board manager · fermă goală (Telița) x 7740 (6 S2 boards +470); S4 one column below 1000px (S9/S10/S16 board rules gone, S16 scrolls re-measured); farm track in §65 trackbox, CycleSelector 416px, track text ≥11px everywhere; D140 to review; passed first review (c4ae55e)
@@ -158,6 +159,7 @@ Done 101 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FI
 - FIN15B: project/additions.css (§61–65) + 245 boards
 - FIN16: project/additions.css (§1, §65) + 168 boards (new S2-acasa manager fermă goală board) + canvas.json (S2 row)
 - FX01: project/additions.css (§62) + 8 S18S boards (CSS only)
+- FX02: project/additions.css (§66) + 31 boards (8 desktops markup, 23 S20 CSS) + canvas.json (4 heights)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
