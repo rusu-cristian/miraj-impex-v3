@@ -554,7 +554,7 @@ def lay_state(h, w):
 def tb_halls():
     ths = (f'<tr><th scope="col">Hala</th><th scope="col" class="num">Găini</th><th scope="col" class="num">{thico("eggs")}Ouă</th><th scope="col" class="num">Ouat</th>'
            '<th scope="col" class="num">Față de ghid</th><th scope="col">Stare</th><th scope="col" class="num">Incubabile</th>'
-           '<th scope="col" class="num">Cat. 1</th><th scope="col" class="num">Cat. 2</th><th scope="col" class="num">Cat. 3</th><th scope="col" class="num">Jos</th><th scope="col" class="num">Masă ou</th></tr>')
+           '<th scope="col" class="num">Cat.\u00a01</th><th scope="col" class="num">Cat.\u00a02</th><th scope="col" class="num">Cat.\u00a03</th><th scope="col" class="num">Jos</th><th scope="col" class="num">Masă ou</th></tr>')
     def row(h, th):
         r = EW[(h, WK)]; c = cat[h]
         al = sum(hall_alive.values()) if h == 'all' else hall_alive[h]
@@ -567,7 +567,7 @@ def tb_halls():
     body += '<tbody>' + row('all', '<tr class="is-total"><th scope="row">Total fermă</th>') + '</tbody>'
     assert s4.h3_since == '2026-11-09' and sum(hall_alive.values()) == tot['F']
     assert len({EW[(h, WK)]['guide_lay_pct'] for h in HALLS + ['all']}) == 1  # one guide value for all halls → in the head
-    t = tbox(f'Producție pe hale, Hîrbovăț, SAPT 40, 10.11–16.11.2026, față de ghid', f'<thead>{ths}</thead>{body}')
+    t = tbox(f'Producție pe hale, Hîrbovăț, SAPT 40, 10.11–16.11.2026, față de ghid', f'<thead>{ths}</thead>{body}', 'ip-table--wraphead')  # FIN14: heads wrap at 1280 (was 6px sideways scroll)
     return block('h-phal', 'Pe hale', f'{num("SAPT 40 · 10.11–16.11.2026")} · ghid Ross 308 ouat {num(pct(EW[("all", WK)]["guide_lay_pct"]))} · toleranță {num("±3 pct")}', t
                  + foot(f'Găini = în viață azi. Ouă = Cat. 1–3 + incubabile; ouăle jos nu intră în total. Ouat = ouă ÷ găini la începutul zilei. Incubabile și masa oului: {NOGD}.'))
 def tb_weeks():

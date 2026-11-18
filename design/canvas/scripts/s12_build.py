@@ -83,7 +83,7 @@ def form(mode='default'):
     rows = ''.join(row(d, i == 0, mode) for i, d in enumerate(UNP))
     lei = (f'<td class="num" colspan="2">{n(W_TOT)} <span class="s12-why s11-muted">· <span class="ip-num">{n(UNP_KG - W_ROW["qty_kg"])} kg</span> fără preț</span></td>' if work
            else '<td class="num s11-muted" colspan="2">– <span class="s12-why">niciun preț scris</span></td>')
-    total = (f'<tfoot><tr class="is-total"><th scope="row" colspan="3" class="s12-toth">Total · <span class="ip-num">{len(UNP)}</span> livrări</th>'
+    total = (f'<tfoot><tr class="is-total"><th scope="row" colspan="3">Total · <span class="ip-num">{len(UNP)}</span> livrări</th>'
              f'<td class="num">{n(UNP_KG)}</td>{lei}</tr></tfoot>')
     if work:
         foot = (f'<span class="ip-note" id="save-why"><span class="ip-num">1</span> din <span class="ip-num">{len(UNP)}</span> livrări cu preț scris · <span class="ip-num">1</span> preț de corectat</span>'
@@ -97,7 +97,7 @@ def form(mode='default'):
     return f'''<form class="s12-form" aria-labelledby="h-unp" novalidate="novalidate">
 <div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <p class="ip-note s12-help" id="pr-help">Scrie prețul pe kg sau totalul de pe factură; celălalt se calculează din kg. Poți completa doar o parte din rânduri. După salvare, un preț se modifică doar cu un motiv și rămâne în jurnal.</p>
-<div class="s11-tablebox"><table class="ip-table s11-table s12-table"><caption class="ip-sr">Livrări fără preț, cele mai vechi întâi</caption>{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody>{total}</table></div>
+<div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="Livrări fără preț, cele mai vechi întâi"><table class="ip-table ip-table--rowheads s11-table s12-table"><caption class="ip-sr">Livrări fără preț, cele mai vechi întâi</caption>{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody>{total}</table></div>
 <div class="s12-foot">{foot}</div>{sample}
 </form>'''
 
@@ -111,7 +111,7 @@ def loading():
 <div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <p class="ip-note s12-help" id="pr-help">Scrie prețul pe kg sau totalul de pe factură; celălalt se calculează din kg. Poți completa doar o parte din rânduri. După salvare, un preț se modifică doar cu un motiv și rămâne în jurnal.</p>
 <p class="ip-sr" role="status">Se încarcă livrările fără preț.</p>
-<div class="s11-tablebox" aria-hidden="true"><table class="ip-table s11-table s12-table">{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody></table></div>
+<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s11-table s12-table">{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody></table></div>
 <div class="s12-foot"><span class="ip-note" id="save-why">Se încarcă livrările fără preț · poți scrie prețuri după încărcare</span><button type="submit" class="ip-btn ip-btn--primary" disabled="disabled" aria-describedby="save-why">Salvează prețurile</button></div>
 </form>'''
 
@@ -141,7 +141,6 @@ CSS = s11.CSS + '''
 .s12-table td.edit > .ip-skel{height:var(--control-h);border-radius:var(--radius-sm)} /* loading: the inputs' footprint, no row jump */
 .s12-form{display:flex;flex-direction:column;gap:var(--space-3);width:fit-content;min-width:calc(var(--space-12) * 16);max-width:100%;margin:0}
 .s12-help{margin:0;max-width:calc(var(--space-12) * 14)}
-.s12-table th.s12-toth{background:var(--panel);font-weight:500;border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
 .s12-why{font-family:var(--font-sans);font-weight:400}
 .s12-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s12-foot > .ip-btn{flex:none}

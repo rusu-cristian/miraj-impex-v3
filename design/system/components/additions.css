@@ -417,8 +417,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-cost__scroll:last-child{border-radius:0 0 var(--radius-md) var(--radius-md)}
 .ip-cost__table{border-collapse:separate;border-spacing:0}
 .ip-cost__table thead th{border-bottom-color:var(--line)}
-/* Row headers (th scope=row) read as body text, not as caption headers. */
-.ip-cost__table tbody th{font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--raised);text-align:left;vertical-align:top;padding:var(--space-2) var(--space-3);border-bottom:var(--ip-hair) solid var(--rule)}
+/* Row headers (th scope=row): table.ip-table.ip-table--rowheads.ip-cost__table, section 32 (FIN14); a cycle's name is
+ * 500 and sits at the top of its row beside the figures and sub-lines (space-2 above and below, as the cells). */
+.ip-cost__table.ip-table--rowheads tbody th{font-weight:500;vertical-align:top;padding:var(--space-2) var(--space-3)}
 .ip-cost__table td{vertical-align:top;padding-top:var(--space-2);padding-bottom:var(--space-2)}
 .ip-cost__table td.num small,.ip-cost__table td.ip-cost__note{font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-muted)}
 .ip-cost__table td.num small{display:block}
@@ -432,8 +433,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-cost__unpriced .ip-rec{color:var(--c);display:inline-flex}
 .ip-cost__unpriced td.num{color:var(--ink-secondary)}
 .ip-cost__table tbody > tr:last-child > :is(th,td){border-bottom:0}
-/* Totals: bundle.css tr.is-total (line-strong top edge, panel). */
-.ip-cost__table tr.is-total > th{background:var(--panel);border-top:var(--ip-hair) solid var(--line-strong)}
+/* Totals: bundle.css tr.is-total (line-strong top edge, panel); its row header from section 32. */
 .ip-cost__table tbody + tbody > tr.is-total:first-child > :is(th,td){border-top-color:var(--line-strong)}
 /* Default = phone (DataTable rule): the first column stays while the figures scroll; it is 160px wide and its
  * sub-lines wrap (dates are separate Mono spans), a rule edge marks where the figures slide under it. */
@@ -624,15 +624,10 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-readout .ip-spark .pt{fill:var(--readout-ok)}
 .ip-readout .ip-spark--rooster .act{stroke:var(--readout-2);stroke-dasharray:var(--ip-dash-2)}
 .ip-readout .ip-spark--rooster .pt{fill:var(--readout-2)}
-/* DataTable phone rule as a wrapper (SYS06 fix 1): div.ip-tablescroll[tabindex=0][role=region][aria-label] scrolls a wide
- * .ip-table sideways inside its own box (never the page) with the first column sticky. Focus: the system ring. */
-.ip-tablescroll{overflow-x:auto;max-width:100%}
-.ip-tablescroll > .ip-table{border-collapse:separate;border-spacing:0}
-.ip-tablescroll > .ip-table :is(thead th:first-child,tbody > tr > :first-child){position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule)}
-.ip-tablescroll > .ip-table tbody > tr > td:first-child{background:var(--raised)}
-/* DataTable with a curve column: the row grows to the curve (48 + 2×4). */
+/* The DataTable scroll region (div.ip-tablescroll, SYS06 fix 1) lives in section 36 (FIN14). */
+/* DataTable with a curve column: table.ip-table.ip-table--rowheads.ip-sparktable (row headers: section 32, FIN14); the
+ * row grows to the curve (48 + 2×4). */
 .ip-sparktable td.ip-sparktable__curve{padding-block:var(--space-1);width:calc(var(--space-12) * 3 + var(--space-4))}
-.ip-sparktable tbody th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-sparktable__key{display:inline-flex;align-items:center;gap:var(--space-1);white-space:nowrap}
 
 /* ---------- 17. RecordCode · Corecție (adjustment) + cycle marks ---------- */
@@ -1264,14 +1259,20 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * (sunken / 500; line-strong top edge on panel). th.ip-table__child indents a row under its group row. Two-row heads:
  * a first column spanning both rows (th[rowspan]) sits at the bottom, colgroup heads align right over their figures
  * on a rule, and inside .ip-tablescroll the second head row's first cell does not stick (it is not the first column).
- * The older copies (.ip-cost__table, .ip-sparktable, S3 screen rules) stay as they are until FIN folds them in. */
-.ip-table--rowheads tbody th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;background:var(--raised);padding:var(--space-1) var(--space-3);height:var(--row-h);border-bottom:var(--ip-hair) solid var(--rule)}
+ * FIN14: a totals row in tfoot names itself the same way (S12); the CostBlock table, the small-curve table (.ip-sparktable)
+ * and the S3, S11 and S12 tables use these rules (their copies are gone).
+ * Opt-in .ip-table--wraphead (FIN14): figure-column caption heads (thead th.num) may wrap between words, so a table fits
+ * its box before it scrolls (S3 at 1280, S4 Producție Pe hale at 1280); every head sits at the bottom of the head row.
+ * Not for tables whose heads carry measured --ip-colmin struts (section 54): the strut holds the one-line width. */
+.ip-table--rowheads :is(tbody,tfoot) th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;background:var(--raised);padding:var(--space-1) var(--space-3);height:var(--row-h);border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-table--rowheads tr.is-group > th{background:var(--sunken);font-weight:500}
 .ip-table--rowheads tr.is-total > th{font-weight:500;background:var(--panel);border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
 .ip-table--rowheads th.ip-table__child{padding-left:var(--space-6)}
 .ip-table--rowheads thead th[rowspan]{vertical-align:bottom}
 .ip-table--rowheads thead th[scope=colgroup]{text-align:right;border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-tablescroll > .ip-table--rowheads thead tr + tr > th:first-child{position:static;border-right:0}
+.ip-table--wraphead thead th{vertical-align:bottom}
+.ip-table--wraphead thead th.num{white-space:normal}
 /* Framed: div.ip-tablescroll.ip-tablescroll--framed draws the table's box (1px line, radius-md, clipped by the scroll
  * region); the last row drops its rule against the frame. Focus stays the system ring on the region. */
 .ip-tablescroll--framed{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
@@ -1352,11 +1353,22 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * S14P · DataTable scroll region contains its hidden text; Button busy keeps its look. Spec: components.md › Additions › S14P.
  * ===================================================================================================== */
 
-/* ---------- 36. DataTable · scroll region holds its hidden text (section 32 amendment, S14P) ---------- */
-/* div.ip-tablescroll is the containing block of everything inside it, so hidden .ip-sr text in head cells beyond the
- * region's width (e.g. the "găini"/"cocoși" words after ♀/♂) is clipped by the region instead of widening the page.
- * No z-index: no stacking context, the sticky first column keeps its z-index:1 inside the region. */
-.ip-tablescroll{position:relative}
+/* ---------- 36. DataTable · scroll region (SYS06 fix 1, S14P, FIN14) ---------- */
+/* DataTable phone rule as a wrapper (SYS06 fix 1, moved here from section 16 by FIN14):
+ * div.ip-tablescroll[tabindex=0][role=region][aria-label = the table's caption] scrolls a wide .ip-table sideways inside
+ * its own box (never the page) with the first column sticky. Focus: the system ring. A loading copy is aria-hidden and
+ * not a tab stop. S14P: the region is the containing block of everything inside it, so hidden .ip-sr text in head cells
+ * beyond the region's width (e.g. the "găini"/"cocoși" words after ♀/♂) is clipped by the region instead of widening the
+ * page. No z-index: no stacking context, the sticky first column keeps its z-index:1 inside the region.
+ * FIN14 (S11 Livrări and Consum, S12, S13 beside the SidePanel move here from the screen copy .s11-tscroll):
+ * - a first cell that spans columns (a group row's whole-row head, an edit row's label or message cell) is not the first
+ *   column: it does not stick and draws no edge (:where keeps the rule's specificity, so section 32's head rule still wins);
+ * - the first column's opaque raised fill has no specificity of its own, so row states keep their fill on it (bundle.css
+ *   group rows, hover, an edit row's sunken) while it scrolls under nothing. */
+.ip-tablescroll{overflow-x:auto;max-width:100%;position:relative}
+.ip-tablescroll > .ip-table{border-collapse:separate;border-spacing:0}
+.ip-tablescroll > .ip-table :is(thead th:first-child,tbody > tr > :first-child):not(:where([colspan])){position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule)}
+:where(.ip-tablescroll > .ip-table tbody > tr) > td:first-child{background:var(--raised)}
 
 /* ---------- 37. Button · busy (S14P) ---------- */
 /* A key whose action is running (button.ip-btn[aria-busy="true"], spinner span.ip-spin + label kept, usually also
@@ -1429,6 +1441,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table__skel > th,.ip-table__skel > td{vertical-align:middle}
 .ip-table__skel .ip-skel{display:block;max-width:100%}
 .ip-table__skel .ip-skel--end{margin-left:auto}
+/* FIN14: a bar in a group row (sunken, bundle.css tr.is-group) is drawn in rule, or it would vanish on the row's fill; the
+ * group row keeps its fill on the first column inside a scroll region too (section 36). Replaces the S3 screen rule. */
+.ip-table tr.is-group .ip-skel{background:var(--rule)}
 /* Skeleton width modifiers for any skeleton bar (FIN11). --ch1…4: as wide as 1–4 figures, in ch of the font the bar
  * inherits (the Plex Mono of a figure cell), for a column whose figures have a known length (SYS11 se citește rows;
  * replaces .ip-gimp__sk1…4). --key: as wide as an IconButton (control-h), for the action column of a row that holds one

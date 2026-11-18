@@ -216,7 +216,7 @@ spk = [
      f'{fint(fgw["M"][40])} g', f'{gfeed["M"][40]} g', pct((fgw['M'][40] / gfeed['M'][40] - 1) * 100, 1, True),
      spark(fgw['M'], gfeed['M'], ' ip-spark--rooster', f'Hrană cocoși sapt. {fw}–40 față de ghid, g pe pasăre: {fint(fgw["M"][40])} g în sapt. 40, ghid {gfeed["M"][40]} g')),
 ]
-v6 = ('<div class="ip-tablescroll" tabindex="0" role="region" aria-label="Curbe mici față de ghid, Hîrbovăț SAPT 40"><table class="ip-table ip-sparktable"><caption class="ip-sr">Hîrbovăț · Seria 2026 față de ghidul Ross 308 ouat, SAPT 40</caption><thead><tr>'
+v6 = ('<div class="ip-tablescroll" tabindex="0" role="region" aria-label="Curbe mici față de ghid, Hîrbovăț SAPT 40"><table class="ip-table ip-table--rowheads ip-sparktable"><caption class="ip-sr">Hîrbovăț · Seria 2026 față de ghidul Ross 308 ouat, SAPT 40</caption><thead><tr>'
       '<th scope="col">Indicator</th><th scope="col" class="num">SAPT 40</th><th scope="col" class="num">Ghid</th><th scope="col" class="num">Abatere</th><th scope="col">Curba · SAPT 1–40</th></tr></thead><tbody>'
       + ''.join(f'<tr><th scope="row"><span class="ip-sparktable__key">{a}</span></th><td class="num">{b}</td><td class="num">{c}</td><td class="num">{d}</td><td class="ip-sparktable__curve">{e}</td></tr>' for a, b, c, d, e in spk)
       + '</tbody></table></div>')

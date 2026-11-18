@@ -312,7 +312,7 @@ def diff(v, sx):  # D63: register difference, info lamp + word, figure in its se
     return f'<td class="num"><span class="s3-diff">{lamp("info", "informație")}<span class="ip-sex ip-sex--{cls}"><b>−{n(-v)}</b></span></span></td>'
 def sexrow(sx, vals):
     word = 'găini' if sx == 'F' else 'cocoși'
-    return f'<tr><th scope="row" class="s3-rowh">{sg(sx)} {word}</th>{"".join(vals)}</tr>'
+    return f'<tr><th scope="row" class="ip-table__child">{sg(sx)} {word}</th>{"".join(vals)}</tr>'
 def group(fid, name, href, line):
     nm = f'<a class="s3-glink" href="{href}">{name}</a>' if href else f'<span class="s3-gname">{name}</span>'
     return f'<tr class="is-group"><th scope="rowgroup" colspan="{len(COLS) + 1}" class="s3-group">{nm}<span class="ip-note">{line}</span></th></tr>'
@@ -355,7 +355,7 @@ def pasari(mode='default'):
         cap = 'Păsări în Seria 2026, pe ferme'
     note = ''.join(f'<p class="ip-note s3-m0">{x}</p>' for x in notes)
     return f'''<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">
-<table class="ip-table s3-table"><caption class="ip-sr">{cap}; mortalitate % din păsările de la începutul ciclului fermei</caption>{head}{body}</table>
+<table class="ip-table ip-table--rowheads ip-table--wraphead s3-table"><caption class="ip-sr">{cap}; mortalitate % din păsările de la începutul ciclului fermei</caption>{head}{body}</table>
 <div class="s3-notes">{note}</div>
 </div>'''
 def pasari_loading():
@@ -364,7 +364,7 @@ def pasari_loading():
     grp = f'<tr class="is-group"><td colspan="{len(COLS) + 1}">{sk("s3-w14")}</td></tr>'
     return f'''<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă Seria 2026: ciclurile, fermele și păsările.</p>
-<table class="ip-table s3-table" aria-hidden="true">{head}<tbody>{grp}{row}{row}{grp}{row}{row}</tbody></table>
+<table class="ip-table ip-table--rowheads ip-table--wraphead s3-table" aria-hidden="true">{head}<tbody>{grp}{row}{row}{grp}{row}{row}</tbody></table>
 </div>'''
 
 # ---------- page ----------
@@ -390,14 +390,10 @@ CSS = s4.CSS + '''
 .s3-m0{margin:0}
 .s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
 .s3-table{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);border-collapse:separate;border-spacing:0;overflow:hidden}
-.s3-table thead th{vertical-align:bottom}
-.s3-table th.num{font-family:var(--font-sans);white-space:normal} /* S3P: caption headers stay Sans (bundle .num made them Mono); they may wrap at 1280 so the table fits 1000px */
 .s3-table th .s4-ico{vertical-align:top;margin-right:var(--space-1)} /* 14px icon on the 14px caption line */
 .s3-panel{container-type:inline-size}
 @container (max-width: 1159.98px){.s3-table .num{padding-left:var(--space-2);padding-right:var(--space-2)}} /* 1280: 8px sides on figure columns, no sideways scroll */
 .s3-table tbody:last-child tr:last-child > *{border-bottom:0}
-.ip-table .s3-rowh{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule);padding:var(--space-1) var(--space-3) var(--space-1) var(--space-6);height:var(--row-h)}
-.ip-table .s3-group{background:var(--sunken);text-transform:none;letter-spacing:0;font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink);border-bottom:var(--ip-hair) solid var(--rule)}
 .s3-group > .ip-note{display:inline-flex;align-items:center;gap:var(--space-1);margin-left:var(--space-3);font-weight:400}
 .s3-glink{display:inline-flex;align-items:center;min-height:var(--space-6);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair))}
 .s3-glink:hover{text-decoration-color:var(--ink)}
@@ -419,7 +415,6 @@ CSS = s4.CSS + '''
 .s3-skaxis{height:var(--space-6)} /* the month axis room, left empty */
 .s3-sklegend .ip-skel{display:block}
 .s3-sklegend{height:var(--space-4);display:flex;align-items:center}
-.s3-table tr.is-group .ip-skel{background:var(--rule)} /* a sunken skeleton vanishes on the sunken group row */
 .s3-skcard{gap:var(--space-3)}
 .s3-skcard .ip-skel,.s3-panel .ip-skel{display:block}
 .s3-skfig{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}

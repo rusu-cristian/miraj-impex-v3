@@ -188,8 +188,8 @@ KEY_RE = r'<a class="ip-btn ip-btn--primary" href="#livrare-hrana">(.*?)Livrare 
 SPG = s11.page("Manager"); assert len(re.findall(KEY_RE, SPG)) == 1
 SPG = re.sub(KEY_RE, r'<button type="button" class="ip-btn ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="lp">\1Livrare hrană</button>', SPG)
 # beside the open panel the page is 440 px narrower: at 1280 the S11 tables (711 px) no longer fit their 560 px block; they
-# scroll inside their box as s11_build's named, focusable regions (.s11-tscroll, S11X; was .s13-tscroll here)
-assert SPG.count('class="s11-tablebox s11-tscroll" role="region" tabindex="0"') == 2
+# scroll inside their box as s11_build's named, focusable regions (S11X; FIN14: the system .ip-tablescroll, was .s11-tscroll)
+assert SPG.count('class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0"') == 2
 DESK = f'<div class="s13-vp">{SPG}</div>'
 assert DH == SC.SIDE_H
 CSS_D = s11.CSS + SC.SIDE + '''

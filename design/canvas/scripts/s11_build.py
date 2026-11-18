@@ -123,13 +123,14 @@ def sec_head(hid, title, meta='', right=''):
     m = f'<span class="ip-note">{meta}</span>' if meta else ''
     return f'<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{m}</div>{right}</div>'
 
-def tscroll(cap, inner, fit=False):
+def tscroll(cap, inner, fit=False, rowheads=False):
     """S11X: a table that scrolls sideways inside its own box wherever the content area is narrower than the table (Consum
-    1113 px; Livrări beside S13's SidePanel), as a focusable region named by its caption (WCAG 1.4.10, 2.1.1). One
-    implementation, also used by S13 (was S13P's .s13-tscroll)."""
+    1113 px; Livrări beside S13's SidePanel), as a focusable region named by its caption (WCAG 1.4.10, 2.1.1). FIN14: the
+    system scroll region (additions.css §36, framed §32: sticky first column) and row headers (§32); also used by S13."""
     f = ' s11-tablebox--fit' if fit else ''
-    return (f'<div class="s11-tablebox s11-tscroll{f}" role="region" tabindex="0" aria-label="{cap}">'
-            f'<table class="ip-table s11-table"><caption class="ip-sr">{cap}</caption>{inner}</table></div>')
+    rh = ' ip-table--rowheads' if rowheads else ''
+    return (f'<div class="ip-tablescroll ip-tablescroll--framed{f}" role="region" tabindex="0" aria-label="{cap}">'
+            f'<table class="ip-table{rh} s11-table"><caption class="ip-sr">{cap}</caption>{inner}</table></div>')
 
 # ---------- 2. Stoc ----------
 def stock_ro(ft, sr):
@@ -271,13 +272,13 @@ def sec_consum():
         rows += f'<tbody><tr class="is-group"><th scope="rowgroup" class="s11-gl"><span class="ip-num">SAPT {w}</span> <span class="s11-gsub">{ddm(ds[0])}–{ddate(ds[-1])}{cur}</span></th><td class="num">{n(kg)}</td>{cells}<td>{cons_state(w, "all")}</td></tr>'
         for sec in SECS:
             kg = agg[(w, sec, 'F')]['kg'] + agg[(w, sec, 'M')]['kg']; cells, _ = cons_cells(w, sec, False)
-            rows += f'<tr><th scope="row" class="s11-rh">{sec}<span class="ip-sr">, SAPT {w}</span></th><td class="num">{n(kg)}</td>{cells}<td>{cons_state(w, sec)}</td></tr>'
+            rows += f'<tr><th scope="row" class="ip-table__child">{sec}<span class="ip-sr">, SAPT {w}</span></th><td class="num">{n(kg)}</td>{cells}<td>{cons_state(w, sec)}</td></tr>'
         rows += '</tbody>'
     ths = CONS_THS
     foot = '<div class="s11-foot"><span class="ip-note">g/pasăre = media zilelor cu rânduri; rândul săptămânii cântărește ♀ după găini și ♂ după cocoși. Toleranță <span class="ip-num">±10%</span>. Telița: fără consum în ciclul curent (ciclu închis pe <span class="ip-num">28.02.2026</span>).</span><a class="ip-link s11-lk" href="#consum-toate">Vezi toate săptămânile</a></div>'
     return f'''<section class="s4-block" aria-labelledby="h-consum">
 {sec_head("h-consum", "Consum", 'Hîrbovăț · pe săptămână și secțiune · <span class="ip-num">SAPT 37–40</span> · ghid Ross 308 ouat')}
-{tscroll('Consum Hîrbovăț pe săptămână și secțiune, SAPT 37–40, față de ghid', f'<thead><tr>{ths}</tr></thead>{rows}')}
+{tscroll('Consum Hîrbovăț pe săptămână și secțiune, SAPT 37–40, față de ghid', f'<thead><tr>{ths}</tr></thead>{rows}', rowheads=True)}
 {foot}
 </section>'''
 
@@ -297,7 +298,7 @@ def sec_cost():
             f'<span class="ip-sex ip-sex--hen">♀ {n(arr["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(arr["M"])}</span>; seria: populare). Lei/ou: ouă totale (Cat. 1–3 + Incubabile) până pe <span class="ip-num">16.11.2026</span>: <span class="ip-num">{n(eggs)}</span>.</p>')
     return f'''<section class="s4-block" aria-labelledby="h-cost">
 {sec_head("h-cost", "Cost", 'pe ciclu, pe pasăre și pe ou · din livrările cu preț')}
-<section class="ip-cost ip-cost--wide" aria-labelledby="cost-d"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-d">Cost hrană · Seria 2026</h3><span class="ip-note">din livrările cu preț · până pe <span class="ip-num">16.11.2026</span></span></div><div class="ip-cost__scroll"><table class="ip-table ip-cost__table"><caption class="ip-sr">Cost hrană · Seria 2026</caption>{t}</table></div>{foot}</section>
+<section class="ip-cost ip-cost--wide" aria-labelledby="cost-d"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-d">Cost hrană · Seria 2026</h3><span class="ip-note">din livrările cu preț · până pe <span class="ip-num">16.11.2026</span></span></div><div class="ip-cost__scroll"><table class="ip-table ip-table--rowheads ip-cost__table"><caption class="ip-sr">Cost hrană · Seria 2026</caption>{t}</table></div>{foot}</section>
 </section>'''
 
 # ---------- states ----------
@@ -310,7 +311,7 @@ def sec_loading():
         cl = lambda c: (' class="' + ' '.join(['num'] * ('num' in c.split()) + ['s11-pc'] * ('s11-thedit' in c.split())) + '"') if 'num' in c.split() else ''
         tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}</td>' for c in cols) + '</tr>' for _ in range(rows))
         if cost: return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'
-        return f'<div class="s11-tablebox s11-tscroll"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'  # aria-hidden: scrolls, not a tab stop
+        return f'<div class="ip-tablescroll ip-tablescroll--framed"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'  # aria-hidden: scrolls, not a tab stop
     return f'''<div class="s11-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Hrană pentru Seria 2026.</p>
 <section class="s4-block" aria-hidden="true">{sec_head("h-stoc", "Stoc")}<ul class="ip-readouts">{ro * 3}</ul></section>
@@ -354,16 +355,9 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-farm .ip-label{margin:0}
 .s11-select{width:calc(var(--space-12) * 4);cursor:pointer}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
-.s11-tablebox{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);overflow:hidden}
-.s11-tscroll{overflow-x:auto} /* S11X: scrolls inside its box where the content is narrower than the table (role=region, tabindex=0) */
-.s11-tscroll:focus-visible{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
 .s11-tablebox--fit{width:fit-content;min-width:calc(var(--space-12) * 12);max-width:100%} /* viewer Livrări: 4 columns stay together (craft §5) */
 .s11-tablebox--fit > .ip-table{width:100%}
-.s11-table > tbody:last-child > tr:last-child > *{border-bottom:0}
-.s11-table th[scope=row],.s11-table th[scope=rowgroup]{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);text-transform:none;letter-spacing:0;color:var(--ink);background:var(--raised);border-bottom:var(--ip-hair) solid var(--rule);padding:var(--space-1) var(--space-3);height:var(--row-h)}
-.s11-table tr.is-group > th{background:var(--sunken);font-weight:500}
 .s11-gsub{color:var(--ink-secondary);font-weight:400;font-family:var(--font-mono);font-size:var(--ip-fs-small)}
-.s11-table th.s11-rh{padding-left:var(--space-6)}
 .s11-ico{color:var(--c);display:inline-flex;flex:none}
 .s11-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)} /* 14px icon on the 14px caption line (S3P) */
 .s11-type{display:inline-flex;align-items:center;gap:var(--space-2)}

@@ -74,7 +74,7 @@ def cost_block(sfx, extra=False, wide=True):
         f'Lei/ou: ouă totale (Cat. 1–3 + Incubabile) până pe <span class="ip-num">16.11.2026</span>: <span class="ip-num">{g("5 301 053")}</span>.</p>')
     return (f'<section class="ip-cost{" ip-cost--wide" if wide else ""}" aria-labelledby="cost-{sfx}"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-{sfx}">{title}</h3>'
             f'<span class="ip-note">{note}</span></div><div class="ip-cost__scroll"{"" if wide else f' role="region" tabindex="0" aria-labelledby="cost-{sfx}"'}>'
-            f'<table class="ip-table ip-cost__table"><caption class="ip-sr">{title}</caption>{hdr}{body}</table></div>{foot}</section>')
+            f'<table class="ip-table ip-table--rowheads ip-cost__table"><caption class="ip-sr">{title}</caption>{hdr}{body}</table></div>{foot}</section>')
 
 def cap(t): return f'<span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">{t}</span>'
 def h(t, i): return f'<h2 class="ip-cap" id="{i}" style="margin:0">{t}</h2>'

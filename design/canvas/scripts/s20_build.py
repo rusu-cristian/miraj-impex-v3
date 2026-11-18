@@ -241,7 +241,7 @@ def curves_block(g, name):
         else:
             rows += (f'<tr><th scope="row"><span class="ip-sparktable__key">{lbl} {u}</span></th>'
                      f'<td colspan="5" class="s20-none">– fără date în ghid</td></tr>')
-    tb = (f'<table class="ip-table ip-sparktable"><caption class="ip-sr">{name} pe indicatori: săptămânile cu cifre, prima, maximul, '
+    tb = (f'<table class="ip-table ip-table--rowheads ip-sparktable"><caption class="ip-sr">{name} pe indicatori: săptămânile cu cifre, prima, maximul, '
           f'ultima și curba</caption><thead><tr><th scope="col">Indicator</th><th scope="col">Săptămâni</th><th scope="col" class="num">Prima</th>'
           f'<th scope="col" class="num">Maxim</th><th scope="col" class="num">Ultima</th><th scope="col">Curba · SAPT 1–{NWK[g]}</th></tr></thead>'
           f'<tbody>{rows}</tbody></table>')
