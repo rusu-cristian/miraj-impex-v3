@@ -12,7 +12,7 @@ through s3_build, which asserts them against transfers-seria2026):
 - Refusal (B3 rule) "Telița are încă … păsări din Seria 2026": Telița is empty in counts-latest (closed 28.02.2026), so
   the board is a D39 state example, labelled: as if the move had not been entered, Telița would hold the birds that
   arrived at Hîrbovăț (♀ 26 765 · ♂ 3 060 = 29 825, D28 — replaces the kit's 26 881). Spec sample "Seria 2027 · 2027".
-Boards (row below S17: y 30039 + 2529 + 120 = 32688; x step w + 80):
+Boards (row below S17: y 30007 + 2529 + 120 = 32656; x step w + 80):
   S18-serii                       desktop, owner, the list: PageHeader (Setări › Serii, "Adaugă serie"), CycleTrack full
                                   with both series, DataTable of series (group rows) and their cycles, notes
   S18-serii--serie-noua           desktop, the list reflowed beside the non-modal SidePanel "Serie nouă" (D73), nothing typed,

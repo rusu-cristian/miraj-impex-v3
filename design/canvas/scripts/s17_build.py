@@ -2,7 +2,7 @@
 like S14): desktops first, then the phone. Today = 16.11.2026 (D23/D24). Real history only: the extracts hold one change,
 sample-hirbovat-2026.json › audit_log (Mortalitate H4.1 ♀ 14.11.2026, 3 → 5, Ion Rusu, 15.11.2026, 10:12, real reason);
 event_log has no other update/delete. No D39 rows (the S16S deletion has no time and no owner name, D96).
-Boards (row below S16, y 30039):
+Boards (row below S16, y 30007):
 - default (owner, desktop): Setări expanded in the Sidebar, crumbs Setări › Istoric modificări, FilterBar (Perioadă 4 săpt.,
   Fermă, Utilizator, record-type chips for the types with records in the period, D45), ChangeRow list (SYS09) with its column
   head, the one real row, a foot note saying what the log keeps.

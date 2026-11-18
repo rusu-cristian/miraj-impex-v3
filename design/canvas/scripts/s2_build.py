@@ -255,10 +255,10 @@ def unpriced():
             f'<ul class="ip-unpriced__list">{li}</ul><p class="ip-note">Cea mai veche din {num(dd(dt.date.fromisoformat(old)))}. Kg fără preț nu intră în cost.</p>'
             f'<a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-livrari-fara-pret">Adaugă prețurile</a></section>')
 
-def farms_block():
-    P_ = '<small class="ip-fsum__pct">%</small>'
+def farms_block(phone=False):  # FY03: phone = ip-fsum--touch (48px links, additions.css §9)
+    P_ = '<small class="ip-fsum__pct">%</small>'; T_ = ' ip-fsum--touch' if phone else ''
     lay_ok = abs(LAY - LAYG) <= 3
-    hir = (f'<article class="ip-fsum ip-fsum--compact" aria-labelledby="fs-hir" aria-describedby="fs-hir-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
+    hir = (f'<article class="ip-fsum ip-fsum--compact{T_}" aria-labelledby="fs-hir" aria-describedby="fs-hir-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
            f'<h3 class="ip-fsum__name" id="fs-hir"><a href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2026">Hîrbovăț</a></h3><span class="ip-tag ip-tag--neutral">Ouat</span>'
            f'<span class="ip-tag ip-tag--neutral">{GUIDES["g-laying"]}</span></div>{lamp("ok", "deschis")}</div>'
            f'<p class="ip-fsum__cycle" id="fs-hir-c">ciclu din {dd(dt.date.fromisoformat(cH["start_date"]))} · SAPT {WK}</p>'
@@ -267,7 +267,7 @@ def farms_block():
            f'<dd class="ip-fsum__status">{lamp("ok" if lay_ok else "warn", "în normă" if lay_ok else "abatere")}</dd></div>'
            f'<div class="ip-fsum__fig"><dt>{ico("mortality")}Mort. cumulată</dt><dd class="ip-fsum__val">{pair(n(MH["F"], 2), n(MH["M"], 2))}{P_}</dd>'
            f'<dd class="ip-fsum__sub">ghid: – fără date în ghid</dd></div></dl></article>')
-    tel = (f'<article class="ip-fsum ip-fsum--compact" aria-labelledby="fs-tel" aria-describedby="fs-tel-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
+    tel = (f'<article class="ip-fsum ip-fsum--compact{T_}" aria-labelledby="fs-tel" aria-describedby="fs-tel-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
            f'<h3 class="ip-fsum__name" id="fs-tel"><a href="#/ferme/telita">Telița</a></h3><span class="ip-tag ip-tag--neutral">Creștere</span>'
            f'<span class="ip-tag ip-tag--neutral">{GUIDES["g-growth"]}</span></div>{lamp("off", "goală")}</div>'
            f'<div class="ip-fsum__empty" id="fs-tel-c"><p class="ip-m0">Ferma e goală din {num(dd(dt.date.fromisoformat(cT["end_date"])))}. Ultimul ciclu: Seria 2026, {num(cT["weeks"])} săpt.</p>'

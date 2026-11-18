@@ -5,7 +5,7 @@ for both sexes, retired, Telița; names illustrative, D30); "in use" from feed-d
 deliveries) and the extracts README (Hîrbovăț deliveries and stock are sample: Breeder 2 28 252 kg, Cocoși 1 650 kg).
 D116: a used type can be retired but never deleted; retiring is refused while a farm still has it in stock (the vets feed
 it daily); "Pentru" is fixed once a type is used; names unique ignoring case and diacritics (as D111/D114).
-Boards (row below S20: y 35576 + 2380 + 120 = 38076; x step w + 80; desktops first, then the phone):
+Boards (row below S20: y 35544 + 2380 + 120 = 38044; x step w + 80; desktops first, then the phone):
   S21-tipuri-hrana          list: PageHeader (Setări › Tipuri de hrană, "Adaugă tip"), DataTable (Tip hrană, Pentru, Stare
                             lamp, Folosit la, Editează)
   --breeder-2               list beside the non-modal SidePanel: Nume (focus), Pentru read-only (used), Activ ticked with the

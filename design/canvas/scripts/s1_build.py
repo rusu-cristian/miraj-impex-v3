@@ -7,7 +7,7 @@ Copy: spec A1 word for word (title "Impex Line", "Login", "Parolă", "Intră", t
 People as on S22 (D118/D119): Dr. Ceban (vet, login ceban) signs in on the phone; Ion Rusu (manager, ion.rusu) with the
 password the owner reset for him on S22 `--parola-resetata` (mnpq6789rstu, D39 example), shown only where the show key is
 on; Petrea (petrea), deactivated on S22 `--dezactivat`. Every other password is masked and is a D39 sample value.
-Boards (no row was reserved: below S22, y 39220 + 1024 + 120 = 40364; desktops first, then the phones, x step w + 80):
+Boards (no row was reserved: below S22, y 39188 + 1024 + 120 = 40332; desktops first, then the phones, x step w + 80):
   S1-autentificare                      desktop: card at the top of the centred column, focus on Login (D80)
   --gresit-desktop                      desktop: ion.rusu, wrong credentials (A1), Parolă emptied, focus on Parolă
   --telefon                             phone default, focus on Login

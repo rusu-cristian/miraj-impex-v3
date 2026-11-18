@@ -334,7 +334,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * figures vs the guide as a <dl> of key/value lines with record icons (SectionTile's kv language, SectionTotals' type).
  * Narrow by default (phone, S2 compact): each line's Lamp sits right of its guide sub-line. .ip-fsum--wide (S3 desktop
  * columns) gives the Lamps a fixed right column, like AlertRow. .ip-fsum--compact: S2 owner, 2 figures, alive inline.
- * .ip-fsum--touch: 48px targets for the links on phone. Empty farm: .ip-fsum__empty, the EmptyState sentence + next step. */
+ * .ip-fsum--touch: 48px targets for the links on phone, at least 44 wide (craft §5; "Telița" alone is 41, FY03).
+ * Empty farm: .ip-fsum__empty, the EmptyState sentence + next step. */
 :root{
   --ip-fs-heading:16px;--ip-lh-heading:22px; /* tokens.css .ip-t-heading, named for the farm name */
 }
@@ -381,7 +382,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-fsum__empty{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);margin:0;padding-top:var(--space-3);border-top:var(--ip-hair) solid var(--rule);color:var(--ink-secondary)}
 .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
 /* Touch (phone): both links reach the 48px touch height without moving the text. */
-.ip-fsum--touch .ip-fsum__name a,.ip-fsum--touch .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch);margin-block:calc((var(--ip-lh-heading) - var(--control-h-touch)) / 2)}
+.ip-fsum--touch .ip-fsum__name a,.ip-fsum--touch .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch);min-width:calc(var(--control-h-touch) - var(--space-1));margin-block:calc((var(--ip-lh-heading) - var(--control-h-touch)) / 2)}
 .ip-fsum--touch .ip-fsum__empty .ip-link{margin-block:calc((var(--ip-lh-small) - var(--control-h-touch)) / 2)}
 
 /* =====================================================================================================

@@ -1,5 +1,5 @@
 """S18S · Serii · state boards (spec B3; D107). Imports s18_build (which rewrites the 5 S18 boards, and through s17_build
-the S17/S14S/S2/S7 boards, byte-identical) and draws the S18 states on the same row (y 32688). Desktops first (a Setări
+the S17/S14S/S2/S7 boards, byte-identical) and draws the S18 states on the same row (y 32656). Desktops first (a Setări
 page, as S17): the new desktops follow the two S18 desktops; the S18 phones move right (x only, as S16S/S17S); the new
 phones follow them. Today = 16.11.2026 (D23/D24) unless the board is a replay of the real creation (07.10.2025, D73/D83).
 Boards

@@ -213,14 +213,11 @@ def v_sidebar():
         sb, k = __import__('re').subn(r'<a class="ip-nav" href="' + h + r'">.*?</a>', '', sb, count=1); assert k == 1
     assert sb.count('class="ip-nav') == 3 and '<b>Observator</b>' in sb
     return sb
-V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(cap='Stoc hrană'), A.farms_block()]
+V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(cap='Stoc hrană'), A.farms_block(phone)]
 VIEWER_P = A.phone(V_PARTS(True), viewer=True)
 VIEWER_D = f'<div class="ip-shell">{v_sidebar()}<main class="ip-shell__main">\n{A.desk_heads("".join(V_PARTS(False)))}\n</main></div>'  # FX02: desktop section heads
 for v in (VIEWER_P, VIEWER_D):
     assert not any(w in v for w in ('Înregistrează', 'Introdus azi', 'preț', 'lei', 'Completează', 'ip-entrykey', 'ip-unpriced', 'Dr. Ceban ·'))
-CSS_V = A.CSS_P + '''
-.ip-screen .ip-fsum__name a{display:inline-block;padding:var(--space-3) var(--space-1);margin:calc(-1 * var(--space-3)) calc(-1 * var(--space-1))} /* touch: 48px hit area, line unchanged */
-.ip-screen .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch)}'''
 
 # ---------- CSS ----------
 CSS_PS = A.CSS_P + SC.VIEW + SC.BANNER + SC.MODAL + '''
@@ -272,7 +269,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
         h = HEIGHTS.get(stem, 1024)
         s4.write(stem, title, body, H=h, css=CSS_DS)
         out.append((stem, title, h, 1440))
-V_OUT = [A.write_phone(f'{STEM0}--observator', f'{TITLE0} · observator · telefon', VIEWER_P, css=CSS_V)]
+V_OUT = [A.write_phone(f'{STEM0}--observator', f'{TITLE0} · observator · telefon', VIEWER_P)]  # FY03: phone farms are ip-fsum--touch, no screen copy
 h = HEIGHTS.get(f'{STEM0}--observator-desktop', 1024)
 s4.write(f'{STEM0}--observator-desktop', f'{TITLE0} · observator · desktop', VIEWER_D, H=h, css=A.CSS_D)
 V_OUT.append((f'{STEM0}--observator-desktop', f'{TITLE0} · observator · desktop', h, 1440))

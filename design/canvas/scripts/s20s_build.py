@@ -1,5 +1,5 @@
 """S20S · Ghiduri · state boards (spec B2; D76, D113, D114). Imports s20_build (which rewrites the 9 S20 boards, and through
-s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S20 states on the same row (y 35576).
+s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S20 states on the same row (y 35544).
 Desktops first (a Setări page, as S17S–S19S): the new desktops follow the eight S20 desktops; the S20 phone moves right
 (x only). Today = 16.11.2026 (D23/D24). Real: the guide figures (guide-growth.json, guide-laying.json), which cycles use
 each guide; guide names illustrative (D22). Every file, name or edit not in the extracts is a D39 example, said in the
