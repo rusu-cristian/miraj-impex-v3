@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 0d4458e
+Updated: 2026-11-18 · Last commit: bcba5b4
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 88 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN10; all SYS jobs done
+Done 89 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN11; all SYS jobs done
 
 ## Just finished
+- FIN10 Select: §53 `.ip-select` APG select-only combobox (phone → BottomSheet, aria-haspopup=dialog) replaces ip-series__btn, ip-sexrow__btn, s19-combo, s4-cycsel, S8 Secțiune; rule: options with state → combobox, plain name lists → native; S4 Ghid, S18 Ferma de creștere, S10 Fermă now comboboxes; ink-secondary chevron, phone 17px (D130, to review); 180 boards, canvas.json unchanged; 1 fix round (dup CSS, S8, S9 focus) (bcba5b4)
 - FIN09 formats: date+time "16.11.2026, 08:34" everywhere (EventRow meta too); thousands U+202F via n(); ranges en dash unspaced, start drops only a shared year ("10.11–16.11.2026"), current-week day windows and period tables may drop years (D129, to review); 65 boards, S14 telefon h 2725→2709; s17s/s18s must rerun before s17/s18 renders; 1 fix round (stale shots) (0d4458e)
 - FIN08 copy: prose "sapt. n" on S14/S18 (labels, Mono, formulas keep SAPT); S17 "Proprietar (tu)", "Mortalitate · H4.1"; S20 Toast "·"; FeedTotals (SYS02), S20 notes and SYS11 ♀/♂ → ip-sex spans; §29 `.ip-gimp__bn .ip-sex{line-height:1}`; `.s20-clip` position:relative; sys11_build finds the repo from its own path; 33 boards; D128; 1 fix round (f747170)
 - FIN07 Setări list pages: S22 "Adaugă utilizator" page-head secondary key, h2 "Utilizatori" + count, "Salvează utilizatorul", §42 skeleton (SYS12 SK changed, UserRow preview 2368); D127 add keys are verbs: S18 "Adaugă serie", S19 "Adaugă fermă", S21 "Adaugă tip" (panel titles stay nouns); 67 boards; passed first review (4c17efa)
@@ -71,7 +72,7 @@ Done 88 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN10 → FIN11 → … → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN11 → FIN12 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -132,6 +133,7 @@ Done 88 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - FIN07: S18 (10), S19 (19), S21 (14), S22 (24) boards; UserRow preview
 - FIN08: project/additions.css (§29) + 33 boards on S7, S14, S17, S18, S20 (+ all 23 S20 boards for the shared .s20-clip line); FeedTotals + GuideImportPreview previews
 - FIN09: 65 boards (S2, S3, S4/S4S/S4T, S7/S7S, S9, S10, S11, S13, S14/S14S, S16S, S17, S18, S20) + canvas.json (S14 telefon h)
+- FIN10: project/additions.css (§53) + 180 boards (every desktop board via the Sidebar series selector; S8, S9, S10, S16–S19)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
