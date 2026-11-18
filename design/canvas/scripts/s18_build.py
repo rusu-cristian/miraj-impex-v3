@@ -190,7 +190,7 @@ def crow(fid, cyc=None, start='', st=None, dedus=False):
            else f'din {num(dd(cyc["start_date"]))}')
     wk = num(cyc['weeks']) if end else num(f'SAPT {WK}')
     stt = lamp('off', 'închis') if end else lamp('ok', 'deschis')
-    return (f'<tr><th scope="row" class="ip-table__child"><a class="s18-rlink" href="{href}" aria-label="{f["name"]}, ciclul {"din " + dd(cyc["start_date"]) if not end else dd(cyc["start_date"]) + " – " + end}">{f["name"]}</a></th>'
+    return (f'<tr><th scope="row" class="ip-table__child"><a class="s18-rlink" href="{href}" aria-label="{f["name"]}, ciclul {"din " + dd(cyc["start_date"]) if not end else dd(cyc["start_date"]) + "–" + end}">{f["name"]}</a></th>'
             f'<td>{TYPE_RO[f["type"]]}</td><td>{GUIDE[cyc["guide_id"]]}</td><td>{per}</td><td class="num">{wk}</td><td>{start}</td><td>{stt}</td></tr>')
 START_T = f'<span class="s18-start">{ico("placement")}<span>populare</span>{pair(PLC["F"], PLC["M"])}</span>'
 START_H = f'<span class="s18-start">{ico("transfer")}<span>transfer de la Telița</span>{pair(ARR["F"], ARR["M"])}</span>'
@@ -333,7 +333,7 @@ def effect(state, day, name='', year='', rows=()):
                 f'<span>Alege secțiunile Teliței și scrie câte găini și cocoși intră în fiecare. Aici vezi seria nouă și ciclul nou de la Telița.</span></div></div>')
     if state == 'refuz':
         return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="sn-ref">{icon("alert", 16)}<div class="s7s-banner__body">'
-                f'<p class="s13-m0">Telița are încă {n(R39ALL).replace(NB, " ")} păsări din Seria 2026. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual.</p>'
+                f'<p class="s13-m0">Telița are încă {n(R39ALL)} păsări din Seria 2026. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual.</p>'
                 f'<p class="s13-m0 s9-fxsub">în viață la Telița pe {num(dd(TODAY))}: {pair(R39["F"], R39["M"])}</p>'
                 f'<ul class="s18-ways" aria-label="Ce poți face">'
                 f'<li><a class="ip-link" href="#/inregistreaza/transfer?din=telita">Mută păsările de la Telița</a></li>'

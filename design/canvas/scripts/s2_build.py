@@ -219,7 +219,7 @@ def stock(u='', cap='Zile de hrană'):
         return (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="{rid}"><div class="ip-readout__cap"><span id="{rid}">Hîrbovăț · {FTN[fid]}'
                 f'<span class="ip-sr">, pentru {word}</span></span><span class="ip-rlamp ip-rlamp--{st}">{"în normă" if st == "ok" else "abatere"}</span></div>'
                 f'<div class="ip-readout__val">{n(s["stock_kg"])}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(s["days_left"], 1)}<small> zile</small></dd></div>'
-                f'<div><dt>medie/zi {w0[8:10]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(s["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
+                f'<div><dt>medie/zi {dd(dt.date.fromisoformat(w0))[:5]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(s["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
                 f'<div><dt>se termină</dt><dd>{dd(dt.date.fromisoformat(s["run_out_date"]))}</dd></div></dl>{sub}</div></li>')
     tel = (f'<li><div class="ip-readout ip-readout--stock ip-readout--off" role="group" aria-labelledby="{u}sr-te"><div class="ip-readout__cap"><span id="{u}sr-te">Telița</span>'
            f'<span class="ip-rlamp ip-rlamp--off">oprit</span></div><div class="ip-readout__val">–</div><p class="ip-readout__sub s2-m0">fără ciclu deschis</p>'
@@ -227,7 +227,7 @@ def stock(u='', cap='Zile de hrană'):
     w0, w1 = B2['avg_window']
     return (f'<section class="s2-block" aria-labelledby="{u}st">{head(cap, f"stoc și zile rămase · {num(D)}", u + "st")}'
             f'<ul class="ip-readouts" aria-labelledby="{u}st">{ro("ft-breeder2", B2, "♀", "găini")}{ro("ft-cocosi", CO, "♂", "cocoși")}{tel}</ul>'
-            f'<p class="ip-note s2-m0">Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate ({num(w0[8:10] + "–" + dd(dt.date.fromisoformat(w1)))}); sub 5 zile = abatere.</p></section>')
+            f'<p class="ip-note s2-m0">Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate ({num(dd(dt.date.fromisoformat(w0))[:5] + "–" + dd(dt.date.fromisoformat(w1)))}); sub 5 zile = abatere.</p></section>')
 
 def unpriced():
     by = {}
@@ -317,7 +317,7 @@ def track(phone=False):
     leg = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
            f'<span class="ip-num">{dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}</span></span><span><i class="today"></i>azi</span>')
     lnk = '<a class="ip-link s2-lnk" href="#/serii/seria-2026">Deschide seria</a>'
-    note = f'{num("10.2025 – 12.2026")} · {num(2)} ferme · {num(2)} cicluri' + ('' if phone else f' · {lnk}')
+    note = f'{num("10.2025–12.2026")} · {num(2)} ferme · {num(2)} cicluri' + ('' if phone else f' · {lnk}')
     svgs = track_svg(358, phone=True) if phone else "".join(track_svg(tw) for tw in TWS)
     more = lnk.replace('s2-lnk', 's2-more') if phone else ''
     return (f'<section class="s2-block" aria-labelledby="tk">{head("Seria 2026 · cicluri pe ferme", note, "tk")}'

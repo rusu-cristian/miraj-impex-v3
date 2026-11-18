@@ -80,7 +80,7 @@ boards.append(('se-incarca', 'vet · se încarcă', 'p', pscreen([
 
 # 2 · vet · înainte de 12:00 (10:40, real sample): Lipsesc date empty, before-12:00 sentence; Acțiuni menu open on the
 # Hrană zilnică row (the first step to Șterge, board 4)
-E_AM = (f'Zilele <span class="ip-num">{dd(D7[0])}–{dd(D7[-1])}</span> sunt complete. Lipsurile de azi apar de la {num("12:00")}.')
+E_AM = (f'Zilele <span class="ip-num">{dd(D7[0])[:5]}–{dd(D7[-1])}</span> sunt complete. Lipsurile de azi apar de la {num("12:00")}.')
 boards.append(('inainte-de-12', 'vet · înainte de 12:00 · Acțiuni deschis', 'p', pscreen([
     PH(A.CTX_VET), A.missing(when=AM, empty=E_AM), A.entrykeys(), A.introdus(menu={'feed': 'open'})])))
 
@@ -151,7 +151,7 @@ w0, w1 = B2['avg_window']
 ro_neg = (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="sr-ft-breeder2"><div class="ip-readout__cap"><span id="sr-ft-breeder2">Hîrbovăț · Breeder 2'
           f'<span class="ip-sr">, pentru găini</span></span><span class="ip-rlamp ip-rlamp--warn">abatere</span></div>'
           f'<div class="ip-readout__val">{n(NEG)}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(0, 1)}<small> zile</small></dd></div>'
-          f'<div><dt>medie/zi {w0[8:10]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(B2["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
+          f'<div><dt>medie/zi {dd(dt.date.fromisoformat(w0))[:5]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(B2["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
           f'<div><dt>epuizat pe</dt><dd>{D}</dd></div></dl><p class="ip-readout__sub s2-m0">stoc sub 0 · verifică livrările</p></div></li>')
 assert st.count(ro_b2) == 1
 boards.append(('manager-desktop--zi-trecuta-stoc-sub-0', 'manager · desktop · zi trecută lipsă · stoc sub 0 · exemplu de stare (D39)', 'm', A.desktop('Manager', [

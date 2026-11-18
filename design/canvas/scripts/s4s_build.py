@@ -261,7 +261,7 @@ LEGEND = legend()
 def opt26(selected):
     return f'''<li class="ip-menu__item ip-series__opt{" is-active" if selected else ""}" role="option" id="cyc-2026" aria-selected="{"true" if selected else "false"}"><span class="chk">{icon('check', 16) if selected else ""}</span><span class="txt"><span class="top"><b>Seria 2026 · ouat</b>{lamp('ok', 'deschis')}</span><span class="ip-num">din 10.02.2026 · SAPT {WK}</span></span></li>'''
 def opt25(selected):
-    return f'''<li class="ip-menu__item ip-series__opt{" is-active" if selected else ""}" role="option" id="cyc-2025" aria-selected="{"true" if selected else "false"}"><span class="chk">{icon('check', 16) if selected else ""}</span><span class="txt"><span class="top"><b>Seria 2025 · ouat</b>{lamp('off', 'închis')}</span><span class="ip-num">07.03.2025 – {ddate(PREV_END)} · {PREV_WEEKS} săpt.</span></span></li>'''
+    return f'''<li class="ip-menu__item ip-series__opt{" is-active" if selected else ""}" role="option" id="cyc-2025" aria-selected="{"true" if selected else "false"}"><span class="chk">{icon('check', 16) if selected else ""}</span><span class="txt"><span class="top"><b>Seria 2025 · ouat</b>{lamp('off', 'închis')}</span><span class="ip-num">07.03.2025–{ddate(PREV_END)} · {PREV_WEEKS} săpt.</span></span></li>'''
 GRP = '<li class="ip-menu__group" role="presentation">Cicluri la Hîrbovăț</li>'
 CYC_ITEMS = GRP + opt26(True) + opt25(False)
 def hidden_list(items):  # collapsed combobox: its listbox exists (aria-controls) but is hidden, as the sidebar series selector
@@ -272,7 +272,7 @@ def combo(text, lmp, opened=False, active=''):
 def cycle(mode='default'):
     if mode == 'empty':  # D51: no open cycle; Seria 2025 only as an option and in the hint; no block current on the track
         sel = combo('Niciun ciclu deschis', lamp('off', 'goală'))
-        hint = f'<span class="ip-hint">ultimul ciclu · Seria 2025 · 07.03.2025 – {ddate(PREV_END)}</span>'
+        hint = f'<span class="ip-hint">ultimul ciclu · Seria 2025 · 07.03.2025–{ddate(PREV_END)}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
 <div class="ip-field s4s-anchor"><span class="ip-label" id="cyc-lbl">Ciclu</span>{sel}{hint}{hidden_list(GRP + opt25(False))}</div>
 <div class="ip-stack s4-tight">{track('2026-01-30', sel=None, dom=DOM_EMPTY)}{legend(xfer=False)}</div>
@@ -354,13 +354,13 @@ def readout(ng=False):
     if ng:
         rows = [(w, pct(lay_all[w]['lay_pct']), '– fără ghid') for w in aweeks]
         rl = '<span class="ip-rlamp ip-rlamp--off">FĂRĂ GHID</span>'
-        sub = 'ciclul nu are ghid, nu se compară · 10–16.11.2026'
+        sub = 'ciclul nu are ghid, nu se compară · 10.11–16.11.2026'
         read = f'SAPT {WK} · efectiv {pct(a40)} · ghid – fără ghid'
         leg = chart_legend([('act', 'efectiv')], 'axa: săpt. ciclului')
     else:
         rows = [(w, pct(lay_all[w]['lay_pct']), pct(gv[w]) if w in gv else '– fără date în ghid') for w in aweeks]
         rl = '<span class="ip-rlamp ip-rlamp--ok">ÎN NORMĂ</span>'
-        sub = f'ghid {pct(gv[WK])} · {sgn(dev)} pct · 10–16.11.2026'
+        sub = f'ghid {pct(gv[WK])} · {sgn(dev)} pct · 10.11–16.11.2026'
         read = f'SAPT {WK} · efectiv {pct(a40)} · ghid {pct(gv[WK])} · {sgn(dev)} pct'
         leg = chart_legend([('act', 'efectiv'), ('guide', 'ghid'), ('band', '±3 pct')], 'axa: săpt. ciclului')  # = Producție
     return f'''<div class="ip-readout s4-readout">
@@ -488,15 +488,15 @@ assert (D15, D16) == ({'F': 7, 'M': 2}, {'F': 8, 'M': 1})
 def ev(k, title, meta, status=''):
     return f'<a class="ip-ev" href="#inregistrare">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{status}</a>'
 events = [
- ev('weighing', f'Cântărire · 6 secțiuni · {pair(n(w_f), n(w_m), " g")}', f'16.11.2026 · 10:10 · SAPT {WK} · Dr. Ceban'),
- ev('feed', f'Hrană zilnică · 10 din 12 rânduri · <span class="ip-num">3{NB}691 kg</span>', f'16.11.2026 · 09:47 · SAPT {WK} · Dr. Ceban', lamp('warn', 'lipsă 2')),
- ev('eggs', f'Ouă · H1, H3, H4 · <span class="ip-num">18{NB}688</span> ouă', f'16.11.2026 · 08:35 · SAPT {WK} · Dr. Ceban'),
- ev('mortality', f'Mortalitate · 6 secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}', f'16.11.2026 · 08:34 · SAPT {WK} · Dr. Ceban'),
- ev('mortality', f'Corecție mortalitate · H4.1 · {F} · <span class="ip-num">14.11</span> · {hen_v(n(-3))} → {hen_v(n(-5))}', f'15.11.2026 · 10:12 · SAPT {WK} · Ion Rusu', '<span class="ip-tag ip-tag--neutral">corectat</span>'),
- ev('feed', f'Hrană zilnică · 12 din 12 rânduri · <span class="ip-num">4{NB}393 kg</span>', f'15.11.2026 · 09:47 · SAPT {WK} · Dr. Ceban'),
- ev('eggs', f'Ouă · H1, H3, H4 · <span class="ip-num">18{NB}679</span> ouă', f'15.11.2026 · 08:21 · SAPT {WK} · Dr. Ceban'),
- ev('cull', f'Sacrificare · H3.1 · {roo(n(-2))} · boală', f'15.11.2026 · 08:20 · SAPT {WK} · Dr. Ceban'),
- ev('mortality', f'Mortalitate · 6 secțiuni · {hen(n(-D15["F"]))} · {roo(n(-D15["M"]))}', f'15.11.2026 · 08:20 · SAPT {WK} · Dr. Ceban'),
+ ev('weighing', f'Cântărire · 6 secțiuni · {pair(n(w_f), n(w_m), " g")}', f'16.11.2026, 10:10 · SAPT {WK} · Dr. Ceban'),
+ ev('feed', f'Hrană zilnică · 10 din 12 rânduri · <span class="ip-num">3{NB}691 kg</span>', f'16.11.2026, 09:47 · SAPT {WK} · Dr. Ceban', lamp('warn', 'lipsă 2')),
+ ev('eggs', f'Ouă · H1, H3, H4 · <span class="ip-num">18{NB}688</span> ouă', f'16.11.2026, 08:35 · SAPT {WK} · Dr. Ceban'),
+ ev('mortality', f'Mortalitate · 6 secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}', f'16.11.2026, 08:34 · SAPT {WK} · Dr. Ceban'),
+ ev('mortality', f'Corecție mortalitate · H4.1 · {F} · <span class="ip-num">14.11</span> · {hen_v(n(-3))} → {hen_v(n(-5))}', f'15.11.2026, 10:12 · SAPT {WK} · Ion Rusu', '<span class="ip-tag ip-tag--neutral">corectat</span>'),
+ ev('feed', f'Hrană zilnică · 12 din 12 rânduri · <span class="ip-num">4{NB}393 kg</span>', f'15.11.2026, 09:47 · SAPT {WK} · Dr. Ceban'),
+ ev('eggs', f'Ouă · H1, H3, H4 · <span class="ip-num">18{NB}679</span> ouă', f'15.11.2026, 08:21 · SAPT {WK} · Dr. Ceban'),
+ ev('cull', f'Sacrificare · H3.1 · {roo(n(-2))} · boală', f'15.11.2026, 08:20 · SAPT {WK} · Dr. Ceban'),
+ ev('mortality', f'Mortalitate · 6 secțiuni · {hen(n(-D15["F"]))} · {roo(n(-D15["M"]))}', f'15.11.2026, 08:20 · SAPT {WK} · Dr. Ceban'),
 ]
 for at in ['2026-11-16T10:10', '2026-11-16T09:47', '2026-11-16T08:35', '2026-11-16T08:34', '2026-11-15T10:12', '2026-11-15T09:47', '2026-11-15T08:21', '2026-11-15T08:20']:
     assert any(e['at'] == at for e in S['event_log']), at
@@ -543,7 +543,7 @@ for k in ('daily', 'eggs_daily', 'weighings', 'deliveries', 'culls', 'sexing_err
 def panel_period():
     step = f'<button type="button" class="ip-btn ip-btn--secondary">Alege ciclul curent</button>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
-{empty_box("fără date", [f"Ciclul Seria 2026 nu are înregistrări între 01.11.2025 și 15.11.2025; a început pe {ddate(c26['start_date'])}."], step, "Rezumat, interval 01.11.2025 – 15.11.2025")}
+{empty_box("fără date", [f"Ciclul Seria 2026 nu are înregistrări între 01.11.2025 și 15.11.2025; a început pe {ddate(c26['start_date'])}."], step, "Rezumat, interval 01.11–15.11.2025")}
 </div>'''
 
 # ---------- 3. no guide ----------
@@ -624,7 +624,7 @@ def stats_past():
     jos = PT['floor_eggs'] / PT['total_eggs'] * 100
     w5 = pall[PWEEKS[0]]['avg_egg_weight_g']; wf = fin['avg_egg_weight_g']
     return guides(f'''<div class="ip-stats s4-stats">
-<div class="ip-stat">{cap('eggs', 'Ouă în ciclu')}<span class="ip-stat__val">{n(PT['total_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{ddate(c25['data_start_date'])} – {ddate(PREV_END)} · {PDAYS} zile</span></div>
+<div class="ip-stat">{cap('eggs', 'Ouă în ciclu')}<span class="ip-stat__val">{n(PT['total_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{ddate(c25['data_start_date'])}–{ddate(PREV_END)} · {PDAYS} zile</span></div>
 <div class="ip-stat">{cap('eggs', 'Incubabile')}<span class="ip-stat__val">{n(inc,1)}<small>%</small></span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{n(PT['hatching_eggs'])} din {n(PT['total_eggs'])} ouă</span></div>
 <div class="ip-stat">{cap('eggs', f'Masă medie ou · SAPT {PFIN}')}<span class="ip-stat__val">{n(wf,1)}<small>g</small></span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">SAPT {PWEEKS[0]}: {n(w5,1)} g</span></div>
 <div class="ip-stat">{cap('eggs', 'Ouă jos')}<span class="ip-stat__val">{n(PT['floor_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide">nu intră în total · <span class="ip-num">{pct(jos)}</span> din total</span></div>
@@ -653,7 +653,7 @@ def panel_past():
     none = f'<div class="ip-list"><div class="ip-empty s4s-none">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></div></div>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 <section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori, Seria 2025</h2>{readout_past()}{stats_past()}</section>
-<section class="s4-block" aria-labelledby="h-sec"><div class="s4-head"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])} – {ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
+<section class="s4-block" aria-labelledby="h-sec"><div class="s4-head"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
 <div class="s4-split">
 <section class="s4-block" aria-labelledby="h-chk"><div class="s4-head"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
 <section class="s4-block" aria-labelledby="h-log"><div class="s4-head"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events_past())}</div><p class="ip-note s4s-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>

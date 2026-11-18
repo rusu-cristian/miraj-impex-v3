@@ -229,7 +229,7 @@ DLG = f'''
 <div class="ip-scrim ip-scrim--phone"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note dlg-fx">
 <h2 id="dlg-t">Înregistrează vânzarea și închide ciclul la Hîrbovăț</h2>
 <p class="ip-dialog__note" id="dlg-note">Vinzi toate păsările din Hîrbovăț pe {num(dd(DT))}: {pair(*TOT)}. Ferma ajunge la 0 păsări și ciclul ei se închide.</p>
-<div class="ip-effect s13-effect" id="dlg-fx">{rec("sale", 16)}<div class="s9-fxbody"><span class="s9-fxcyc">{cmark("end", "sale", CLOSE)}<span class="s9-fxsub">Seria 2026 · {num(dd(HSTART))} – {num(dd(DT))}</span></span></div></div>
+<div class="ip-effect s13-effect" id="dlg-fx">{rec("sale", 16)}<div class="s9-fxbody"><span class="s9-fxcyc">{cmark("end", "sale", CLOSE)}<span class="s9-fxsub">Seria 2026 · {num(dd(HSTART)[:5] if HSTART.year == DT.year else dd(HSTART))}–{num(dd(DT))}</span></span></div></div>
 <div class="ip-dialog__keys ip-dialog__keys--stack"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Înregistrează vânzarea</button></div>
 </div></div>'''
 boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (D39)', screen(FORM(), B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end', modal=DLG), 'vp'))

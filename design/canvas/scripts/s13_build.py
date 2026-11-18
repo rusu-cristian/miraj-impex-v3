@@ -90,7 +90,7 @@ def effect(before, after, avg=None, days=None, when='acum'):
         aft = '<span>după livrare: <span class="ip-num">–</span>, scrie cantitatea</span>'
     else:
         aft = f'<span>după livrare: <b class="s13-strong">{kgs(after)}</b></span>'
-    sub = f'<span class="s13-effsub">ajunge <span class="ip-num">{n(days, 1)}</span> zile la media <span class="ip-num s13-nw">{win[0].strftime("%d")}–{win[-1].strftime("%d.%m")}</span> (<span class="ip-num s13-nw">{n(avg)}{NB}kg/zi</span>)</span>' if days else ''
+    sub = f'<span class="s13-effsub">ajunge <span class="ip-num">{n(days, 1)}</span> zile la media <span class="ip-num s13-nw">{win[0].strftime("%d.%m")}–{win[-1].strftime("%d.%m")}</span> (<span class="ip-num s13-nw">{n(avg)}{NB}kg/zi</span>)</span>' if days else ''
     return f'''<div class="ip-effect s13-effect" id="f-stock">{rec("delivery", 16)}<div class="s13-effbody"><span>Stoc {FTN[FT]} la Hîrbovăț {when}: {kgs(before)}</span>{aft}{sub}</div></div>'''
 
 def note(ro=False):

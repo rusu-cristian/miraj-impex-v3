@@ -137,7 +137,7 @@ w0, w1 = STK[HB_TYPES[0]]['avg_window']
 avg = ', '.join(f'{FTN[t]}: <span class="ip-num">{n(STK[t]["avg_daily_kg_last3"])}</span> kg/zi' for t in HB_TYPES)
 FTOT = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap s7-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
 {"".join(f["html"] for f in FTR)}
-<p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
+<p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d.%m")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
 
 # ---------- save bar (compact FeedTotals summary; lamp word "abatere" per D42/D50, detail names type + days) ----------
 # One SaveBar shell for the default and the state boards (s7s_build.py imports savebar/sum_rows). Two lines at 390 (S7P):

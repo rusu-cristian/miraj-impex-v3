@@ -161,8 +161,8 @@ def th_head(ng=False):
               f'<th scope="col" class="num">Ouă</th><th scope="col" class="num">%</th>{sx("F")}{sx("M")}<th scope="col" class="num">Efectiv</th><th scope="col" class="num">Ghid</th></tr>')
     return f'<thead>{h1}{h2}</thead>'
 
-def span(d0, d1):  # "10–16.11" in one month, "27.10–02.11" across months (year in the section note)
-    return f'{d0[8:]}–{ddm(d1)}' if d0[5:7] == d1[5:7] else f'{ddm(d0)}–{ddm(d1)}'
+def span(d0, d1):  # "10.11–16.11", "27.10–02.11" (year in the section note; FIN09 range form)
+    return f'{ddm(d0)}–{ddm(d1)}'
 def mortc(v, sx): return f'<td class="num {t4.SXC[sx]}">{n(-v) if v else "0"}</td>'
 def cells(k, w, ng=False):
     e = EW[(k, w)]; x = HW[(k, w)]
@@ -186,7 +186,7 @@ def tb_weeks(ng=False):
         body += '</tbody>'
     cap = f'Producție Hîrbovăț pe săptămâni și hale, SAPT {SHOW[-1]}–{WK}' + ('' if ng else ', față de ghid')
     t = t4.tbox(cap, th_head(ng) + body)
-    note = (f'Hîrbovăț · {num(f"SAPT {SHOW[-1]}–{WK}")} ({num(ddate(EW[("all", SHOW[-1])]["from"]) + " – " + ddate(TODAY))}) din {num(f"SAPT {WEEKS_ALL[0]}–{WK}")} · cele mai noi întâi · '
+    note = (f'Hîrbovăț · {num(f"SAPT {SHOW[-1]}–{WK}")} ({num(ddm(EW[("all", SHOW[-1])]["from"]) + "–" + ddate(TODAY))}) din {num(f"SAPT {WEEKS_ALL[0]}–{WK}")} · cele mai noi întâi · '
             + ('ciclul nu are ghid, nu se compară' if ng else f'ghid Ross 308 ouat · toleranță ouat {num("±3 pct")}'))
     fnote = (f'Rândul săptămânii = ferma; halele dedesubt (ouăle se înregistrează pe hală). {num(f"Sapt. {WK}")} include azi, {num(ddate(TODAY))}. Găini = în viață la sfârșitul săptămânii. '
              f'Ouat = ouă (Cat.\u00a01–\u20603 + incubabile, fără ouăle de jos) ÷ găini la începutul zilei. Mortalitate = morți; sacrificările sunt în Fermă › Păsări. '
@@ -297,7 +297,7 @@ def page_empty():
     lines = ['Nicio înregistrare de producție (ouă, mortalitate, hrană) la Hîrbovăț între <span class="ip-num">10.02.2026</span> și <span class="ip-num">28.02.2026</span>.',
              f'Găinile au sosit prin transfer pe <span class="ip-num">{ddm(arr[0])}–{ddate(arr[-1])}</span>; primele înregistrări zilnice sunt din <span class="ip-num">01.03.2026</span> (sapt. 3).']
     step = '<button type="button" class="ip-btn ip-btn--secondary">Alege ciclul curent</button>'
-    return f'<div class="s14-page">{s4.empty_box("fără date", lines, step, "Producție, interval 10.02.2026 – 28.02.2026")}</div>'
+    return f'<div class="s14-page">{s4.empty_box("fără date", lines, step, "Producție, interval 10.02–28.02.2026")}</div>'
 
 def page(mode='default'):
     hmode = {'noguide': 'noguide', 'past': 'past'}.get(mode, 'default')

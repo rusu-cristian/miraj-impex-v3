@@ -189,7 +189,7 @@ def dcounts_refuz():  # the phone message names 14.11 and 4 124; on 16.11 the li
     return h
 # fix 1: the days with the first low figure as one range (14–15.11.2026: −6), then today (−8)
 DRUN = [d for d in DLOWN if DLOW[d] == DLOW[DLOWN[0]] and d != DDAY]; assert DRUN == ['2026-11-14', '2026-11-15'] and DLOW[DDAY] == -8
-DSPAN = dd(DRUN[0])[:2] + '–' + dd(DRUN[-1]) if len(DRUN) > 1 else dd(DRUN[0])
+DSPAN = dd(DRUN[0])[:5] + '–' + dd(DRUN[-1]) if len(DRUN) > 1 else dd(DRUN[0])
 DREFUZ = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s13-m0">'
           f'Corecția ar lăsa {SEC} cu {hen_v(n(DLOW[DLOWN[0]]))} găini pe {num(DSPAN)} și cu {hen_v(n(min(DLOW.values())))} azi, {num(dd(DDAY))}. '
           f'Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
@@ -224,7 +224,7 @@ assert T2.s4.DROPQ == NEW and T2.s4.alive[(SEC, 'F')] == DDEL[DDAY] == 4122
 FT = sum(v for (sec, sx), v in s4.alive.items() if sx == 'F'); assert (FT, T2.tot['F']) == (25252, 25252 + NEW)
 T2.EVID[0] = 0
 PGD = T2.page('pasari', T2.panel_pasari())
-assert 'din 1097' in PGD and '#istoric-H4.1-14.11' not in PGD and hen(n(FT + NEW)) in PGD and hen(n(FT)) not in PGD
+assert f'din {n(1097)}' in PGD and '#istoric-H4.1-14.11' not in PGD and hen(n(FT + NEW)) in PGD and hen(n(FT)) not in PGD
 # focus after the deletion (S16P): the deleted row's key is gone, so focus goes to Corectează of the row now in its place
 # (Mortalitate H4.2 · 14.11.2026); the Toast (role=status) announces the deletion and its Anulează stays in the tab order
 _key = re.search(r'<a class="ip-btn ip-btn--ghost" href="#corecteaza-ev\d+">Corectează<span class="ip-sr"> Mortalitate H4\.2, 14\.11\.2026</span></a>', PGD)

@@ -189,7 +189,7 @@ def used_block(g, name, cyc):
             st, wk = lamp('ok', 'deschis'), f'SAPT {WK}'
         else:
             st, wk = lamp('off', 'închis'), f'{c["weeks"]} săpt.'
-        rows += (f'<tr><th scope="row"><a class="ip-link s20-flink" href="#ferma-{c["farm_id"]}">{f}</a></th><td>{SER[c["series_id"]]}</td><td class="ip-num"><span class="s19-nw">{a} – {b}</span>{ded}</td>'
+        rows += (f'<tr><th scope="row"><a class="ip-link s20-flink" href="#ferma-{c["farm_id"]}">{f}</a></th><td>{SER[c["series_id"]]}</td><td class="ip-num"><span class="s19-nw">{a}–{b}</span>{ded}</td>'
                  f'<td class="num">{wk}</td><td>{st}</td></tr>')
     tb = (f'<table class="ip-table ip-table--rowheads s20-table"><caption class="ip-sr">Ciclurile care folosesc {name}</caption>'
           '<thead><tr><th scope="col">Fermă</th><th scope="col">Serie</th><th scope="col">Perioada</th><th scope="col" class="num">Săptămâni</th>'

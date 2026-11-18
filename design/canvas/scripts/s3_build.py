@@ -134,11 +134,11 @@ def track(mode='default'):
                f'<span class="ip-num">{ddate(X0D)[:5]}–{ddate(X1D)}</span></span><span><i class="today"></i>azi</span>')
     legend = f'<div class="ip-tracklegend" aria-hidden="true">{leg}</div>'
     if mode == 'closed':
-        sub = f'<span class="ip-note ip-num">02.2025 – 02.2026 · 2 ferme · 1 ciclu</span>'
+        sub = f'<span class="ip-note ip-num">02.2025–02.2026 · 2 ferme · 1 ciclu</span>'
     elif mode == 'viewer':
         sub = '<span class="ip-note">doar fermele tale · Telița: nu ai acces</span>'
     else:
-        sub = f'<span class="ip-note ip-num">10.2025 – 12.2026 · 2 ferme · 2 cicluri</span>'
+        sub = f'<span class="ip-note ip-num">10.2025–12.2026 · 2 ferme · 2 cicluri</span>'
     return f'''<section class="s4-block" aria-labelledby="h-track">
 <div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>
 <div class="s4-tight"><div class="s3-trackbox">{svgs}</div>{legend}</div>
@@ -236,7 +236,7 @@ def fs_telita():
                   lamp('ok', 'în normă'))
             + fig('transfer', 'Transferate', pair(n(ARR['F']), n(ARR['M'])), f'<span>sosite la Hîrbovăț ·</span><span class="ip-num">{ddate(X0D)[:5]}–{ddate(X1D)}</span>'))
     return f'''<article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-telita" aria-describedby="fs-telita-c">{fs_head('telita', 'Telița', '#/ferme/telita?ciclu=cyc-telita-2026', lamp('off', 'închis'))}
-<p class="ip-fsum__cycle" id="fs-telita-c">{ddate(cT['start_date'])} – {ddate(cT['end_date'])} · {cT['weeks']} săpt.</p>
+<p class="ip-fsum__cycle" id="fs-telita-c">{ddate(cT['start_date'])}–{ddate(cT['end_date'])} · {cT['weeks']} săpt.</p>
 <div class="ip-fsum__alive"><span class="ip-cap">Populat · {ddate(PL['meta']['date'])}</span><div><span class="ip-pair ip-pair--lg"><span class="ip-sex ip-sex--hen">♀ <b>{n(PLC['F'])}</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>{n(PLC['M'])}</b></span></span><span class="ip-note">total {n(PLC['F'] + PLC['M'])}</span></div></div>
 <dl class="ip-fsum__figs">{figs}</dl></article>'''
 def fs_hirbovat():
@@ -257,13 +257,13 @@ def fs_empty(fid, name, href, word, lines, step, tags=True):
 <div class="ip-fsum__empty" id="fs-{fid}-c">{body}{step}</div></article>'''
 def fs_prev():  # Hîrbovăț · Seria 2025 (real previous flock; no flock count, no guide for these figures)
     PT = s4.PT; inc = PT['hatching_eggs'] / PT['total_eggs'] * 100; fin = s4.fin
-    figs = (fig('eggs', 'Ouă în ciclu', n(PT['total_eggs']), f'<span class="ip-num">{ddate(cP["data_start_date"])} – {ddate(cP["end_date"])} · {s4.PDAYS} zile ·</span><span>{GN}</span>')
+    figs = (fig('eggs', 'Ouă în ciclu', n(PT['total_eggs']), f'<span class="ip-num">{ddate(cP["data_start_date"])}–{ddate(cP["end_date"])} · {s4.PDAYS} zile ·</span><span>{GN}</span>')
             + fig('eggs', 'Incubabile', f'{n(inc, 1)}{P}', f'<span class="ip-num">{n(PT["hatching_eggs"])} din {n(PT["total_eggs"])} ouă ·</span><span>{GN}</span>')
             + fig('mortality', 'Mortalitate cumulată', pair(n(s4.PMORT['F']), n(s4.PMORT['M'])),
                   f'<span>% – {s4.NOFLOCK} ·</span><span>fără golirea din <span class="ip-num">{ddate(s4.PDEP)}</span></span>')
             + fig('eggs', f'Masă medie ou · SAPT {s4.PFIN}', f'{n(fin["avg_egg_weight_g"], 1)}<small>g</small>', GN))
     return f'''<article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-hirbovat" aria-describedby="fs-hirbovat-c">{fs_head('hirbovat', 'Hîrbovăț', '#/ferme/hirbovat?ciclu=cyc-hirbovat-2025', lamp('off', 'închis'))}
-<p class="ip-fsum__cycle" id="fs-hirbovat-c">{ddate(cP['start_date'])} – {ddate(cP['end_date'])} · {cP['weeks']} săpt. · început dedus</p>
+<p class="ip-fsum__cycle" id="fs-hirbovat-c">{ddate(cP['start_date'])}–{ddate(cP['end_date'])} · {cP['weeks']} săpt. · început dedus</p>
 <div class="ip-fsum__alive"><span class="ip-cap">Populat · început dedus {ddate(cP['start_date'])}</span><div><span class="ip-pair ip-pair--lg"><b>–</b></span><span class="ip-note">{s4.NOFLOCK}</span></div></div>
 <dl class="ip-fsum__figs">{figs}</dl></article>'''
 NOACC = ['Nu ai acces la această fermă.', 'Cere acces proprietarului.']

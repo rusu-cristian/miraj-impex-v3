@@ -213,8 +213,8 @@ def tb_pasari():
     assert (round(fget('mortality_pct', 'F'), 2), round(fget('mortality_pct', 'M'), 2)) == ((5.54, 11.93) if not DROP else tuple(CL['farms'][0]['cycle']['mortality_pct'][x] for x in 'FM'))
     assert (fget('alive', 'F'), fget('alive', 'M')) == (tot['F'], tot['M'])
     body += f'<tbody><tr class="is-total"><th scope="row">Total fermă</th>{cells(fget)}</tr></tbody>'
-    t = tbox(f'Păsări pe secțiuni, Hîrbovăț, ciclul Seria 2026, 10.02.2026 – 16.11.2026', f'<thead>{h1}{h2}</thead>{body}')
-    return block('h-psec', 'Pe secțiuni', f'ciclul curent · {num("10.02.2026 – 16.11.2026")} · SAPT {WK}', t
+    t = tbox(f'Păsări pe secțiuni, Hîrbovăț, ciclul Seria 2026, 10.02–16.11.2026', f'<thead>{h1}{h2}</thead>{body}')
+    return block('h-psec', 'Pe secțiuni', f'ciclul curent · {num("10.02–16.11.2026")} · SAPT {WK}', t
                  + foot(f'Mortalitate % din sosire. Fără vânzări în ciclu. Cifrele includ corecția din {num("15.11.2026")} (H4.1 {num("14.11")}: {hen(n(AUD["old_values"]["qty"]))} → {s4.hen_v(n(AUD["new_values"]["qty"]))}).'
                         if not DROP else f'Mortalitate % din sosire. Fără vânzări în ciclu. Cifrele nu mai includ rândul șters azi (H4.1 {num("14.11")}: {hen(n(-s4.DROPQ))}).'))
 
@@ -308,12 +308,12 @@ def log_rows():
             if (d, sec) == ('2026-11-14', 'H4.1'):
                 mod = (f'<span class="ip-ev__mod"><span class="ip-tag ip-tag--neutral">corectat</span><span>{hen(n(AUD["old_values"]["qty"]))} → {s4.hen_v(n(AUD["new_values"]["qty"]))}</span>'
                        f'<a class="ip-link" href="#istoric-H4.1-14.11">modificat de {AUD["user"]} · <span class="ip-num">{ddate(AUD["at"][:10])}, {AUD["at"][11:]}</span><span class="ip-sr">, vezi istoricul</span></a></span>')
-            out.append(evrow(tile('mortality'), f'Mortalitate · {sec} · {mortf(f, m)}', f'<span class="ip-num">{ddate(d)} · {t} · SAPT {cw(d)}</span> · {SAVE[d]["user"]}',
+            out.append(evrow(tile('mortality'), f'Mortalitate · {sec} · {mortf(f, m)}', f'<span class="ip-num">{ddate(d)}, {t} · SAPT {cw(d)}</span> · {SAVE[d]["user"]}',
                              f'Mortalitate {sec}, {ddate(d)}', mod))
         elif p[0] == 'cull':
             c = p[1]; at = next(e['at'] for e in S['event_log'] if e['record'] == 'cull' and e['at'][:10] == c['date'])
             fig = hen(n(-c['qty'])) if c['sex'] == 'F' else roo(n(-c['qty']))
-            out.append(evrow(tile('cull'), f'Sacrificare · {c["section"]} · {fig} · {c["reason"]}', f'<span class="ip-num">{ddate(c["date"])} · {at[11:]} · SAPT {cw(c["date"])}</span> · {c["created_by"]}',
+            out.append(evrow(tile('cull'), f'Sacrificare · {c["section"]} · {fig} · {c["reason"]}', f'<span class="ip-num">{ddate(c["date"])}, {at[11:]} · SAPT {cw(c["date"])}</span> · {c["created_by"]}',
                              f'Sacrificare {c["section"]}, {ddate(c["date"])}'))
         else: raise AssertionError(p)  # page 1 holds only Zilnic records (14–16.11)
     assert len(out) == PAGE and ('#istoric-H4.1-14.11' in ''.join(out)) == (not DROP)
@@ -341,7 +341,7 @@ def panel_pasari():
     pages = -(-len(recs) // PAGE); last = recs[PAGE - 1][0]
     left = block('h-jurnal', 'Jurnal păsări', 'un rând pe secțiune și zi · cele mai noi',
                  f'<ul class="ip-list ip-list--act" aria-label="Jurnal păsări Hîrbovăț, pagina 1 din {pages}">{"".join(lg)}</ul>'
-                 + foot(f'<span class="ip-num">1–{PAGE} din {len(recs)} · {ddm(last)}–{ddate(TODAY)} · pagina 1 din {pages}</span> · secțiile fără morți în ziua respectivă nu au rând',
+                 + foot(f'<span class="ip-num">1–{PAGE} din {n(len(recs))} · {ddm(last)}–{ddate(TODAY)} · pagina 1 din {pages}</span> · secțiile fără morți în ziua respectivă nu au rând',
                         ('Mai vechi', '#jurnal-pagina-2')))
     right = block('h-misc', 'Transferuri, erori de sexare, cicluri', 'tot ciclul · fără vânzări',
                   f'<ul class="ip-list ip-list--act" aria-label="Transferuri, erori de sexare și cicluri, Hîrbovăț, ciclul curent">{"".join(mv)}</ul>'
@@ -385,7 +385,7 @@ def ro_hrana():
     lbl = f'Consum de hrană pe zi, pe tip de hrană, Hîrbovăț Seria 2026, SAPT 3–{WK}: Breeder 2 pentru găini, Cocoși pentru cocoși'
     ch = gchart('kgzi', lbl, WK, [{'cls': 'act', 'pts': kF}, {'cls': 's2', 'pt': 'pt2', 'pts': kM}], 0, 6000, [0, 2000, 4000, 6000], lambda t: n(t), x0=44)
     return readout('kgzi', f'HRANĂ KG/ZI · BREEDER 2 ♀ · COCOȘI ♂ · SAPT {WK}', 'ok' if feed_ok else 'warn', rpair(n(kF[WK]), n(kM[WK]), 'kg/zi'),
-                   f'față de ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}% · {FEED_WK[0][8:]}–{ddate(FEED_WK[-1])} · fără {ddm(TODAY)}',
+                   f'față de ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}% · {ddm(FEED_WK[0])}–{ddate(FEED_WK[-1])} · fără {ddm(TODAY)}',
                    ch, f'SAPT {WK} · ♀ {n(kF[WK])} · ♂ {n(kM[WK])} kg/zi · ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}%',
                    ['SAPT', 'Breeder 2 ♀, kg/zi', 'Cocoși ♂, kg/zi'], rows, f'Consum mediu pe zi al săptămânii, pe tip de hrană; înregistrări din 01.03.2026 (SAPT 3); SAPT {WK} = {ddm(FEED_WK[0])}–{ddate(FEED_WK[-1])}, fără {ddate(TODAY)} (incomplet)',
                    legend([('act', f'{HB} Breeder 2'), ('s2', f'{RB} Cocoși')], f'SAPT {WK} fără {ddm(TODAY)}, incomplet'))
@@ -472,7 +472,7 @@ def st_greutate():
     cF, cM = sfarm(WK, 'F', 'cv_pct'), sfarm(WK, 'M', 'cv_pct')
     nF = sum(r['sample_size'] for r in WG[WK] if r['sex'] == 'F'); nM = sum(r['sample_size'] for r in WG[WK] if r['sex'] == 'M')
     return stats(
-        stat('weighing', f'Greutate {F} / {M}', f'{pair(n(wF[WK]), n(wM[WK]))}<small>g</small>', NOGD, f'<span class="ip-num">cântărit {ddate(TODAY)} · {WAT[11:]}</span>'),
+        stat('weighing', f'Greutate {F} / {M}', f'{pair(n(wF[WK]), n(wM[WK]))}<small>g</small>', NOGD, f'<span class="ip-num">cântărit {ddate(TODAY)}, {WAT[11:]}</span>'),
         stat('weighing', f'Față de SAPT {WK - 1}', f'{pair(sgn(dF, 0), sgn(dM, 0))}<small>g</small>', NOGD, f'<span class="ip-num">SAPT {WK - 1}: ♀ {n(wF[WK - 1])} · ♂ {n(wM[WK - 1])} g</span>'),
         stat('weighing', 'Uniformitate', f'{pair(n(uF, 1), n(uM, 1))}<small>%</small>', NOGD, f'păsări în {num("±10%")} din medie'),
         stat('weighing', 'Coeficient de variație', f'{pair(n(cF, 1), n(cM, 1))}<small>%</small>', NOGD, 'medie pe secțiuni după probă'),
@@ -504,7 +504,7 @@ def tb_greutate():
         body += '</tbody>'
     t = tbox(f'Greutate pe secțiuni și sex, Hîrbovăț, cântărirea din 16.11.2026, SAPT 40', f'<thead>{ths}</thead>{body}', 'ip-sparktable')
     return block('h-wsec', 'Pe secțiuni', f'cântărirea din {num("16.11.2026 · SAPT 40")} · {num("12")} rânduri', t
-                 + foot(f'Ghid: {DASH} fără date în ghid. Ghidul Ross 308 ouat nu are greutate, uniformitate sau CV. Curbele au aceeași scară ({num("2 600–5 000 g")}).'))
+                 + foot(f'Ghid: {DASH} fără date în ghid. Ghidul Ross 308 ouat nu are greutate, uniformitate sau CV. Curbele au aceeași scară ({num(n(2600) + "–" + n(5000) + " g")}).'))
 
 def panel_greutate():
     return top('h-key', 'Greutate', ro_greutate(), st_greutate()) + '\n' + tb_greutate()
@@ -533,7 +533,7 @@ def ro_productie():
                 guide=gv, band=band, xticks=(1, 10, 20, 30, 40, 45))
     rows = [[str(w), pct(lay_all[w]['lay_pct']), pct(gv[w]) if w in gv else DASH + ' fără date în ghid'] for w in aw]
     return readout('lay', f'OUAT · HÎRBOVĂȚ · SAPT {WK}', 'ok' if abs(dev) <= 3 else 'warn', f'{n(a40, 1)}<small>%</small>',
-                   f'ghid {pct(gv[WK])} · {sgn(dev)} pct · 10–16.11.2026', ch, f'SAPT {WK} · efectiv {pct(a40)} · ghid {pct(gv[WK])} · {sgn(dev)} pct',
+                   f'ghid {pct(gv[WK])} · {sgn(dev)} pct · 10.11–16.11.2026', ch, f'SAPT {WK} · efectiv {pct(a40)} · ghid {pct(gv[WK])} · {sgn(dev)} pct',
                    ['SAPT', 'Efectiv', 'Ghid'], rows, 'Ouat Hîrbovăț pe săptămâni, efectiv față de ghid; înregistrări din 01.03.2026 (SAPT 3)',
                    legend([('act', 'efectiv'), ('guide', 'ghid'), ('band', '±3 pct')], 'axa: săpt. ciclului'))
 
