@@ -247,9 +247,9 @@ boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.sav
               '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Vânzare nouă</button>'), overlay=toast, view=' s7s-view--end'), 'vp'))
 # 5 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă right above the EffectPreview, form scrolled to its
 #   end (as S9P), typed values kept as a draft (D60), key stays enabled
-ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Vânzarea nu s-a salvat: '
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Vânzarea nu s-a salvat: '
        f'{pair(*TOT)}, Hîrbovăț, {num(dd(DT))}. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
+       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare · exemplu de stare (D39)', screen([farm(), DATE, rows('all'), buyer(), note(), ban, effect()], B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end'), 'vp'))
 # 6 · parțială — Toate on H4.1 and H4.2 only (D39 example from counts-latest): the farm keeps ♀ 17 028 · ♂ 1 729, the cycle
 #   continues, so Înregistrează vânzarea saves directly (no Dialog); form scrolled to its end (the preview)

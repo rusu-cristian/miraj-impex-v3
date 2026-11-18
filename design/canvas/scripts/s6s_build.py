@@ -142,7 +142,7 @@ TARGET['refuzat'] = 't-H12'
 # 6 · eroare la salvare — connectivity (spec §1): fault Banner + Reîncearcă, typed values kept (draft), Salvează enabled (D60)
 r6 = removals(B.ALL); eg6 = sum(x[1] for x in B.EGGS)
 assert (r6, eg6) == ((8, 1), 18688)
-ban6 = f'''<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Nu s-a salvat Zilnic din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{len(B.ALL)}</span> secțiuni · {sexv("F", f"{MINUS}{r6[0]}")} · {sexv("M", f"{MINUS}{r6[1]}")} · <span class="ip-num">{n(eg6)}</span> ouă). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>'''
+ban6 = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Nu s-a salvat Zilnic din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{len(B.ALL)}</span> secțiuni · {sexv("F", f"{MINUS}{r6[0]}")} · {sexv("M", f"{MINUS}{r6[1]}")} · <span class="ip-num">{n(eg6)}</span> ouă). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban6, B.DATE, B.HALLS_HTML], B.SAVE, 'eroare-la-salvare')))
 
 # 7 · fermă fără păsări — Telița: cycle closed 28.02.2026, 0 birds (counts-latest, real): EmptyState with the next step

@@ -208,8 +208,8 @@ def tpanel(r, act, key=SAVE, focus_name=False, inert=False, pressed_del=False, s
     return panel(r['name'], ctx(r), [name_field(r['name'], focus_name, used=used), for_ro(r) if used else for_seg(r['for_sex']), act,
                                      use_block(r, 'used' if used else 'free', pressed_del, stock)], key, inert)
 def save_banner(text):
-    return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="tp-err">{icon("alert", 16)}<div class="s7s-banner__body">'
-            f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
+    return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="tp-err">{icon("alert", 16)}<div class="ip-banner__body">'
+            f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= states (list side)
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
@@ -220,10 +220,10 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă tipurile de hrană, cu 
            f'<div class="ip-tablescroll ip-tablescroll--framed s21-region" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table s21-table">'
            f'{COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="s4-head"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
-           f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}'
-           f'<div class="s4-grow"><p class="s4s-m0">Tipurile de hrană nu s-au încărcat.</p>'
+           f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
+           f'<div class="ip-banner__body"><p class="s4s-m0">Tipurile de hrană nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un tip nou și acum.</p></div>'
-           '<button type="button" class="ip-btn ip-btn--secondary s21-bkey">Reîncearcă</button></div></section>')
+           '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
     box = s4.empty_box('fără acces', ['Nu ai acces la Tipuri de hrană.',
@@ -266,8 +266,7 @@ CSS21 = '''
 }
 .s21-use{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s21-delkey{margin-top:var(--space-1)}
-.s21-pfarm{display:block;font-weight:400}
-.s21-bkey{flex:none;align-self:center} /* multi-line Banner: the action key centred (= .s19-bkey, FIN) */'''
+.s21-pfarm{display:block;font-weight:400}'''
 CSS_DESK = M.CSS_DESK + CSS21
 CSS_PL = M.CSS_PL + CSS21
 

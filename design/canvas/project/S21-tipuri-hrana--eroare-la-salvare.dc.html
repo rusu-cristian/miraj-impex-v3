@@ -54,8 +54,6 @@
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-banner{align-items:center}
-.s4s-banner .ip-link{white-space:nowrap}
 .s4s-skreadout{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
 .s4s-skstat{gap:var(--space-2)}
 .s4s-sktile{gap:var(--space-2)}
@@ -85,7 +83,6 @@
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}
 .s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */
-.s4s-banner .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)} /* S4TP: "Alege ghidul" ≥24px (D46) */
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)}
@@ -122,7 +119,6 @@
 .s9-fxsub{color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
-.s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
@@ -198,8 +194,7 @@
 }
 .s21-use{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s21-delkey{margin-top:var(--space-1)}
-.s21-pfarm{display:block;font-weight:400}
-.s21-bkey{flex:none;align-self:center} /* multi-line Banner: the action key centred (= .s19-bkey, FIN) */</style>
+.s21-pfarm{display:block;font-weight:400}</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s13-vp s18-vp"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
@@ -221,7 +216,7 @@
 </main></div></div><aside class="ip-sidepanel s13-panel" id="tp" aria-labelledby="tp-t">
 <div class="ip-sidepanel__head"><div><h2 class="ip-t-heading s13-m0" id="tp-t">Tip nou</h2></div><button type="button" class="ip-iconbtn" aria-label="Închide panoul tipului de hrană"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
 <div class="ip-sidepanel__body s13-pbody s19-pbody">
-<div class="ip-field"><label class="ip-label" for="tp-name">Nume</label><span class="ip-input"><input id="tp-name" type="text" autocomplete="off" value="Breeder 3"/></span></div><div class="ip-field"><span class="ip-label" id="tp-for-l">Pentru</span><span class="ip-seg s19-seg" role="radiogroup" aria-labelledby="tp-for-l" aria-required="true" aria-describedby="tp-for-h"><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ambele sexe</span><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0"><span class="ip-sex ip-sex--hen">♀</span> Găini</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1"><span class="ip-sex ip-sex--rooster">♂</span> Cocoși</span></span><span class="ip-hint" id="tp-for-h">În Hrană zilnică apare doar la sexul ales.</span></div><div class="ip-field"><label class="ip-check is-checked"><input type="checkbox" class="ip-sr" id="tp-act" checked="checked" aria-describedby="tp-act-h"/><span class="ip-check__box"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Activ</label><span class="ip-hint" id="tp-act-h">Apare în Livrare hrană și Hrană zilnică. Îl poți retrage oricând.</span></div><div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="tp-err"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><div class="s7s-banner__body"><p class="s13-m0">Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. Verifică conexiunea la internet, apoi reîncearcă.</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div><section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap s4s-m0" id="tp-use-h">Folosit la</h3><p class="s4s-m0">Nefolosit. Îl alegi în Livrare hrană și Hrană zilnică după ce îl adaugi.</p></section>
+<div class="ip-field"><label class="ip-label" for="tp-name">Nume</label><span class="ip-input"><input id="tp-name" type="text" autocomplete="off" value="Breeder 3"/></span></div><div class="ip-field"><span class="ip-label" id="tp-for-l">Pentru</span><span class="ip-seg s19-seg" role="radiogroup" aria-labelledby="tp-for-l" aria-required="true" aria-describedby="tp-for-h"><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ambele sexe</span><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0"><span class="ip-sex ip-sex--hen">♀</span> Găini</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1"><span class="ip-sex ip-sex--rooster">♂</span> Cocoși</span></span><span class="ip-hint" id="tp-for-h">În Hrană zilnică apare doar la sexul ales.</span></div><div class="ip-field"><label class="ip-check is-checked"><input type="checkbox" class="ip-sr" id="tp-act" checked="checked" aria-describedby="tp-act-h"/><span class="ip-check__box"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Activ</label><span class="ip-hint" id="tp-act-h">Apare în Livrare hrană și Hrană zilnică. Îl poți retrage oricând.</span></div><div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="tp-err"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><div class="ip-banner__body"><p class="s13-m0">Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. Verifică conexiunea la internet, apoi reîncearcă.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div><section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap s4s-m0" id="tp-use-h">Folosit la</h3><p class="s4s-m0">Nefolosit. Îl alegi în Livrare hrană și Hrană zilnică după ce îl adaugi.</p></section>
 </div>
 <div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary">Adaugă tipul</button></div></div>
 </aside></div>

@@ -1513,11 +1513,12 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table tr:has([aria-current="true"]),.ip-table tr.is-current{background:var(--sunken);outline:var(--ip-hair) solid var(--line-strong);outline-offset:calc(-1 * var(--ip-hair))}
 
 /* =====================================================================================================
- * S1P · Button loading spinner reads as busy; LoginCard Banner icon on its line; login page at the optical third.
+ * S1P · Button loading spinner reads as busy; login page at the optical third (the LoginCard Banner icon rule moved to
+ * section 47, FIN01).
  * Spec: components.md › Additions › S1P.
  * ===================================================================================================== */
 
-/* ---------- 46. Button · loading spinner, LoginCard Banner icon and page position (S1P) ---------- */
+/* ---------- 46. Button · loading spinner and login page position (S1P) ---------- */
 /* Spinner (span.ip-spin inside a Button, label kept): bundle.css draws a 3/4 ring open on the right, which on a still
  * board reads as the letter "C" before the label. It becomes a quarter arc in the label colour (currentColor) on a quiet
  * full track, the arc turned to the top right: the common busy mark. Track = line on light keys (secondary, ghost,
@@ -1568,3 +1569,32 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-toast:has(> .ip-toast__txt) > .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .ip-toast__txt{flex:1;min-width:0;margin:0}
 .ip-toast__undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
+
+/* =====================================================================================================
+ * FIN03 · Banner with action, system-wide. Spec: components.md › Banner › With action, Additions › FIN03.
+ * ===================================================================================================== */
+
+/* ---------- 49. Banner · with action (FIN03) ---------- */
+/* div.ip-banner.ip-banner--act > 16px icon, div.ip-banner__body (the sentences: text or p), then the key .ip-banner__key
+ * (a secondary Button such as Reîncearcă, a Button link, or an ip-link). One layout for every Banner that carries an action:
+ * - icon and body align to the top, so the icon stays on the first text line (section 47's hair) whatever the length;
+ *   paragraphs in the body: margin 0, space-2 apart;
+ * - the key sits at the end, centred on the Banner's height; the body takes the rest of the line and wraps;
+ * - when the body would get narrower than space-12 × 6 (288) beside the key (phone, SidePanel), the key wraps under the
+ *   text at the text's start, space-3 below it. For that the icon sits in the start padding: padding space-3 + icon
+ *   (space-4 = 16) + gap (space-2), icon margin −(icon + gap); the text starts where it did, and so does a wrapped key.
+ * - a link key (ip-link) keeps its ≥24px target (space-6, D46) without growing a one-line Banner: its box overhangs the
+ *   18px line by (space-6 − 1lh)/2 on both sides, inside the Banner's padding, and its text sits on the text line. */
+.ip-banner--act{flex-wrap:wrap;align-items:flex-start;row-gap:var(--space-3);padding-left:calc(var(--space-3) + var(--space-4) + var(--space-2))}
+.ip-banner--act > .ip-icon{margin-left:calc(-1 * (var(--space-4) + var(--space-2)))}
+.ip-banner__body{flex:1 1 calc(var(--space-12) * 6);min-width:0;display:flex;flex-direction:column;gap:var(--space-2)}
+.ip-banner__body > p{margin:0}
+.ip-banner__key{flex:none;align-self:center}
+.ip-banner__key.ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);margin-block:calc((1lh - var(--space-6)) / 2);white-space:nowrap}
+/* One-line text beside a key (--1l, fix 1): the body is as tall as the key (control-h) with its line centred, so text,
+ * icon and key share one centre line and the Banner keeps the key's height (a Mono figure in the line can make the line box
+ * 19-20px; centring, not padding, keeps the Banner at 50). The icon drops by half the key's spare height (control-h − 1lh)
+ * plus the hair: section 47's value for the UserTable load-failed row (.ip-users__bnrow, kept for the SYS12 UserRow preview). Only for text that stays one line
+ * beside the key at every desktop width; a Banner whose text can wrap or whose key can wrap stays without it. */
+.ip-banner--act.ip-banner--1l > .ip-banner__body{min-height:var(--control-h);justify-content:center}
+.ip-banner--act.ip-banner--1l > .ip-icon--16{margin-top:calc((var(--control-h) - 1lh) / 2 + var(--ip-hair))}

@@ -76,9 +76,9 @@ def shell(sb, parts): return f'<div class="s4-shell">{sb}<main class="s4-main">\
 # ================================================================= 1 · din „modificat de” (owner): one record, all periods
 REC_TXT = f'Mortalitate · {REAL["sec"]} · ziua {REAL["day"]:%d.%m.%Y} · {REAL["farm"]}'
 def page_record():
-    ban = (f'<div class="ip-banner ip-banner--info s4s-banner">{icon("info", 16)}'   # static: present on load, no live role (S17P)
-           f'<div class="s4-grow"><p class="s4s-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p></div>'
-           '<a class="ip-btn ip-btn--secondary" href="#istoric-modificari">Arată toate modificările</a></div>')   # back to the 4 săpt. default
+    ban = (f'<div class="ip-banner ip-banner--info ip-banner--act ip-banner--1l">{icon("info", 16)}'   # static: present on load, no live role (S17P)
+           f'<div class="ip-banner__body"><p class="s4s-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p></div>'
+           '<a class="ip-btn ip-btn--secondary ip-banner__key" href="#istoric-modificari">Arată toate modificările</a></div>')   # back to the 4 săpt. default
     note = f'1 modificare · Mortalitate {REAL["sec"]} · ziua {num(format(REAL["day"], "%d.%m.%Y"))} · tot istoricul'
     foot = ('Istoricul unei înregistrări arată fiecare corecție sau ștergere a ei, cu valorile vechi și noi. '
             'Rândul deschide secțiunea în ziua înregistrării.')

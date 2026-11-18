@@ -126,7 +126,7 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
 def error():
     return f'''<section class="s12-form" aria-labelledby="h-unp">
 <div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
-<div class="ip-banner ip-banner--fault" role="alert">{ico(ALERT)}<div class="s4-grow"><p class="s12-m0">Nu am putut încărca livrările fără preț.</p><p class="s12-m0">Verifică conexiunea la internet, apoi reîncearcă. Prețurile salvate până acum nu s-au schimbat.</p></div><button type="button" class="ip-btn ip-btn--secondary">Reîncearcă</button></div>
+<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{ico(ALERT)}<div class="ip-banner__body"><p class="s12-m0">Nu am putut încărca livrările fără preț.</p><p class="s12-m0">Verifică conexiunea la internet, apoi reîncearcă. Prețurile salvate până acum nu s-au schimbat.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>
 </section>'''
 
 def page(mode='default'):

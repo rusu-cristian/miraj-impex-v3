@@ -547,7 +547,7 @@ def panel_period():
 </div>'''
 
 # ---------- 3. no guide ----------
-BANNER_NG = f'<div class="ip-banner ip-banner--info s4s-banner" role="note">{icon("info", 16)}<div class="s4-grow">Ciclul nu are ghid. Graficele arată doar valorile efective.</div><a class="ip-link" href="#ciclu-ghid">Alege ghidul</a></div>'
+BANNER_NG = f'<div class="ip-banner ip-banner--info ip-banner--act" role="note">{icon("info", 16)}<div class="ip-banner__body">Ciclul nu are ghid. Graficele arată doar valorile efective.</div><a class="ip-link ip-banner__key" href="#ciclu-ghid">Alege ghidul</a></div>'
 
 # ---------- 4. no access ----------
 def main_noaccess():
@@ -718,15 +718,12 @@ CSS = '''body{margin:0}
 .s4s-rel{position:relative}
 .s4s-rel > .s4-shell{min-height:inherit}'''
 # S4 boards only (default, states, tabs): S3 and S11 reuse CSS/CSS_STATES and must stay byte-identical
-CSS_S4 = '''.s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */
-.s4s-banner .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)} /* S4TP: "Alege ghidul" ≥24px (D46) */'''
+CSS_S4 = '''.s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */'''
 # state boards only
 CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-banner{align-items:center}
-.s4s-banner .ip-link{white-space:nowrap}
 .s4s-skreadout{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
 .s4s-skstat{gap:var(--space-2)}
 .s4s-sktile{gap:var(--space-2)}

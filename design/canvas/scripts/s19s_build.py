@@ -22,9 +22,9 @@ Boards
   --redenumeste-cod-gol   D39: Telița, Redenumește H5-2 with the code cleared: error, focus in the field
   --retrasa-mutata        D39: Telița after the Retrage H5-2 Dialog (H5-2 retrasă, listed last, no key) and then Mută în
                           sus on H3 (a 2-a din 5; focus stays on H3's key; live region)
-Screen CSS `.s19-*` (Banner action key: FIN, with s7s-banner; the Toast is additions.css §48, FIN02); S19P: the skeleton rows
+No screen CSS of its own (the Banner with Reîncearcă is additions.css §49, FIN03; the Toast is §48, FIN02); S19P: the skeleton rows
 are the system `tr.ip-table__skel` (additions.css §42), the Tip error uses §41, the tree error line gets the alert icon. Fix 1: every
-multi-line Banner puts its icon on the first line (s7s-banner); Ghid on Fermă nouă is not required (s19_build).
+multi-line Banner puts its icon on the first line (s7s-banner, §49 with a key); Ghid on Fermă nouă is not required (s19_build).
 python3 -I s19s_build.py <repo_root> [--canvas]   after `s19_build --canvas` (canvas_rows.py)
 Renders: s19_render.py <stems> (the new boards are appended to /tmp/s19/boards.json: shots S19-10 … S19-21)."""
 import sys, json, pathlib, importlib.util, io, contextlib
@@ -64,10 +64,10 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghid
            f'{M.COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Fermă nouă stays (the name check runs on save)
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
-           f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}'
-           f'<div class="s4-grow"><p class="s4s-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
+           f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
+           f'<div class="ip-banner__body"><p class="s4s-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
-           '<button type="button" class="ip-btn ip-btn--secondary s19-bkey">Reîncearcă</button></div></section>')
+           '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 # ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
@@ -94,8 +94,8 @@ def tip_err():
     return f[:-6] + err('fp-tip-e', 'Alege tipul fermei: Creștere sau Ouat. Lista de ghiduri depinde de el.') + '</div>'
 NEW_GHID_OUAT = M.gbox(GUIDE['g-laying'], '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Se aplică de la primul ciclu al fermei.</span>', 'laying')
 def save_banner(text):
-    return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fp-err">{icon("alert", 16)}<div class="s7s-banner__body">'
-            f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
+    return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="fp-err">{icon("alert", 16)}<div class="ip-banner__body">'
+            f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ---- tree states (SYS10 helpers; one edit row open at a time)
 def tree_x(fid, noguide=False, note=None, banner='', live='', **kw):
@@ -118,8 +118,7 @@ assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', '
 MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
 
 # ================================================================= CSS (screen only, tokens only)
-CSS19S = '''
-.s19-bkey{flex:none;align-self:center} /* multi-line Banners: icon on the first line (s7s-banner), the action key stays centred */'''
+CSS19S = ''   # FIN03: the Banner action key is additions.css §49 (.ip-banner__key); no screen CSS left
 CSS_D = M.CSS_DESK + CSS19S
 
 # ================================================================= write

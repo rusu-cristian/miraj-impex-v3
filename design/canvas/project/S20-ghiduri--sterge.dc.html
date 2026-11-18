@@ -54,8 +54,6 @@
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-banner{align-items:center}
-.s4s-banner .ip-link{white-space:nowrap}
 .s4s-skreadout{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
 .s4s-skstat{gap:var(--space-2)}
 .s4s-sktile{gap:var(--space-2)}
@@ -85,7 +83,6 @@
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}
 .s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */
-.s4s-banner .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)} /* S4TP: "Alege ghidul" ≥24px (D46) */
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)}
@@ -122,7 +119,6 @@
 .s9-fxsub{color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
-.s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
@@ -207,8 +203,7 @@ h1[tabindex="-1"]{margin-block:calc((var(--ip-focus-w) + var(--ip-focus-offset))
 .s20-week th[scope=row]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s20-now{margin-left:var(--space-2);font-family:var(--font-sans);white-space:nowrap}
 .s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */
-.s20-clip{height:1024px;overflow:hidden}
-.s20-bkey{flex:none;align-self:center} /* load-error Banner: icon on the first line (s7s-banner), the action key centred (= S19S .s19-bkey, FIN) */</style>
+.s20-clip{height:1024px;overflow:hidden}</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s20-clip"><div class="s4-shell" inert="inert"><nav class="ip-sidebar s4-side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>

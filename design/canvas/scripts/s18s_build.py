@@ -206,10 +206,10 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă seriile și ciclurile l
            f'<tbody>{SK_G}{SK_R}{SK_R}</tbody><tbody>{SK_G}{SK_R}{SK_R}</tbody></table></div></section>')
 FAULT = f'<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Q.Z.FAULT}</svg>'
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
-           f'<div class="ip-banner ip-banner--fault s4s-banner" role="alert">{FAULT}'
-           f'<div class="s4-grow"><p class="s4s-m0">Seriile și ciclurile lor pe ferme nu s-au încărcat.</p>'
+           f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{FAULT}'
+           f'<div class="ip-banner__body"><p class="s4s-m0">Seriile și ciclurile lor pe ferme nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți crea o serie nouă și acum.</p></div>'
-           '<button type="button" class="ip-btn ip-btn--secondary">Reîncearcă</button></div></section>')
+           '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'   # fix 1: works for Observator, manager and vet (S17)
     box = s4.empty_box('fără acces', ['Nu ai acces la Serii.',
@@ -262,9 +262,9 @@ def rows_err():
     return s[:-len('</section>')] + err('rows-e', 'Niciun rând completat. Scrie câte găini sau cocoși intră în cel puțin o secțiune a Teliței.') + '</section>'
 def form_errors():
     return [name_err(), year_err(YEAR26), T.farm_field(TODAY, False), date_err(TODAY + dt.timedelta(days=1)), rows_err(), T.effect('empty', TODAY)]
-SAVE_ERR = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="sn-err">{icon("alert", 16)}<div class="s7s-banner__body">'
+SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="sn-err">{icon("alert", 16)}<div class="ip-banner__body">'
             f'<p class="s13-m0">{NAME26} nu s-a creat: conexiunea s-a întrerupt. Ce ai scris rămâne aici; verifică internetul, apoi reîncearcă.</p>'
-            '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus">Reîncearcă</button></div></div>')
+            '</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus">Reîncearcă</button></div>')
 def with_banner(parts, banner):
     """S9P: the fault Banner sits right above the EffectPreview (the last part)."""
     assert parts[-1].startswith('<div class="ip-effect')

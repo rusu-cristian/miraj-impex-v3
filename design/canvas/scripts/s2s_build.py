@@ -118,9 +118,9 @@ box = box.replace('<p class="s4s-empty-p">Nu ai acces', '<p class="s4s-empty-p" 
 boards.append(('fara-acces', 'vet · fără acces', 'p', pscreen([PH(D), box], key_off='fa-n')))  # the tab bar key reads the EmptyState reason
 
 # 8 · vet · eroare la încărcare — online only (spec §1): fault Banner naming what failed + Reîncearcă; keys stay
-ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("fault", 16)}<div class="s7s-banner__body">'
-       f'<p class="s7-m0">Lipsesc date și Introdus azi nu s-au încărcat. Verifică conexiunea și reîncearcă.</p>'
-       f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("fault", 16)}<div class="ip-banner__body">'
+       f'<p class="s7-m0">Lipsesc date și Introdus azi nu s-au încărcat. Verifică conexiunea și reîncearcă.</p></div>'
+       f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscreen([PH(A.CTX_VET), ban, A.entrykeys()])))
 
 # ---------- desktop pieces ----------

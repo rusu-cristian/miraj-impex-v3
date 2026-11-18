@@ -21,7 +21,7 @@ Boards
   --eroare-la-salvare     D39: the same new guide, save failed: draft kept, fault Banner + Reîncearcă (focus) above the keys
   --sterge                D39: Ross 308 ouat 2027 saved and used by no cycle (s20_build detail_page(name=, cycles=[])):
                           compact Folosit de line, Șterge ghidul Dialog, focus on Anulează
-No phone detail (D114). Screen CSS `.s20-*` (tokens only): only `.s20-bkey` (the Banner action key, = S19S .s19-bkey, FIN).
+No phone detail (D114). No screen CSS of its own (the load-error Banner with Reîncearcă is additions.css §49, FIN03).
 python3 -I s20s_build.py <repo_root> [--canvas]   after `s20_build --canvas` (canvas_rows.py)
 Renders: s20_render.py <stems> (the new boards are appended to /tmp/s20/boards.json: shots S20-9 … S20-22)."""
 import sys, json, pathlib, importlib.util, io, contextlib
@@ -64,10 +64,10 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă ghidurile, cu tipul, s�
            f'{S.LCOLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Importă ghid stays (the name check runs on save)
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="s4-head"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
-           f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}'
-           f'<div class="s4-grow"><p class="s4s-m0">Ghidurile nu s-au încărcat.</p>'
+           f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
+           f'<div class="ip-banner__body"><p class="s4s-m0">Ghidurile nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți importa un ghid nou și acum.</p></div>'
-           '<button type="button" class="ip-btn ip-btn--secondary s20-bkey">Reîncearcă</button></div></section>')
+           '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 # ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
@@ -145,10 +145,10 @@ def new_read(extra=''):
                 + G['info_banner'](INFO_LF) + G['bar'](P) + G['table'](P, 'laying', lr, NEWF) + extra
                 + G['foot'](P, True, f'Se salvează {NL} de rânduri în ghidul nou {NEWN}.')
                 + G['live'](f'Fișier citit: {NL} de rânduri, toate valide.'))
-SAVE_ERR = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="gi-save-err">{icon("alert", 16)}<div class="s7s-banner__body">'
+SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="gi-save-err">{icon("alert", 16)}<div class="ip-banner__body">'
             f'<p class="s13-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Numele, tipul și cele {NL} de rânduri citite rămân aici. '
             'Verifică conexiunea la internet, apoi reîncearcă.</p>'
-            '<button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
+            '</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the fault Banner (role=alert) above the keys; the name, '
               'the type and the rows read stay as typed and read. -->')
 
@@ -165,8 +165,7 @@ DLG = (f'<div class="ip-scrim s19-scrim"><div class="ip-dialog" role="alertdialo
        f'<button type="button" class="ip-btn ip-btn--destructive">Șterge ghidul</button></div></div></div>')
 
 # ================================================================= CSS (screen only, tokens only)
-CSS20S = '''
-.s20-bkey{flex:none;align-self:center} /* load-error Banner: icon on the first line (s7s-banner), the action key centred (= S19S .s19-bkey, FIN) */'''
+CSS20S = ''   # FIN03: the Banner action key is additions.css §49 (.ip-banner__key); no screen CSS left
 CSS_D = S.CSS_DESK + CSS20S
 
 # ================================================================= write

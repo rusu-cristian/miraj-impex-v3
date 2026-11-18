@@ -54,8 +54,6 @@
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-banner{align-items:center}
-.s4s-banner .ip-link{white-space:nowrap}
 .s4s-skreadout{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
 .s4s-skstat{gap:var(--space-2)}
 .s4s-sktile{gap:var(--space-2)}
@@ -85,7 +83,6 @@
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}
 .s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */
-.s4s-banner .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)} /* S4TP: "Alege ghidul" ≥24px (D46) */
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)}
@@ -121,7 +118,7 @@
 
 </header>
 <div class="ip-filterbar s11-filterbar" role="group" aria-label="Filtre"><span class="ip-seg" role="radiogroup" aria-label="Perioadă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Ciclul curent</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">4 săpt.</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">13 săpt.</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Interval</span></span><span class="s11-farm"><label class="ip-label" for="f-farm">Fermă</label><span class="ip-input s11-select"><select id="f-farm"><option selected="selected">Hîrbovăț</option><option disabled="disabled">Telița · creștere, fără ouă</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></span><button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Exportă .xlsx</button></div>
-<div class="s14-page"><div class="ip-banner ip-banner--info s4s-banner" role="note"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div class="s4-grow">Ciclul nu are ghid. Graficele arată doar valorile efective.</div><a class="ip-link" href="#ciclu-ghid">Alege ghidul</a></div><section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Producție, ciclul curent</h2><div class="ip-readout s4-readout">
+<div class="s14-page"><div class="ip-banner ip-banner--info ip-banner--act" role="note"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div class="ip-banner__body">Ciclul nu are ghid. Graficele arată doar valorile efective.</div><a class="ip-link ip-banner__key" href="#ciclu-ghid">Alege ghidul</a></div><section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Producție, ciclul curent</h2><div class="ip-readout s4-readout">
 <div class="ip-readout__cap"><span>OUAT · HÎRBOVĂȚ · SAPT 40</span><span class="ip-rlamp ip-rlamp--off">FĂRĂ GHID</span></div>
 <div class="ip-readout__val">74,0<small>%</small></div>
 <div class="ip-readout__sub">ciclul nu are ghid, nu se compară · 10–16.11.2026</div>

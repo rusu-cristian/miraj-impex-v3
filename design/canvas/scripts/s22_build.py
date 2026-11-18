@@ -244,8 +244,8 @@ def upanel(u, farms_on=None, focus=False, extra='', inert=False, pressed=None, t
                  [name_field(u['name'], focus), login_field(u['login'], ro=True), role_field(u['role']), farms_field(fo), extra, acct(u, pressed)],
                  inert=inert)
 def save_banner(text):
-    return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="up-err">{icon("alert", 16)}<div class="s7s-banner__body">'
-            f'<p class="s13-m0">{text}</p><button type="button" class="ip-btn ip-btn--secondary ip-focus">Reîncearcă</button></div></div>')
+    return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="up-err">{icon("alert", 16)}<div class="ip-banner__body">'
+            f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= dialogs (SYS12), Toast, states
 def scrim(dlg): return f'<div class="ip-scrim s19-scrim">{dlg}</div>'
@@ -261,10 +261,12 @@ def toast(text, what, where):
     return (FOCUS_NOTE.format(what=what, where=where) + f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}'
             f'<span class="ip-toast__txt">{text}</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 LOADING = f'<div class="s4-block">{users("u", U["SK"] + "<tr><td colspan=\"7\" class=\"ip-users__srcell\"><span class=\"ip-sr\">Se încarcă utilizatorii</span></td></tr>", "<span class=\"ip-users__wait\">Se încarcă.</span>", busy=True)}</div>'
-FAIL = (f'<div class="ip-banner ip-banner--fault">{U["svg"](U["IC"]["fault"])}<div class="ip-users__bnrow"><p class="ip-users__bn">'
-        '<b>Utilizatorii nu s-au încărcat.</b> Verifică conexiunea la internet, apoi reîncearcă.</p>'
-        f'{BTN("Reîncearcă", "secondary")}</div></div>')
-LOADERR = (f'<div class="s4-block">{users("u", "", "– lista nu s-a încărcat", extra=FAIL, table=False, live="Utilizatorii nu s-au încărcat.")}</div>')
+# FIN03 (D123): the Banner with action (additions.css §49), role=alert and the S19–S21 copy; the alert announces it, so the
+#   list's status line stays empty (it repeated the Banner's first sentence)
+FAIL = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{U["svg"](U["IC"]["fault"])}<div class="ip-banner__body">'
+        '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
+        + sub(BTN("Reîncearcă", "secondary"), 'class="ip-btn ip-btn--secondary"', 'class="ip-btn ip-btn--secondary ip-banner__key"') + '</div>')
+LOADERR = (f'<div class="s4-block">{users("u", "", "– lista nu s-a încărcat", extra=FAIL, table=False)}</div>')
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
     box = s4.empty_box('fără acces', ['Nu ai acces la Utilizatori.',

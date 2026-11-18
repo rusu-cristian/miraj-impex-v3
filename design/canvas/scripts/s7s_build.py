@@ -199,7 +199,7 @@ m = default_modes(); b6 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft6, f6 = ftot(b6)
 sv6, nc6, tot6 = savebar(b6, stocklamp(f6), SAVE_KEY)
 assert (nc6, n(tot6, 1)) == (10, f'3{NB}691,3')
-ban = f'''<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Nu s-au salvat cele <span class="ip-num">{nc6}</span> rânduri din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{n(tot6, 1)}</span> kg). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>'''
+ban = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Nu s-au salvat cele <span class="ip-num">{nc6}</span> rânduri din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{n(tot6, 1)}</span> kg). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban, B.DATE, B.COPY, halls(b6), ft6], sv6)))
 
 # 7 · se încarcă — static Skeleton rows (no shimmer); header and date are known from the route

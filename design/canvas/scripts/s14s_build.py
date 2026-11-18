@@ -53,10 +53,10 @@ def head_bare():  # crumbs + title only: the cycle line comes with the report, w
 FAULT = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'  # Banner fault icon (system preview, as S2S)
 def page_error():
     fb = X.filterbar().replace(EXP, s11.export(True))
-    ban = (f'<div class="ip-banner ip-banner--fault s4s-banner" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{FAULT}</svg>'
-           '<div class="s4-grow"><p class="s4s-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
+    ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{FAULT}</svg>'
+           '<div class="ip-banner__body"><p class="s4s-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă.</p></div>'
-           '<button type="button" class="ip-btn ip-btn--secondary">Reîncearcă</button></div>')
+           '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>')
     return f'<div class="s4-shell">{X.sidebar()}<main class="s4-main">\n{head_bare()}\n{fb}\n<div class="s14-page">{ban}</div>\n</main></div>'
 
 # ================================================================= desktop · fără fermă de ouat (manager with Telița only), D39

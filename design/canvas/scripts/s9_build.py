@@ -232,9 +232,9 @@ boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare 
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft (D60). The Banner sits
 #   right above the EffectPreview and the form is scrolled to its end, so the Banner and the move it names both show above
 #   the SaveBar (S9P; at 390 the Banner at the top would push the preview under the SaveBar)
-ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Transferul nu s-a salvat: '
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Transferul nu s-a salvat: '
        f'♀ <span class="ip-num">{n(QTY)}</span>, Telița H2 → Hîrbovăț H4.2, <span class="ip-num">{dd(DAY)}</span>. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
+       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), ban, effect()], B.savebar(sum1(), SUM2, MUTA), view=' s7s-view--end')))
 
 # ---------- 16.11.2026 example flow (D39): Hîrbovăț H4.2 → Telița (empty since 28.02.2026) ----------

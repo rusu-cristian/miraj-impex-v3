@@ -99,9 +99,9 @@ boards.append(('se-incarca', 'vet · se încarcă', 'p', Z.pscreen([
     Q.pagehead(A.CTX_VET, lead('Dr. Ceban')), Z.STATUS('Introdus azi'), LOADING], vet=True)))
 
 # 2 · eroare la încărcare — online only (spec §1): fault Banner with the day and the fix + Reîncearcă; no figures
-ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{A.icon("fault", 16)}<div class="s7s-banner__body">'
-       f'<p class="s7-m0">Înregistrările tale din {num(D)} nu s-au încărcat. Verifică conexiunea și reîncearcă.</p>'
-       f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{A.icon("fault", 16)}<div class="ip-banner__body">'
+       f'<p class="s7-m0">Înregistrările tale din {num(D)} nu s-au încărcat. Verifică conexiunea și reîncearcă.</p></div>'
+       f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', Z.pscreen([
     Q.pagehead(A.CTX_VET, lead('Dr. Ceban')), ban], vet=True)))
 

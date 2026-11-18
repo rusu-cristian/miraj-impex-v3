@@ -132,9 +132,9 @@ boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='adăugat �
 # 3 · cantitate lipsă — kg left empty (validated on blur): field error naming the fix, Adaugă disabled
 boards.append(('cantitate-lipsa', 'cantitate lipsă', screen(FORM('error', None), B.savebar(sum1(None), f'{lamp("fault", "refuzat")}<span>scrie cantitatea în kg</span>', ADD_OFF))))
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft
-ban = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">Livrarea nu s-a salvat: '
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Livrarea nu s-a salvat: '
        f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]}, Hîrbovăț, <span class="ip-num">{dd(EDAY)}</span>. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Reîncearcă</button></div></div>')
+       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + FORM(), B.savebar(sum1(), SUM2, ADD))))
 
 CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''
