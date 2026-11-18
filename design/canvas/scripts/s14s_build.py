@@ -109,9 +109,10 @@ def p_sheet():
     a = '<span class="ip-seg" role="radiogroup" aria-label="Perioadă">'; assert seg.startswith(a)
     seg = ('<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):]).replace(
         '<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1)  # focus starts on the chosen period
-    farm = ('<div class="ip-field"><label class="ip-label" for="pf-farm">Fermă</label><span class="ip-input ip-input--touch s11-select"><select id="pf-farm">'
-            '<option selected="selected">Hîrbovăț</option><option disabled="disabled">Telița · creștere, fără ouă</option></select>'
-            f'{icon("chev", 16)}</span></div>')
+    # FIN12 (D130): the section 53 Select on touch: opens its own BottomSheet (Telița listed disabled, X.TEL_WHY), no list in the page
+    farm = ('<div class="ip-field"><span class="ip-label" id="pf-farm-l">Fermă</span><div class="ip-select">'
+            '<div class="ip-input ip-select__btn ip-input--touch" id="pf-farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="pf-farm-l">'
+            f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div></div></div>')
     exp = ('<div class="s14-fsheet__exp"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-describedby="pf-exp">'
            f'{icon("download", 16)}Exportă .xlsx</button>'
            f'<p class="ip-hint" id="pf-exp">Tabelul pe săptămâni și hale cu filtrele de mai sus: Hîrbovăț, ciclul curent, <span class="ip-num">sapt. {X.WEEKS_ALL[0]}–{X.WK}</span>.</p></div>')

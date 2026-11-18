@@ -106,10 +106,16 @@ def header(mode='default'):
 {acts}
 </header>'''
 
+TEL_WHY = 'creștere, fără ouă'  # why Telița can't be chosen in Producție
 def farm_select():  # laying farms only; Telița (growth) is listed but disabled with its reason
-    return ('<span class="s11-farm"><label class="ip-label" for="f-farm">Fermă</label><span class="ip-input s11-select"><select id="f-farm">'
-            '<option selected="selected">Hîrbovăț</option><option disabled="disabled">Telița · creștere, fără ouă</option></select>'
-            f'{icon("chev", 16)}</span></span>')
+    # FIN12 (D130): an option disabled with a reason makes Fermă the section 53 Select (listbox hidden while closed)
+    O = '<span class="ip-select__txt"><span class="ip-select__top">'
+    opts = (f'<li class="ip-menu__item ip-select__opt" role="option" id="f-farm-o1" aria-selected="true"><span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span>{O}Hîrbovăț</span></span></li>'
+            f'<li class="ip-menu__item ip-select__opt" role="option" id="f-farm-o2" aria-selected="false" aria-disabled="true"><span class="ip-select__chk" aria-hidden="true"></span>{O}Telița <span class="ip-note">{TEL_WHY}</span></span></span></li>')
+    return ('<div class="s11-farm"><span class="ip-label" id="f-farm-l">Fermă</span><div class="ip-select s11-select">'
+            '<div class="ip-input ip-select__btn" id="f-farm" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="f-farm-list" aria-labelledby="f-farm-l">'
+            f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div>'
+            f'<ul class="ip-menu ip-select__menu" role="listbox" id="f-farm-list" aria-labelledby="f-farm-l" tabindex="-1" hidden="hidden">{opts}</ul></div></div>')
 def filterbar(mode='default'):
     if mode == 'empty':
         itv = f'<span class="ip-interval" role="group" aria-label="Interval">{s4.datef("iv-a", "de la", "10.02.2026")}{s4.datef("iv-b", "până la", "28.02.2026")}</span>'

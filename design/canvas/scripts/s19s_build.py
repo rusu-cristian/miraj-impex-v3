@@ -154,8 +154,10 @@ desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales d
      M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)
 # 6 · Nume gol (D39): Fermă nouă after Adaugă ferma with nothing filled; focus on Nume (first error)
 NEWP = f'<div class="s13-vp s18-vp">{M.page(None, pressed_new=True)}</div>'
+FREE = 'Telița 2'  # FIN12 (D133): the example names no farm in the extracts (Telița, Hîrbovăț are taken), as S20S's guide name
+assert all(FREE.casefold() != f['name'].casefold() for f in json.loads((ROOT / 'design/data/extracts/farms-sections.json').read_text(encoding='utf-8'))['farms'])
 desk('--nume-gol', f'Fermă nouă · nume gol și tip lipsă · {D39}',
-     NEWP + M.panel('Fermă nouă', '', [name_field('', 'Scrie numele fermei, de exemplu Telița.'), tip_err(),
+     NEWP + M.panel('Fermă nouă', '', [name_field('', f'Scrie numele fermei, de exemplu {FREE}.'), tip_err(),
                                        M.ghid_field(None, 'new'), M.NEWTREE], M.ADD), PH)
 # 7 · Nume deja folosit (D39, D111): "Hirbovat" equals Hîrbovăț without case and diacritics
 TIP_OUAT = M.tip_field(sel='laying')

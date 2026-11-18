@@ -1,0 +1,10 @@
+# FIN12 · polish · Screen data fixes · 18.11.2026 · not published (D133, to review)
+- S19S `--nume-gol`: error example "Telița" (taken) → "Telița 2" (asserted free against farms-sections, as S20S's "Ross 308 ouat 2027"); s19s_build.
+- S13 Fermă → §53 `.ip-select` on all 4 form boards: phone `aria-haspopup="dialog"` (no list), desktop panel listbox hidden, Hîrbovăț chosen, Telița `aria-disabled` "fără ciclu deschis" (asserted from cycles.json); s13_build (panel id prefix regex now also rewrites aria-labelledby/-controls).
+- S14/S14S Fermă filter → §53: desktop `div.s11-farm` > `div.ip-select.s11-select` + hidden listbox (Telița disabled, `ip-note` "creștere, fără ouă"), phone filter sheet touch combobox; s14_build, s14s_build. `.s14-fsheet .s11-select` kept (S17's sheet uses it).
+- S8 Secțiune `aria-labelledby="sec-l"` and `id="sec-v"` dropped (s8_build). components.md › FIN10 list updated: no native select left with state.
+- S10 check: on refuzat/parțială (844) the "mixed" key is at −884/−914 px (view 73–771); the foot holds the refused row/Banner/EffectPreview, so no small change shows it. Not changed (D133): no board draws the mixed key; the S10P FIN item (copy §34 into the SexCountRow preview) will draw it.
+- Rebuilt the whole canvas in README order (/tmp/fin12/rebuild.sh), twice: byte-identical. 23 boards changed (S8 ×10, S13 ×4, S14 ×8, S19 ×1); normalising diff (/tmp/fin12/normdiff.py) leaves no other change. canvas.json and heights unchanged.
+- Pixels (old vs new, 1440 + 1280): only S19 `--nume-gol` changed; shots S19-15.png and S19-15-1280.png retaken (s19s_build first). Closed §53 = native select in pixels.
+- Open: S13/S14 open lists are not drawn on any board. Fix 1 (docs): D133 synced word for word in both files; S14 phone Fermă inside the filter sheet = option (a), sheet on top, filter sheet inert, Esc closes the top sheet, focus back to pf-farm (D133, components.md › FIN10 Phone).
+- For FIN13: copy §34 (the S10P "Toate secțiunile" key, incl. aria-pressed="mixed") into the SexCountRow README/preview (sys07_build), so a board draws the mixed state.

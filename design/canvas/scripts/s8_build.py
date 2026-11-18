@@ -93,8 +93,8 @@ def section(c, ro=False):
         return f'<div class="ip-field"><label class="ip-label" for="sec">Secțiune</label><span class="ip-input ip-input--touch is-readonly"><input id="sec" type="text" value="{c["sec"]}" readonly/></span></div>'
     # SectionSelect, phone: a combobox that opens the BottomSheet (S9P §33); closed here
     return (f'<div class="ip-field"><span class="ip-label" id="sec-l">Secțiune</span>'
-            f'<div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="sec" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sec-l sec-v">'
-            f'<span class="ip-select__val" id="sec-v">{c["sec"]}</span>{icon("chev", 16)}</div></div></div>')   # FIN10: the section 53 Select
+            f'<div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="sec" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sec-l">'
+            f'<span class="ip-select__val">{c["sec"]}</span>{icon("chev", 16)}</div></div></div>')   # FIN10: the section 53 Select
 
 def sex(c, ro=False):
     sx = c['sx']

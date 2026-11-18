@@ -49,6 +49,10 @@ def sexsign(t):
     return f'<span class="ip-sex ip-sex--{c}">{"♀" if sx == "F" else "♂"}</span> pentru {"găini" if sx == "F" else "cocoși"}'
 def rec(k, size=14): return f'<span class="ip-rec ip-rec--feed s13-rec">{icon(k, size)}</span>'
 FARMS = ['Hîrbovăț', 'Telița']
+CYC = json.loads((ROOT / 'design/data/extracts/cycles.json').read_text(encoding='utf-8'))
+assert [c['status'] for c in CYC['cycles'] if c['farm_id'] == 'telita'] == ['closed'] and \
+    max(c['end_date'] for c in CYC['cycles'] if c['farm_id'] == 'telita') == '2026-02-28'  # no open cycle at Telița on 10.11 or 16.11.2026
+TEL_WHY = 'fără ciclu deschis'
 def kgs(v): return f'<span class="ip-num">{n(v)}{NB}kg</span>'
 
 # ---------- phone form (S7 shell) ----------
@@ -59,8 +63,19 @@ assert HEAD.count('Livrare hrană') == 1 and dd(EDAY) in HEAD and icon('delivery
 def farm(ro=False, touch=True):
     t = ' ip-input--touch' if touch else ''
     if ro: return f'<div class="ip-field"><label class="ip-label" for="f-farm">Fermă</label><span class="ip-input{t} is-readonly"><input id="f-farm" type="text" value="Hîrbovăț" readonly/></span></div>'
-    opts = ''.join(f'<option{" selected" if f == "Hîrbovăț" else ""}>{f}</option>' for f in FARMS)
-    return f'<div class="ip-field"><label class="ip-label" for="f-farm">Fermă</label><span class="ip-input{t}"><select id="f-farm">{opts}</select>{icon("chev", 16)}</span></div>'
+    # FIN12 (D130): Telița has no open cycle (closed 28.02.2026), so it is listed disabled with its reason; options with
+    # state make Fermă the section 53 Select: phone opens the BottomSheet (aria-haspopup dialog, no list in the page),
+    # desktop its listbox (hidden while closed)
+    lbl = '<span class="ip-label" id="f-farm-l">Fermă</span>'
+    if touch:
+        return (f'<div class="ip-field">{lbl}<div class="ip-select"><div class="ip-input ip-select__btn{t}" id="f-farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="f-farm-l">'
+                f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div></div></div>')
+    O = '<span class="ip-select__txt"><span class="ip-select__top">'
+    opts = (f'<li class="ip-menu__item ip-select__opt" role="option" id="f-farm-o1" aria-selected="true"><span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span>{O}{FARMS[0]}</span></span></li>'
+            f'<li class="ip-menu__item ip-select__opt" role="option" id="f-farm-o2" aria-selected="false" aria-disabled="true"><span class="ip-select__chk" aria-hidden="true"></span>{O}{FARMS[1]} <span class="ip-note">{TEL_WHY}</span></span></span></li>')
+    return (f'<div class="ip-field">{lbl}<div class="ip-select"><div class="ip-input ip-select__btn{t}" id="f-farm" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="f-farm-list" aria-labelledby="f-farm-l">'
+            f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div>'
+            f'<ul class="ip-menu ip-select__menu" role="listbox" id="f-farm-list" aria-labelledby="f-farm-l" tabindex="-1" hidden="hidden">{opts}</ul></div></div>')
 
 DATE = B.DATE.replace(dd(B.TODAY), dd(EDAY))
 assert DATE.count(dd(EDAY)) == 1 and f'SAPT {EWEEK}' in DATE
@@ -165,7 +180,7 @@ PANEL = f'''<aside class="ip-sidepanel s13-panel" id="lp" aria-labelledby="lp-t"
 </div>
 <div class="ip-sidepanel__foot"><span class="ip-note" id="lp-why">Scrie cantitatea în kg</span><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="lp-why">Adaugă</button></div></div>
 </aside>'''
-PANEL = re.sub(r'((?:id|for|aria-describedby)="[^"]*")', lambda m: re.sub(r'\bf-', 'p-', m.group(1)), PANEL)  # S11 page has its own f-farm
+PANEL = re.sub(r'((?:id|for|aria-describedby|aria-labelledby|aria-controls)="[^"]*")', lambda m: re.sub(r'\bf-', 'p-', m.group(1)), PANEL)  # S11 page has its own f-farm
 DH = 1024
 # the page reflows beside the panel (margin = panel-w, nothing under it, D73); its "Livrare hrană" key shows pressed and
 # controls the open panel, as secondary, so the panel's Adaugă stays the one primary key in view
