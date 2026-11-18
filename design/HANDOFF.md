@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 029306b
+Updated: 2026-11-18 · Last commit: c4ae55e
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 98 / 99 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN16; all SYS jobs done
+Done 99 / 99 (final review running) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; final cross-screen review; all SYS jobs done
 
 ## Just finished
+- FIN16 S4 leftovers: ciclu ales Stats 116px at 1280/1440; Seria 2025 "Vârf · ouă pe zi" 22 739 (SAPT 9, 02.05–08.05.2025); Rezumat + S2 De verificat lists ul/li; De verificat empty row on S4 ciclu ales + new S2 board manager · fermă goală (Telița) x 7740 (6 S2 boards +470); S4 one column below 1000px (S9/S10/S16 board rules gone, S16 scrolls re-measured); farm track in §65 trackbox, CycleSelector 416px, track text ≥11px everywhere; D140 to review; passed first review (c4ae55e)
 - FIN15B shell: §61–65 `ip-block`, `ip-grow`, `ip-dockpage`, `ip-sidepanel__body--form`, `ip-screen--fixed`/`__view`/`__savebar`, `ip-m0` (all sNN-m0), `ip-nowrap`, `ip-muted`, `ip-trackbox` + `ip-track--1160|1000|720|560`; 245 boards pixel-identical; D139 to review (same-CSS/different-job rules kept as screen CSS); 1 fix round (trackbox) (029306b)
 - FIN15 shell: §56–60 `ip-shell`/`__side`/`__main`, `ip-sidebar__account`, `ip-pagehead__meta`, `ip-sechead`, `ip-screen`/`__main`/`__tabbar`, `ip-sidepanel--dock`/`__title`/`__keys`, `ip-m0`, `ip-emptybox`, `ip-empty__line`, `ip-scrimhost`, `ip-savebar__sum--2l`, HallCard `ip-eggs__base`; 245 boards, pixel-identical except S6/S8 ferma-fara-pasari EmptyState key +8px (system step margin); D138 to review; FIN15B queued; passed first review (e283a57)
 - FIN14B tables: §32 totals row = one line-strong edge (row above drops its rule; S4, S12, S17-9, CostBlock); CostBlock scroll = named focusable region with sticky first column (S13 1280); `span.ip-table__ico` replaces head-icon copies; S3 table → `ip-tablescroll--framed`; dead rule removed; D137 to review; 146 boards (31 markup); 1 fix round (CostBlock sticky) (022ea86)
@@ -81,7 +82,7 @@ Done 98 / 99 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN16 → final cross-screen review (in order; FIN02–FIN05 share generators)
+- Final cross-screen review (FINAL), then Complete (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -152,6 +153,7 @@ Done 98 / 99 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - FIN14B: project/additions.css (§11, §32) + 146 boards (31 with markup changes: S3, S4T, S11, S12, S17-9)
 - FIN15: project/additions.css (§20, §56–60) + 245 boards
 - FIN15B: project/additions.css (§61–65) + 245 boards
+- FIN16: project/additions.css (§1, §65) + 168 boards (new S2-acasa manager fermă goală board) + canvas.json (S2 row)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
