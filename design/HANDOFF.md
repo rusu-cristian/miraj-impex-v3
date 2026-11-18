@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 5c81931
+Updated: 2026-11-18 · Last commit: 0a6c8cc
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 106 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX07; next last review pass; all SYS jobs done
+Done 107 / 107 (last pass running) (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FINAL2 last review pass; all SYS jobs done
 
 ## Just finished
+- FX07 nav parent (D142): S6/S7/S8 back "Înapoi la Înregistrează" (#inregistreaza, 31 boards), S15 desktop crumb "Înregistrează › Introdus azi", 9 S15 phones get ip-crumbs--touch (telefon h 1620); rows S16–S1 moved +12 by hand (user approved); passed review (0a6c8cc)
 - FX06 small items: S16 dupa-stergere shows the page end at every width (focus 836 at 1280; D146 to review); S4 Vârf no repeated unit; S3 dash `.ip-sex > b`; 7 regions tabindex=0; retry line first on every Banner (incl. SectionTree preview); S2 „Lipsesc date” și „Introdus azi”; S13 Toast "· fără preț"; S3 skeleton + §35 duplicates dropped; 1 fix round (5c81931)
 - FX05: §1 EventRow figure nowrap (+ MissingRow normal), §42 `.ip-skel{display:block}`, §63 `html:has(.ip-screen__savebar)` scroll-padding; 212 boards style-only, 415/415 shots identical; Banner/Toast/SectionTree/UserRow/OneTimePassword/EntryCardPlus previews on D143 copy; sys05 keeps ip-eggs__base; passed review (7a03a6f)
 - FX04 copy: failure Banners "<Obiect> nu s-a salvat: …" / "<Obiecte> nu s-au încărcat." + one retry line "Verifică conexiunea la internet, apoi apasă Reîncearcă."; S6/S7/S8/S13 Banner at form end (D141); Toasts object first (D143); Reîncearcă focus on every form; 31 boards; passed review; copy nits → FX06, system previews → FX05 (71bfa8d)
@@ -168,6 +169,7 @@ Done 106 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FI
 - FX04: 31 boards (23 Banner, 8 Toast)
 - FX05: project/additions.css (§1, §42, §63) + 212 boards (style only)
 - FX06: project/additions.css (§35) + 24 boards
+- FX07: 41 boards (S6/S7/S8 back key, S15 crumbs) + canvas.json (S15 telefon h, 138 boards y +12)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
