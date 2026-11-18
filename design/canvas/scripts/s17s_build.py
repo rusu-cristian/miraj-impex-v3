@@ -69,15 +69,15 @@ assert chg_row(REAL) == Y.chg_row(REAL)
 
 def block(rows, note, foot=Y.FOOT):
     lst = f'<ul class="ip-list ip-list--change" aria-labelledby="h-chg">{Y.COLS}{"".join(rows)}</ul>'
-    return (f'<section class="s4-block s17-block" aria-labelledby="h-chg"><div class="ip-list__head"><h2 class="ip-t-heading" id="h-chg">Modificări</h2>'
-            f'<p class="ip-note">{note}</p></div>{lst}<p class="ip-note s4s-m0">{foot}</p></section>')
+    return (f'<section class="ip-block s17-block" aria-labelledby="h-chg"><div class="ip-list__head"><h2 class="ip-t-heading" id="h-chg">Modificări</h2>'
+            f'<p class="ip-note">{note}</p></div>{lst}<p class="ip-note ip-m0">{foot}</p></section>')
 def shell(sb, parts): return f'<div class="ip-shell">{sb}<main class="ip-shell__main">\n' + '\n'.join(parts) + '\n</main></div>'
 
 # ================================================================= 1 · din „modificat de” (owner): one record, all periods
 REC_TXT = f'Mortalitate · {REAL["sec"]} · ziua {REAL["day"]:%d.%m.%Y} · {REAL["farm"]}'
 def page_record():
     ban = (f'<div class="ip-banner ip-banner--info ip-banner--act ip-banner--1l">{icon("info", 16)}'   # static: present on load, no live role (S17P)
-           f'<div class="ip-banner__body"><p class="s4s-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p></div>'
+           f'<div class="ip-banner__body"><p class="ip-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p></div>'
            '<a class="ip-btn ip-btn--secondary ip-banner__key" href="#istoric-modificari">Arată toate modificările</a></div>')   # back to the 4 săpt. default
     note = f'1 modificare · Mortalitate · {REAL["sec"]} · ziua {num(format(REAL["day"], "%d.%m.%Y"))} · tot istoricul'
     foot = ('Istoricul unei înregistrări arată fiecare corecție sau ștergere a ei, cu valorile vechi și noi. '
@@ -155,8 +155,8 @@ def p_sheet():
 def phone_sheet():  # as s14s_build.phone_sheet: the page (at its top) and the tab bar inert under the scrim, the sheet at the foot
     b = Y.phone_page()
     for a, z in (('aria-haspopup="dialog" aria-expanded="false"', 'aria-haspopup="dialog" aria-expanded="true" aria-controls="pf-sheet"'),
-                 ('<div class="ip-screen s14-phone">', '<div class="ip-screen s14-phone s7s-vp ip-scrimhost">'),
-                 ('<main class="ip-screen__main s2-main">', '<div class="s7s-view" inert="inert"><main class="ip-screen__main s2-main">'),
+                 ('<div class="ip-screen s14-phone">', '<div class="ip-screen s14-phone ip-screen--fixed ip-scrimhost">'),
+                 ('<main class="ip-screen__main s2-main">', '<div class="ip-screen__view" inert="inert"><main class="ip-screen__main s2-main">'),
                  ('</main>', '</main></div>'), ('<nav class="ip-tabbar', '<nav inert="inert" class="ip-tabbar')):
         assert b.count(a) == 1, a; b = b.replace(a, z)
     assert b.endswith('</div>')
@@ -174,7 +174,7 @@ out = []
 for stem, title, fn, css, h0 in DESK:
     h = HEIGHTS.get(stem, h0); s4.write(stem, title, fn(), '', H=h, css=css); out.append((stem, title, h, 1440))
 for stem, title, fn in PHONE:
-    A.HEIGHTS[stem] = HEIGHTS.get(stem, 844); out.append(A.write_phone(stem, title, fn(), css=CSS_SHEET))
+    A.HEIGHTS[stem] = HEIGHTS.get(stem, 844); out.append(A.write_phone(stem, title, fn(), css=CSS_SHEET, fixed=True))
 prev = json.loads(pathlib.Path('/tmp/s17/boards.json').read_text())
 assert [b['stem'] for b in prev] == [s for s, _, _ in Y.DESK] + [s for s, _, _ in Y.PHONE]
 pathlib.Path('/tmp/s17/boards.json').write_text(json.dumps(prev + [{'stem': s, 'w': w, 'h': h} for s, _, h, w in out]))

@@ -119,10 +119,10 @@ def groups():
     ]
 
 def pagehead(ctx, note):
-    return (f'<header class="ip-pagehead s2-phead"><div><h1>Introdus azi</h1><p class="ip-note ip-num s2-m0">{ctx}</p>'
-            f'<p class="ip-note s2-m0 s15-lead">{note}</p></div></header>')
+    return (f'<header class="ip-pagehead s2-phead"><div><h1>Introdus azi</h1><p class="ip-note ip-num ip-m0">{ctx}</p>'
+            f'<p class="ip-note ip-m0 s15-lead">{note}</p></div></header>')
 N_REC = 6 + 3 + 1 + 12
-LEAD = f'Dr. Ceban · {num(4)} salvări, {num(N_REC)} înregistrări</p><p class="ip-note s2-m0">Poți modifica sau șterge până la {num("23:59")}.'
+LEAD = f'Dr. Ceban · {num(4)} salvări, {num(N_REC)} înregistrări</p><p class="ip-note ip-m0">Poți modifica sau șterge până la {num("23:59")}.'
 HEAD_V = pagehead(A.CTX_VET, LEAD)
 
 # ---------- boards ----------

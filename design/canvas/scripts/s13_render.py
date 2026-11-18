@@ -14,7 +14,7 @@ CHECK = """() => {
  const main = document.querySelector('.ip-screen__main'); const sb = document.querySelector('.ip-savebar');
  return {dup, broken: refs, sw: document.documentElement.scrollWidth,
    mainBottom: main ? Math.round(main.getBoundingClientRect().bottom) : null, barTop: sb ? Math.round(sb.getBoundingClientRect().top) : null,
-   body: (() => { const b = document.querySelector('.s13-pbody'); return b ? [b.scrollHeight, b.clientHeight] : null })()};
+   body: (() => { const b = document.querySelector('.ip-sidepanel__body--form'); return b ? [b.scrollHeight, b.clientHeight] : null })()};
 }"""
 async def main():
     async with async_playwright() as p:

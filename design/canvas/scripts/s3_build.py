@@ -141,9 +141,9 @@ def track(mode='default'):
         sub = '<span class="ip-note">doar fermele tale · Telița: nu ai acces</span>'
     else:
         sub = f'<span class="ip-note ip-num">10.2025–12.2026 · 2 ferme · 2 cicluri</span>'
-    return f'''<section class="s4-block" aria-labelledby="h-track">
+    return f'''<section class="ip-block" aria-labelledby="h-track">
 <div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>
-<div class="s4-tight"><div class="s3-trackbox">{svgs}</div>{legend}</div>
+<div class="s4-tight"><div class="ip-trackbox">{svgs}</div>{legend}</div>
 </section>'''
 
 def track_svg(mode, TW):
@@ -211,12 +211,12 @@ def track_svg(mode, TW):
         x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
         tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 6}"/><text class="month" x="{x}" y="{H + 20}" text-anchor="{anc}">{lbl}</text>'
     VH = H + 24
-    return (f'<svg class="ip-track s3-track s3-track--{TW}" viewBox="0 0 {TW} {VH}" role="group" aria-label="Ciclurile seriei {"2025" if mode == "closed" else "2026"} pe ferme">'
+    return (f'<svg class="ip-track s3-track {"ip" if TW in (1160, 1000, 720, 560) else "s3"}-track--{TW}" viewBox="0 0 {TW} {VH}" role="group" aria-label="Ciclurile seriei {"2025" if mode == "closed" else "2026"} pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 
 def track_loading():  # same box as the live track (azi room 22 · lane 26 · gap 22 · lane 26 · axis 24, legend 16): no shift when it loads
     lane = f'<div class="s3-sklane">{sk("s3-sklbl")}{sk("s3-skbar")}</div>'
-    return f'''<section class="s4-block" aria-hidden="true">
+    return f'''<section class="ip-block" aria-hidden="true">
 <div class="ip-sechead"><h2 class="ip-t-heading">Cicluri pe ferme</h2></div>
 <div class="s4-tight"><div class="s3-sktrack">{lane}{lane}<div class="s3-skaxis"></div></div><div class="s3-sklegend">{sk("s3-w24")}</div></div>
 </section>'''
@@ -254,7 +254,7 @@ def fs_hirbovat():
 <div class="ip-fsum__alive"><span class="ip-cap">În viață · {ddate(TODAY)}</span><div><span class="ip-pair ip-pair--lg"><span class="ip-sex ip-sex--hen">♀ <b>{n(ALIVE['F'])}</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>{n(ALIVE['M'])}</b></span></span><span class="ip-note">total {n(ALIVE['all'])}</span></div></div>
 <dl class="ip-fsum__figs">{figs}</dl></article>'''
 def fs_empty(fid, name, href, word, lines, step, tags=True):
-    body = ''.join(f'<p class="s3-m0">{l}</p>' for l in lines)
+    body = ''.join(f'<p class="ip-m0">{l}</p>' for l in lines)
     return f'''<article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-{fid}" aria-describedby="fs-{fid}-c">{fs_head(fid, name, href, lamp('off', word), tags)}
 <div class="ip-fsum__empty" id="fs-{fid}-c">{body}{step}</div></article>'''
 def fs_prev():  # Hîrbovăț · Seria 2025 (real previous flock; no flock count, no guide for these figures)
@@ -278,14 +278,14 @@ def summaries(mode='default'):
         cards, note = fs_empty('telita', 'Telița', '', 'fără acces', NOACC, '', tags=False) + fs_hirbovat(), 'fermele tale: Hîrbovăț'
     else:
         cards, note = fs_telita() + fs_hirbovat(), f'2 ferme · {ddate(TODAY)}'
-    return f'''<section class="s4-block" aria-labelledby="h-farms">
+    return f'''<section class="ip-block" aria-labelledby="h-farms">
 <div class="ip-sechead"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note{" ip-num" if any(c.isdigit() for c in note) else ""}">{note}</span></div>
 <div class="ip-fsums ip-fsums--stretch">{cards}</div>
 </section>'''
 def summaries_loading():
     card = (f'<div class="ip-fsum ip-fsum--wide s3-skcard"><div class="ip-fsum__head">{sk("s3-w30 s3-h16")}{sk("s3-w14")}</div>{sk("s3-w40")}'
             f'{sk("s3-w50 s3-h20")}' + ''.join(f'<div class="s3-skfig"><div class="s3-skrow">{sk("s3-w40")}{sk("s3-w20")}</div>{sk("s3-w60")}</div>' for _ in range(4)) + '</div>')
-    return f'''<section class="s4-block" aria-hidden="true">
+    return f'''<section class="ip-block" aria-hidden="true">
 <div class="ip-sechead"><h2 class="ip-t-heading">Ferme</h2></div>
 <div class="ip-fsums ip-fsums--stretch">{card}{card}</div>
 </section>'''
@@ -298,14 +298,14 @@ def tabs(series='2026'):
         for i, (k, t) in enumerate(TABS)) + '</div>'
 COLS = [('', 'Început'), ('mortality', 'Mortalitate'), ('', 'Mort.\u00a0%'), ('cull', 'Sacrificare'), ('sexerr', 'Eroare sexare'),
         ('transfer', 'Transfer'), ('sale', 'Vânzare'), ('', 'Diferență registru'), ('', f'În\u00a0viață · {ddate(TODAY)[:5]}')]
-COLS_CLOSED = COLS[:-1] + [('', f'La închidere · <span class="s3-nw">{ddate(cP["end_date"])}</span>')]  # a closed series counts at its end, not today
+COLS_CLOSED = COLS[:-1] + [('', f'La închidere · <span class="ip-nowrap">{ddate(cP["end_date"])}</span>')]  # a closed series counts at its end, not today
 def th(k, w):  # S3P: caption in Sans (DataTable: caption headers); may wrap at 1280, the icon stays with the first word
     i = hico(k) if k else ''
     first, _, rest = w.partition(' ')
-    return f'<th scope="col" class="num"><span class="s3-nw">{i}{first}</span>{(" " + rest) if rest else ""}</th>'
+    return f'<th scope="col" class="num"><span class="ip-nowrap">{i}{first}</span>{(" " + rest) if rest else ""}</th>'
 def cell(v, sx, sign=False, unit=''):
-    if v is None: return '<td class="num s3-dash">–</td>'
-    if isinstance(v, str): return f'<td class="num s3-dash">{v}</td>'
+    if v is None: return '<td class="num ip-muted">–</td>'
+    if isinstance(v, str): return f'<td class="num ip-muted">{v}</td>'
     txt = ('−' + n(v)) if (sign and v) else (n(v, 2) + unit if unit else n(v))
     cls = 'hen' if sx == 'F' else 'rooster'
     return f'<td class="num"><span class="ip-sex ip-sex--{cls}"><b>{txt}</b></span></td>'
@@ -355,7 +355,7 @@ def pasari(mode='default'):
         if mode == 'viewer':
             notes = ['Început: sosire prin transfer la Hîrbovăț.', f'Nicio vânzare în Seria 2026 până pe <span class="ip-num">{ddate(TODAY)}</span>.']
         cap = 'Păsări în Seria 2026, pe ferme'
-    note = ''.join(f'<p class="ip-note s3-m0">{x}</p>' for x in notes)
+    note = ''.join(f'<p class="ip-note ip-m0">{x}</p>' for x in notes)
     return f'''<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">
 <div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="{cap}; mortalitate % din păsările de la începutul ciclului fermei"><table class="ip-table ip-table--rowheads ip-table--wraphead s3-table"><caption class="ip-sr">{cap}; mortalitate % din păsările de la începutul ciclului fermei</caption>{head}{body}</table></div>
 <div class="s3-notes">{note}</div>
@@ -379,7 +379,7 @@ def page(mode='default'):
     main = f'''<main class="ip-shell__main">
 {header(mode)}
 {mid}
-<section class="s4-block" aria-label="Date pe ferme">
+<section class="ip-block" aria-label="Date pe ferme">
 {tabs(series)}
 {panel}
 </section>
@@ -389,7 +389,6 @@ def page(mode='default'):
 
 CSS = s4.CSS + '''
 .s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
-.s3-m0{margin:0}
 .s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
 .s3-group .s4-ico{margin-right:var(--space-1)} /* group line: icon space-1 + the line's gap, as before FIN14B */
 .s3-panel{container-type:inline-size}
@@ -398,13 +397,8 @@ CSS = s4.CSS + '''
 .s3-glink{display:inline-flex;align-items:center;min-height:var(--space-6);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair))}
 .s3-glink:hover{text-decoration-color:var(--ink)}
 .s3-gname{display:inline-flex;align-items:center;min-height:var(--space-6)}
-.s3-dash{color:var(--ink-muted)}
-.s3-nw{white-space:nowrap}
 .s3-diff{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
-.s3-trackbox{container-type:inline-size}
-.s3-track--1000{display:none}
-@container (max-width: 1159.98px){.s3-track--1160{display:none}.s3-track--1000{display:block}}
 .s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
 .s3-skmeta .ip-skel{display:block}
 .s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}

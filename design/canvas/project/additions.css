@@ -1859,3 +1859,64 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * the BottomSheet scrim (ip-scrim--sheet, sections 33/39) or the Dialog scrim (ip-scrim--phone, section 35), fills the
  * whole screen, tab bar and SaveBar included. Was s9-modal (S2, S8, S9, S10, S14, S16–S18 phone boards). */
 .ip-scrimhost{position:relative}
+
+/* =====================================================================================================
+ * FIN15B · The last shell copies (page blocks, docked page, SidePanel form body, fixed phone screen, utilities),
+ * system-wide (were screen CSS copied into many generators). Spec: components.md › Additions › FIN15B.
+ * ===================================================================================================== */
+
+/* ---------- 61. Desktop page: block, spacer (FIN15B) ---------- */
+/* section.ip-block: one block of a page (a section head div.ip-sechead, section 56, then its content: a table, a list,
+ * tiles, a chart), as ip-stack with space-3 inside and allowed to shrink in a grid or flex row (min-width 0), so a wide
+ * table scrolls in its region instead of widening the page. .ip-grow takes the free space of a flex row or column: the
+ * Sidebar's spacer before its account foot (span.ip-grow), a Banner's text beside its icon. Was s4-block and s4-grow on
+ * every desktop board (S2–S4, S9–S22). */
+.ip-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+.ip-grow{flex:1}
+
+/* ---------- 62. SidePanel docked: the page beside it, the scrolling form body (FIN15B) ---------- */
+/* div.ip-dockpage holds the page shell (div.ip-shell) beside a docked SidePanel (section 58): it fills the positioned
+ * page frame (the board's .ip-root, as tall as the frame: its height comes from the frame, never its content) and
+ * keeps panel-w clear on the right, so nothing sits under the panel; the page clips at the frame's foot (in the app it
+ * scrolls). div.ip-sidepanel__body.ip-sidepanel__body--form: an entry form in the SidePanel body, docked or as the
+ * phone sheet (section 39): it takes the height between the head and the foot keys and scrolls, fields space-4 apart.
+ * Was s13-vp (its 1024px came from the board) and s13-pbody (S9, S10, S13, S16, S18–S22). */
+.ip-dockpage{position:absolute;inset:0 var(--panel-w) 0 0;overflow:hidden}
+.ip-sidepanel__body--form{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
+
+/* ---------- 63. Phone screen fixed to its frame: view, sticky SaveBar (FIN15B) ---------- */
+/* div.ip-screen.ip-screen--fixed: a phone screen exactly as tall as its frame (390×844 on a board: the frame gives the
+ * height, never its content), so the FormHeader stays at the top and the SaveBar or BottomTabBar at the foot.
+ * div.ip-screen__view between them takes the rest and clips the form (in the app it scrolls); its main keeps its own
+ * height (not stretched). ip-screen__view--end shows the form's end (scrolled to the bottom). div.ip-savebar.ip-screen__savebar
+ * = the SaveBar as the screen's last child, sticky at its foot above the content (as the tab bar, section 57). A modal over
+ * the screen adds .ip-scrimhost (section 60). Was s7s-vp (its 844px came from the board), s7s-view(--end) and s7-savebar
+ * (S2, S6–S10, S13–S15, S17 phone boards). */
+.ip-screen--fixed{height:100%;min-height:0;overflow:hidden}
+.ip-screen__view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.ip-screen__view > .ip-screen__main{flex:none}
+.ip-screen__view--end{justify-content:flex-end}
+.ip-screen__savebar{position:sticky;bottom:0;z-index:2}
+
+/* ---------- 64. Utilities: no wrap, muted ink (FIN15B) ---------- */
+/* .ip-nowrap keeps a run on one line: a figure with its unit or lamp, a date range, a name (white-space only; the run
+ * still moves as a whole when its line wraps). .ip-muted sets a figure or line in ink-muted: a figure beside the one
+ * that counts, the unknown "–" with its reason (craft §6). With .ip-m0 (section 58) the system's one-property utilities.
+ * Were sNN-nw on nine screens (S2, S3, S11, S13, S14, S18, S19, S21, S22), s4t-muted, s11-muted, s3/s18/s20-dash and
+ * s20-none; ip-m0 also replaces s4s-, s7-, s2-, s3-, s11- and s12-m0. */
+.ip-nowrap{white-space:nowrap}
+.ip-muted{color:var(--ink-muted)}
+
+/* ---------- 65. CycleTrack width box: one drawing per width (FIN15B) ---------- */
+/* div.ip-trackbox holds the CycleTrack drawn at fixed viewBox widths, svg.ip-track.ip-track--1160 (and --1000, --720,
+ * --560, as the screen needs), so the track text stays 11px (section 55) and the blocks keep their targets instead of
+ * scaling down. A container query on the box shows the widest drawing it has that fits: 1160 from 1160px, 1000 below,
+ * then 720 below 1000 and 560 below 720 when the box has them (a box without the narrower drawing keeps the 1000 one).
+ * The hidden ones are display:none, so they leave the tab order and the accessibility tree; same ARIA for each. As
+ * ip-chartbox (section 16): the query's widths are the viewBox widths (container queries can't read a variable). Was
+ * s2-, s3- and s18-trackbox/track--N (S2, S3, S18–S22); FIN16 uses it for the S4/S9/S10 1280 track text size. */
+.ip-trackbox{container-type:inline-size}
+.ip-track--1000,.ip-track--720,.ip-track--560{display:none}
+@container (max-width: 1159.98px){.ip-track--1160{display:none}.ip-track--1000{display:block}}
+@container (max-width: 999.98px){.ip-trackbox:has(> .ip-track--720) > .ip-track--1000{display:none}.ip-track--720{display:block}}
+@container (max-width: 719.98px){.ip-trackbox:has(> .ip-track--560) > .ip-track--720{display:none}.ip-track--560{display:block}}

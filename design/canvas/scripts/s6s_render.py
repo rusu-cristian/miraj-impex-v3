@@ -21,7 +21,7 @@ CHECK = """() => {
 }"""
 SCROLL = """(t) => {
  const main = document.querySelector('.ip-screen__main'); main.style.marginTop = '0px';
- const card = document.getElementById(t).closest('section'); const view = document.querySelector('.s7s-view').getBoundingClientRect();
+ const card = document.getElementById(t).closest('section'); const view = document.querySelector('.ip-screen__view').getBoundingClientRect();
  const r = card.getBoundingClientRect(); const pad = 16;
  return Math.max(0, Math.min(Math.ceil(r.bottom + pad - view.bottom), Math.floor(r.top - view.top - pad)));
 }"""

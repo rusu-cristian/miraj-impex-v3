@@ -23,7 +23,7 @@ async def main():
             await pg.goto(f'file:///tmp/s16/{st}.html'); await pg.wait_for_timeout(800)
             r = await pg.evaluate(CHECK); print(st, w, json.dumps(r, ensure_ascii=False))
             if measure:
-                sh = await pg.evaluate('document.querySelector(".s13-vp").scrollHeight')  # page height (the board clips it)
+                sh = await pg.evaluate('document.querySelector(".ip-dockpage").scrollHeight')  # page height (the board clips it)
                 hs = json.loads(HJ.read_text()); hs[MS + '@scroll'] = min(r['jurnal'] - 24, sh - h); HJ.write_text(json.dumps(hs, indent=1) + '\n')
                 print('scroll', hs[MS + '@scroll']); await pg.close(); break
             await pg.screenshot(path=str(R / 'design/shots' / f'S16-{i}.png'))

@@ -59,14 +59,14 @@ def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
 SK_R = ('<tr class="ip-table__skel"><th scope="row">' + skel('w3') + '</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w2', 'w2', 'w2'))
         + f'<td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghidul și secțiunile lor.</p>'
-           f'<section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
+           f'<section class="ip-block" aria-labelledby="h-fer" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table">'
            f'{M.COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Adaugă fermă stays (the name check runs on save)
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
+LOADERR = (f'<section class="ip-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
-           f'<div class="ip-banner__body"><p class="s4s-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
-           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
+           f'<div class="ip-banner__body"><p class="ip-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 # ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
 def noaccess():
@@ -109,9 +109,9 @@ def edit(level, label, value, e=None, focus=True, is_last=True):
         r = r.replace(a, 'class="ip-input ip-stree__in is-error is-focus"')
         assert r.count(err('st-e-err', e)) == 1   # S19P: alert icon, as the panel field errors (SYS10 draws it since FIN13)
     return r
-TREE_BANNER = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s4-grow">'
-               '<p class="s4s-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
-               '<p class="s4s-m0">Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă din nou Salvează.</p></div></div>')
+TREE_BANNER = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="ip-grow">'
+               '<p class="ip-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
+               '<p class="ip-m0">Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă din nou Salvează.</p></div></div>')
 ORDER_UP = ['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2']
 assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
 MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
@@ -152,7 +152,7 @@ BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),
 desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales din „fără ghid”',
      M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)
 # 6 · Nume gol (D39): Fermă nouă after Adaugă ferma with nothing filled; focus on Nume (first error)
-NEWP = f'<div class="s13-vp s18-vp">{M.page(None, pressed_new=True)}</div>'
+NEWP = f'<div class="ip-dockpage s18-vp">{M.page(None, pressed_new=True)}</div>'
 FREE = 'Telița 2'  # FIN12 (D133): the example names no farm in the extracts (Telița, Hîrbovăț are taken), as S20S's guide name
 assert all(FREE.casefold() != f['name'].casefold() for f in json.loads((ROOT / 'design/data/extracts/farms-sections.json').read_text(encoding='utf-8'))['farms'])
 desk('--nume-gol', f'Fermă nouă · nume gol și tip lipsă · {D39}',

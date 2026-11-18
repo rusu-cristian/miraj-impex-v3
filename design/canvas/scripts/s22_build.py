@@ -113,7 +113,7 @@ def sub(s, a, z, n=1):
 CX = ' s22-cx'   # columns that fold under the name beside the panel
 def fold(u):
     fm = u['farms'] or 'toate fermele'
-    seen = f'<span class="ip-num s22-nw">{u["seen"]}</span>' if u['seen'] else '<span class="s22-nw">– încă n-a intrat</span>'
+    seen = f'<span class="ip-num ip-nowrap">{u["seen"]}</span>' if u['seen'] else '<span class="ip-nowrap">– încă n-a intrat</span>'
     return f'<span class="s22-fold"><span class="ip-num">{u["login"]}</span> · {fm} · {seen}</span>'
 def row(p, u, focus=False, cur=False):
     """The SYS12 row, unchanged except: the name cell carries the fold line, three cells the fold class; the row whose
@@ -133,21 +133,21 @@ for h in ('Login', 'Ferme', 'Ultima intrare'):
 # None = the column that takes the rest
 HEAD = SKL.widths(HEAD, [None, 15.4, 12.8, 17.6, 23.6, 9.9, 3.5], [89.8, 78.28, 61.08, 92.48, 133.06, 41.75, 32])  # + loaded min-content px (fix 1)
 def users(p, body, sumline, note='', **kw):
-    """SYS12 users() as an S19–S21 list block (FIN07): section.s4-block with the ip-sechead (h2 "Utilizatori" under the h1, the
+    """SYS12 users() as an S19–S21 list block (FIN07): section.ip-block with the ip-sechead (h2 "Utilizatori" under the h1, the
     count on the right; none while loading or failed), the key moved to the page head; the list box is the fold container."""
     s = U['users'](p, body, sumline, **kw)
     k = re.search(r'<button type="button" class="ip-btn ip-btn--primary" aria-haspopup="dialog">.*?Adaugă utilizator</button>', s).group(0)
     cnt = f'<span class="ip-note" id="{p}-sum">{sumline}</span>' if sumline else ''
     s = sub(s, f'<section class="ip-users" aria-labelledby="{p}-h"><div class="ip-list__head"><h3 class="ip-cap" id="{p}-h">Utilizatori</h3>'
                f'<p class="ip-note" id="{p}-sum">{sumline}</p>{k}</div>',
-            f'<section class="s4-block" aria-labelledby="{p}-h"><div class="ip-sechead"><h2 class="ip-t-heading" id="{p}-h">Utilizatori</h2>{cnt}</div>')
+            f'<section class="ip-block" aria-labelledby="{p}-h"><div class="ip-sechead"><h2 class="ip-t-heading" id="{p}-h">Utilizatori</h2>{cnt}</div>')
     if kw.get('table', True):
         if not sumline:   # no count line to describe the table
             s = sub(s, f' aria-describedby="{p}-sum"', '')
         s = sub(s, U['HEAD'], HEAD)
         s = sub(s, '<div class="ip-users__box">', '<div class="ip-users__box s22-region">')
     return s[:-len('</section>')] + note + '</section>'
-NOTE = ('<p class="ip-note s4s-m0">Un cont dezactivat nu mai poate intra; ce a introdus rămâne în rapoarte și în Istoric modificări. '
+NOTE = ('<p class="ip-note ip-m0">Un cont dezactivat nu mai poate intra; ce a introdus rămâne în rapoarte și în Istoric modificări. '
         'Conturile nu se șterg.</p>')
 def ulist(us=BASE, focus=None, p='u', cur=None):
     """cur = the user open in the panel: their row is the current row (§45)."""
@@ -157,7 +157,7 @@ def shell(main, sb=None, inert=False, pressed=False):
     i = ' inert="inert"' if inert else ''
     return f'<div class="ip-shell"{i}>{sb or sidebar()}<main class="ip-shell__main">\n{header(pressed)}\n{main}\n</main></div>'
 def vp(main, inert=False, pressed=False):
-    return f'<div class="s13-vp s18-vp">{shell(main, inert=inert, pressed=pressed)}</div>'
+    return f'<div class="ip-dockpage s18-vp">{shell(main, inert=inert, pressed=pressed)}</div>'
 
 # ================================================================= user panel (SidePanel beside the page, as S19/S21)
 ERRI = icon('alert', 14)
@@ -228,15 +228,15 @@ def acct(u, pressed=None):
     if u.get('me'):
         note = 'Resetează-ți parola dacă ai uitat-o: cea veche nu mai merge, iar cea nouă se arată o singură dată.'
         keys += '<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="up-off-why">Dezactivează contul</button>'
-        why = '<p class="ip-note s4s-m0" id="up-off-why">Nu îți poți dezactiva propriul cont.</p>'
+        why = '<p class="ip-note ip-m0" id="up-off-why">Nu îți poți dezactiva propriul cont.</p>'
     else:
         keys += '<button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Dezactivează contul</button>'
-    return (f'<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap s4s-m0" id="up-acct-h">Cont</h3>'
-            f'<p class="s4s-m0 s22-state">{lamp("ok", "activ")}<span>{seen}</span></p>'
-            f'<p class="ip-note s4s-m0">{note}</p>'
+    return (f'<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap ip-m0" id="up-acct-h">Cont</h3>'
+            f'<p class="ip-m0 s22-state">{lamp("ok", "activ")}<span>{seen}</span></p>'
+            f'<p class="ip-note ip-m0">{note}</p>'
             f'<div class="s22-keys">{keys}</div>{why}</section>')
-NEWPW = ('<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap s4s-m0" id="up-acct-h">Parolă</h3>'
-         '<p class="s4s-m0">Parola temporară se generează la salvare și se arată o singură dată.</p></section>')
+NEWPW = ('<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap ip-m0" id="up-acct-h">Parolă</h3>'
+         '<p class="ip-m0">Parola temporară se generează la salvare și se arată o singură dată.</p></section>')
 SAVE = '<button type="button" class="ip-btn ip-btn--primary">Salvează utilizatorul</button>'   # FIN07: as Salvează ferma / Salvează tipul
 ADD = '<button type="button" class="ip-btn ip-btn--primary">Adaugă utilizatorul</button>'
 def ctx(u):
@@ -248,7 +248,7 @@ def panel(title, note, body, key=SAVE, inert=False):
     return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="up" aria-labelledby="up-t"{i}>\n<div class="ip-sidepanel__head"><div>'
             f'<h2 class="ip-t-heading ip-m0" id="up-t">{title}</h2>{nt}</div>'
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul utilizatorului">{icon("x")}</button></div>\n'
-            f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form s19-pbody">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 def upanel(u, farms_on=None, focus=False, extra='', inert=False, pressed=None, title=None):
     fo = (u['farms'] or '').split(', ') if farms_on is None else farms_on
@@ -275,8 +275,8 @@ def toast(text, what, where):
 # FIN07: as S19S/S21 se încarcă: a hidden status line, the block aria-busy, the box aria-hidden with the real head and the
 #   two §42 skeleton rows (SYS12 SK); the list head names no count
 LOADING = ('<p class="ip-sr" role="status">Se încarcă utilizatorii, cu rolul și fermele lor.</p>'
-           + sub(sub(users("u", U["SK"], ""), '<section class="s4-block" aria-labelledby="u-h">',
-                     '<section class="s4-block" aria-labelledby="u-h" aria-busy="true">'),
+           + sub(sub(users("u", U["SK"], ""), '<section class="ip-block" aria-labelledby="u-h">',
+                     '<section class="ip-block" aria-labelledby="u-h" aria-busy="true">'),
                  '<div class="ip-users__box s22-region">', '<div class="ip-users__box s22-region" aria-hidden="true">'))
 # FIN03 (D123): the Banner with action (additions.css §49), role=alert and the S19–S21 copy; the alert announces it, so the
 #   list's status line stays empty (it repeated the Banner's first sentence)
@@ -299,13 +299,13 @@ def phone_list():
                    f'<span class="ip-note s22-pm">{u["role"]} · {u["farms"] or "toate fermele"}</span>'
                    + (f'<span class="ip-note s22-pm">ultima intrare <span class="ip-num">{u["seen"]}</span></span>' if u['seen'] else
                       '<span class="ip-note s22-pm">– încă n-a intrat</span>') + '</th>'
-                   f'<td class="s22-nw">{lamp("ok", "activ") if u["active"] else lamp("off", "dezactivat")}</td></tr>' for u in BASE)
-    blk = (f'<section class="s4-block" aria-labelledby="h-usr"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-usr">Utilizatori</h2>'
+                   f'<td class="ip-nowrap">{lamp("ok", "activ") if u["active"] else lamp("off", "dezactivat")}</td></tr>' for u in BASE)
+    blk = (f'<section class="ip-block" aria-labelledby="h-usr"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-usr">Utilizatori</h2>'
            f'<span class="ip-note">{U["counts"](BASE)}</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-usr">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s22-ptable"><caption class="ip-sr">Utilizatorii, cu rolul, fermele, ultima intrare și starea lor</caption>'
            f'<thead><tr><th scope="col">Nume · rol · ferme · intrare</th><th scope="col">Stare</th></tr></thead><tbody>{rows}</tbody></table></div>'
-           f'<p class="ip-note s4s-m0">Utilizatorii îi adaugi și îi editezi pe calculator.</p></section>')
+           f'<p class="ip-note ip-m0">Utilizatorii îi adaugi și îi editezi pe calculator.</p></section>')
     cr = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     body = A.phone([f'<header class="ip-pagehead s2-phead s14-phead"><div>{cr}<h1>Utilizatori</h1></div></header>', blk])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
@@ -316,7 +316,6 @@ def phone_list():
 
 # ================================================================= CSS (screen-only; tokens only; system classes untouched)
 CSS22 = '''
-.s22-nw{white-space:nowrap}
 .s22-region{container:s22-users / inline-size}
 .ip-users__t td.s22-name{white-space:normal} /* S22P: beats bundle .ip-table td nowrap, so the fold line can wrap beside the panel at 1280 (it ran 4px past the list) */
 .s22-fold{display:none}

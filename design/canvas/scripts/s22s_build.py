@@ -86,12 +86,12 @@ def acct_off(u):
     Dezactivează contul, Resetează parola aria-disabled with the SYS12 reason (a deactivated user gets no new password)."""
     keys = ('<button type="button" class="ip-btn ip-btn--secondary">Reactivează contul</button>'
             '<button type="button" class="ip-btn ip-btn--secondary" aria-disabled="true" aria-describedby="up-pw-why">Resetează parola</button>')
-    return (f'<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap s4s-m0" id="up-acct-h">Cont</h3>'
-            f'<p class="s4s-m0 s22-state">{lamp("off", "dezactivat")}<span>ultima intrare <span class="ip-num">{u["seen"]}</span></span></p>'
-            f'<p class="ip-note s4s-m0">Rolul și fermele schimbate acum se aplică '
+    return (f'<section class="s22-acct" aria-labelledby="up-acct-h"><h3 class="ip-cap ip-m0" id="up-acct-h">Cont</h3>'
+            f'<p class="ip-m0 s22-state">{lamp("off", "dezactivat")}<span>ultima intrare <span class="ip-num">{u["seen"]}</span></span></p>'
+            f'<p class="ip-note ip-m0">Rolul și fermele schimbate acum se aplică '
             f'după ce îl reactivezi; reactivat, intră cu parola lui de dinainte.</p>'
             f'<div class="s22-keys">{keys}</div>'
-            f'<p class="ip-note s4s-m0" id="up-pw-why">Contul e dezactivat. Reactivează-l ca să-i dai o parolă nouă.</p></section>')
+            f'<p class="ip-note ip-m0" id="up-pw-why">Contul e dezactivat. Reactivează-l ca să-i dai o parolă nouă.</p></section>')
 def panel_off(u):
     p = S.upanel(u, focus=True)
     a = S.acct(u)

@@ -59,14 +59,14 @@ def skel(w, end=False): return f'<span class="ip-skel ip-skel--{w}{" ip-skel--en
 SK_R = (f'<tr class="ip-table__skel"><th scope="row">{skel("w2")}</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w1', 'w1'))
         + f'<td class="s19-act">{skel("w3", True)}</td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă ghidurile, cu tipul, săptămânile și ciclurile care le folosesc.</p>'
-           f'<section class="s4-block" aria-labelledby="h-gh" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
+           f'<section class="ip-block" aria-labelledby="h-gh" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s20-table">'
            f'{S.LCOLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Importă ghid stays (the name check runs on save)
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
+LOADERR = (f'<section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
-           f'<div class="ip-banner__body"><p class="s4s-m0">Ghidurile nu s-au încărcat.</p>'
-           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți importa un ghid nou și acum.</p></div>'
+           f'<div class="ip-banner__body"><p class="ip-m0">Ghidurile nu s-au încărcat.</p>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți importa un ghid nou și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 # ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
 def noaccess():

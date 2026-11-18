@@ -125,8 +125,8 @@ def shell(hdr, main):
     return f'<div class="ip-shell">{sidebar()}<main class="ip-shell__main">\n{hdr}\n{main}\n</main></div>'
 def block(hid, title, inner, note='', count=''):
     c = f'<span class="ip-note">{count}</span>' if count else ''
-    n = f'<p class="ip-note s4s-m0">{note}</p>' if note else ''
-    return (f'<section class="s4-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{c}</div>'
+    n = f'<p class="ip-note ip-m0">{note}</p>' if note else ''
+    return (f'<section class="ip-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{c}</div>'
             f'{inner}{n}</section>')
 def framed(label_id, table, focus=True):
     t = ' tabindex="0"' if focus else ''
@@ -135,10 +135,10 @@ def framed(label_id, table, focus=True):
 # ---- what a guide holds (list and detail)
 def weeks_txt(g):
     if g == 'g-laying':
-        return (f'<span class="s19-nw">SAPT 1–{NWK[g]}</span> <span class="ip-note s19-nw">vârsta {W[g][1]["age"]}–{W[g][NWK[g]]["age"]}</span>')
-    return f'<span class="s19-nw">SAPT 1–{NWK[g]}</span>'
+        return (f'<span class="ip-nowrap">SAPT 1–{NWK[g]}</span> <span class="ip-note ip-nowrap">vârsta {W[g][1]["age"]}–{W[g][NWK[g]]["age"]}</span>')
+    return f'<span class="ip-nowrap">SAPT 1–{NWK[g]}</span>'
 def cols_txt(g):
-    return ' · '.join(f'<span class="s19-nw">{lbl} {u}</span>' for k, lbl, u, _ in IND if k in HAS[g])
+    return ' · '.join(f'<span class="ip-nowrap">{lbl} {u}</span>' for k, lbl, u, _ in IND if k in HAS[g])
 def missing(g):
     return [f'{lbl.lower()} {u}' for k, lbl, u, _ in IND if k not in HAS[g]]
 def missing_txt(g): return ', '.join(missing(g))
@@ -147,10 +147,10 @@ def used_txt(g, short=False):
     for c in CYC[g]:
         f = FARM[c['farm_id']]['name']
         if c['status'] == 'open':
-            out.append(f'<span class="s20-use"><span class="s19-nw">{lamp("ok", "deschis")} {f}</span> · <span class="s19-nw">{SER[c["series_id"]]}</span>'
-                       f' · <span class="ip-note ip-num s19-nw">SAPT {WK}</span></span>')
+            out.append(f'<span class="s20-use"><span class="ip-nowrap">{lamp("ok", "deschis")} {f}</span> · <span class="ip-nowrap">{SER[c["series_id"]]}</span>'
+                       f' · <span class="ip-note ip-num ip-nowrap">SAPT {WK}</span></span>')
         else:
-            out.append(f'<span class="s20-use"><span class="s19-nw">{lamp("off", "închis")} {f}</span> · <span class="s19-nw">{SER[c["series_id"]]}</span></span>')
+            out.append(f'<span class="s20-use"><span class="ip-nowrap">{lamp("off", "închis")} {f}</span> · <span class="ip-nowrap">{SER[c["series_id"]]}</span></span>')
     return ''.join(out)
 
 # ================================================================= list
@@ -182,7 +182,7 @@ def list_page():
 # ================================================================= detail
 def used_block(g, name, cyc):
     if not cyc:   # an unused guide: the EmptyState's parts (unlit lamp, one sentence, the next step) on one line, no padded box
-        return block('h-use', 'Folosit de', f'<p class="ip-row s4s-m0">{lamp("off", "nefolosit")}<span>Niciun ciclu nu folosește {name}: '
+        return block('h-use', 'Folosit de', f'<p class="ip-row ip-m0">{lamp("off", "nefolosit")}<span>Niciun ciclu nu folosește {name}: '
                      f'îl alegi la o fermă de {TYPE_LO[TYPE[g]]} în <a class="ip-link s20-flink" href="#ferme">Ferme și secțiuni</a>.</span></p>')
     rows = ''
     for c in cyc:
@@ -193,7 +193,7 @@ def used_block(g, name, cyc):
             st, wk = lamp('ok', 'deschis'), f'SAPT {WK}'
         else:
             st, wk = lamp('off', 'închis'), f'{c["weeks"]} săpt.'
-        rows += (f'<tr><th scope="row"><a class="ip-link s20-flink" href="#ferma-{c["farm_id"]}">{f}</a></th><td>{SER[c["series_id"]]}</td><td class="ip-num"><span class="s19-nw">{a}–{b}</span>{ded}</td>'
+        rows += (f'<tr><th scope="row"><a class="ip-link s20-flink" href="#ferma-{c["farm_id"]}">{f}</a></th><td>{SER[c["series_id"]]}</td><td class="ip-num"><span class="ip-nowrap">{a}–{b}</span>{ded}</td>'
                  f'<td class="num">{wk}</td><td>{st}</td></tr>')
     tb = (f'<table class="ip-table ip-table--rowheads s20-table"><caption class="ip-sr">Ciclurile care folosesc {name}</caption>'
           '<thead><tr><th scope="col">Fermă</th><th scope="col">Serie</th><th scope="col">Perioada</th><th scope="col" class="num">Săptămâni</th>'
@@ -233,14 +233,14 @@ def curves_block(g, name):
                 gtxt = (f'<span class="ip-note s20-gap">– fără date în ghid la sapt. {", ".join(gp)}</span>' if gp else '')
                 first = next(v for _, v in series(g, k, s) if v is not None)
                 rows += (f'<tr><th scope="row"><span class="ip-sparktable__key">{lbl} {u} {sx(s)}</span></th>'
-                         f'<td class="ip-num"><span class="s20-wk"><span class="s19-nw">SAPT {a}–{b}</span>{gtxt}</span></td>'
+                         f'<td class="ip-num"><span class="s20-wk"><span class="ip-nowrap">SAPT {a}–{b}</span>{gtxt}</span></td>'
                          f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(first, u)}</span></td>'
                          f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(max(vs), u)}</span></td>'
                          f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(vs[-1], u)}</span></td>'
                          f'<td class="ip-sparktable__curve">{spark(g, k, s, b)}</td></tr>')
         else:
             rows += (f'<tr><th scope="row"><span class="ip-sparktable__key">{lbl} {u}</span></th>'
-                     f'<td colspan="5" class="s20-none">– fără date în ghid</td></tr>')
+                     f'<td colspan="5" class="ip-muted">– fără date în ghid</td></tr>')
     tb = (f'<table class="ip-table ip-table--rowheads ip-sparktable"><caption class="ip-sr">{name} pe indicatori: săptămânile cu cifre, prima, maximul, '
           f'ultima și curba</caption><thead><tr><th scope="col">Indicator</th><th scope="col">Săptămâni</th><th scope="col" class="num">Prima</th>'
           f'<th scope="col" class="num">Maxim</th><th scope="col" class="num">Ultima</th><th scope="col">Curba · SAPT 1–{NWK[g]}</th></tr></thead>'
@@ -265,7 +265,7 @@ def weekly_block(g, name, cyc):
             for s in sexes:
                 v = r[s].get(k)
                 cells += (f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(v, u)}</span></td>' if v is not None else
-                          '<td class="num s20-dash">–<span class="ip-sr"> fără date în ghid</span></td>')
+                          '<td class="num ip-muted">–<span class="ip-sr"> fără date în ghid</span></td>')
         body += f'<tr{" class=\"s20-today\"" if now else ""}>{rh}{cells}</tr>'
     tb = (f'<table class="ip-table ip-table--rowheads s20-table s20-week"><caption class="ip-sr">{name} pe săptămâni și sexe</caption>'
           f'<thead><tr>{h1}</tr><tr>{h2}</tr></thead><tbody>{body}</tbody></table>')
@@ -290,7 +290,7 @@ def detail_keys(g, cyc, pressed=False):
     why = f'Folosit de {"un ciclu" if k == 1 else f"{k} cicluri"}: îl poți înlocui, nu șterge.'
     return (f'<div class="s20-keyrow"><a class="ip-btn ip-btn--secondary" href="#inlocuieste">{icon("upload", 16)}Înlocuiește ghidul</a>'
             f'<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="del-why">Șterge ghidul</button></div>'
-            f'<p class="ip-note s4s-m0" id="del-why">{why}</p>')
+            f'<p class="ip-note ip-m0" id="del-why">{why}</p>')
 def detail_meta(g):
     ag = f' · vârsta {W[g][1]["age"]}–{W[g][NWK[g]]["age"]}' if g == 'g-laying' else ''
     return f'{TYPE_RO[TYPE[g]]}{NB}·{NB}SAPT 1–{NWK[g]}{ag}{NB}·{NB}{NROWS[g]} de rânduri, câte unul pe săptămână și sex'
@@ -320,7 +320,7 @@ DROP_P = G['DROP']   # the system FileDrop paste target (additions section 43): 
 assert DROP_P.count('<div class="ip-drop ip-drop--paste" tabindex="0" role="group" aria-label=') == 1
 def import_page(cr, title, meta, flds, src_note, gimp):
     main = (block('h-in', 'Ghid', flds) + '\n' +
-            block('h-tab', 'Tabelul ghidului', (f'<p class="ip-note s4s-m0">{src_note}</p>' if src_note else '') + gimp))
+            block('h-tab', 'Tabelul ghidului', (f'<p class="ip-note ip-m0">{src_note}</p>' if src_note else '') + gimp))
     return shell(header(cr, title, meta), f'<div class="s20-col">{main}</div>')
 gr = G['number'](G['growth_rows']())
 lr = G['number'](G['laying_rows']())
@@ -393,12 +393,12 @@ def phone_list():
                  f'<tr><th scope="row" class="ip-table__child">Coloane</th><td><span class="s19-secs"><span>{cols_txt(g)}</span>'
                  f'<span class="ip-note">fără date în ghid: {missing_txt(g)}</span></span></td></tr>'
                  f'<tr><th scope="row" class="ip-table__child">Folosit de</th><td><span class="s20-uses">{used_txt(g)}</span></td></tr></tbody>')
-    blk = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2>'
+    blk = (f'<section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2>'
            f'<span class="ip-note">{num(len(ORDER))} ghiduri</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-gh">'
            f'<table class="ip-table ip-table--rowheads s20-table s19-ptable"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, '
            f'coloanele și ciclurile care le folosesc</caption>{rows}</table></div>'
-           f'<p class="ip-note s4s-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>')
+           f'<p class="ip-note ip-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>')
     cr = crumbs('Ghiduri').replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     body = A.phone([f'<header class="ip-pagehead s2-phead s14-phead"><div>{cr}<h1>Ghiduri</h1></div></header>', blk])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
@@ -426,8 +426,6 @@ h1[tabindex="-1"]{margin-block:calc((var(--ip-focus-w) + var(--ip-focus-offset))
 .s20-fields .ip-seg{align-self:flex-start}
 .s20-wk{display:flex;flex-direction:column}
 .s20-gap{white-space:nowrap;font-family:var(--font-sans)}
-.s20-none{color:var(--ink-muted)}
-.s20-dash{color:var(--ink-muted)}
 .s20-week th[scope=row]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s20-now{margin-left:var(--space-2);font-family:var(--font-sans);white-space:nowrap}
 .s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */

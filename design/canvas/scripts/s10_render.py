@@ -20,7 +20,7 @@ CHECK = r"""() => {
  const unnamed = [...document.querySelectorAll('input:not([type=checkbox]),select,textarea,[role=combobox]')].filter(e => !(e.labels && e.labels.length) && !e.getAttribute('aria-labelledby') && !e.getAttribute('aria-label')).map(e => e.id || e.outerHTML.slice(0, 60));
  const main = document.querySelector('.ip-screen__main'); const sb = document.querySelector('.ip-savebar');
  const pnl = document.querySelector('.ip-sidepanel'); let under = null;
- if (pnl) { const px = pnl.getBoundingClientRect().left; under = [...document.querySelectorAll('.s13-vp *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > px + 1 && r.top < 1024; }).map(e => e.className.baseVal ?? e.className).slice(0, 4); }
+ if (pnl) { const px = pnl.getBoundingClientRect().left; under = [...document.querySelectorAll('.ip-dockpage *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > px + 1 && r.top < 1024; }).map(e => e.className.baseVal ?? e.className).slice(0, 4); }
  const fx = document.querySelector('#fx, #pfx'); const tall = [...document.querySelectorAll('.ip-screen__main > *')].map(e => Math.round(e.getBoundingClientRect().bottom));
  const lum = c => { const m = c.match(/[\d.]+/g).map(Number); const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }; return [.2126 * f(m[0]) + .7152 * f(m[1]) + .0722 * f(m[2]), m.length > 3 ? m[3] : 1] };
  const bgOf = e => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; const [, a] = lum(c); if (a > .5) return c; } return 'rgb(255,255,255)'; };
@@ -37,7 +37,7 @@ CHECK = r"""() => {
    barH: sb ? Math.round(sb.getBoundingClientRect().height) : null,
    sumLines: sb ? [...sb.querySelectorAll('.ip-savebar__line')].map(l => Math.round(l.getBoundingClientRect().height)) : null,
    allkey: [...document.querySelectorAll('.ip-sexrows__allkey')].map(k => k.getAttribute('aria-pressed') + ' ' + Math.round(k.getBoundingClientRect().width) + 'x' + Math.round(k.getBoundingClientRect().height)),
-   natural: (() => { const m = document.querySelector('.ip-screen__main'); return m && m.lastElementChild ? m.lastElementChild.getBoundingClientRect().bottom + parseFloat(getComputedStyle(m).paddingBottom) + sb.getBoundingClientRect().height : null })(), body: (() => { const b = document.querySelector('.s13-pbody'); return b ? [b.scrollHeight, b.clientHeight] : null })()};
+   natural: (() => { const m = document.querySelector('.ip-screen__main'); return m && m.lastElementChild ? m.lastElementChild.getBoundingClientRect().bottom + parseFloat(getComputedStyle(m).paddingBottom) + sb.getBoundingClientRect().height : null })(), body: (() => { const b = document.querySelector('.ip-sidepanel__body--form'); return b ? [b.scrollHeight, b.clientHeight] : null })()};
 }"""
 async def main():
     async with async_playwright() as p:

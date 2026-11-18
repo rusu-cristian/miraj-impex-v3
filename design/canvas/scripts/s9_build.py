@@ -173,7 +173,7 @@ def effect(state='set', mv=M1):
         return (f'<div class="ip-effect s13-effect" id="fx" role="status">{rec("transfer", 16)}<div class="s9-fxbody"><span class="ip-cap">Efect</span>'
                 '<span>Alege Din, În și câte păsări muți. Aici vezi ce rămâne în fiecare secțiune și ciclul care se deschide sau se închide.</span></div></div>')
     if state == 'refuz':  # EffectPreview: refused becomes a fault Banner
-        return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">'
+        return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="ip-m0">'
                 f'Transfer refuzat: Telița › H2 ar ajunge la {hen(n(OVER))} pe <span class="ip-num">{dd(DAY)}</span>. Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
     arrow = '<span class="s9-to" aria-hidden="true">→</span><span class="ip-sr">după transfer</span>'
     if mv is M1:
@@ -199,14 +199,14 @@ MUTA = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Mută
 MUTA_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Mută</button>'
 
 def screen(parts, save, overlay='', head=None, view='', sheet=''):
-    """s7s_build.screen with this form's header. view: ' s7s-view--end' scrolls the form to its end. sheet: a modal
+    """s7s_build.screen with this form's header. view: ' ip-screen__view--end' scrolls the form to its end. sheet: a modal
     BottomSheet over the screen; the header, form and SaveBar behind it are inert (out of the tab order and the a11y tree)."""
     ine = ' inert' if sheet else ''
     h = head or HEAD
     if sheet: h = h.replace('<header class="ip-formhead">', '<header class="ip-formhead" inert>', 1); save = save.replace('<div class="ip-savebar', '<div inert class="ip-savebar', 1)
-    return f'''<div class="ip-screen s7s-vp{" ip-scrimhost" if sheet else ""}">
+    return f'''<div class="ip-screen ip-screen--fixed{" ip-scrimhost" if sheet else ""}">
 {h}
-<div class="s7s-view{view}"{ine}>
+<div class="ip-screen__view{view}"{ine}>
 <main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
@@ -232,10 +232,10 @@ boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare 
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft (D60). The Banner sits
 #   right above the EffectPreview and the form is scrolled to its end, so the Banner and the move it names both show above
 #   the SaveBar (S9P; at 390 the Banner at the top would push the preview under the SaveBar)
-ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Transferul nu s-a salvat: '
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Transferul nu s-a salvat: '
        f'♀ <span class="ip-num">{n(QTY)}</span>, Telița H2 → Hîrbovăț H4.2, <span class="ip-num">{dd(DAY)}</span>. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), ban, effect()], B.savebar(sum1(), SUM2, MUTA), view=' s7s-view--end')))
+       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
+boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), ban, effect()], B.savebar(sum1(), SUM2, MUTA), view=' ip-screen__view--end')))
 
 # ---------- 16.11.2026 example flow (D39): Hîrbovăț H4.2 → Telița (empty since 28.02.2026) ----------
 HEAD2 = HEAD.replace(f'SERIA 2026 · {dd(DAY)}', f'SERIA 2026 · {dd(DT)}'); assert dd(DT) in HEAD2
@@ -284,7 +284,7 @@ CSS = P.CSS + SC.MAIN + SC.REC + SC.EFFECT + SCSS
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data transferului din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">Hîrbovăț SAPT {DWK} · ciclu din {dd(HSTART)}</span></div>'''
 PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="tp" aria-labelledby="tp-t">
 <div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true">{icon("transfer")}</span><div><h2 class="ip-t-heading ip-m0" id="tp-t">Transfer</h2><p class="ip-note ip-num ip-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Transfer">{icon("x")}</button></div>
-<div class="ip-sidepanel__body s13-pbody">
+<div class="ip-sidepanel__body ip-sidepanel__body--form">
 {DDATE}
 {pick('empty', touch=False, date=DT)}
 {dest('empty', touch=False)}
@@ -299,9 +299,9 @@ DH = SC.SIDE_H
 KEY = f'<button type="button" class="ip-btn ip-btn--secondary">{s4.icon("transfer", 16)}Mută păsări</button>'
 SPG = s4.shell(s4.main_page(panel=s4.panel_default())); assert SPG.count(KEY) == 1
 SPG = SPG.replace(KEY, KEY.replace('ip-btn--secondary"', 'ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="tp"'))
-DESK = f'<div class="s13-vp">{SPG}</div>'
+DESK = f'<div class="ip-dockpage">{SPG}</div>'
 CSS_D = s4.CSS + '\n' + s4.CSS_STATES + SC.SIDE + SC.M0 + '''
-.s13-vp .s4-cycle,.s13-vp .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.EFFECT + SCSS
+.ip-dockpage .s4-cycle,.ip-dockpage .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.EFFECT + SCSS
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S9-transfer', 'S9 · Transfer'

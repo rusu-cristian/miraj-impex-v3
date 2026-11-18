@@ -13,7 +13,6 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>body{margin:0}
-.s4-grow{flex:1}
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
@@ -22,7 +21,6 @@
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
 .s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-.s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
 .s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
 .s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
 .s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
@@ -53,12 +51,10 @@
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
 .s4s-none{padding:var(--space-6) var(--space-4)}
-.s4s-m0{margin:0}
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-hen{color:var(--rec-hen)}
 .s4t-roo{color:var(--rec-rooster)}
-.s4t-muted{color:var(--ink-muted)}
 .s4t-gnote{color:var(--ink-secondary)}
 .s4t-sub{color:var(--ink-secondary);font-family:var(--font-mono);font-size:var(--ip-fs-small)}
 .s4t-state{display:inline-flex;align-items:center;gap:var(--space-2)}
@@ -68,9 +64,6 @@
 .s11-farm .ip-label{margin:0}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s14-page{display:flex;flex-direction:column;gap:var(--space-6)}
-.s14-nw{white-space:nowrap} /* S14P fix 2: a figure and its lamp stay on one line */
-.s13-vp{position:relative;height:1024px;overflow:hidden;margin-right:var(--panel-w)}
-.s13-pbody{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
 .s13-rec{color:var(--c);display:inline-flex;flex:none}
 .s13-effect{align-items:flex-start}
 .s13-effect > .s13-rec{margin-top:var(--ip-hair)}
@@ -87,11 +80,6 @@
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
-.s18-trackbox{container-type:inline-size}
-.s18-track--1000,.s18-track--720,.s18-track--560{display:none}
-@container (max-width: 1159.98px){.s18-track--1160{display:none}.s18-track--1000{display:block}}
-@container (max-width: 999.98px){.s18-track--1000{display:none}.s18-track--720{display:block}}
-@container (max-width: 719.98px){.s18-track--720{display:none}.s18-track--560{display:block}} /* fix 1: beside the panel at 1280, drawn 1:1 (text stays 11px, blocks 28px targets) */
 .s18-table{width:100%}
 .s18-table thead th{white-space:nowrap}
 .s18-table td.num,.s18-table td:last-child{white-space:nowrap} /* fix 1: Ghid / Ciclu / Început may wrap, so the table fits 998 px at 1280 */
@@ -104,21 +92,17 @@
 .s18-rlink{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s18-rlink:hover{text-decoration-color:var(--ink)}
 .s18-start{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
-.s18-dash{color:var(--ink-muted)}
-.s18-nw{white-space:nowrap}
 .s18-notes{display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-ways .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s18-vp > .ip-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
 .s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */
-.s4s-m0{margin:0}
 .s18-foot{justify-content:flex-end}
 .s13-opt{font-weight:400;color:var(--ink-muted)}
 .s19-table{width:100%}
 .s19-table thead th{white-space:nowrap}
 .s19-table td{vertical-align:middle;white-space:normal}
-.s19-nw{white-space:nowrap}
 .s19-fname{font-weight:500}
 .s19-region{container:s19-ferme / inline-size}
 .s19-fold{display:none}
@@ -136,7 +120,6 @@
 .s19-seg{align-self:flex-start} /* S19P fix 1: the track fits its two segments (the field is a flex column, it would stretch) */
 .s19-pbody{position:relative}
 .s21-table td{white-space:normal}
-.s21-nw{white-space:nowrap}
 .s21-region{container:s21-tipuri / inline-size}
 .s21-fold{display:none}
 /* S19P rule: beside the panel the region is under 760px (558 at 1280, 718 at 1440), so "Folosit la" folds under the type
@@ -151,12 +134,12 @@
 .s21-delkey{margin-top:var(--space-1)}
 .s21-pfarm{display:block;font-weight:400}</style>
 </helmet>
-<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s13-vp s18-vp"><div class="ip-shell"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
+<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="ip-dockpage s18-vp"><div class="ip-shell"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
 <div class="ip-select ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-select__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl"><span class="ip-select__val"><b>Seria 2026</b></span><span class="ip-lamp ip-lamp--ok">deschisă</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
 <ul class="ip-menu ip-select__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2026" aria-selected="true"><span class="ip-select__chk" aria-hidden="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026</b><span class="ip-lamp ip-lamp--ok">deschisă</span></span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2025" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025</b><span class="ip-lamp ip-lamp--off">închisă</span></span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
 <a class="ip-nav" href="#acasa"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>Acasă</a><a class="ip-nav" href="#inregistreaza"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Înregistrează</a><a class="ip-nav" href="#serie"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>Serie</a><a class="ip-nav" href="#rapoarte"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Rapoarte</a><a class="ip-nav" href="#setari"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 18h4"/><path d="M12 18h8"/><circle cx="10" cy="18" r="2"/></svg>Setări</a><a class="ip-nav ip-nav--sub" href="#serii">Serii</a><a class="ip-nav ip-nav--sub" href="#ferme">Ferme și secțiuni</a><a class="ip-nav ip-nav--sub" href="#ghiduri">Ghiduri</a><a class="ip-nav ip-nav--sub is-current" href="#tipuri-hrana" aria-current="page">Tipuri de hrană</a><a class="ip-nav ip-nav--sub" href="#utilizatori">Utilizatori</a><a class="ip-nav ip-nav--sub" href="#istoric-modificari">Istoric modificări</a>
-<span class="s4-grow"></span>
+<span class="ip-grow"></span>
 <div class="ip-note ip-sidebar__account"><b>Proprietar</b><a class="ip-link" href="#iesi">Ieși</a></div>
 </nav><main class="ip-shell__main">
 <header class="ip-pagehead">
@@ -167,11 +150,11 @@
 </div>
 <div class="ip-row"><button type="button" class="ip-btn ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="tp"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Adaugă tip</button></div>
 </header>
-<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2><span class="ip-note"><span class="ip-num">5</span> tipuri</span></div><div class="ip-tablescroll ip-tablescroll--framed s21-region" tabindex="0" role="region" aria-labelledby="h-tip"><table class="ip-table ip-table--rowheads s19-table s21-table"><caption class="ip-sr">Tipurile de hrană, pentru cine sunt, starea lor și fermele care le folosesc</caption><thead><tr><th scope="col" style="--ip-colmin:calc(var(--space-1) * 16.34)">Tip hrană</th><th scope="col" style="--ip-colw:21.4%;--ip-colmin:calc(var(--space-1) * 12.11)">Pentru</th><th scope="col" style="--ip-colw:15.1%;--ip-colmin:calc(var(--space-1) * 11.86)">Stare</th><th scope="col" class="s21-cuse" style="--ip-colw:19.9%;--ip-colmin:calc(var(--space-1) * 17.52)">Folosit la</th><th scope="col" style="--ip-colw:24.5%;--ip-colmin:calc(var(--space-1) * 22.84)"><span class="ip-sr">Acțiuni</span></th></tr></thead><tbody><tr><th scope="row" class="s19-fname"><span class="s21-fn">Breeder 2</span><span class="s21-fold">Hîrbovăț</span></th><td class="s21-nw"><span class="ip-sex ip-sex--hen">♀</span> găini</td><td class="s21-nw"><span class="ip-lamp ip-lamp--ok">activ</span></td><td class="s21-cuse">Hîrbovăț</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Breeder 2</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Cocoși</span><span class="s21-fold">Hîrbovăț</span></th><td class="s21-nw"><span class="ip-sex ip-sex--rooster">♂</span> cocoși</td><td class="s21-nw"><span class="ip-lamp ip-lamp--ok">activ</span></td><td class="s21-cuse">Hîrbovăț</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Cocoși</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Grower</span><span class="s21-fold">Telița</span></th><td class="s21-nw">ambele sexe</td><td class="s21-nw"><span class="ip-lamp ip-lamp--off">retras</span></td><td class="s21-cuse">Telița</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Grower</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Pre-ouat</span><span class="s21-fold">Telița</span></th><td class="s21-nw">ambele sexe</td><td class="s21-nw"><span class="ip-lamp ip-lamp--off">retras</span></td><td class="s21-cuse">Telița</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Pre-ouat</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Starter</span><span class="s21-fold">Telița</span></th><td class="s21-nw">ambele sexe</td><td class="s21-nw"><span class="ip-lamp ip-lamp--off">retras</span></td><td class="s21-cuse">Telița</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Starter</span></button></td></tr></tbody></table></div><p class="ip-note s4s-m0">Un tip retras nu mai apare în Livrare hrană și Hrană zilnică; livrările lui rămân în rapoarte. Un tip folosit nu se poate șterge, doar retrage.</p></section>
+<section class="ip-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2><span class="ip-note"><span class="ip-num">5</span> tipuri</span></div><div class="ip-tablescroll ip-tablescroll--framed s21-region" tabindex="0" role="region" aria-labelledby="h-tip"><table class="ip-table ip-table--rowheads s19-table s21-table"><caption class="ip-sr">Tipurile de hrană, pentru cine sunt, starea lor și fermele care le folosesc</caption><thead><tr><th scope="col" style="--ip-colmin:calc(var(--space-1) * 16.34)">Tip hrană</th><th scope="col" style="--ip-colw:21.4%;--ip-colmin:calc(var(--space-1) * 12.11)">Pentru</th><th scope="col" style="--ip-colw:15.1%;--ip-colmin:calc(var(--space-1) * 11.86)">Stare</th><th scope="col" class="s21-cuse" style="--ip-colw:19.9%;--ip-colmin:calc(var(--space-1) * 17.52)">Folosit la</th><th scope="col" style="--ip-colw:24.5%;--ip-colmin:calc(var(--space-1) * 22.84)"><span class="ip-sr">Acțiuni</span></th></tr></thead><tbody><tr><th scope="row" class="s19-fname"><span class="s21-fn">Breeder 2</span><span class="s21-fold">Hîrbovăț</span></th><td class="ip-nowrap"><span class="ip-sex ip-sex--hen">♀</span> găini</td><td class="ip-nowrap"><span class="ip-lamp ip-lamp--ok">activ</span></td><td class="s21-cuse">Hîrbovăț</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Breeder 2</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Cocoși</span><span class="s21-fold">Hîrbovăț</span></th><td class="ip-nowrap"><span class="ip-sex ip-sex--rooster">♂</span> cocoși</td><td class="ip-nowrap"><span class="ip-lamp ip-lamp--ok">activ</span></td><td class="s21-cuse">Hîrbovăț</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Cocoși</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Grower</span><span class="s21-fold">Telița</span></th><td class="ip-nowrap">ambele sexe</td><td class="ip-nowrap"><span class="ip-lamp ip-lamp--off">retras</span></td><td class="s21-cuse">Telița</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Grower</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Pre-ouat</span><span class="s21-fold">Telița</span></th><td class="ip-nowrap">ambele sexe</td><td class="ip-nowrap"><span class="ip-lamp ip-lamp--off">retras</span></td><td class="s21-cuse">Telița</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Pre-ouat</span></button></td></tr><tr><th scope="row" class="s19-fname"><span class="s21-fn">Starter</span><span class="s21-fold">Telița</span></th><td class="ip-nowrap">ambele sexe</td><td class="ip-nowrap"><span class="ip-lamp ip-lamp--off">retras</span></td><td class="s21-cuse">Telița</td><td class="s19-act"><button type="button" class="ip-btn ip-btn--ghost">Editează<span class="ip-sr"> Starter</span></button></td></tr></tbody></table></div><p class="ip-note ip-m0">Un tip retras nu mai apare în Livrare hrană și Hrană zilnică; livrările lui rămân în rapoarte. Un tip folosit nu se poate șterge, doar retrage.</p></section>
 </main></div></div><aside class="ip-sidepanel ip-sidepanel--dock" id="tp" aria-labelledby="tp-t">
 <div class="ip-sidepanel__head"><div><h2 class="ip-t-heading ip-m0" id="tp-t">Tip nou</h2></div><button type="button" class="ip-iconbtn" aria-label="Închide panoul tipului de hrană"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
-<div class="ip-sidepanel__body s13-pbody s19-pbody">
-<div class="ip-field"><label class="ip-label" for="tp-name">Nume</label><span class="ip-input"><input id="tp-name" type="text" autocomplete="off" value="Breeder 3"/></span></div><div class="ip-field"><span class="ip-label" id="tp-for-l">Pentru</span><span class="ip-seg s19-seg" role="radiogroup" aria-labelledby="tp-for-l" aria-required="true" aria-describedby="tp-for-h"><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ambele sexe</span><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0"><span class="ip-sex ip-sex--hen">♀</span> Găini</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1"><span class="ip-sex ip-sex--rooster">♂</span> Cocoși</span></span><span class="ip-hint" id="tp-for-h">În Hrană zilnică apare doar la sexul ales.</span></div><div class="ip-field"><label class="ip-check is-checked"><input type="checkbox" class="ip-sr" id="tp-act" checked="checked" aria-describedby="tp-act-h"/><span class="ip-check__box"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Activ</label><span class="ip-hint" id="tp-act-h">Apare în Livrare hrană și Hrană zilnică. Îl poți retrage oricând.</span></div><div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="tp-err"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><div class="ip-banner__body"><p class="ip-m0">Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. Verifică conexiunea la internet, apoi reîncearcă.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div><section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap s4s-m0" id="tp-use-h">Folosit la</h3><p class="s4s-m0">Nefolosit. Îl alegi în Livrare hrană și Hrană zilnică după ce îl adaugi.</p></section>
+<div class="ip-sidepanel__body ip-sidepanel__body--form s19-pbody">
+<div class="ip-field"><label class="ip-label" for="tp-name">Nume</label><span class="ip-input"><input id="tp-name" type="text" autocomplete="off" value="Breeder 3"/></span></div><div class="ip-field"><span class="ip-label" id="tp-for-l">Pentru</span><span class="ip-seg s19-seg" role="radiogroup" aria-labelledby="tp-for-l" aria-required="true" aria-describedby="tp-for-h"><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ambele sexe</span><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0"><span class="ip-sex ip-sex--hen">♀</span> Găini</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1"><span class="ip-sex ip-sex--rooster">♂</span> Cocoși</span></span><span class="ip-hint" id="tp-for-h">În Hrană zilnică apare doar la sexul ales.</span></div><div class="ip-field"><label class="ip-check is-checked"><input type="checkbox" class="ip-sr" id="tp-act" checked="checked" aria-describedby="tp-act-h"/><span class="ip-check__box"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Activ</label><span class="ip-hint" id="tp-act-h">Apare în Livrare hrană și Hrană zilnică. Îl poți retrage oricând.</span></div><div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="tp-err"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><div class="ip-banner__body"><p class="ip-m0">Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. Verifică conexiunea la internet, apoi reîncearcă.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div><section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap ip-m0" id="tp-use-h">Folosit la</h3><p class="ip-m0">Nefolosit. Îl alegi în Livrare hrană și Hrană zilnică după ce îl adaugi.</p></section>
 </div>
 <div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary">Adaugă tipul</button></div></div>
 </aside></div>

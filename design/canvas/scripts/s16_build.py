@@ -172,7 +172,7 @@ DELK = '<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch" a
 def sheet(body, save, inert=False):
     ine = ' inert="inert"' if inert else ''
     return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="cp-t"{ine}>{head(True)}'
-            f'<div class="ip-sidepanel__body s13-pbody">{"".join(body)}</div>'
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form">{"".join(body)}</div>'
             f'<div class="ip-sidepanel__foot">{DELK}{save}</div></aside>')
 def screen(sh, overlay=''): return f'<div class="s16-screen ip-scrimhost">{sh}{overlay}</div>'
 
@@ -211,12 +211,12 @@ PG = (PG[:_li] + '<li class="ip-ev ip-ev--act is-current">' + PG[_li + len('<li 
 SCROLL = HS.get('S16-corecteaza--desktop@scroll', 0)
 assert PG.count('<main class="ip-shell__main">') == 1
 if SCROLL: PG = PG.replace('<main class="ip-shell__main">', f'<main class="ip-shell__main" style="margin-top:calc(-1 * {SCROLL}px)">')
-DESK = f'<div class="s13-vp s16-vp">{PG}</div>'
+DESK = f'<div class="ip-dockpage s16-vp">{PG}</div>'
 DSAVE = '<button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="fx">Salvează corecția</button>'
 def panel(focus):  # focus: just opened from the Jurnal key, focus on the first CountInput (S16P); Esc / Închide return it to that key
     return f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t">
 {head(False)}
-<div class="ip-sidepanel__body s13-pbody">
+<div class="ip-sidepanel__body ip-sidepanel__body--form">
 <div>{BY}{MOD}</div>
 {counts(n(NEW), '0', NEW, 0, False, focus=focus)}
 {motiv(touch=False)}
@@ -229,13 +229,11 @@ PANEL = panel(True)
 # ---------- CSS (screen only, tokens only) ----------
 PAIR = '''
 .s16-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}'''
-# fix 1: the phone boards take only the sheet head/body rules from SC.SIDE (no .s13-vp, desktop only; the head row is additions.css §58)
-SHEET = ''.join('\n' + l for l in SC.SIDE.split('\n') if l.startswith('.s13-pbody'))
-assert SHEET.count("\n") == 1
+SHEET = ''  # FIN15B: the sheet's scrolling form body is additions.css §62 ip-sidepanel__body--form
 CSS_P = '''body{margin:0}
 .s16-screen{height:100%;display:flex}''' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + SC.MODAL + PAIR
 CSS_D = T.CSS + SC.SIDE + SC.M0 + '''
-.s13-vp .s4-cycle,.s13-vp .s4-top,.s16-vp .s4t-split{grid-template-columns:minmax(0,1fr)} /* beside the panel (S9's rule) + the Jurnal full width, so its keys stay inline (SYS09 >= 480px) */''' + SC.REC + SC.EFFECT + SC.FX + PAIR
+.ip-dockpage .s4-cycle,.ip-dockpage .s4-top,.s16-vp .s4t-split{grid-template-columns:minmax(0,1fr)} /* beside the panel (S9's rule) + the Jurnal full width, so its keys stay inline (SYS09 >= 480px) */''' + SC.REC + SC.EFFECT + SC.FX + PAIR
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S16-corecteaza', 'S16 · Corectează'

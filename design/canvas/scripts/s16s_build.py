@@ -83,7 +83,7 @@ def sheet(head, body, foot, inert=False, busy=False, toast=''):  # toast: inside
     ine = ' inert="inert"' if inert else ''
     bz = ' aria-busy="true"' if busy else ''
     return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="cp-t"{ine}>{head}'
-            f'<div class="ip-sidepanel__body s13-pbody"{bz}>{"".join(body)}</div>'
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form"{bz}>{"".join(body)}</div>'
             f'{toast}<div class="ip-sidepanel__foot">{foot}</div></aside>')
 FOOT = Q.DELK + Q.SAVE
 def toast(text, desk=False):
@@ -168,7 +168,7 @@ boards.append(('ciclu-transfer', 'transfer · ciclul Telița rămâne deschis ·
 DSAVE_OFF = lambda why: f'<button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="{why}">Salvează corecția</button>'
 def dpanel(body, save, inert=False):
     ine = ' inert="inert" aria-hidden="true"' if inert else ''
-    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t"{ine}>\n{Q.head(False)}\n<div class="ip-sidepanel__body s13-pbody">\n'
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t"{ine}>\n{Q.head(False)}\n<div class="ip-sidepanel__body ip-sidepanel__body--form">\n'
             + '\n'.join(body) + '\n</div>\n<div class="ip-sidepanel__foot"><button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Șterge</button>'
             f'<div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{save}</div></div>\n</aside>')
 assert dpanel([BYMOD, Q.counts(n(NEW), '0', NEW, 0, False), Q.motiv(touch=False), Q.effect('empty')], Q.DSAVE).replace('\n', '') \
@@ -197,7 +197,7 @@ DSPAN = dd(DRUN[0])[:5] + '–' + dd(DRUN[-1]) if len(DRUN) > 1 else dd(DRUN[0])
 DREFUZ = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="ip-m0">'
           f'Corecția ar lăsa {SEC} cu {hen_v(n(DLOW[DLOWN[0]]))} găini pe {num(DSPAN)} și cu {hen_v(n(min(DLOW.values())))} azi, {num(dd(DDAY))}. '
           f'Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
-DESK_I = Q.DESK.replace('<div class="s13-vp s16-vp">', '<div class="s13-vp s16-vp" inert="inert" aria-hidden="true">', 1)
+DESK_I = Q.DESK.replace('<div class="ip-dockpage s16-vp">', '<div class="ip-dockpage s16-vp" inert="inert" aria-hidden="true">', 1)
 assert DESK_I != Q.DESK
 boards.append(('desktop-scris', 'desktop · scris · motiv peste 200 de caractere · exemplu de stare (D39)', 'd',
                Q.DESK + dpanel([BYMOD, Q.counts(n(BACK), '0', NEW, 0, False), motiv_long(), deffect(BACK)], DSAVE_OFF('cw-e'))))
@@ -238,7 +238,7 @@ DSCROLL = HS.get('S16-corecteaza--desktop-dupa-stergere@scroll', 0)
 if DSCROLL: PGD = PGD.replace('<main class="ip-shell__main">', f'<main class="ip-shell__main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
 T_DEL = f'Șters · Mortalitate {SEC} · {num(dd(RDAY))} · în viață azi ♀ {num(n(DDEL[DDAY]))}'
 boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu de stare (D39)', 'd',
-               f'<div class="s13-vp s16s-vp--full">{PGD}</div>' + toast(T_DEL, desk=True)))
+               f'<div class="ip-dockpage s16s-vp--full">{PGD}</div>' + toast(T_DEL, desk=True)))
 
 # ---------- CSS (screen only, tokens only) ----------
 CSS_ADD = '''
@@ -246,7 +246,7 @@ CSS_ADD = '''
 .s16s-lock{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2);margin:var(--space-1) 0 0}'''
 CSS_P = Q.CSS_P + CSS_ADD
 CSS_D = Q.CSS_D + SC.BANNER + '''
-.s16s-vp--full{margin-right:0} /* panel closed: the page takes the full width */'''
+.s16s-vp--full{right:0} /* panel closed: the page takes the full width */'''
 
 # ---------- write ----------
 STEM0, TITLE0 = Q.STEM0, Q.TITLE0

@@ -69,9 +69,9 @@ def date(d, week_line=None, ieri=False):
 def screen(main_parts, save, slug, hd=None, view_cls='', overlay=''):
     sc = SCROLL.get(slug, 0)
     style = f' style="margin-top:calc(-1 * {sc}px)"' if sc else ''
-    return f'''<div class="ip-screen s7s-vp">
+    return f'''<div class="ip-screen ip-screen--fixed">
 {hd or B.HEAD}
-<div class="s7s-view{(" " + view_cls) if view_cls else ""}">
+<div class="ip-screen__view{(" " + view_cls) if view_cls else ""}">
 <main class="ip-screen__main"{style}>
 {"".join(main_parts)}
 </main>
@@ -101,7 +101,7 @@ skcard = (f'<section class="ip-panel ip-entry" aria-hidden="true"><div class="ip
 skhall = f'<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("40%", SK22)}</div><div class="ip-hall__sections">{skcard * 2}</div></section>'
 sk = f'''<p class="ip-sr" role="status">Se încarcă secțiunile pentru <span class="ip-num">{dd(TODAY)}</span>…</p>
 <div class="s7s-skblock" aria-busy="true"><div class="ip-halls">{skhall}</div></div>'''
-sv1 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv1 = f'''<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv1, 'se-incarca')))
 
 # 2 · deja introdus — 16.11 opened again after the 08:34 save: read-only cards, Tag "salvat", one form-level Editează (D60)
@@ -116,7 +116,7 @@ evy = EV[YDAY.isoformat()]; aty = evy['at'][11:]
 wky = (YDAY - START).days // 7 + 1
 h3, A3, E3 = halls(d=YDAY, saved=saved_meta(aty, evy['user'], 'o poate modifica managerul'), ro=True)
 r3 = removals(A3); assert evy['summary'] == f'Zilnic salvat · {len(A3)} secțiuni · ♀ {MINUS}{r3[0]} · ♂ {MINUS}{r3[1]}' and wky == 40
-ban3 = f'''<div class="ip-banner ip-banner--info s7s-banner" id="past-why">{icon("info", 16)}<div class="s7s-banner__body"><p class="s7-m0">Pentru zilele trecute cere managerului.</p><p class="s7-m0">Ziua <span class="ip-num">{dd(YDAY)}</span> e salvată; o vezi doar în citire.</p></div></div>'''
+ban3 = f'''<div class="ip-banner ip-banner--info s7s-banner" id="past-why">{icon("info", 16)}<div class="s7s-banner__body"><p class="ip-m0">Pentru zilele trecute cere managerului.</p><p class="ip-m0">Ziua <span class="ip-num">{dd(YDAY)}</span> e salvată; o vezi doar în citire.</p></div></div>'''
 sv3 = S7.savebar(line1(A3, r3, f'<span class="ip-num">{dd(YDAY)}</span> · '), eggseg(E3) + '<span>doar citire</span>', save_off('past-why'))
 boards.append(('zi-trecuta', 'zi trecută (medic)', screen([date(YDAY, ieri=True), ban3, h3], sv3, 'zi-trecuta',
                hd=head(f'HÎRBOVĂȚ · {dd(YDAY)} · SAPT {wky}'))))
@@ -145,7 +145,7 @@ TARGET['refuzat'] = 't-H12'
 # 6 · eroare la salvare — connectivity (spec §1): fault Banner + Reîncearcă, typed values kept (draft), Salvează enabled (D60)
 r6 = removals(B.ALL); eg6 = sum(x[1] for x in B.EGGS)
 assert (r6, eg6) == ((8, 1), 18688)
-ban6 = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Nu s-a salvat Zilnic din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{len(B.ALL)}</span> secțiuni · {sexv("F", f"{MINUS}{r6[0]}")} · {sexv("M", f"{MINUS}{r6[1]}")} · <span class="ip-num">{n(eg6)}</span> ouă). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
+ban6 = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Nu s-a salvat Zilnic din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{len(B.ALL)}</span> secțiuni · {sexv("F", f"{MINUS}{r6[0]}")} · {sexv("M", f"{MINUS}{r6[1]}")} · <span class="ip-num">{n(eg6)}</span> ouă). Verifică conexiunea și apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban6, B.DATE, B.HALLS_HTML], B.SAVE, 'eroare-la-salvare')))
 
 # 7 · fermă fără păsări — Telița: cycle closed 28.02.2026, 0 birds (counts-latest, real): EmptyState with the next step
@@ -154,13 +154,13 @@ tl = next(f for f in C['farms'] if f['farm_id'] == 'telita')
 assert tl['cycle_status'] == 'closed' and tl['totals']['all'] == 0
 end = dt.date.fromisoformat(tl['cycle_end'])
 empty = f'''<div class="ip-empty"><span class="ip-lamp ip-lamp--off">ciclu închis</span><div>Ferma e goală din <span class="ip-num">{dd(end)}</span>. Ciclul pornește la prima populare sau transfer.</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Alege altă fermă</button></div>'''
-sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{rec14("mortality")}<span><span class="ip-num">0</span> secțiuni cu păsări</span></span></span>{save_off()}</div>'''
+sv7 = f'''<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{rec14("mortality")}<span><span class="ip-num">0</span> secțiuni cu păsări</span></span></span>{save_off()}</div>'''
 boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([date(TODAY, f'fără ciclu deschis · ultimul închis pe {dd(end)}'), empty], sv7, 'ferma-fara-pasari',
                hd=head(f'TELIȚA · {dd(TODAY)}'))))
 
 # 8 · salvat — right after Salvează at the foot of the form: Toast (spec C1 copy) + Anulează, read-only, Editează (D60)
 toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀ <span class="ip-num">{MINUS}{r2[0]}</span> · ♂ <span class="ip-num">{MINUS}{r2[1]}</span></span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
-boards.append(('salvat', 'salvat', screen([B.DATE, h2], SAVED_BAR, 'salvat', view_cls='s7s-view--end', overlay=toast)))
+boards.append(('salvat', 'salvat', screen([B.DATE, h2], SAVED_BAR, 'salvat', view_cls='ip-screen__view--end', overlay=toast)))
 
 # 9 · motiv lipsă (S6M, D79) — D39 state example: H1.1 ♀ Sacrificare 2 typed, Motiv left on "Alege" (refusal, D53: blocks
 # save) and Mai mult open on that card with the Eroare sexare fields (16.11 values, 0). The 2 culls without a reason are

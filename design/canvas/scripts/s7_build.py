@@ -58,7 +58,7 @@ FARM = 'HÎRBOVĂȚ'
 HEAD = f'''<header class="ip-formhead">
 <a class="ip-iconbtn ip-iconbtn--touch" href="#acasa" aria-label="Înapoi la Acasă">{icon("back")}</a>
 <span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>
-<div class="s7-title"><h1 class="ip-t-heading s7-m0">Hrană zilnică</h1><p class="ip-note ip-num s7-m0">{FARM} · {dd(TODAY)} · SAPT {WEEK}</p></div>
+<div class="s7-title"><h1 class="ip-t-heading ip-m0">Hrană zilnică</h1><p class="ip-note ip-num ip-m0">{FARM} · {dd(TODAY)} · SAPT {WEEK}</p></div>
 </header>'''
 
 DATE = f'''<div class="ip-field">
@@ -72,7 +72,7 @@ DATE = f'''<div class="ip-field">
 
 COPY = f'''<div class="s7-copy">
 <button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">{icon("copy", 16)}Copiază ieri</button>
-<p class="ip-note s7-m0">ghid <span class="ip-num">SAPT {WEEK}</span>: {pair(f"{GUIDE['F']}{NB}g", f"{GUIDE['M']}{NB}g")}</p>
+<p class="ip-note ip-m0">ghid <span class="ip-num">SAPT {WEEK}</span>: {pair(f"{GUIDE['F']}{NB}g", f"{GUIDE['M']}{NB}g")}</p>
 </div>'''
 
 # ---------- allocation rows ----------
@@ -135,7 +135,7 @@ def ftrow(t):
 FTR = [ftrow(t) for t in HB_TYPES]
 w0, w1 = STK[HB_TYPES[0]]['avg_window']
 avg = ', '.join(f'{FTN[t]}: <span class="ip-num">{n(STK[t]["avg_daily_kg_last3"])}</span> kg/zi' for t in HB_TYPES)
-FTOT = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap s7-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
+FTOT = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap ip-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
 {"".join(f["html"] for f in FTR)}
 <p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d.%m")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
 
@@ -150,7 +150,7 @@ def sum_rows(nconf, nrows, kg, lead=''):
     rows = f'<span><span class="ip-num">{nconf} din {nrows}</span> rânduri ·</span>' if lead == '' else f'<span>{lead} · <span class="ip-num">{nrows}</span> rânduri ·</span>'
     return f'{FEED14}{rows}{kgs}'
 def savebar(line1, line2, key):
-    return f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{line1}</span><span class="ip-savebar__line">{line2}</span></span>{key}</div>'''
+    return f'''<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{line1}</span><span class="ip-savebar__line">{line2}</span></span>{key}</div>'''
 nconf = sum(1 for b in built if b[1]); total = round(sum(b[2] for b in built if b[1]), 1)
 worst = min(FTR, key=lambda f: f['days'])
 slamp = (lamp('warn', 'abatere') + f'<span>{FTN[worst["t"]]} <span class="ip-num">{n(worst["days"], 1)}</span> zile</span>') if not worst['ok'] else lamp('ok', 'în normă') + '<span>stoc</span>'
@@ -171,14 +171,12 @@ BODY = f'''<div class="ip-screen">
 CSS = '''body{margin:0}
 html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar 73 px at 390 (48 key + 2x12 padding + 1 top line; the 2-line summary, 36 px, sits inside the key height) + the field border and focus ring (1 + 2 + 2), so a focused field scrolls clear of the sticky SaveBar: 78 px */
 @media (max-width: 389.98px){html{scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}} /* under 390 a summary line can wrap between segments: up to 4 lines at 360 (measured, refusal state: 4x16 + 3x4 + 2x12 + 1 = 101 px) + 5 = 106 px */
-.s7-m0{margin:0}
 .s7-title{display:flex;flex-direction:column;min-width:0}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
 .s7-copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
-.s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}
-.s7-savebar{position:sticky;bottom:0;z-index:2}'''
+.s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}'''  # FIN15B: the sticky SaveBar is additions.css §63 ip-screen__savebar
 
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'

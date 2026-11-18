@@ -66,9 +66,9 @@ def screen(parts, save, c=HB, hd=None, sheet=''):
     if sheet:
         h = h.replace('<header class="ip-formhead">', '<header class="ip-formhead" inert>', 1)
         save = save.replace('<div class="ip-savebar', '<div inert class="ip-savebar', 1)
-    return f'''<div class="ip-screen s8-screen{" s7s-vp ip-scrimhost" if sheet else ""}">
+    return f'''<div class="ip-screen s8-screen{" ip-screen--fixed ip-scrimhost" if sheet else ""}">
 {h}
-<div class="s7s-view"{" inert" if sheet else ""}>
+<div class="ip-screen__view"{" inert" if sheet else ""}>
 <main class="ip-screen__main">
 {"".join(parts)}
 </main>
@@ -77,7 +77,7 @@ def screen(parts, save, c=HB, hd=None, sheet=''):
 </div>'''
 
 def banner(bid, *lines):
-    body = ''.join(f'<p class="s7-m0">{l}</p>' for l in lines)
+    body = ''.join(f'<p class="ip-m0">{l}</p>' for l in lines)
     return f'<div class="ip-banner ip-banner--info s7s-banner" id="{bid}">{icon("info", 16)}<div class="s7s-banner__body">{body}</div></div>'
 def sexs(sx): return f'<span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>'
 
@@ -92,7 +92,7 @@ RO_SKEL = SKL.readout(None, kv=2, live=True)  # §54 Readout skeleton: the compa
 sk = (f'<p class="ip-sr" role="status">Se încarcă secțiunile și ghidul pentru <span class="ip-num">{dd(HB["day"])}</span>…</p>'
       f'<div class="s7s-skblock" aria-busy="true">{skfield("30%", TOUCH)}{skfield("15%", TOUCH)}{skfield("40%", COUNT)}{RO_SKEL}'
       f'<div class="s8-pair">{skfield("50%", TOUCH)}{skfield("70%", TOUCH)}{skfield("80%", TOUCH)}</div></div>')
-sv1 = (f'<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span>'
+sv1 = (f'<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span>'
        f'<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>')
 boards.append(('se-incarca', 'se încarcă', screen([E.date(HB), sk], sv1)))
 
@@ -145,7 +145,7 @@ WL = f'SAPT {HB["wk"]} · ciclu din {dd(HB["start"])}'
 d4 = E.date(HB); assert WL in d4; d4 = d4.replace(WL, f'fără ciclu deschis · ultimul închis pe {dd(TEND)}')
 empty = (f'<div class="ip-empty"><span class="ip-lamp ip-lamp--off">ciclu închis</span><div>Ferma e goală din <span class="ip-num">{dd(TEND)}</span>. '
          f'Ciclul pornește la prima populare sau transfer.</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Alege altă fermă</button></div>')
-sv4 = (f'<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{E.rec14()}'
+sv4 = (f'<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{E.rec14()}'
        f'<span><span class="ip-num">0</span> secțiuni cu păsări</span></span></span>{SAVE_OFF}</div>')
 boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([d4, empty], sv4, hd=hd4)))
 
@@ -170,7 +170,8 @@ pathlib.Path('/tmp/s8').mkdir(exist_ok=True)
 for slug, state, body in boards:
     stem, title = f'{STEM0}--{slug}', f'{TITLE0} · {state}'
     H = 844 if slug == 'alege-sectiunea' else HS.get(stem, 844)
-    root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{body}</div>'
+    hs = f'height:{H}px; overflow:hidden' if slug == 'alege-sectiunea' else f'min-height:{H}px'  # FIN15B: the fixed sheet screen takes the frame's height
+    root = f'<div class="ip-root" style="padding:0; width:390px; {hs}">{body}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

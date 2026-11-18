@@ -169,7 +169,7 @@ def sidebar(role='Proprietar', viewer=False, series='2026'):
 <div class="ip-select ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-select__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl">{cur}{icon('chev', 16)}</div>
 <ul class="ip-menu ip-select__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2026" aria-selected="{'true' if s26 else 'false'}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if s26 else ''}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026</b>{lamp('ok', 'deschisă')}</span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2025" aria-selected="{'false' if s26 else 'true'}"><span class="ip-select__chk" aria-hidden="true">{'' if s26 else icon('check', 16)}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025</b>{lamp('off', 'închisă')}</span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
 {nav}
-<span class="s4-grow"></span>
+<span class="ip-grow"></span>
 <div class="ip-note ip-sidebar__account"><b>{role}</b><a class="ip-link" href="#iesi">Ieși</a></div>
 </nav>'''
 
@@ -290,7 +290,7 @@ def cycle(mode='default'):
     opened = mode == 'menu'
     sel = combo('Seria 2026 · din 10.02.2026', lamp('ok', 'deschis'), opened, 'cyc-2026')
     if opened:  # CycleSelector open: cycles (open first), then the manager+ actions (S4 is the owner's view)
-        menu = f'''<div class="ip-menu ip-select__menu"><ul class="ip-select__list" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl" tabindex="-1">{CYC_OPEN}</ul><div class="ip-menu__group" id="cyc-act">Ciclu</div><div role="group" aria-labelledby="cyc-act"><button type="button" class="ip-menu__item ip-select__act">{icon('cycle', 16)}<span class="s4-grow">Începe ciclu nou</span></button><button type="button" class="ip-menu__item ip-select__act"><span class="ip-select__chk" aria-hidden="true"></span><span class="s4-grow">Schimbă ghidul ciclului</span></button></div></div>'''
+        menu = f'''<div class="ip-menu ip-select__menu"><ul class="ip-select__list" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl" tabindex="-1">{CYC_OPEN}</ul><div class="ip-menu__group" id="cyc-act">Ciclu</div><div role="group" aria-labelledby="cyc-act"><button type="button" class="ip-menu__item ip-select__act">{icon('cycle', 16)}<span class="ip-grow">Începe ciclu nou</span></button><button type="button" class="ip-menu__item ip-select__act"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-grow">Schimbă ghidul ciclului</span></button></div></div>'''
     else:
         menu = hidden_list(CYC_ITEMS)
     return f'''<section class="s4-cycle" aria-label="Ciclu">
@@ -508,10 +508,10 @@ def panel_default(ng=False, banner=''):
     al = alerts(ng)
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 {banner}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
-<section class="s4-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">6 secțiuni · 3 hale · 16.11.2026</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
+<section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">6 secțiuni · 3 hale · 16.11.2026</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
 <div class="s4-split">
-<section class="s4-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><div class="ip-list">{"".join(al)}</div></section>
-<section class="s4-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events)}</div></section>
+<section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><div class="ip-list">{"".join(al)}</div></section>
+<section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events)}</div></section>
 </div>
 </div>'''
 
@@ -528,10 +528,10 @@ def panel_loading():
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă rezumatul Hîrbovăț pentru ciclul curent.</p>
 <section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {CW} {CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
-<section class="s4-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Secțiuni</h2></div><div class="s4-halls">{hall * 3}</div><div class="s4s-sktotals">{sk("s4s-w100 s4s-h16")}{sk("s4s-w70")}{sk("s4s-w50")}</div></section>
+<section class="ip-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Secțiuni</h2></div><div class="s4-halls">{hall * 3}</div><div class="s4s-sktotals">{sk("s4s-w100 s4s-h16")}{sk("s4s-w70")}{sk("s4s-w50")}</div></section>
 <div class="s4-split" aria-hidden="true">
-<section class="s4-block"><div class="ip-sechead"><h2 class="ip-t-heading">De verificat</h2></div><div class="ip-list">{row * 4}</div></section>
-<section class="s4-block"><div class="ip-sechead"><h2 class="ip-t-heading">Ultimele înregistrări</h2></div><div class="ip-list">{row * 4}</div></section>
+<section class="ip-block"><div class="ip-sechead"><h2 class="ip-t-heading">De verificat</h2></div><div class="ip-list">{row * 4}</div></section>
+<section class="ip-block"><div class="ip-sechead"><h2 class="ip-t-heading">Ultimele înregistrări</h2></div><div class="ip-list">{row * 4}</div></section>
 </div>
 </div>'''
 
@@ -658,10 +658,10 @@ def panel_past():
     none = f'<div class="ip-list"><div class="ip-empty s4s-none">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></div></div>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 <section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori, Seria 2025</h2>{readout_past()}{stats_past()}</section>
-<section class="s4-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
+<section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
 <div class="s4-split">
-<section class="s4-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
-<section class="s4-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events_past())}</div><p class="ip-note s4s-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
+<section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
+<section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events_past())}</div><p class="ip-note ip-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
 </div>
 </div>'''
 
@@ -685,7 +685,6 @@ def main_page(mode='default', panel=None, ng=False):
 </main>'''
 
 CSS = '''body{margin:0}
-.s4-grow{flex:1}
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
@@ -694,7 +693,6 @@ CSS = '''body{margin:0}
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
 .s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-.s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
 .s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
 .s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
 .s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
@@ -727,8 +725,7 @@ CSS_STATES = '''.s4s-sktile{gap:var(--space-2)}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
-.s4s-none{padding:var(--space-6) var(--space-4)}
-.s4s-m0{margin:0}'''
+.s4s-none{padding:var(--space-6) var(--space-4)}'''
 
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'

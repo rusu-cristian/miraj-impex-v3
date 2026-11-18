@@ -104,10 +104,10 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
     for sx in 'FM':
         v = t[sx]['mortality']; a = t[sx]['alive_start']
         if st[sx] == 'error':  # D53: the refusal is on the sum; the fix names the most Mortalitate still accepted
-            msgs += (f'<p class="ip-err ip-entry__msg s7-m0" id="{mid[sx]}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Mortalitate + Sacrificare + Eroare sexare =&#160;<span class="ip-num">{n(removed(t[sx]))}</span>, '
+            msgs += (f'<p class="ip-err ip-entry__msg ip-m0" id="{mid[sx]}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Mortalitate + Sacrificare + Eroare sexare =&#160;<span class="ip-num">{n(removed(t[sx]))}</span>, '
                      f'peste cei <span class="ip-num">{n(a)}</span> {WORD[sx]} în viață pe <span class="ip-num">{dd(d)}</span>. La Mortalitate scrie cel mult <span class="ip-num">{n(most(t[sx]))}</span>.</span></p>')
         elif st[sx] == 'warn':
-            msgs += (f'<p class="ip-warnline ip-entry__msg s7-m0" id="{mid[sx]}" role="status">{icon("warn", 14)}<span>{sec}: <span class="ip-num">{n(v)}</span> {WORD[sx]} moarte, '
+            msgs += (f'<p class="ip-warnline ip-entry__msg ip-m0" id="{mid[sx]}" role="status">{icon("warn", 14)}<span>{sec}: <span class="ip-num">{n(v)}</span> {WORD[sx]} moarte, '
                      f'de peste 3 ori media pe 7 zile (<span class="ip-num">{n(hint(sec, sx, d)[1], 1)}</span>). Verifică numărătoarea; poți salva.</span></p>')
     motiv = ''
     for sx in 'FM':  # SYS05: Sacrificare > 0 shows its Motiv under it (read-only on a saved day: label + readonly input)
@@ -120,7 +120,7 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
             motiv += (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{r}" id="l-{r}">Motiv <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
                       f'<span class="ip-input ip-input--touch{" is-error" if missing[sx] else ""}"><select id="{r}" required aria-labelledby="t-{uid} l-{r}"{aria}>{opts}</select>{icon("chev", 16)}</span></div>')
             if missing[sx]:  # spans the row under the Select (SYS05); refusals name the section, the number, the day and the fix
-                motiv += (f'<p class="ip-err ip-entry__msg s7-m0" id="{em}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Motiv lipsă pentru <span class="ip-num">{n(t[sx]["culls"])}</span> {WORD[sx]} sacrificate pe <span class="ip-num">{dd(d)}</span>. '
+                motiv += (f'<p class="ip-err ip-entry__msg ip-m0" id="{em}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Motiv lipsă pentru <span class="ip-num">{n(t[sx]["culls"])}</span> {WORD[sx]} sacrificate pe <span class="ip-num">{dd(d)}</span>. '
                           f'Alege motivul: boală, șchiopătare sau altul.</span></p>')
         elif t[sx]['culls'] > 0:
             rsn = next(c['reason'] for c in S['culls'] if c['date'] == d.isoformat() and c['section'] == sec and c['sex'] == sx)

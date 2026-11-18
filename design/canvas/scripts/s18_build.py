@@ -166,7 +166,7 @@ def track_svg(TW):
             f'{cP["weeks"]} săpt.; la Telița fără date. Seria 2026, deschisă: Telița creștere {dd(cT["start_date"])}–{dd(cT["end_date"])}, {cT["weeks"]} săpt., '
             f'început prin populare; transfer Telița → Hîrbovăț {dd(X0D)[:5]}–{dd(X1D)}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}; '
             f'Hîrbovăț ouat din {dd(cH["start_date"])}, deschis, azi {dd(TODAY)}, sapt. {WK}.')
-    return (f'<svg class="ip-track s18-track s18-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
+    return (f'<svg class="ip-track s18-track {"ip" if TW in (1160, 1000, 720, 560) else "s18"}-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 LEG = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
        f'<span class="ip-num">{dd(X0D)[:5]}–{dd(X1D)}</span></span>'
@@ -174,8 +174,8 @@ LEG = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i c
 def track(phone=False):
     svgs = track_svg(358) if phone else ''.join(track_svg(w) for w in TWS)
     sub = f'<span class="ip-note">{num(2)} serii · {num(2)} ferme · {num(3)} cicluri</span>'
-    return (f'<section class="s4-block" aria-labelledby="h-track"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>'
-            f'<div class="s4-tight"><div class="s18-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{LEG}</div></div></section>')
+    return (f'<section class="ip-block" aria-labelledby="h-track"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>'
+            f'<div class="s4-tight"><div class="ip-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{LEG}</div></div></section>')
 
 # ================================================================= DataTable: series (group rows) and their cycles
 def ico(k):
@@ -184,7 +184,7 @@ def crow(fid, cyc=None, start='', st=None, dedus=False):
     f = FARM[fid]
     if cyc is None:  # a farm the series has no cycle at
         return (f'<tr><th scope="row" class="ip-table__child">{f["name"]}</th>'
-                f'<td colspan="6" class="s18-dash">– fără date pentru Seria 2025 la {f["name"]} (registrul începe cu Seria 2026)</td></tr>')
+                f'<td colspan="6" class="ip-muted">– fără date pentru Seria 2025 la {f["name"]} (registrul începe cu Seria 2026)</td></tr>')
     href = f'#/ferme/{fid}?ciclu={cyc["id"]}'
     end = dd(cyc['end_date']) if cyc['end_date'] else None
     per = (f'<span class="s18-cyc"><span>{num(dd(cyc["start_date"]))}{"<span class=\"ip-note\"> dedus</span>" if dedus else ""} –</span> <span>{num(end)}</span></span>' if end
@@ -195,7 +195,7 @@ def crow(fid, cyc=None, start='', st=None, dedus=False):
             f'<td>{TYPE_RO[f["type"]]}</td><td>{GUIDE[cyc["guide_id"]]}</td><td>{per}</td><td class="num">{wk}</td><td>{start}</td><td>{stt}</td></tr>')
 START_T = f'<span class="s18-start">{ico("placement")}<span>populare</span>{pair(PLC["F"], PLC["M"])}</span>'
 START_H = f'<span class="s18-start">{ico("transfer")}<span>transfer de la Telița</span>{pair(ARR["F"], ARR["M"])}</span>'
-START_P = f'<span class="s18-dash">– {s4.NOFLOCK}</span>'
+START_P = f'<span class="ip-muted">– {s4.NOFLOCK}</span>'
 def grow(sid, touch=False, keys=True):  # keys=False (phone): the series keys sit under the table, outside the scroll area
     s = SER[sid]
     if s['status'] == 'active':
@@ -216,8 +216,8 @@ def acts(sid, touch):
     if SER[sid]['status'] == 'active':
         a += f'<button type="button" class="ip-btn ip-btn--secondary{t}" disabled="disabled" aria-describedby="why-{sid}">Închide seria<span class="ip-sr"> {SER[sid]["name"]}</span></button>'
     return a
-WHY26 = f'<p class="ip-note s4s-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț (deschis, sapt. {WK}).</p>'
-RO_NOTE = '<p class="ip-note s4s-m0">O serie închisă e doar citire.</p>'   # S18P: the cycle-start sentence cut (B4 rule, said by the EffectPreview)
+WHY26 = f'<p class="ip-note ip-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț (deschis, sapt. {WK}).</p>'
+RO_NOTE = '<p class="ip-note ip-m0">O serie închisă e doar citire.</p>'   # S18P: the cycle-start sentence cut (B4 rule, said by the EffectPreview)
 def ptable():
     """Phone (fix 1): one framed scroll table per series (group row + its cycles); the series keys sit under it, outside the
     scroll area, with Închide seria's reason right under its key."""
@@ -228,14 +228,14 @@ def ptable():
         out += (f'<div class="s18-pser"><div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="g-{sid}">'
                 f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">{SER[sid]["name"]}: ciclurile pe ferme</caption>{COLS}<tbody>{g}{rows}</tbody></table></div>'
                 f'<div class="s18-pacts">{acts(sid, True)}</div>{WHY26 if sid == "seria-2026" else ""}</div>')
-    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
+    return (f'<section class="ip-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{num(2)} serii · cele mai noi întâi</span></div>{out}<div class="s18-notes">{RO_NOTE}</div></section>')
 def table(touch=False):
     if touch: return ptable()
     body = (f'<tbody>{grow("seria-2026", touch)}{crow("telita", cT, START_T)}{crow("hirbovat", cH, START_H)}</tbody>'
             f'<tbody>{grow("seria-2025", touch)}{crow("hirbovat", cP, START_P, dedus=True)}{crow("telita")}</tbody>')
     notes = [WHY26, RO_NOTE]
-    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
+    return (f'<section class="ip-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{num(2)} serii · cele mai noi întâi</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
             f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{DCOLS}{body}</table></div>'
@@ -383,10 +383,10 @@ def form(day, touch, name='', year='', rows=((None, None, None),), state='empty'
 CREATE = 'Creează seria'
 def sheet(body, day, key):
     return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">{p_head("TELIȚA · " + dd(day) + " · SAPT 1", True)}'
-            f'<div class="ip-sidepanel__body s13-pbody">{"".join(body)}</div><div class="ip-sidepanel__foot">{key}</div></aside>')
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form">{"".join(body)}</div><div class="ip-sidepanel__foot">{key}</div></aside>')
 def panel(body, day, key):
     return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="sn" aria-labelledby="sn-t">\n{p_head("TELIȚA · " + dd(day) + " · SAPT 1", False)}\n'
-            f'<div class="ip-sidepanel__body s13-pbody">\n{"".join(body)}\n</div>\n'
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 
 # ================================================================= phone list (owner)
@@ -407,12 +407,8 @@ def rule(css, sel):
     r = re.findall(r'[^}\n]*' + re.escape(sel) + r'[^}]*}', css); assert r, sel
     return '\n' + '\n'.join(r)
 DATE_CSS = rule(B7.CSS, '.s7-date')
+# FIN15B: the CycleTrack width box (1160/1000/720/560; fix 1: beside the panel at 1280 the 560 drawing, 1:1) is additions.css §65
 CSS18 = '''
-.s18-trackbox{container-type:inline-size}
-.s18-track--1000,.s18-track--720,.s18-track--560{display:none}
-@container (max-width: 1159.98px){.s18-track--1160{display:none}.s18-track--1000{display:block}}
-@container (max-width: 999.98px){.s18-track--1000{display:none}.s18-track--720{display:block}}
-@container (max-width: 719.98px){.s18-track--720{display:none}.s18-track--560{display:block}} /* fix 1: beside the panel at 1280, drawn 1:1 (text stays 11px, blocks 28px targets) */
 .s18-table{width:100%}
 .s18-table thead th{white-space:nowrap}
 .s18-table td.num,.s18-table td:last-child{white-space:nowrap} /* fix 1: Ghid / Ciclu / Început may wrap, so the table fits 998 px at 1280 */
@@ -425,8 +421,6 @@ CSS18 = '''
 .s18-rlink{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s18-rlink:hover{text-decoration-color:var(--ink)}
 .s18-start{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
-.s18-dash{color:var(--ink-muted)}
-.s18-nw{white-space:nowrap}
 .s18-notes{display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
@@ -436,11 +430,9 @@ CSS18 = '''
 X_CSS = '\n'.join(l for l in X.CSS.split('\n') if not l.startswith('.s11-select{'))   # FIN10 fix 1: no native select on S18–S22 desktops
 assert X_CSS != X.CSS
 CSS_DESK = X_CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
-.s4s-m0{margin:0}
 .s18-foot{justify-content:flex-end}'''
 Z_CSS = '\n'.join(l for l in Z.CSS_PHONE.split('\n') if '.s11-select' not in l)   # FIN10 fix 1: no native select on S18–S22 phones
 CSS_PL = Z_CSS + CSS18 + '''
-.s4s-m0{margin:0}
 .s18-pkey{display:flex;flex-direction:column}
 .s18-pser{display:flex;flex-direction:column;gap:var(--space-2)}
 .s18-pser + .s18-pser{margin-top:var(--space-2)}
@@ -448,8 +440,7 @@ CSS_PL = Z_CSS + CSS18 + '''
 .s18-gact .ip-btn{white-space:nowrap}
 .s18-ways .ip-link{min-height:var(--control-h-touch)}
 .s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */'''
-SHEET = ''.join('\n' + l for l in SC.SIDE.split('\n') if l.startswith('.s13-pbody'))
-assert SHEET.count('\n') == 1
+SHEET = ''  # FIN15B: the sheet's scrolling form body is additions.css §62 ip-sidepanel__body--form
 CSS_SH = ('body{margin:0}\n.s18-screen{height:100%;display:flex}' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
 .s18-ways .ip-link{min-height:var(--control-h-touch)} /* touch: each way out is a 48 px target */''')
 
@@ -497,7 +488,7 @@ out.append(write(STEM, T, f'<div class="ip-root s4s-rel" style="padding:0; min-h
 # 2 · desktop, the SidePanel open beside the list: nothing typed, Telița + Azi preset, focus on Nume (fields validate on save)
 DKEY = f'<button type="button" class="ip-btn ip-btn--primary">{CREATE}</button>'
 PAN = panel(form(TODAY, False, focus=True), TODAY, DKEY)
-VP = f'<div class="s13-vp s18-vp">{page(pressed=True)}</div>'
+VP = f'<div class="ip-dockpage s18-vp">{page(pressed=True)}</div>'
 out.append(write(STEM + '--serie-noua', f'{T} · Serie nouă · desktop', f'<div class="ip-root s4s-rel" style="padding:0; min-height:{SC.SIDE_H}px">{VP}{PAN}</div>', CSS_DESK, 1440, SC.SIDE_H))
 # 3 · phone list
 h = HEIGHTS.get(STEM + '--telefon', 844)

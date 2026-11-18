@@ -64,7 +64,7 @@ ORDER = ['hirbovat', 'telita']   # list order: the farm with an open cycle first
 def tree_of(fid): return ST['farm_tree'](fid)
 assert tree_of('telita') == [(c, []) for c in ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']]
 assert tree_of('hirbovat') == [('H1', ['H1.1', 'H1.2']), ('H3', ['H3.1', 'H3.2']), ('H4', ['H4.1', 'H4.2'])]
-def pl(k, one, many): return f'<span class="s19-nw">{num(k)} {one if k == 1 else many}</span>'
+def pl(k, one, many): return f'<span class="ip-nowrap">{num(k)} {one if k == 1 else many}</span>'
 def sec_count(fid):
     t = tree_of(fid); halls = [x for x in t if x[1]]
     if halls:
@@ -73,12 +73,12 @@ def sec_count(fid):
 def sec_codes(fid):
     t = tree_of(fid)
     if any(k for _, k in t):
-        return ' · '.join(f'<span class="s19-nw">{" ".join(k)}</span>' for _, k in t)
-    return ' '.join(f'<span class="s19-nw">{c}</span>' for c, _ in t)
+        return ' · '.join(f'<span class="ip-nowrap">{" ".join(k)}</span>' for _, k in t)
+    return ' '.join(f'<span class="ip-nowrap">{c}</span>' for c, _ in t)
 def cyc_cell(fid):
     if fid == 'hirbovat':
-        return f'<span class="s19-cyc">{lamp("ok", "deschis")}<span class="ip-note ip-num"><span class="s19-nw">SAPT {WK}</span> · <span class="s19-nw">din {dd(cH["start_date"])}</span></span></span>'
-    return f'<span class="s19-cyc">{lamp("off", "goală")}<span class="ip-note ip-num"><span class="s19-nw">din {dd(cT["end_date"])}</span></span></span>'
+        return f'<span class="s19-cyc">{lamp("ok", "deschis")}<span class="ip-note ip-num"><span class="ip-nowrap">SAPT {WK}</span> · <span class="ip-nowrap">din {dd(cH["start_date"])}</span></span></span>'
+    return f'<span class="s19-cyc">{lamp("off", "goală")}<span class="ip-note ip-num"><span class="ip-nowrap">din {dd(cT["end_date"])}</span></span></span>'
 def fold(fid):   # S19P: Tip + Ciclu under the farm name while the list region is narrow (beside the panel, container query)
     return f'<span class="s19-fold"><span class="s19-ftip">{TYPE_RO[FARM[fid]["type"]]}</span>{cyc_cell(fid)}</span>'
 def gtag(fid, noguide=False):
@@ -127,8 +127,8 @@ def frow(fid, open_=None, noguide=()):
             f'<td class="s19-ccyc">{cyc_cell(fid)}</td><td class="s19-act">{editkey(fid, open_ == fid)}</td></tr>')
 def flist(open_=None, noguide=()):
     rows = ''.join(frow(fid, open_, noguide) for fid in ORDER)
-    note = ('<p class="ip-note s4s-m0">Un ghid nou se aplică de la ciclul următor al fermei. Secțiunile cu păsări nu se pot retrage.</p>')
-    return (f'<section class="s4-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
+    note = ('<p class="ip-note ip-m0">Un ghid nou se aplică de la ciclul următor al fermei. Secțiunile cu păsări nu se pot retrage.</p>')
+    return (f'<section class="ip-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
             f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed s19-region" tabindex="0" role="region" aria-labelledby="h-fer">'
             f'<table class="ip-table ip-table--rowheads s19-table"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'
@@ -226,7 +226,7 @@ def panel(title, note, body, key, inert=False):
     return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="fp" aria-labelledby="fp-t"{i}>\n<div class="ip-sidepanel__head"><div>'
             f'<h2 class="ip-t-heading ip-m0" id="fp-t">{title}</h2>{nt}</div>'
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul fermei">{icon("x")}</button></div>\n'
-            f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form s19-pbody">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 SAVE = '<button type="button" class="ip-btn ip-btn--primary">Salvează ferma</button>'
 SAVE_NO = '<button type="button" class="ip-btn ip-btn--primary" aria-disabled="true" aria-describedby="fp-ghid-e">Salvează ferma</button>'
@@ -234,7 +234,7 @@ ADD = '<button type="button" class="ip-btn ip-btn--primary">Adaugă ferma</butto
 def fpanel(fid, tip, ghid, tree, key=SAVE, focus_name=False, inert=False):
     return panel(FARM[fid]['name'], ctx(fid), [name_field(FARM[fid]['name'], focus_name), tip, ghid, tree], key, inert)
 def vp(open_=None, pressed_new=False, noguide=(), inert=False):
-    return f'<div class="s13-vp s18-vp">{page(None, open_, pressed_new, noguide=noguide, inert=inert)}</div>'
+    return f'<div class="ip-dockpage s18-vp">{page(None, open_, pressed_new, noguide=noguide, inert=inert)}</div>'
 
 # ================================================================= no farms (EmptyState, B1)
 NOFARMS = s4.empty_box('fără ferme', ['Nu există nicio fermă.', 'Adaugă prima fermă, apoi secțiunile și ghidul ei.'],
@@ -255,12 +255,12 @@ def phone_list():
                  f'<tr><th scope="row" class="ip-table__child">Secțiuni</th><td><span class="s19-secs"><span>{sec_count(f)}</span>'
                  f'<span class="ip-note ip-num">{sec_codes(f)}</span></span></td></tr>'
                  f'<tr><th scope="row" class="ip-table__child">Ciclu</th><td>{cyc_cell(f)}</td></tr></tbody>')
-    blk = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
+    blk = (f'<section class="ip-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
            f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-fer">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'
            f'{rows}</table></div>'
-           f'<p class="ip-note s4s-m0">Fermele și secțiunile le editezi pe calculator.</p></section>')
+           f'<p class="ip-note ip-m0">Fermele și secțiunile le editezi pe calculator.</p></section>')
     body = A.phone([p_header(), blk])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
                  ('class="ip-tabbar__item" href="#mai-mult"', 'class="ip-tabbar__item is-current" href="#mai-mult" aria-current="page"')):
@@ -273,7 +273,6 @@ CSS19 = '''
 .s19-table{width:100%}
 .s19-table thead th{white-space:nowrap}
 .s19-table td{vertical-align:middle;white-space:normal}
-.s19-nw{white-space:nowrap}
 .s19-fname{font-weight:500}
 .s19-region{container:s19-ferme / inline-size}
 .s19-fold{display:none}
@@ -369,7 +368,7 @@ desk('--ghid-nepotrivit', 'Telița · ghid de alt tip: refuzat · exemplu de sta
 desk('--fara-ferme', 'nicio fermă · exemplu de stare (D39)', page(NOFARMS, farms=False))
 # 9 · Fermă nouă: the list beside an empty panel; Tip unset, Ghid waits, sections after the first save; focus on Nume
 desk('--ferma-noua', 'Fermă nouă',
-     f'<div class="s13-vp s18-vp">{page(None, pressed_new=True)}</div>'
+     f'<div class="ip-dockpage s18-vp">{page(None, pressed_new=True)}</div>'
      + panel('Fermă nouă', '', [name_field('', True), tip_field(), ghid_field(None, 'new'), NEWTREE], ADD), PH)
 # 10 · phone, read-only list (D110)
 h = HEIGHTS.get(STEM + '--telefon', 844)

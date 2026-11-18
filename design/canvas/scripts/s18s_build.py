@@ -91,15 +91,15 @@ def scene_svg(TW, sc):
         g += (f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{ro_w}" height="16" rx="2"/>'
               f'<text class="rotxt" x="{round(xt + 4 + ro_w / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {w_}</text>')
     tk = T.month_axis(d0, d1, tx, LX, H, 3 if TW <= 720 else 2)
-    return (f'<svg class="ip-track s18-track s18-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
+    return (f'<svg class="ip-track s18-track {"ip" if TW in (1160, 1000, 720, 560) else "s18"}-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
             f'<desc>{sc["desc"]}</desc>{g}{tk}</svg>')
 LEG_NOTR = re.sub(r'<span><i class="ip-rec ip-rec--transfer"></i>transfer <span class="ip-num">[^<]*</span></span>', '', T.LEG)
 assert LEG_NOTR != T.LEG and 'transfer' not in LEG_NOTR
 def scene_track(sc):
     svgs = ''.join(scene_svg(w, sc) for w in T.TWS)
-    return (f'<section class="s4-block" aria-labelledby="h-track"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>'
+    return (f'<section class="ip-block" aria-labelledby="h-track"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>'
             f'<span class="ip-note">{sc["sub"]}</span></div>'
-            f'<div class="s4-tight"><div class="s18-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{sc.get("leg", LEG_NOTR)}</div></div></section>')
+            f'<div class="s4-tight"><div class="ip-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{sc.get("leg", LEG_NOTR)}</div></div></section>')
 
 B25_OPEN = dict(farm='hirbovat', a=cP['start_date'], b=None, open=True, label=TXT['h25open'], ded=True, href='#/ferme/hirbovat?ciclu=cyc-hirbovat-2025',
                 aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, deschis, azi sapt. {WK_P}. Deschide ferma la acest ciclu.')
@@ -138,7 +138,7 @@ def crow_at(fid, cyc, start, week, dedus=False):
     return r
 def open_(c): return dict(c, end_date=None)
 def why(sid, farm, week):
-    return f'<p class="ip-note s4s-m0" id="why-{sid}">{SER[sid]["name"]} se poate închide după ce se încheie ciclul de la {farm} (deschis, sapt. {week}).</p>'
+    return f'<p class="ip-note ip-m0" id="why-{sid}">{SER[sid]["name"]} se poate închide după ce se încheie ciclul de la {farm} (deschis, sapt. {week}).</p>'
 def gro(sid, st, note, acts):
     return (f'<tr class="is-group"><th scope="rowgroup" colspan="5" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{SER[sid]["name"]}</span>{st}'
             f'<span class="ip-note">{note}</span></span></th><td colspan="2" class="s18-gact"><span class="s18-acts">{acts}</span></td></tr>')
@@ -153,7 +153,7 @@ assert gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată 
 assert gro('seria-2025', lamp('off', 'închisă'), f'an {num(2025)} · doar citire · ultimul ciclu încheiat {num(dd(cP["end_date"]))}', acts('seria-2025')) == T.grow('seria-2025')
 def stable(groups, notes, count):
     body = ''.join(f'<tbody>{g}</tbody>' for g in groups)
-    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
+    return (f'<section class="ip-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{count}</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
             f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{T.DCOLS}{body}</table></div>'
@@ -203,16 +203,16 @@ def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
 SK_G = f'<tr class="is-group ip-table__skel"><th scope="rowgroup" colspan="5">{skel("w2")}</th><td colspan="2">{skel("w3")}</td></tr>'
 SK_R = '<tr class="ip-table__skel">' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', 'w2', 'w3')) + '</tr>'
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă seriile și ciclurile lor pe ferme.</p>'
-           f'<section class="s4-block" aria-labelledby="h-track" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
+           f'<section class="ip-block" aria-labelledby="h-track" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
            f'<div class="s4-tight">{SKL.track()}{SKL.legend()}</div></section>\n'  # fix 1: + the legend line, as loaded
-           f'<section class="s4-block" aria-labelledby="h-ser" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
+           f'<section class="ip-block" aria-labelledby="h-ser" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s18-table">{T.DCOLS}'
            f'<tbody>{SK_G}{SK_R}{SK_R}</tbody><tbody>{SK_G}{SK_R}{SK_R}</tbody></table></div></section>')
 FAULT = f'<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Q.Z.FAULT}</svg>'
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
+LOADERR = (f'<section class="ip-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{FAULT}'
-           f'<div class="ip-banner__body"><p class="s4s-m0">Seriile și ciclurile lor pe ferme nu s-au încărcat.</p>'
-           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți crea o serie nouă și acum.</p></div>'
+           f'<div class="ip-banner__body"><p class="ip-m0">Seriile și ciclurile lor pe ferme nu s-au încărcat.</p>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți crea o serie nouă și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'   # fix 1: works for Observator, manager and vet (S17)
@@ -320,7 +320,7 @@ def desk(stem, title, root, h=1024):
     out.append(T.write(STEM + stem, f'{TT} · {title}', f'<div class="ip-root s4s-rel" style="padding:0; min-height:{h}px">{root}</div>', CSS_D, 1440, h))
 def hd(stem, dflt=1024): return HEIGHTS.get(STEM + stem, dflt)
 DKEY = f'<button type="button" class="ip-btn ip-btn--primary">{T.CREATE}</button>'
-def vp(track, table, when='today'): return f'<div class="s13-vp s18-vp">{page(track, table, pressed=True, when=when)}</div>'
+def vp(track, table, when='today'): return f'<div class="ip-dockpage s18-vp">{page(track, table, pressed=True, when=when)}</div>'
 
 # 1 · se încarcă
 desk('--se-incarca', 'se încarcă', page(LOADING, ''), hd('--se-incarca'))

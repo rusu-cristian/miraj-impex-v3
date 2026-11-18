@@ -43,7 +43,7 @@ def icon(k, size=None):
 def tile(k): return f'<span class="ip-tile ip-rec ip-rec--{REC[k]}" aria-hidden="true">{icon(k)}</span>'
 def ico(k): return f'<span class="ip-rec ip-rec--{REC[k]}">{icon(k, 14)}</span>'
 def num(v): return f'<span class="ip-num">{v}</span>'
-def nw(v): return f'<span class="s2-nw">{v}</span>'  # S2P: a meta group that never splits (lines break at the · separators)
+def nw(v): return f'<span class="ip-nowrap">{v}</span>'  # S2P: a meta group that never splits (lines break at the · separators)
 
 # ---------- data ----------
 EX = ROOT / 'design/data/extracts'
@@ -214,7 +214,7 @@ def stock(u='', cap='Zile de hrană'):
     def ro(fid, s, sign, word):
         st = 'ok' if s['days_left'] >= 5 else 'warn'
         w0, w1 = s['avg_window']
-        sub = '' if st == 'ok' else '<p class="ip-readout__sub s2-m0">sub pragul de 5 zile</p>'
+        sub = '' if st == 'ok' else '<p class="ip-readout__sub ip-m0">sub pragul de 5 zile</p>'
         rid = f'{u}sr-{fid}'
         return (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="{rid}"><div class="ip-readout__cap"><span id="{rid}">Hîrbovăț · {FTN[fid]}'
                 f'<span class="ip-sr">, pentru {word}</span></span><span class="ip-rlamp ip-rlamp--{st}">{"în normă" if st == "ok" else "abatere"}</span></div>'
@@ -222,12 +222,12 @@ def stock(u='', cap='Zile de hrană'):
                 f'<div><dt>medie/zi {dd(dt.date.fromisoformat(w0))[:5]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(s["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
                 f'<div><dt>se termină</dt><dd>{dd(dt.date.fromisoformat(s["run_out_date"]))}</dd></div></dl>{sub}</div></li>')
     tel = (f'<li><div class="ip-readout ip-readout--stock ip-readout--off" role="group" aria-labelledby="{u}sr-te"><div class="ip-readout__cap"><span id="{u}sr-te">Telița</span>'
-           f'<span class="ip-rlamp ip-rlamp--off">oprit</span></div><div class="ip-readout__val">–</div><p class="ip-readout__sub s2-m0">fără ciclu deschis</p>'
-           f'<p class="ip-readout__sub s2-m0">ultimul ciclu: Seria 2026, închis pe <span class="ip-num s2-nw">{dd(dt.date.fromisoformat(cT["end_date"]))}</span></p></div></li>')
+           f'<span class="ip-rlamp ip-rlamp--off">oprit</span></div><div class="ip-readout__val">–</div><p class="ip-readout__sub ip-m0">fără ciclu deschis</p>'
+           f'<p class="ip-readout__sub ip-m0">ultimul ciclu: Seria 2026, închis pe <span class="ip-num ip-nowrap">{dd(dt.date.fromisoformat(cT["end_date"]))}</span></p></div></li>')
     w0, w1 = B2['avg_window']
     return (f'<section class="s2-block" aria-labelledby="{u}st">{head(cap, f"stoc și zile rămase · {num(D)}", u + "st")}'
             f'<ul class="ip-readouts" aria-labelledby="{u}st">{ro("ft-breeder2", B2, "♀", "găini")}{ro("ft-cocosi", CO, "♂", "cocoși")}{tel}</ul>'
-            f'<p class="ip-note s2-m0">Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate ({num(dd(dt.date.fromisoformat(w0))[:5] + "–" + dd(dt.date.fromisoformat(w1)))}); sub 5 zile = abatere.</p></section>')
+            f'<p class="ip-note ip-m0">Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate ({num(dd(dt.date.fromisoformat(w0))[:5] + "–" + dd(dt.date.fromisoformat(w1)))}); sub 5 zile = abatere.</p></section>')
 
 def unpriced():
     by = {}
@@ -256,7 +256,7 @@ def farms_block():
     tel = (f'<article class="ip-fsum ip-fsum--compact" aria-labelledby="fs-tel" aria-describedby="fs-tel-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
            f'<h3 class="ip-fsum__name" id="fs-tel"><a href="#/ferme/telita">Telița</a></h3><span class="ip-tag ip-tag--neutral">Creștere</span>'
            f'<span class="ip-tag ip-tag--neutral">{GUIDES["g-growth"]}</span></div>{lamp("off", "goală")}</div>'
-           f'<div class="ip-fsum__empty" id="fs-tel-c"><p class="s2-m0">Ferma e goală din {num(dd(dt.date.fromisoformat(cT["end_date"])))}. Ultimul ciclu: Seria 2026, {num(cT["weeks"])} săpt.</p>'
+           f'<div class="ip-fsum__empty" id="fs-tel-c"><p class="ip-m0">Ferma e goală din {num(dd(dt.date.fromisoformat(cT["end_date"])))}. Ultimul ciclu: Seria 2026, {num(cT["weeks"])} săpt.</p>'
            f'<a class="ip-link" href="#/ferme/telita?ciclu=cyc-telita-2026">Vezi ultimul ciclu</a></div></article>')
     return (f'<section class="s2-block" aria-labelledby="fm">{head("Ferme", f"{num(2)} ferme · {num(D)}", "fm")}'
             f'<div class="ip-fsums s2-fsums">{hir}{tel}</div></section>')
@@ -310,7 +310,7 @@ def track_svg(TW, phone=False):
     desc = (f'Seria 2026, 2 ferme. Telița: creștere {dd(dt.date.fromisoformat(cT["start_date"]))}–{dd(dt.date.fromisoformat(cT["end_date"]))}, {cT["weeks"]} săpt., închis, '
             f'început prin populare. Transfer Telița → Hîrbovăț {dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}. '
             f'Hîrbovăț: ouat din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi {D}, sapt. {WK}.')
-    return (f'<svg class="ip-track s2-track s2-track--{TW}" viewBox="0 0 {TW} {H + 18}" role="group" aria-label="Ciclurile seriei 2026 pe ferme">'
+    return (f'<svg class="ip-track s2-track {"ip" if TW in (1160, 1000, 720, 560) else "s2"}-track--{TW}" viewBox="0 0 {TW} {H + 18}" role="group" aria-label="Ciclurile seriei 2026 pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 def track(phone=False):
     """phone (S2V): one 358 px drawing, "Deschide seria" as a 48 px link under the legend instead of inside the note."""
@@ -321,11 +321,11 @@ def track(phone=False):
     svgs = track_svg(358, phone=True) if phone else "".join(track_svg(tw) for tw in TWS)
     more = lnk.replace('s2-lnk', 's2-more') if phone else ''
     return (f'<section class="s2-block" aria-labelledby="tk">{head("Seria 2026 · cicluri pe ferme", note, "tk")}'
-            f'<div class="s2-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{leg}</div>{more}</section>')
+            f'<div class="ip-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{leg}</div>{more}</section>')
 
 # ---------- page parts ----------
 def pagehead(ctx, phone=False):
-    return f'<header class="ip-pagehead{" s2-phead" if phone else ""}"><div><h1>Acasă</h1><p class="ip-note ip-num s2-m0">{ctx}</p></div></header>'
+    return f'<header class="ip-pagehead{" s2-phead" if phone else ""}"><div><h1>Acasă</h1><p class="ip-note ip-num ip-m0">{ctx}</p></div></header>'
 CTX_VET = f'HÎRBOVĂȚ · {D} · SAPT {WK}'
 CTX_MGR = f'SERIA 2026 · {D} · HÎRBOVĂȚ SAPT {WK}'
 CTX_OWN = f'SERIA 2026 · {D} · 2 FERME'  # uppercase Mono context line, as S6/S7
@@ -365,11 +365,9 @@ MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}
 OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols">{alerts(True)}{unpriced()}</div>', stock(cap='Stoc hrană'), farms_block()])
 
 # ---------- CSS ----------
-PICK = ('body{', '.s7-m0{')  # FIN15: .ip-screen/__main are additions.css §57
+PICK = ('body{',)  # FIN15: .ip-screen/__main are additions.css §57; FIN15B: .s7-m0 is ip-m0 (§58)
 CSS7 = '\n'.join(l for l in B.CSS.splitlines() if l.startswith(PICK)); assert CSS7.count('\n') == len(PICK) - 1
 CSS_SHARED = '''
-.s2-m0{margin:0}
-.s2-nw{white-space:nowrap}
 .s2-block{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
 .s2-block > .ip-list__head{margin:0}
 .s2-more,.s2-lnk{display:inline-flex;align-items:center;min-height:var(--space-6);align-self:flex-start} /* text links keep a >=24px target (D46) */'''
@@ -380,18 +378,16 @@ CSS_D = s4.CSS + CSS_SHARED + '''
 .s2-cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-6);align-items:start}
 .s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-small) + var(--space-2))} /* the panel's top on the alert list's top (under its head) */
 .s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}
-.ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */
-.s2-trackbox{container-type:inline-size}
-.s2-track--1000{display:none}
-@container (max-width: 1159.98px){.s2-track--1160{display:none}.s2-track--1000{display:block}}'''
+.ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */'''  # FIN15B: the CycleTrack width box is additions.css §65 ip-trackbox
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S2-acasa', 'S2 · Acasă'
 HEIGHTS = json.loads(HP.read_text()) if HP and HP.exists() else {}
-def write_phone(stem, title, body, css=None):
+def write_phone(stem, title, body, css=None, fixed=False):
     CSS_P_ = css or CSS_P
     h = HEIGHTS.get(stem, 844)
-    root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{body}</div>'
+    hs = f'height:{h}px; overflow:hidden' if fixed else f'min-height:{h}px'  # FIN15B: a fixed screen (ip-screen--fixed) takes the frame's height
+    root = f'<div class="ip-root" style="padding:0; width:390px; {hs}">{body}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

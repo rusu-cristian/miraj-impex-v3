@@ -180,7 +180,7 @@ def effect(state='all', u=''):
         return (f'<div class="ip-effect s13-effect" id="{u}fx" role="status">{rec("sale", 16)}<div class="s9-fxbody"><span class="ip-cap">Efect</span>'
                 '<span>Scrie câte păsări vinzi din fiecare secțiune sau alege Toate secțiunile. Aici vezi ce rămâne în fermă și dacă ciclul se închide.</span></div></div>')
     if state == 'refuz':  # EffectPreview: refused becomes a fault Banner
-        return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="{u}fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s7-m0">'
+        return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="{u}fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="ip-m0">'
                 f'Vânzare refuzată: Hîrbovăț › {RS} ar ajunge la {roo(ROVER)} pe {num(dd(DT))}. Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
     if state == 'part':  # the farm keeps birds: the cycle continues (open mini block, no record bar, as S9 D83)
         after, sub = pair(*PLEFT), f'{num(len(PART))} din {num(len(SEC))} secțiuni · {", ".join(PART)}'
@@ -203,15 +203,15 @@ SELL = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" aria-
 SELL_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Înregistrează vânzarea</button>'
 
 def screen(parts, save, overlay='', view='', modal=''):
-    """One 390×844 viewport (D60). view: ' s7s-view--end' scrolls the form to its end. modal: a Dialog over the screen;
+    """One 390×844 viewport (D60). view: ' ip-screen__view--end' scrolls the form to its end. modal: a Dialog over the screen;
     the header, form and SaveBar behind it are inert (out of the tab order and the a11y tree)."""
     h, ine = HEAD, ''
     if modal:
         h = h.replace('<header class="ip-formhead">', '<header class="ip-formhead" inert>', 1)
         save = save.replace('<div class="ip-savebar', '<div inert class="ip-savebar', 1); ine = ' inert'
-    return f'''<div class="ip-screen s7s-vp{" ip-scrimhost" if modal else ""}">
+    return f'''<div class="ip-screen ip-screen--fixed{" ip-scrimhost" if modal else ""}">
 {h}
-<div class="s7s-view{view}"{ine}>
+<div class="ip-screen__view{view}"{ine}>
 <main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
@@ -243,31 +243,31 @@ DLG = f'''
 <div class="ip-effect s13-effect" id="dlg-fx">{rec("sale", 16)}<div class="s9-fxbody"><span class="s9-fxcyc">{cmark("end", "sale", CLOSE)}<span class="s9-fxsub">Seria 2026 · {num(dd(HSTART)[:5] if HSTART.year == DT.year else dd(HSTART))}–{num(dd(DT))}</span></span></div></div>
 <div class="ip-dialog__keys ip-dialog__keys--stack"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Înregistrează vânzarea</button></div>
 </div></div>'''
-boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (D39)', screen(FORM(), B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end', modal=DLG), 'vp'))
+boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (D39)', screen(FORM(), B.savebar(sum1(), SUM2, SELL), view=' ip-screen__view--end', modal=DLG), 'vp'))
 # 3 · refuzat — H4.2 ♂ 500 typed over the 476 alive (D39 state example): row error, preview = fault Banner, key disabled;
 #   the refused value is left out of the totals and the SaveBar (D77), line 2 names it
 # S10P: lamp + section + fix took 3 lines beside the long key (~130 px); while refused the bar carries only the reason, in two
 #   lines (the key is disabled, its aria-describedby reads it); the totals stay in the form's total line, minus the refused value
 ref_save = B.savebar(f'{lamp("fault", "refuzat")}<span>{RS}</span>', f'<span>cel mult {roo(RM)}</span>', SELL_OFF)
-boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([farm(), DATE, rows('refuz'), buyer(), note(), effect('refuz')], ref_save, view=' s7s-view--end'), 'vp'))
+boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([farm(), DATE, rows('refuz'), buyer(), note(), effect('refuz')], ref_save, view=' ip-screen__view--end'), 'vp'))
 # 4 · salvat — read-only form scrolled to its end, Toast with Anulează (undo the same day), Vânzare nouă
 toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Vândut · '
          f'♀ {num(n(TOT[0]))} · ♂ {num(n(TOT[1]))} · Hîrbovăț · ciclul închis</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm('ro'), DATE_RO, rows('ro'), buyer(True), note(True), effect()]
 boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.savebar(sum1(lead='vândut'), f'<span>poți anula până la {num("23:59")}</span>',
-              '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Vânzare nouă</button>'), overlay=toast, view=' s7s-view--end'), 'vp'))
+              '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Vânzare nouă</button>'), overlay=toast, view=' ip-screen__view--end'), 'vp'))
 # 5 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă right above the EffectPreview, form scrolled to its
 #   end (as S9P), typed values kept as a draft (D60), key stays enabled
-ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Vânzarea nu s-a salvat: '
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Vânzarea nu s-a salvat: '
        f'{pair(*TOT)}, Hîrbovăț, {num(dd(DT))}. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
-boards.append(('eroare-la-salvare', 'eroare la salvare · exemplu de stare (D39)', screen([farm(), DATE, rows('all'), buyer(), note(), ban, effect()], B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end'), 'vp'))
+       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
+boards.append(('eroare-la-salvare', 'eroare la salvare · exemplu de stare (D39)', screen([farm(), DATE, rows('all'), buyer(), note(), ban, effect()], B.savebar(sum1(), SUM2, SELL), view=' ip-screen__view--end'), 'vp'))
 # 6 · parțială — Toate on H4.1 and H4.2 only (D39 example from counts-latest): the farm keeps ♀ 17 028 · ♂ 1 729, the cycle
 #   continues, so Înregistrează vânzarea saves directly (no Dialog); form scrolled to its end (the preview)
 SUM2_PART = f'<span>{cmark("start", "", "ciclul continuă")}</span>'
 SELL_PART = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Înregistrează vânzarea</button>'
 boards.append(('partiala', 'parțială · ciclul continuă · exemplu de stare (D39)', screen([farm(), DATE, rows('part'), buyer(), note(), effect('part')],
-              B.savebar(sum1(PSOLD), SUM2_PART, SELL_PART), view=' s7s-view--end'), 'vp'))
+              B.savebar(sum1(PSOLD), SUM2_PART, SELL_PART), view=' ip-screen__view--end'), 'vp'))
 
 # the phone Dialog is additions.css section 35 (ip-scrim--phone, FIN04); the select chevron is additions.css (FIN10 fix 1)
 CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL
@@ -276,7 +276,7 @@ CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data vânzării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {WK} · ciclu din {dd(HSTART)}</span></div>'''
 PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="vp" aria-labelledby="vp-t">
 <div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--sale" aria-hidden="true">{icon("sale")}</span><div><h2 class="ip-t-heading ip-m0" id="vp-t">Vânzare</h2><p class="ip-note ip-num ip-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Vânzare">{icon("x")}</button></div>
-<div class="ip-sidepanel__body s13-pbody">
+<div class="ip-sidepanel__body ip-sidepanel__body--form">
 {farm(u='p', touch=False)}
 {DDATE}
 {rows('empty', u='p', touch=False)}
@@ -289,9 +289,9 @@ PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="vp" aria-labelled
 KEY = f'<button type="button" class="ip-btn ip-btn--secondary">{s4.icon("sale", 16)}Vânzare</button>'
 SPG = s4.shell(s4.main_page(panel=s4.panel_default())); assert SPG.count(KEY) == 1
 SPG = SPG.replace(KEY, KEY.replace('ip-btn--secondary"', 'ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="vp"'))
-DESK = f'<div class="s13-vp">{SPG}</div>'
+DESK = f'<div class="ip-dockpage">{SPG}</div>'
 CSS_D = s4.CSS + '\n' + s4.CSS_STATES + SC.SIDE + SC.M0 + '''
-.s13-vp .s4-cycle,.s13-vp .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.OPT + SC.EFFECT + SC.FX
+.ip-dockpage .s4-cycle,.ip-dockpage .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.OPT + SC.EFFECT + SC.FX
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S10-vanzare', 'S10 · Vânzare'

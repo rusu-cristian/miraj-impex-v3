@@ -136,14 +136,14 @@ def tscroll(cap, inner, fit=False, rowheads=False):
 def stock_ro(ft, sr):
     s = stocks[ft]; name = FT[ft]['name'].replace(' ', NBSP); ok = s['days_left'] >= 5
     rl = '<span class="ip-rlamp ip-rlamp--ok">în normă</span>' if ok else '<span class="ip-rlamp ip-rlamp--warn">abatere</span>'
-    sub = '' if ok else '<p class="ip-readout__sub s11-m0">sub pragul de 5 zile</p>'
+    sub = '' if ok else '<p class="ip-readout__sub ip-m0">sub pragul de 5 zile</p>'
     w0, w1 = s['avg_window']
     return f'''<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="sr-{ft}"><div class="ip-readout__cap"><span id="sr-{ft}">Hîrbovăț · {name}<span class="ip-sr">, {sr}</span></span>{rl}</div><div class="ip-readout__val">{n(s['stock_kg'])}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(s['days_left'], 1)}<small> zile</small></dd></div><div><dt>medie/zi {ddm(w0)}–{ddm(w1)}</dt><dd>{n(s['avg_daily_kg_last3'])}<small> kg</small></dd></div><div><dt>se termină</dt><dd>{ddate(s['run_out_date'])}</dd></div></dl>{sub}</div></li>'''
-TELITA_RO = '<li><div class="ip-readout ip-readout--stock ip-readout--off" role="group" aria-labelledby="sr-telita"><div class="ip-readout__cap"><span id="sr-telita">Telița</span><span class="ip-rlamp ip-rlamp--off">oprit</span></div><div class="ip-readout__val">–</div><p class="ip-readout__sub s11-m0">fără ciclu deschis</p><p class="ip-readout__sub s11-m0">ultimul ciclu: Seria 2026, închis pe <span class="ip-num s11-nw">28.02.2026</span></p></div></li>'
-STOCK_NOTE = '<p class="ip-note s11-m0">Stoc la <span class="ip-num">16.11.2026</span> = livrări − consum (rânduri confirmate). Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate (<span class="ip-num">13.11–15.11.2026</span>); sub 5 zile = abatere.</p>'
+TELITA_RO = '<li><div class="ip-readout ip-readout--stock ip-readout--off" role="group" aria-labelledby="sr-telita"><div class="ip-readout__cap"><span id="sr-telita">Telița</span><span class="ip-rlamp ip-rlamp--off">oprit</span></div><div class="ip-readout__val">–</div><p class="ip-readout__sub ip-m0">fără ciclu deschis</p><p class="ip-readout__sub ip-m0">ultimul ciclu: Seria 2026, închis pe <span class="ip-num ip-nowrap">28.02.2026</span></p></div></li>'
+STOCK_NOTE = '<p class="ip-note ip-m0">Stoc la <span class="ip-num">16.11.2026</span> = livrări − consum (rânduri confirmate). Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate (<span class="ip-num">13.11–15.11.2026</span>); sub 5 zile = abatere.</p>'
 def sec_stock(farm='all'):
     ros = TELITA_RO if farm == 'telita' else stock_ro('ft-breeder2', 'pentru găini') + stock_ro('ft-cocosi', 'pentru cocoși') + TELITA_RO
-    return f'''<section class="s4-block" aria-labelledby="h-stoc">
+    return f'''<section class="ip-block" aria-labelledby="h-stoc">
 {sec_head("h-stoc", "Stoc", 'pe fermă și tip de hrană · <span class="ip-num">16.11.2026</span>')}
 <ul class="ip-readouts" aria-labelledby="h-stoc">{ros}</ul>
 {'' if farm == 'telita' else STOCK_NOTE}
@@ -157,7 +157,7 @@ def mod_rows(d, head, lab, err):
     t = FT[d['feed_type_id']]; nm = t['name']; did = d['id']
     old = f'{d2(d["price_per_kg"])}{NBSP}lei/kg'
     cur = (f'<tr class="s11-editrow s11-modrow" id="modifica-pret-{did}">{head}<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td>'
-           f'<td class="s11-muted">proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span><span class="ip-sr">, preț salvat</span></td><td class="s11-act"></td></tr>')
+           f'<td class="ip-muted">proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span><span class="ip-sr">, preț salvat</span></td><td class="s11-act"></td></tr>')
     kg_v = f' value="{d2(MOD_NEW)}"' if err else ''
     tot = (f'<span class="ip-input s11-in s11-in--tot is-suggested"><input id="mp-tot" type="text" inputmode="decimal" value="{n(MOD_NEW_TOT)}" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="mp-help mp-sample"/><span class="suffix">lei</span></span>' if err
            else f'<span class="ip-input s11-in s11-in--tot"><input id="mp-tot" type="text" inputmode="decimal" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="mp-help"/><span class="suffix">lei</span></span>')
@@ -174,7 +174,7 @@ def mod_rows(d, head, lab, err):
     else:
         fld = '<span class="ip-input"><input id="mp-mot" type="text" required="required" aria-required="true" aria-describedby="mp-jur" placeholder="de ex. preț corectat pe factură"/></span>'
     why = (f'<tr class="s11-editrow s11-modwhy"><td colspan="6"><div class="ip-field s11-motiv"><label class="ip-label" for="mp-mot">Motiv</label>{fld}'
-           f'<p class="ip-hint s11-m0" id="mp-jur">{jur}</p></div></td>'
+           f'<p class="ip-hint ip-m0" id="mp-jur">{jur}</p></div></td>'
            f'<td colspan="2" class="s11-modact"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>')
     return cur + new + why
 
@@ -190,10 +190,10 @@ def del_row(d, role, mode='default'):
         return f'''<tr class="s11-editrow">{head}<td class="edit"><span class="ip-input is-focus s11-in"><input id="pr-kg" type="text" inputmode="decimal" aria-label="Lei/kg, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei/kg</span></span></td><td class="edit"><span class="ip-input s11-in s11-in--tot"><input id="pr-tot" type="text" inputmode="decimal" aria-label="Total lei, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei</span></span></td><td colspan="2" class="edit"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>'''
     if d['priced']:
         by = f'proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span>' if d.get('priced_at') else '– din registru'
-        price = f'<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td><td class="s11-muted">{by}</td>'
+        price = f'<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td><td class="ip-muted">{by}</td>'
         act = f'<td class="s11-act"><a class="ip-link s11-lk" href="#modifica-pret-{d["id"]}" aria-label="Modifică prețul, livrarea din {lab}">Modifică</a></td>' if owner else ''
     else:
-        price = '<td class="num s11-pc"><span class="ip-tag ip-tag--info">fără preț</span></td><td class="num s11-pc">–</td><td class="s11-muted">–</td>'
+        price = '<td class="num s11-pc"><span class="ip-tag ip-tag--info">fără preț</span></td><td class="num s11-pc">–</td><td class="ip-muted">–</td>'
         act = f'<td class="s11-act"><a class="ip-link s11-lk" href="#pret-{d["id"]}" aria-label="Adaugă prețul, livrarea din {lab}">Adaugă preț</a></td>' if owner else ''
     return f'<tr>{head}{price}{act}</tr>'
 
@@ -228,12 +228,12 @@ def sec_deliveries(role, mode='default'):
         right = f'<span class="ip-note s11-s12">{rec_ico(COINS, 14)}<span><span class="ip-num">{len(unpriced)}</span> livrări fără preț · prețurile le adaugă proprietarul</span></span>'
     help_ = f'<p class="ip-sr" id="pr-help">Scrie lei/kg sau totalul în lei; celălalt se calculează din {n(24000)} kg.</p>' if owner and mode == 'default' else ''
     if mode == 'moderr':  # D68-style label for the typed sample price
-        help_ = (f'<p class="ip-hint s11-m0" id="mp-sample">Valoare de exemplu: <span class="ip-num">{d2(MOD_NEW)}{NBSP}lei/kg</span> la <span class="ip-num">{ddate(MOD["date"])}</span> '
+        help_ = (f'<p class="ip-hint ip-m0" id="mp-sample">Valoare de exemplu: <span class="ip-num">{d2(MOD_NEW)}{NBSP}lei/kg</span> la <span class="ip-num">{ddate(MOD["date"])}</span> '
                  f'(prețul livrării Breeder 2 din <span class="ip-num">{ddate(MOD_PREV["date"])}</span>); totalul <span class="ip-num">{n(MOD_NEW_TOT)}{NBSP}lei</span> e calculat din <span class="ip-num">{n(MOD["qty_kg"])}{NBSP}kg</span>.</p>')
     unp = '' if viewer else f' · fără preț: <span class="ip-num">{unp_dates}.2026</span> · <span class="ip-num">{n(UNP_KG)} kg</span>'
     foot = f'<div class="s11-foot{' s11-tablebox--fit' if viewer else ''}"><span class="ip-note">Afișate <span class="ip-num">{len(SHOWN)}</span> din <span class="ip-num">{N_ALL}</span>{unp}</span><a class="ip-link s11-lk" href="#livrari-toate">Vezi toate (<span class="ip-num">{N_ALL}</span>)</a></div>'
     ro = ' · prețuri doar de citit' if role == 'Manager' else ''
-    return f'''<section class="s4-block" aria-labelledby="h-livrari">
+    return f'''<section class="ip-block" aria-labelledby="h-livrari">
 {sec_head("h-livrari", "Livrări", f'<span class="ip-num">{N_ALL}</span> livrări în Seria 2026 (Hîrbovăț <span class="ip-num">{N_HIR}</span> · Telița <span class="ip-num">{N_TEL}</span>) · cele mai noi întâi{ro}', right)}
 {tscroll(f'Livrări hrană, cele mai noi {len(SHOWN)} din {N_ALL}', f'<thead><tr>{ths}</tr></thead><tbody>{rows}</tbody>', viewer)}
 {help_}{foot}
@@ -245,7 +245,7 @@ def cons_cells(w, key, weighted):
     for sx in 'FM':
         a = agg[(w, key, sx)]; g = g_avg(a, weighted); gd = guide[(w, sx)]; dv = dev(g, gd); dvs.append(dv)
         cls = 'hen' if sx == 'F' else 'rooster'
-        out += f'<td class="num s11-{cls}">{n(g, 1)}</td><td class="num s11-muted">{gd}</td><td class="num s11-muted">{pct1(dv)}</td>'
+        out += f'<td class="num s11-{cls}">{n(g, 1)}</td><td class="num ip-muted">{gd}</td><td class="num ip-muted">{pct1(dv)}</td>'
     return out, dvs
 def cons_state(w, key):
     miss = [(sx, d) for sx in 'FM' for (_, d) in agg[(w, key, sx)]['miss']]
@@ -255,7 +255,7 @@ def cons_state(w, key):
         else:
             ds = sorted({d for _, d in miss}); span = ddate(ds[0]) if len(ds) == 1 else f'{ddm(ds[0])}–{ddate(ds[-1])}'
             what = f'<span class="ip-num">{len(miss)}</span> rânduri · <span class="ip-num">{span}</span>'
-        return f'<span class="s11-state">{lamp("warn", "lipsă")}<span class="s11-muted">{what}</span></span>'
+        return f'<span class="s11-state">{lamp("warn", "lipsă")}<span class="ip-muted">{what}</span></span>'
     if any(abs(v) > 10 for v in dvs): return lamp('warn', 'abatere')
     return lamp('ok', 'în normă')
 CONS_THS = ('<th scope="col">Secțiune</th>'
@@ -276,7 +276,7 @@ def sec_consum():
         rows += '</tbody>'
     ths = CONS_THS
     foot = '<div class="s11-foot"><span class="ip-note">g/pasăre = media zilelor cu rânduri; rândul săptămânii cântărește ♀ după găini și ♂ după cocoși. Toleranță <span class="ip-num">±10%</span>. Telița: fără consum în ciclul curent (ciclu închis pe <span class="ip-num">28.02.2026</span>).</span><a class="ip-link s11-lk" href="#consum-toate">Vezi toate săptămânile</a></div>'
-    return f'''<section class="s4-block" aria-labelledby="h-consum">
+    return f'''<section class="ip-block" aria-labelledby="h-consum">
 {sec_head("h-consum", "Consum", 'Hîrbovăț · pe săptămână și secțiune · <span class="ip-num">SAPT 37–40</span> · ghid Ross 308 ouat')}
 {tscroll('Consum Hîrbovăț pe săptămână și secțiune, SAPT 37–40, față de ghid', f'<thead><tr>{ths}</tr></thead>{rows}', rowheads=True)}
 {foot}
@@ -296,7 +296,7 @@ def sec_cost():
     foot = (f'<p class="ip-note ip-cost__foot">Lei = suma livrărilor cu preț; kg fără preț nu intră în cost. Lei/pasăre: la păsările de la începutul ciclului (Telița: populare <span class="ip-num">07.10.2025</span>, '
             f'<span class="ip-sex ip-sex--hen">♀ {n(PL["totals"]["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(PL["totals"]["M"])}</span>; Hîrbovăț: sosite <span class="ip-num">22.02–28.02.2026</span>, '
             f'<span class="ip-sex ip-sex--hen">♀ {n(arr["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(arr["M"])}</span>; seria: populare). Lei/ou: ouă totale (Cat. 1–3 + Incubabile) până pe <span class="ip-num">16.11.2026</span>: <span class="ip-num">{n(eggs)}</span>.</p>')
-    return f'''<section class="s4-block" aria-labelledby="h-cost">
+    return f'''<section class="ip-block" aria-labelledby="h-cost">
 {sec_head("h-cost", "Cost", 'pe ciclu, pe pasăre și pe ou · din livrările cu preț')}
 <section class="ip-cost ip-cost--wide" aria-labelledby="cost-d"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-d">Cost hrană · Seria 2026</h3><span class="ip-note">din livrările cu preț · până pe <span class="ip-num">16.11.2026</span></span></div><div class="ip-cost__scroll" role="region" tabindex="0" aria-label="Cost hrană · Seria 2026"><table class="ip-table ip-table--rowheads ip-cost__table"><caption class="ip-sr">Cost hrană · Seria 2026</caption>{t}</table></div>{foot}</section>
 </section>'''
@@ -314,10 +314,10 @@ def sec_loading():
         return f'<div class="ip-tablescroll ip-tablescroll--framed"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'  # aria-hidden: scrolls, not a tab stop
     return f'''<div class="s11-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Hrană pentru Seria 2026.</p>
-<section class="s4-block" aria-hidden="true">{sec_head("h-stoc", "Stoc")}<ul class="ip-readouts">{ro * 3}</ul></section>
-<section class="s4-block" aria-hidden="true">{sec_head("h-livrari", "Livrări")}{tbl(del_ths("Proprietar"), 6)}</section>
-<section class="s4-block" aria-hidden="true">{sec_head("h-consum", "Consum")}{tbl(CONS_THS, 4)}</section>
-<section class="s4-block" aria-hidden="true">{sec_head("h-cost", "Cost")}<div class="ip-cost ip-cost--wide"><div class="ip-cost__head">{sk("s4s-w40")}</div><div class="ip-cost__scroll">{tbl(COST_THS, 5, "ip-cost__table")}</div></div></section>
+<section class="ip-block" aria-hidden="true">{sec_head("h-stoc", "Stoc")}<ul class="ip-readouts">{ro * 3}</ul></section>
+<section class="ip-block" aria-hidden="true">{sec_head("h-livrari", "Livrări")}{tbl(del_ths("Proprietar"), 6)}</section>
+<section class="ip-block" aria-hidden="true">{sec_head("h-consum", "Consum")}{tbl(CONS_THS, 4)}</section>
+<section class="ip-block" aria-hidden="true">{sec_head("h-cost", "Cost")}<div class="ip-cost ip-cost--wide"><div class="ip-cost__head">{sk("s4s-w40")}</div><div class="ip-cost__scroll">{tbl(COST_THS, 5, "ip-cost__table")}</div></div></section>
 </div>'''
 
 def sec_empty():
@@ -334,9 +334,9 @@ def sec_empty():
     step_all = '<button type="button" class="ip-btn ip-btn--secondary">Vezi toate fermele</button>'
     return f'''<div class="s11-page">
 {sec_stock('telita')}
-<section class="s4-block" aria-labelledby="h-livrari">{sec_head("h-livrari", "Livrări", IV_NOTE)}{box("h-livrari", [f"Nicio livrare la Telița între {itv}.", f'Ultima livrare: <span class="ip-num">{ddate(tl["date"])}</span> · <span class="ip-num">{n(tl["qty_kg"])} kg</span> {FT[tl["feed_type_id"]]["name"]}.'], step_all)}</section>
-<section class="s4-block" aria-labelledby="h-consum">{sec_head("h-consum", "Consum", IV_NOTE)}{box("h-consum", [f"Niciun consum la Telița între {itv}.", 'Ciclul Seria 2026 s-a încheiat pe <span class="ip-num">28.02.2026</span>.'], '<a class="ip-link s11-lk" href="#telita-seria-2026">Vezi ciclul Seria 2026 la Telița</a>')}</section>
-<section class="s4-block" aria-labelledby="h-cost">{sec_head("h-cost", "Cost", IV_NOTE)}{box("h-cost", [f"Nicio livrare cu preț între {itv}, deci niciun cost în interval."], '<a class="ip-link s11-lk" href="#cost-seria-2026">Vezi costul Seria 2026</a>')}</section>
+<section class="ip-block" aria-labelledby="h-livrari">{sec_head("h-livrari", "Livrări", IV_NOTE)}{box("h-livrari", [f"Nicio livrare la Telița între {itv}.", f'Ultima livrare: <span class="ip-num">{ddate(tl["date"])}</span> · <span class="ip-num">{n(tl["qty_kg"])} kg</span> {FT[tl["feed_type_id"]]["name"]}.'], step_all)}</section>
+<section class="ip-block" aria-labelledby="h-consum">{sec_head("h-consum", "Consum", IV_NOTE)}{box("h-consum", [f"Niciun consum la Telița între {itv}.", 'Ciclul Seria 2026 s-a încheiat pe <span class="ip-num">28.02.2026</span>.'], '<a class="ip-link s11-lk" href="#telita-seria-2026">Vezi ciclul Seria 2026 la Telița</a>')}</section>
+<section class="ip-block" aria-labelledby="h-cost">{sec_head("h-cost", "Cost", IV_NOTE)}{box("h-cost", [f"Nicio livrare cu preț între {itv}, deci niciun cost în interval."], '<a class="ip-link s11-lk" href="#cost-seria-2026">Vezi costul Seria 2026</a>')}</section>
 </div>'''
 
 def page(role='Proprietar', mode='default'):
@@ -349,8 +349,6 @@ def page(role='Proprietar', mode='default'):
 CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-page{display:flex;flex-direction:column;gap:var(--space-8)}
 .s11-headl{display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap}
-.s11-m0{margin:0}
-.s11-nw{white-space:nowrap}
 .s11-farm{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s11-farm .ip-label{margin:0}
 .s11-select{width:calc(var(--space-12) * 4);cursor:pointer}
@@ -362,7 +360,6 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-type{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s11-hen{color:var(--rec-hen)}
 .s11-rooster{color:var(--rec-rooster)}
-.s11-muted{color:var(--ink-muted)}
 .s11-state{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s11-act{text-align:right;width:1%}
 .s11-lk{display:inline-flex;align-items:center;min-height:var(--space-6)}

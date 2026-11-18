@@ -105,7 +105,7 @@ def effect(before, after, avg=None, days=None, when='acum'):
         aft = '<span>după livrare: <span class="ip-num">–</span>, scrie cantitatea</span>'
     else:
         aft = f'<span>după livrare: <b class="s13-strong">{kgs(after)}</b></span>'
-    sub = f'<span class="s13-effsub">ajunge <span class="ip-num">{n(days, 1)}</span> zile la media <span class="ip-num s13-nw">{win[0].strftime("%d.%m")}–{win[-1].strftime("%d.%m")}</span> (<span class="ip-num s13-nw">{n(avg)}{NB}kg/zi</span>)</span>' if days else ''
+    sub = f'<span class="s13-effsub">ajunge <span class="ip-num">{n(days, 1)}</span> zile la media <span class="ip-num ip-nowrap">{win[0].strftime("%d.%m")}–{win[-1].strftime("%d.%m")}</span> (<span class="ip-num ip-nowrap">{n(avg)}{NB}kg/zi</span>)</span>' if days else ''
     return f'''<div class="ip-effect s13-effect" id="f-stock">{rec("delivery", 16)}<div class="s13-effbody"><span>Stoc {FTN[FT]} la Hîrbovăț {when}: {kgs(before)}</span>{aft}{sub}</div></div>'''
 
 def note(ro=False):
@@ -123,9 +123,9 @@ ADD = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Adaug�
 ADD_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Adaugă</button>'
 
 def screen(parts, save, overlay=''):  # s7s_build.screen with this form's header
-    return f'''<div class="ip-screen s7s-vp">
+    return f'''<div class="ip-screen ip-screen--fixed">
 {HEAD}
-<div class="s7s-view">
+<div class="ip-screen__view">
 <main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
@@ -147,13 +147,12 @@ boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='adăugat �
 # 3 · cantitate lipsă — kg left empty (validated on blur): field error naming the fix, Adaugă disabled
 boards.append(('cantitate-lipsa', 'cantitate lipsă', screen(FORM('error', None), B.savebar(sum1(None), f'{lamp("fault", "refuzat")}<span>scrie cantitatea în kg</span>', ADD_OFF))))
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft
-ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Livrarea nu s-a salvat: '
+ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Livrarea nu s-a salvat: '
        f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]}, Hîrbovăț, <span class="ip-num">{dd(EDAY)}</span>. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
+       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + FORM(), B.savebar(sum1(), SUM2, ADD))))
 
 CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''
-.s13-nw{white-space:nowrap}
 .s13-err{margin:0}
 .s13-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}''' + SC.EFFECT + '''
 .s13-effbody{display:flex;flex-direction:column}
@@ -169,7 +168,7 @@ DT = s4.TODAY; DTD = dt.date.fromisoformat(DT); DWEEK = (DTD - START).days // 7 
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DTD)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data livrării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {DWEEK} · ciclu din {dd(START)}</span></div>'''
 PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="lp" aria-labelledby="lp-t">
 <div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("delivery")}</span><div><h2 class="ip-t-heading ip-m0" id="lp-t">Livrare hrană</h2><p class="ip-note ip-num ip-m0">HÎRBOVĂȚ · {dd(DTD)} · SAPT {DWEEK}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Livrare hrană">{icon("x")}</button></div>
-<div class="ip-sidepanel__body s13-pbody">
+<div class="ip-sidepanel__body ip-sidepanel__body--form">
 {farm(touch=False)}
 {DDATE}
 {ftype(touch=False)}
@@ -190,7 +189,7 @@ SPG = re.sub(KEY_RE, r'<button type="button" class="ip-btn ip-btn--secondary is-
 # beside the open panel the page is 440 px narrower: at 1280 the S11 tables (711 px) no longer fit their 560 px block; they
 # scroll inside their box as s11_build's named, focusable regions (S11X; FIN14: the system .ip-tablescroll, was .s11-tscroll)
 assert SPG.count('class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0"') == 2
-DESK = f'<div class="s13-vp">{SPG}</div>'
+DESK = f'<div class="ip-dockpage">{SPG}</div>'
 assert DH == SC.SIDE_H
 CSS_D = s11.CSS + SC.SIDE + '''
 ''' + CSS.split(SC.MAIN, 1)[1]  # desktop split marker: everything after the phone main gap

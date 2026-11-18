@@ -81,8 +81,8 @@ COLS = ('<colgroup><col style="width:16.7%"/><col style="width:12.4%"/><col styl
 def form(mode='default'):
     work = mode == 'work'
     rows = ''.join(row(d, i == 0, mode) for i, d in enumerate(UNP))
-    lei = (f'<td class="num" colspan="2">{n(W_TOT)} <span class="s12-why s11-muted">· <span class="ip-num">{n(UNP_KG - W_ROW["qty_kg"])} kg</span> fără preț</span></td>' if work
-           else '<td class="num s11-muted" colspan="2">– <span class="s12-why">niciun preț scris</span></td>')
+    lei = (f'<td class="num" colspan="2">{n(W_TOT)} <span class="s12-why ip-muted">· <span class="ip-num">{n(UNP_KG - W_ROW["qty_kg"])} kg</span> fără preț</span></td>' if work
+           else '<td class="num ip-muted" colspan="2">– <span class="s12-why">niciun preț scris</span></td>')
     total = (f'<tfoot><tr class="is-total"><th scope="row" colspan="3">Total · <span class="ip-num">{len(UNP)}</span> livrări</th>'
              f'<td class="num">{n(UNP_KG)}</td>{lei}</tr></tfoot>')
     if work:
@@ -129,7 +129,7 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
 def error():
     return f'''<section class="s12-form" aria-labelledby="h-unp">
 <div class="ip-sechead"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
-<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{ico(ALERT)}<div class="ip-banner__body"><p class="s12-m0">Nu am putut încărca livrările fără preț.</p><p class="s12-m0">Verifică conexiunea la internet, apoi reîncearcă. Prețurile salvate până acum nu s-au schimbat.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>
+<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{ico(ALERT)}<div class="ip-banner__body"><p class="ip-m0">Nu am putut încărca livrările fără preț.</p><p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Prețurile salvate până acum nu s-au schimbat.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>
 </section>'''
 
 def page(mode='default'):
@@ -144,7 +144,6 @@ CSS = s11.CSS + '''
 .s12-why{font-family:var(--font-sans);font-weight:400}
 .s12-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s12-foot > .ip-btn{flex:none}
-.s12-m0{margin:0}
 .s12-table tr.s12-haserr > td{border-bottom:0} /* the field error row belongs to the row above */
 .s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
 .s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */

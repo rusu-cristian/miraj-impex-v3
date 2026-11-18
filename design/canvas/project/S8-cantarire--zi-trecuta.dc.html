@@ -15,18 +15,12 @@
 <style>body{margin:0}
 html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar 73 px at 390 (48 key + 2x12 padding + 1 top line; the 2-line summary, 36 px, sits inside the key height) + the field border and focus ring (1 + 2 + 2), so a focused field scrolls clear of the sticky SaveBar: 78 px */
 @media (max-width: 389.98px){html{scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}} /* under 390 a summary line can wrap between segments: up to 4 lines at 360 (measured, refusal state: 4x16 + 3x4 + 2x12 + 1 = 101 px) + 5 = 106 px */
-.s7-m0{margin:0}
 .s7-title{display:flex;flex-direction:column;min-width:0}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
 .s7-copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}
-.s7-savebar{position:sticky;bottom:0;z-index:2}
-.s7s-vp{height:844px;min-height:0;overflow:hidden}
-.s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.s7s-view > .ip-screen__main{flex:none}
-.s7s-view--end{justify-content:flex-end}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s13-opt{font-weight:400;color:var(--ink-muted)}
@@ -41,9 +35,9 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 <header class="ip-formhead">
 <a class="ip-iconbtn ip-iconbtn--touch" href="#acasa" aria-label="Înapoi la Acasă"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></a>
 <span class="ip-tile ip-rec ip-rec--weighing" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span>
-<div class="s7-title"><h1 class="ip-t-heading s7-m0">Cântărire</h1><p class="ip-note ip-num s7-m0">TELIȚA · 17.02.2026 · SAPT 20</p></div>
+<div class="s7-title"><h1 class="ip-t-heading ip-m0">Cântărire</h1><p class="ip-note ip-num ip-m0">TELIȚA · 17.02.2026 · SAPT 20</p></div>
 </header>
-<div class="s7s-view">
+<div class="ip-screen__view">
 <main class="ip-screen__main">
 <div class="ip-field">
 <span class="ip-label" id="d-lbl">Data</span>
@@ -52,7 +46,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 <span class="ip-input ip-input--touch ip-num"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg><input id="d-val" type="text" inputmode="numeric" value="17.02.2026" aria-labelledby="d-lbl" aria-describedby="d-wk"/></span>
 </div>
 <span class="ip-note ip-num" id="d-wk">SAPT 20 · ciclu din 07.10.2025</span>
-</div><div class="ip-banner ip-banner--info s7s-banner" id="past-why"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div class="s7s-banner__body"><p class="s7-m0">Pentru zilele trecute cere managerului.</p><p class="s7-m0">Cântărirea H1 <span class="ip-sex ip-sex--hen">♀</span> din <span class="ip-num">17.02.2026</span> e salvată; o vezi doar în citire.</p></div></div><div class="ip-field"><span class="ip-label" id="sec-l">Secțiune</span><div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="sec" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sec-l"><span class="ip-select__val">H1</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></div><div class="ip-field"><label class="ip-label" for="sx">Sex</label><span class="ip-input ip-input--touch is-readonly"><span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><input id="sx" type="text" value="Găini" readonly aria-describedby="sx-h"/></span><span class="ip-hint" id="sx-h">H1 are doar găini.</span></div><div class="ip-field"><label class="ip-label" for="w">Masa medie <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">găini</span></label><span class="ip-input ip-count ip-count--hen"><input id="w" inputmode="numeric" pattern="[0-9 &#8239;]*" placeholder="–" autocomplete="off" value="2 429" aria-describedby="ro-lamp ro-sub" readonly/><span class="suffix">g</span></span></div><section class="ip-readout" aria-labelledby="ro-h">
+</div><div class="ip-banner ip-banner--info s7s-banner" id="past-why"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div class="s7s-banner__body"><p class="ip-m0">Pentru zilele trecute cere managerului.</p><p class="ip-m0">Cântărirea H1 <span class="ip-sex ip-sex--hen">♀</span> din <span class="ip-num">17.02.2026</span> e salvată; o vezi doar în citire.</p></div></div><div class="ip-field"><span class="ip-label" id="sec-l">Secțiune</span><div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="sec" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sec-l"><span class="ip-select__val">H1</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></div><div class="ip-field"><label class="ip-label" for="sx">Sex</label><span class="ip-input ip-input--touch is-readonly"><span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><input id="sx" type="text" value="Găini" readonly aria-describedby="sx-h"/></span><span class="ip-hint" id="sx-h">H1 are doar găini.</span></div><div class="ip-field"><label class="ip-label" for="w">Masa medie <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">găini</span></label><span class="ip-input ip-count ip-count--hen"><input id="w" inputmode="numeric" pattern="[0-9 &#8239;]*" placeholder="–" autocomplete="off" value="2 429" aria-describedby="ro-lamp ro-sub" readonly/><span class="suffix">g</span></span></div><section class="ip-readout" aria-labelledby="ro-h">
 <h2 class="ip-sr" id="ro-h">Față de ghid</h2>
 <div class="ip-readout__live" aria-live="polite" aria-atomic="true">
 <div class="ip-readout__cap"><span aria-hidden="true">H1 găini · SAPT 20</span><span class="ip-rlamp ip-rlamp--ok" id="ro-lamp">ÎN NORMĂ</span></div>
@@ -63,7 +57,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 </section><div class="s8-pair"><div class="ip-field"><label class="ip-label" for="cv">CV <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="cv" type="text" inputmode="decimal" placeholder="–" autocomplete="off" value="8,8" readonly/><span class="suffix">%</span></span></div><div class="ip-field"><label class="ip-label" for="uni">Uniformitate <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="uni" type="text" inputmode="decimal" placeholder="–" autocomplete="off" value="75" readonly/><span class="suffix">%</span></span></div><div class="ip-field"><label class="ip-label" for="size">Mărime probă <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="size" type="text" value="–" readonly aria-describedby="size-why"/></span><span class="ip-hint" id="size-why">Nescrisă la cântărire.</span></div></div>
 </main>
 </div>
-<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line"><span class="ip-rec ip-rec--weighing"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span><span><span class="ip-num">17.02.2026</span> ·</span><span>H1 <span class="ip-sex ip-sex--hen">♀ <b>2 429 g</b></span></span></span><span class="ip-savebar__line"><span>doar citire</span></span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="past-why">Salvează</button></div>
+<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line"><span class="ip-rec ip-rec--weighing"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span><span><span class="ip-num">17.02.2026</span> ·</span><span>H1 <span class="ip-sex ip-sex--hen">♀ <b>2 429 g</b></span></span></span><span class="ip-savebar__line"><span>doar citire</span></span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="past-why">Salvează</button></div>
 </div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1056}}'>

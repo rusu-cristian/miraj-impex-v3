@@ -47,12 +47,12 @@ assert B2['avg_daily_kg_last3'] == 3976
 
 # ---------- phone pieces ----------
 def pscreen(parts, vet=True, overlay='', modal=False, end=False, key_off=None):
-    """end: the viewport shows the foot of the page (scrolled to the bottom, as S6S "salvat"; sstate_css .s7s-view--end).
+    """end: the viewport shows the foot of the page (scrolled to the bottom, as S6S "salvat"; sstate_css .ip-screen__view--end).
     key_off: id of the reason; the tab bar's Înregistrează key is aria-disabled with it (as the EntryKeys on that board)."""
-    inner = f'<div class="s7s-view{" s7s-view--end" if end else ""}"><main class="ip-screen__main s2-main">\n{"".join(parts)}\n</main></div>\n{A.tabbar(vet, key_off)}'
+    inner = f'<div class="ip-screen__view{" ip-screen__view--end" if end else ""}"><main class="ip-screen__main s2-main">\n{"".join(parts)}\n</main></div>\n{A.tabbar(vet, key_off)}'
     if modal:  # the page under the Dialog is inert; the scrim covers the whole screen, tab bar included
         inner = f'<div class="s2s-under" inert="inert" aria-hidden="true">{inner}</div>'
-    return f'<div class="ip-screen s7s-vp{" ip-scrimhost" if modal else ""}">\n{inner}\n{overlay}\n</div>'
+    return f'<div class="ip-screen ip-screen--fixed{" ip-scrimhost" if modal else ""}">\n{inner}\n{overlay}\n</div>'
 PH = lambda ctx: A.pagehead(ctx, True)
 
 def skrow(): return ('<div class="ip-ev ip-ev--skel" aria-hidden="true"><span class="ip-skel ip-skel--tile"></span><span class="ip-ev__main">'
@@ -120,7 +120,7 @@ boards.append(('fara-acces', 'vet · fără acces', 'p', pscreen([PH(D), box], k
 
 # 8 · vet · eroare la încărcare — online only (spec §1): fault Banner naming what failed + Reîncearcă; keys stay
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("fault", 16)}<div class="ip-banner__body">'
-       f'<p class="s7-m0">Lipsesc date și Introdus azi nu s-au încărcat. Verifică conexiunea și reîncearcă.</p></div>'
+       f'<p class="ip-m0">Lipsesc date și Introdus azi nu s-au încărcat. Verifică conexiunea și reîncearcă.</p></div>'
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscreen([PH(A.CTX_VET), ban, A.entrykeys()])))
 
@@ -153,7 +153,7 @@ ro_neg = (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labe
           f'<span class="ip-sr">, pentru găini</span></span><span class="ip-rlamp ip-rlamp--warn">abatere</span></div>'
           f'<div class="ip-readout__val">{n(NEG)}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(0, 1)}<small> zile</small></dd></div>'
           f'<div><dt>medie/zi {dd(dt.date.fromisoformat(w0))[:5]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(B2["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
-          f'<div><dt>epuizat pe</dt><dd>{D}</dd></div></dl><p class="ip-readout__sub s2-m0">stoc sub 0 · verifică livrările</p></div></li>')
+          f'<div><dt>epuizat pe</dt><dd>{D}</dd></div></dl><p class="ip-readout__sub ip-m0">stoc sub 0 · verifică livrările</p></div></li>')
 assert st.count(ro_b2) == 1
 boards.append(('manager-desktop--zi-trecuta-stoc-sub-0', 'manager · desktop · zi trecută lipsă · stoc sub 0 · exemplu de stare (D39)', 'm', A.desktop('Manager', [
     A.pagehead(A.CTX_MGR), f'<div class="s2-cols">{al}{A.missing(True, past=[PAST])}</div>', st.replace(ro_b2, ro_neg),

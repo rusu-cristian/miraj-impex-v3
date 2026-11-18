@@ -128,7 +128,7 @@ def stats_cur(ng=False):
     st, sx = t4.stat, t4.stats
     # S14P fix 2: at 1280 the lamp wrapped alone ("● abatere" as the last line); it now runs in the text, kept with "−4,0 pct"
     # (Chrome breaks before an inline-flex lamp even after a no-break space, so the pair sits in a nowrap span)
-    dev_line = (f'hale: H3 {num(f"SAPT {WK}")} · <span class="s14-nw">{num(sgn(EW[("H3", WK)]["diff_pts"]) + " pct")} {lamp("warn", "abatere")}</span>')
+    dev_line = (f'hale: H3 {num(f"SAPT {WK}")} · <span class="ip-nowrap">{num(sgn(EW[("H3", WK)]["diff_pts"]) + " pct")} {lamp("warn", "abatere")}</span>')
     pk = EW[('all', PEAK)]
     s_dev = (st('eggs', 'Vârf de ouat', f'{n(pk["lay_pct"], 1)}<small>%</small>', NOG, f'{num(f"SAPT {PEAK} · " + span(pk["from"], pk["to"]))} · fermă') if ng else
              st('eggs', 'Săptămâni în abatere', f'{len(FARM_DEV)} din {len(GWEEKS)}<small>săpt. · fermă</small>',
@@ -180,10 +180,10 @@ def cells(k, w, ng=False):
     o = f'<td class="num s4t-hen">{n(x["hens"])}</td><td class="num">{n(e["total_eggs"])}</td><td class="num">{pct(e["lay_pct"])}</td>'
     if not ng:
         stt = lamp('warn', 'abatere') if abs(e['diff_pts']) > 3 else lamp('ok', 'în normă')
-        o += f'<td class="num s4t-muted">{pct(e["guide_lay_pct"])}</td><td class="num">{sgn(e["diff_pts"])} pct</td><td>{stt}</td>'
+        o += f'<td class="num ip-muted">{pct(e["guide_lay_pct"])}</td><td class="num">{sgn(e["diff_pts"])} pct</td><td>{stt}</td>'
     o += (f'<td class="num">{n(e["hatching_eggs"])}</td><td class="num">{pct(e["hatching_pct"])}</td><td class="num">{n(e["avg_egg_weight_g"], 1)} g</td>'
           f'{mortc(x["mortF"], "F")}{mortc(x["mortM"], "M")}<td class="num s4t-hen">{n(gfem(k, w), 1)}</td>')
-    if not ng: o += f'<td class="num s4t-muted">{GF[(w, "F")]}</td>'
+    if not ng: o += f'<td class="num ip-muted">{GF[(w, "F")]}</td>'
     return o
 
 def tb_weeks(ng=False, phone=False):
@@ -220,7 +220,7 @@ PUNK = sorted((k, w) for (k, w) in pw if w in range(PSHOW[-1], s4.PFIN + 1) and 
 assert PUNK == [('H1', 46), ('H3', 46), ('H4', 47), ('all', 47)], PUNK
 def pmortc(k, w, sx):
     if not pm[(k, w)]['days']:
-        return f'<td class="num {t4.SXC[sx]}"><span class="s4t-muted">{DASH}</span><span class="ip-sr"> necunoscut, golire</span></td>'
+        return f'<td class="num {t4.SXC[sx]}"><span class="ip-muted">{DASH}</span><span class="ip-sr"> necunoscut, golire</span></td>'
     return mortc(pm[(k, w)][sx], sx)
 assert sum(v['F'] for (k, _), v in pm.items() if k == 'all') == s4.PMORT['F']
 # S14P fix 1: the Seria 2025 Stat "Masă medie ou · SAPT 47" repeated its table row; it becomes the cycle's egg-weighted
@@ -254,11 +254,11 @@ def pnote(k, w):
     if k != 'all' and w >= dep_week(k): out.append(f'golire din {num(ddm(DEP[k]))}')
     if k == 'all' and any(w >= dep_week(h) for h in HALLS if (h, w) in pw): out.append('golire, vezi halele')
     if r['partial']: out.append(f'{num(r["days"])} zile')
-    return '<span class="s4t-muted">' + ' · '.join(out) + '</span>' if out else ''
+    return '<span class="ip-muted">' + ' · '.join(out) + '</span>' if out else ''
 def pcells(k, w):
     r = pw[(k, w)]
     return (f'<td class="num">{n(r["total_eggs"])}</td><td class="num">{n(r["hatching_eggs"])}</td><td class="num">{pct(r["hatching_pct"])}</td>'
-            f'<td class="num">{n(r["avg_egg_weight_g"], 1)} g</td><td class="num s4t-muted">{n(r["floor_eggs"])}</td>{pmortc(k, w, "F")}{pmortc(k, w, "M")}<td>{pnote(k, w)}</td>')
+            f'<td class="num">{n(r["avg_egg_weight_g"], 1)} g</td><td class="num ip-muted">{n(r["floor_eggs"])}</td>{pmortc(k, w, "F")}{pmortc(k, w, "M")}<td>{pnote(k, w)}</td>')
 def tb_past():
     eg, mo = t4.thico('eggs'), t4.thico('mortality')
     sx = lambda s: f'<th scope="col" class="num">{t4.thsex(s)}</th>'
@@ -298,7 +298,7 @@ def page_loading():
     return f'''<div class="s14-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Producție pentru Hîrbovăț, ciclul curent.</p>
 <section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {s4.CW} {s4.CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
-<section class="s4-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Pe săptămâni și hale</h2></div>{tbl}</section>
+<section class="ip-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Pe săptămâni și hale</h2></div>{tbl}</section>
 </div>'''
 
 def page_empty():
@@ -327,8 +327,7 @@ assert t4.CSS.startswith(_t4_base)
 S11_LINES = [l for l in s11.CSS.split('\n') if l.startswith(('.s11-farm', '.s11-select', '.s11-filterbar:has', '.ip-input > select + .ip-icon'))]
 assert len(S11_LINES) == 4, S11_LINES   # FIN10 fix 1: the select chevron rule is additions.css only
 CSS = (s4.CSS + '\n' + s4.CSS_STATES + t4.CSS[len(_t4_base):] + '\n' + '\n'.join(l for l in S11_LINES if not l.startswith('.ip-input > select'))
-       + '\n.s14-page{display:flex;flex-direction:column;gap:var(--space-6)}'
-       + '\n.s14-nw{white-space:nowrap} /* S14P fix 2: a figure and its lamp stay on one line */')  # S14P: the scroll region's position:relative is now additions.css section 36
+       + '\n.s14-page{display:flex;flex-direction:column;gap:var(--space-6)}')  # FIN15B: .s14-nw (S14P fix 2: a figure and its lamp on one line) is additions.css §64 ip-nowrap  # S14P: the scroll region's position:relative is now additions.css section 36
 
 STEM = 'S14-rapoarte-productie'
 BOARDS = [

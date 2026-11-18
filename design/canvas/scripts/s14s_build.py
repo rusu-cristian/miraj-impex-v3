@@ -54,8 +54,8 @@ FAULT = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"
 def page_error():
     fb = X.filterbar().replace(EXP, s11.export(True))
     ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{FAULT}</svg>'
-           '<div class="ip-banner__body"><p class="s4s-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
-           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă.</p></div>'
+           '<div class="ip-banner__body"><p class="ip-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>')
     return f'<div class="ip-shell">{X.sidebar()}<main class="ip-shell__main">\n{head_bare()}\n{fb}\n<div class="s14-page">{ban}</div>\n</main></div>'
 
@@ -126,8 +126,8 @@ def p_sheet():
             '</div></div>')
 def phone_sheet():  # 390×844: the page (scrolled to its top) and tab bar inert under the scrim, the sheet at the foot
     b = phone_page(sheet=True)
-    for a, z in (('<div class="ip-screen s14-phone">', '<div class="ip-screen s14-phone s7s-vp ip-scrimhost">'),
-                 ('<main class="ip-screen__main s2-main">', '<div class="s7s-view" inert="inert"><main class="ip-screen__main s2-main">'),
+    for a, z in (('<div class="ip-screen s14-phone">', '<div class="ip-screen s14-phone ip-screen--fixed ip-scrimhost">'),
+                 ('<main class="ip-screen__main s2-main">', '<div class="ip-screen__view" inert="inert"><main class="ip-screen__main s2-main">'),
                  ('</main>', '</main></div>'), ('<nav class="ip-tabbar', '<nav inert="inert" class="ip-tabbar')):
         assert b.count(a) == 1, a; b = b.replace(a, z)
     assert b.endswith('</div>')
@@ -166,7 +166,7 @@ for stem, title, fn in DESK:
     s4.write(stem, title, fn(), '', H=h, css=X.CSS); out.append((stem, title, h, 1440))
 for stem, title, fn in PHONE:
     A.HEIGHTS[stem] = HEIGHTS.get(stem, 844)
-    out.append(A.write_phone(stem, title, fn(), css=CSS_SHEET if fn is phone_sheet else CSS_PHONE))
+    out.append(A.write_phone(stem, title, fn(), css=CSS_SHEET if fn is phone_sheet else CSS_PHONE, fixed=fn is phone_sheet))
 
 if CANVAS:  # S14 row: these boards after the 5 S14 boards
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR

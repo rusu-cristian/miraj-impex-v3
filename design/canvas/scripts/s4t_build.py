@@ -122,7 +122,7 @@ def stats(*items): return '<div class="ip-stats s4-stats">' + ''.join(items) + '
 def top(hid, title, ro, st):
     return f'<section class="s4-top" aria-labelledby="{hid}"><h2 class="ip-sr" id="{hid}">{title}</h2>{ro}{st}</section>'
 def block(hid, title, note, body):
-    return f'<section class="s4-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2><span class="ip-note">{note}</span></div>{body}</section>'
+    return f'<section class="ip-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2><span class="ip-note">{note}</span></div>{body}</section>'
 def tbox(cap, inner, cls=''):  # DataTable in the system scroll region (SYS06 .ip-tablescroll, framed) with system row headers (§32)
     return (f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="{cap}"><table class="ip-table ip-table--rowheads{(" " + cls) if cls else ""}">'
             f'<caption class="ip-sr">{cap}</caption>{inner}</table></div>')
@@ -418,14 +418,14 @@ def tb_hrana():
             for sx in 'FM':
                 a = AL[(s, sx)]; c = SXC[sx]
                 if a['today_g'] is None:
-                    g, dv, kg, stt = f'<span class="s4t-muted">{DASH} lipsă</span>', f'<span class="s4t-muted">{DASH}</span>', f'<span class="s4t-muted">{DASH}</span>', lamp('warn', 'lipsă')
+                    g, dv, kg, stt = f'<span class="ip-muted">{DASH} lipsă</span>', f'<span class="ip-muted">{DASH}</span>', f'<span class="ip-muted">{DASH}</span>', lamp('warn', 'lipsă')
                 else:
                     g = a['today_g']; dv = sgn(a['deviation_pct']) + '%'; kg = n(a['kg'], 1)
                     stt = lamp('warn', 'abatere') if abs(a['deviation_pct']) > 10 else lamp('ok', 'în normă')
                 assert a['guide_g'] == s4.guide[(WK, sx)]['feed_g']
                 body += (f'<tr><th scope="row" class="ip-table__child">{s} {sg(sx)}<span class="ip-sr"> {"găini" if sx == "F" else "cocoși"}</span></th><td>{FT[a["feed_type_id"]]}</td>'
-                         f'<td class="num {c}">{n(a["alive"])}</td><td class="num s4t-muted">{a["yesterday_g"]}</td><td class="num {c}">{g}</td>'
-                         f'<td class="num s4t-muted">{a["guide_g"]}</td><td class="num">{dv}</td><td class="num">{kg}</td><td>{stt}</td></tr>')
+                         f'<td class="num {c}">{n(a["alive"])}</td><td class="num ip-muted">{a["yesterday_g"]}</td><td class="num {c}">{g}</td>'
+                         f'<td class="num ip-muted">{a["guide_g"]}</td><td class="num">{dv}</td><td class="num">{kg}</td><td>{stt}</td></tr>')
         body += '</tbody>'
     body += (f'<tbody><tr class="is-total"><th scope="row">Total fermă</th><td colspan="6"><span class="ip-note">{num(rows_today)} din {num(12)} rânduri · '
              f'{num(n(kg_type["ft-breeder2"], 1) + " kg")} Breeder 2 · {num(n(kg_type["ft-cocosi"], 1) + " kg")} Cocoși</span></td><td class="num">{n(kg_today, 1)}</td><td>{lamp("warn", "lipsă 2")}</td></tr></tbody>')
@@ -549,7 +549,7 @@ def st_productie():
 
 def lay_state(h, w):
     r = EW[(h, w)]
-    if r['guide_lay_pct'] is None: return f'<span class="s4t-muted">{DASH} fără date în ghid</span>'
+    if r['guide_lay_pct'] is None: return f'<span class="ip-muted">{DASH} fără date în ghid</span>'
     return lamp('warn', 'abatere') if abs(r['diff_pts']) > 3 else lamp('ok', 'în normă')
 def tb_halls():
     ths = (f'<tr><th scope="col">Hala</th><th scope="col" class="num">Găini</th><th scope="col" class="num">{thico("eggs")}Ouă</th><th scope="col" class="num">Ouat</th>'
@@ -559,10 +559,10 @@ def tb_halls():
         r = EW[(h, WK)]; c = cat[h]
         al = sum(hall_alive.values()) if h == 'all' else hall_alive[h]
         stt = lay_state(h, WK)
-        if h == 'H3': stt = f'<span class="s4t-state">{stt}<span class="s4t-muted ip-num">din 09.11</span></span>'
+        if h == 'H3': stt = f'<span class="s4t-state">{stt}<span class="ip-muted ip-num">din 09.11</span></span>'
         return (f'{th}<td class="num s4t-hen">{n(al)}</td><td class="num">{n(r["total_eggs"])}</td><td class="num">{pct(r["lay_pct"])}</td>'
                 f'<td class="num">{sgn(r["diff_pts"])} pct</td><td>{stt}</td><td class="num">{pct(r["hatching_pct"])}</td><td class="num">{n(c["cat1"])}</td><td class="num">{n(c["cat2"])}</td>'
-                f'<td class="num">{n(c["cat3"])}</td><td class="num s4t-muted">{n(r["floor_eggs"])}</td><td class="num">{n(r["avg_egg_weight_g"], 1)} g</td></tr>')
+                f'<td class="num">{n(c["cat3"])}</td><td class="num ip-muted">{n(r["floor_eggs"])}</td><td class="num">{n(r["avg_egg_weight_g"], 1)} g</td></tr>')
     body = '<tbody>' + ''.join(row(h, f'<tr><th scope="row">{h}</th>') for h in HALLS) + '</tbody>'
     body += '<tbody>' + row('all', '<tr class="is-total"><th scope="row">Total fermă</th>') + '</tbody>'
     assert s4.h3_since == '2026-11-09' and sum(hall_alive.values()) == tot['F']
@@ -580,9 +580,9 @@ def tb_weeks():
         a = EW[('all', w)]
         hc = ''.join(f'<td class="num">{pct(EW[(h, w)]["lay_pct"])}</td>' for h in HALLS)
         dev = [h for h in HALLS if abs(EW[(h, w)]['diff_pts']) > 3]
-        stt = lay_state('all', w) if not dev else f'<span class="s4t-state">{lamp("warn", "abatere")}<span class="s4t-muted">{", ".join(dev)}</span></span>'
+        stt = lay_state('all', w) if not dev else f'<span class="s4t-state">{lamp("warn", "abatere")}<span class="ip-muted">{", ".join(dev)}</span></span>'
         body += (f'<tr><th scope="row"><span class="ip-num">SAPT {w}</span> <span class="s4t-sub">{ddm(a["from"])}–{ddate(a["to"])}</span></th><td class="num">{n(a["total_eggs"])}</td><td class="num">{pct(a["lay_pct"])}</td>{hc}'
-                 f'<td class="num s4t-muted">{pct(a["guide_lay_pct"])}</td><td>{stt}</td><td class="num">{pct(a["hatching_pct"])}</td><td class="num">{n(a["avg_egg_weight_g"], 1)} g</td></tr>')
+                 f'<td class="num ip-muted">{pct(a["guide_lay_pct"])}</td><td>{stt}</td><td class="num">{pct(a["hatching_pct"])}</td><td class="num">{n(a["avg_egg_weight_g"], 1)} g</td></tr>')
     body += '</tbody>'
     t = tbox(f'Producție pe săptămâni, Hîrbovăț, SAPT {W[-1]}–{WK}, ouat pe fermă și pe hale față de ghid', f'<thead>{ths}</thead>{body}')
     return block('h-pwk', 'Pe săptămâni', f'{num(f"SAPT {W[-1]}–{WK}")} · cele mai noi', t
@@ -597,7 +597,6 @@ CSS = s4.CSS + '''
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-hen{color:var(--rec-hen)}
 .s4t-roo{color:var(--rec-rooster)}
-.s4t-muted{color:var(--ink-muted)}
 .s4t-gnote{color:var(--ink-secondary)}
 .s4t-sub{color:var(--ink-secondary);font-family:var(--font-mono);font-size:var(--ip-fs-small)}
 .s4t-state{display:inline-flex;align-items:center;gap:var(--space-2)}

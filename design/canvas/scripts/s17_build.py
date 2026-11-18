@@ -121,8 +121,8 @@ def block(state='default', user=None):
     elif state == 'error':
         head_note = f'{num(PER_TXT)}{who}'
         lst = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Z.FAULT}</svg>'
-               f'<div class="ip-banner__body"><p class="s4s-m0">Istoricul modificărilor din {num(PER_TXT)}, toate fermele, nu s-a încărcat.</p>'
-               '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Filtrele rămân cum le-ai ales.</p></div>'
+               f'<div class="ip-banner__body"><p class="ip-m0">Istoricul modificărilor din {num(PER_TXT)}, toate fermele, nu s-a încărcat.</p>'
+               '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Filtrele rămân cum le-ai ales.</p></div>'
                '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>')
     else:
         head_note = f'{count_txt(len(rows))}{who} · {num(PER_TXT)}' + (' · cele mai noi întâi' if rows else '')
@@ -133,8 +133,8 @@ def block(state='default', user=None):
             lst = (f'<ul class="ip-list ip-list--change" aria-labelledby="h-chg"><li class="ip-list__empty"><span class="ip-lamp ip-lamp--off">fără modificări</span>'
                    f'<span>Nicio modificare{by} la Hîrbovăț și Telița între <span class="ip-num">{P0:%d.%m.%Y}</span> și <span class="ip-num">{TODAY:%d.%m.%Y}</span>.</span>'
                    '<span>Schimbă perioada sau filtrele.</span></li></ul>')
-    foot = '' if state in ('loading', 'error') else f'<p class="ip-note s4s-m0">{FOOT}</p>'
-    return (f'<section class="s4-block s17-block" aria-labelledby="h-chg"><div class="ip-list__head"><h2 class="ip-t-heading" id="h-chg">Modificări</h2>'
+    foot = '' if state in ('loading', 'error') else f'<p class="ip-note ip-m0">{FOOT}</p>'
+    return (f'<section class="ip-block s17-block" aria-labelledby="h-chg"><div class="ip-list__head"><h2 class="ip-t-heading" id="h-chg">Modificări</h2>'
             f'<p class="ip-note">{head_note}</p></div>{lst}{foot}</section>')
 assert in_period(CH[0]) and not [c for c in CH if c['user'] == 'Dr. Ceban']
 

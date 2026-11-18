@@ -17,7 +17,7 @@ CHECK = r"""() => {
    .filter(r => !document.getElementById(r));
  const unnamed = [...document.querySelectorAll('input:not([type=checkbox]),select,textarea,[role=combobox]')].filter(e => !(e.labels && e.labels.length) && !e.getAttribute('aria-labelledby') && !e.getAttribute('aria-label')).map(e => e.id || e.outerHTML.slice(0, 60));
  const pnl = document.querySelector('.ip-sidepanel--dock'); let under = null;
- if (pnl) { const px = pnl.getBoundingClientRect().left; under = [...document.querySelectorAll('.s13-vp *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > px + 1 && r.top < 1024 && r.bottom > 0; }).map(e => e.className.baseVal ?? e.className).slice(0, 4); }
+ if (pnl) { const px = pnl.getBoundingClientRect().left; under = [...document.querySelectorAll('.ip-dockpage *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > px + 1 && r.top < 1024 && r.bottom > 0; }).map(e => e.className.baseVal ?? e.className).slice(0, 4); }
  const lum = c => { const m = c.match(/[\d.]+/g).map(Number); const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }; return [.2126 * f(m[0]) + .7152 * f(m[1]) + .0722 * f(m[2]), m.length > 3 ? m[3] : 1] };
  const bgOf = e => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; const [, a] = lum(c); if (a > .5) return c; } return 'rgb(255,255,255)'; };
  const low = []; for (const e of document.querySelectorAll('body *')) { if (e.closest('[inert],.ip-sr,svg,[hidden]') || e.closest(':disabled,[aria-disabled=true]')) continue;
@@ -29,7 +29,7 @@ CHECK = r"""() => {
  const small = foc.map(e => { const t = e.matches('input,textarea') ? (e.closest('.ip-input') || e) : e; const r = t.getBoundingClientRect(); return [e, r]; })
    .filter(([e, r]) => r.width && Math.min(r.width, r.height) < (touch ? 44 : 24)).map(([e, r]) => (e.id || e.textContent.trim().slice(0, 16) || e.className) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
  const order = foc.map(e => e.getAttribute('aria-label') || e.id || e.textContent.trim().slice(0, 18));
- const b = document.querySelector('.s13-pbody'); const jr = document.getElementById('h-jurnal');
+ const b = document.querySelector('.ip-sidepanel__body--form'); const jr = document.getElementById('h-jurnal');
  const key = document.querySelector('[aria-controls="cp"]'); const kr = key ? key.getBoundingClientRect() : null;
  return {low, small, order, dup, broken: refs, unnamed, sw: document.documentElement.scrollWidth, under,
    body: b ? [b.scrollHeight, b.clientHeight] : null, jurnal: jr ? Math.round(jr.closest('section').getBoundingClientRect().top) : null,

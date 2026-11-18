@@ -15,24 +15,17 @@
 <style>body{margin:0}
 html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar 73 px at 390 (48 key + 2x12 padding + 1 top line; the 2-line summary, 36 px, sits inside the key height) + the field border and focus ring (1 + 2 + 2), so a focused field scrolls clear of the sticky SaveBar: 78 px */
 @media (max-width: 389.98px){html{scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}} /* under 390 a summary line can wrap between segments: up to 4 lines at 360 (measured, refusal state: 4x16 + 3x4 + 2x12 + 1 = 101 px) + 5 = 106 px */
-.s7-m0{margin:0}
 .s7-title{display:flex;flex-direction:column;min-width:0}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
 .s7-copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7-copy .ip-pair{font-size:inherit;line-height:inherit;gap:var(--space-1)}
-.s7-savebar{position:sticky;bottom:0;z-index:2}
-.s7s-vp{height:844px;min-height:0;overflow:hidden}
-.s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.s7s-view > .ip-screen__main{flex:none}
-.s7s-view--end{justify-content:flex-end}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s13-main{gap:var(--space-5)}
 .s13-rec{color:var(--c);display:inline-flex;flex:none}
 .s13-opt{font-weight:400;color:var(--ink-muted)}
-.s13-nw{white-space:nowrap}
 .s13-err{margin:0}
 .s13-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s13-effect{align-items:flex-start}
@@ -45,26 +38,26 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s13-noprice > .s13-rec{margin-top:var(--ip-hair)}
 .ip-input--area textarea::placeholder{color:var(--ink-muted)}</style>
 </helmet>
-<div class="ip-root" style="padding:0; width:390px; height:844px; overflow:hidden"><div class="ip-screen s7s-vp">
+<div class="ip-root" style="padding:0; width:390px; height:844px; overflow:hidden"><div class="ip-screen ip-screen--fixed">
 <header class="ip-formhead">
 <a class="ip-iconbtn ip-iconbtn--touch" href="#inregistreaza" aria-label="Înapoi la Înregistrează"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></a>
 <span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9zM3 7.5 12 12l9-4.5M12 12v9"/></svg></span>
-<div class="s7-title"><h1 class="ip-t-heading s7-m0">Livrare hrană</h1><p class="ip-note ip-num s7-m0">HÎRBOVĂȚ · 10.11.2026 · SAPT 40</p></div>
+<div class="s7-title"><h1 class="ip-t-heading ip-m0">Livrare hrană</h1><p class="ip-note ip-num ip-m0">HÎRBOVĂȚ · 10.11.2026 · SAPT 40</p></div>
 </header>
-<div class="s7s-view">
+<div class="ip-screen__view">
 <main class="ip-screen__main s13-main">
-<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><div class="ip-banner__body"><p class="s7-m0">Livrarea nu s-a salvat: <span class="ip-num">24 000</span> kg Breeder 2, Hîrbovăț, <span class="ip-num">10.11.2026</span>. Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div><div class="ip-field"><span class="ip-label" id="f-farm-l">Fermă</span><div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="f-farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="f-farm-l"><span class="ip-select__val">Hîrbovăț</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></div><div class="ip-field">
+<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><div class="ip-banner__body"><p class="ip-m0">Livrarea nu s-a salvat: <span class="ip-num">24 000</span> kg Breeder 2, Hîrbovăț, <span class="ip-num">10.11.2026</span>. Verifică conexiunea și apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div><div class="ip-field"><span class="ip-label" id="f-farm-l">Fermă</span><div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="f-farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="f-farm-l"><span class="ip-select__val">Hîrbovăț</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></div><div class="ip-field">
 <span class="ip-label" id="d-lbl">Data</span>
 <div class="s7-date">
 <span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="d-lbl"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span>
 <span class="ip-input ip-input--touch ip-num"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg><input id="d-val" type="text" inputmode="numeric" value="10.11.2026" aria-labelledby="d-lbl" aria-describedby="d-wk"/></span>
 </div>
 <span class="ip-note ip-num" id="d-wk">SAPT 40 · ciclu din 10.02.2026</span>
-</div><div class="ip-field"><label class="ip-label" for="f-type">Tip hrană</label><span class="ip-input ip-input--touch"><select id="f-type" aria-describedby="f-type-h"><option selected>Breeder 2</option><option>Cocoși</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span><span class="ip-hint" id="f-type-h"><span class="ip-sex ip-sex--hen">♀</span> pentru găini</span></div><div class="ip-field"><label class="ip-label" for="f-kg">Cantitate</label><span class="ip-input ip-input--touch ip-num"><input id="f-kg" type="text" inputmode="decimal" value="24 000" required aria-required="true" aria-describedby="f-stock"/><span class="suffix">kg</span></span></div><div class="ip-effect s13-effect" id="f-stock"><span class="ip-rec ip-rec--feed s13-rec"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9zM3 7.5 12 12l9-4.5M12 12v9"/></svg></span><div class="s13-effbody"><span>Stoc Breeder 2 la Hîrbovăț acum: <span class="ip-num">7 450 kg</span></span><span>după livrare: <b class="s13-strong"><span class="ip-num">31 450 kg</span></b></span><span class="s13-effsub">ajunge <span class="ip-num">7,9</span> zile la media <span class="ip-num s13-nw">07.11–09.11</span> (<span class="ip-num s13-nw">3 999 kg/zi</span>)</span></div></div><div class="ip-field"><label class="ip-label" for="f-note">Notă <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--area"><textarea id="f-note" rows="2" placeholder="de ex. numărul avizului"></textarea></span></div><p class="ip-note s13-noprice"><span class="ip-rec ip-rec--feed s13-rec"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg></span><span>Fără preț: îl adaugă proprietarul, din factură.</span></p>
+</div><div class="ip-field"><label class="ip-label" for="f-type">Tip hrană</label><span class="ip-input ip-input--touch"><select id="f-type" aria-describedby="f-type-h"><option selected>Breeder 2</option><option>Cocoși</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span><span class="ip-hint" id="f-type-h"><span class="ip-sex ip-sex--hen">♀</span> pentru găini</span></div><div class="ip-field"><label class="ip-label" for="f-kg">Cantitate</label><span class="ip-input ip-input--touch ip-num"><input id="f-kg" type="text" inputmode="decimal" value="24 000" required aria-required="true" aria-describedby="f-stock"/><span class="suffix">kg</span></span></div><div class="ip-effect s13-effect" id="f-stock"><span class="ip-rec ip-rec--feed s13-rec"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9zM3 7.5 12 12l9-4.5M12 12v9"/></svg></span><div class="s13-effbody"><span>Stoc Breeder 2 la Hîrbovăț acum: <span class="ip-num">7 450 kg</span></span><span>după livrare: <b class="s13-strong"><span class="ip-num">31 450 kg</span></b></span><span class="s13-effsub">ajunge <span class="ip-num">7,9</span> zile la media <span class="ip-num ip-nowrap">07.11–09.11</span> (<span class="ip-num ip-nowrap">3 999 kg/zi</span>)</span></div></div><div class="ip-field"><label class="ip-label" for="f-note">Notă <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--area"><textarea id="f-note" rows="2" placeholder="de ex. numărul avizului"></textarea></span></div><p class="ip-note s13-noprice"><span class="ip-rec ip-rec--feed s13-rec"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg></span><span>Fără preț: îl adaugă proprietarul, din factură.</span></p>
 </main>
 
 </div>
-<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line"><span class="ip-rec ip-rec--feed s13-rec"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9zM3 7.5 12 12l9-4.5M12 12v9"/></svg></span><span><span class="ip-num">24 000</span> kg Breeder 2 ·</span><span>Hîrbovăț</span></span><span class="ip-savebar__line"><span><span class="ip-num">10.11.2026</span> ·</span><span>fără preț</span></span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Adaugă</button></div>
+<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line"><span class="ip-rec ip-rec--feed s13-rec"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9zM3 7.5 12 12l9-4.5M12 12v9"/></svg></span><span><span class="ip-num">24 000</span> kg Breeder 2 ·</span><span>Hîrbovăț</span></span><span class="ip-savebar__line"><span><span class="ip-num">10.11.2026</span> ·</span><span>fără preț</span></span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Adaugă</button></div>
 </div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>

@@ -106,7 +106,7 @@ def ftot(built, start_override=None):
         out.append(dict(t=t, days=days, ok=ok, below0=below0, after=after, html=f'''<div class="ip-ftot__row" role="group" aria-label="{FTN[t]}, pentru {"găini" if sx == "F" else "cocoși"}"><div class="ip-ftot__type"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span><div><span class="ip-ftot__name">{FTN[t]} <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span></span><span class="ip-ftot__sub">{len(conf)} din {len(rs)} rânduri confirmate</span></div></div><div class="ip-ftot__cell ip-ftot__cell--kg"><span class="ip-ftot__key">Azi</span>{kgcell}</div><div class="ip-ftot__cell ip-ftot__cell--stock"><span class="ip-ftot__key">Stoc după azi</span><span class="ip-ftot__val">{n(round(after))}<small>kg</small></span>{stsub}</div><div class="ip-ftot__cell ip-ftot__cell--days"><span class="ip-ftot__key">Zile rămase</span><span class="ip-ftot__val">{n(days, 1)}<small>zile</small></span><span class="ip-ftot__sub">{daysub}</span></div><div class="ip-ftot__status">{lamp("ok", "în normă") if ok else lamp("warn", "abatere")}</div>{banner}</div>'''))
     w0, w1 = STK[HB[0]]['avg_window']
     avg = ', '.join(f'{FTN[t]}: <span class="ip-num">{n(STK[t]["avg_daily_kg_last3"])}</span> kg/zi' for t in HB)
-    html = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap s7-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
+    html = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap ip-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
 {"".join(f["html"] for f in out)}
 <p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d.%m")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
     return html, out
@@ -123,12 +123,12 @@ def savebar(built, line2, key, lead=''):  # the one SaveBar shell (s7_build.save
 
 SAVE_KEY = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>'
 SAVE_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Salvează</button>'
-GLINE = f'<p class="ip-note s7-m0">ghid <span class="ip-num">SAPT {WEEK}</span>: {pair(f"{GUIDE['F']}{NB}g", f"{GUIDE['M']}{NB}g")}</p>'
+GLINE = f'<p class="ip-note ip-m0">ghid <span class="ip-num">SAPT {WEEK}</span>: {pair(f"{GUIDE['F']}{NB}g", f"{GUIDE['M']}{NB}g")}</p>'
 def copy(disabled_reason=None):
     if disabled_reason:
         return f'''<div class="s7-copy">
 <button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" disabled aria-describedby="cp-why">{icon("copy", 16)}Copiază ieri</button>
-<p class="ip-note s7-m0" id="cp-why">{disabled_reason}</p>
+<p class="ip-note ip-m0" id="cp-why">{disabled_reason}</p>
 {GLINE}
 </div>'''
     return B.COPY
@@ -140,9 +140,9 @@ def idx(sec, sx): return next(i for i, r in enumerate(ROWS) if r['section'] == s
 
 def screen(main_parts, save, view_cls='', scroll=0, overlay=''):
     style = f' style="margin-top:calc(-1 * {scroll}px)"' if scroll else ''
-    return f'''<div class="ip-screen s7s-vp">
+    return f'''<div class="ip-screen ip-screen--fixed">
 {B.HEAD}
-<div class="s7s-view{(" " + view_cls) if view_cls else ""}">
+<div class="ip-screen__view{(" " + view_cls) if view_cls else ""}">
 <main class="ip-screen__main"{style}>
 {"".join(main_parts)}
 </main>
@@ -183,7 +183,7 @@ m = default_modes(); b4 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft4, f4 = ftot(b4, start_override={'ft-breeder2': 2093})
 assert n(round(f4[0]['after'])) == f'{MINUS}1{NB}240' and f4[0]['below0']
 sv4, _, _ = savebar(b4, stocklamp(f4), SAVE_KEY)
-boards.append(('stoc-sub-0', 'stoc sub 0 · exemplu de stare (D39)', screen([B.DATE, B.COPY, halls(b4), ft4], sv4, view_cls='s7s-view--end')))
+boards.append(('stoc-sub-0', 'stoc sub 0 · exemplu de stare (D39)', screen([B.DATE, B.COPY, halls(b4), ft4], sv4, view_cls='ip-screen__view--end')))
 
 # 5 · salvat — all 12 rows confirmed (H3.2 ♂ 157, H4.2 ♀ 156 from yesterday) and saved: read-only, Toast with Anulează, Editează
 m = [('ro', r['today_g'] if r['today_g'] is not None else r['yesterday_g']) for r in ROWS]
@@ -200,7 +200,7 @@ m = default_modes(); b6 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft6, f6 = ftot(b6)
 sv6, nc6, tot6 = savebar(b6, stocklamp(f6), SAVE_KEY)
 assert (nc6, n(tot6, 1)) == (10, f'3{NB}691,3')
-ban = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="s7-m0">Nu s-au salvat cele <span class="ip-num">{nc6}</span> rânduri din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{n(tot6, 1)}</span> kg). Verifică conexiunea și apasă Reîncearcă.</p><p class="s7-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
+ban = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Nu s-au salvat cele <span class="ip-num">{nc6}</span> rânduri din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{n(tot6, 1)}</span> kg). Verifică conexiunea și apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban, B.DATE, B.COPY, halls(b6), ft6], sv6)))
 
 # 7 · se încarcă — static Skeleton rows (no shimmer); header and date are known from the route
@@ -219,7 +219,7 @@ sk = f'''<p class="ip-sr" role="status">Se încarcă rândurile pentru <span cla
 <div class="s7-copy" aria-hidden="true">{skel("45%", "var(--control-h-touch)")}{skel("55%", SK16)}</div>
 <div class="ip-halls">{skhall * 2}</div>
 </div>'''
-sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv7 = f'''<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv7)))
 
 CSS = B.CSS + SC.VIEW + SC.BANNER

@@ -112,23 +112,23 @@ COLS = ('<thead><tr><th scope="col">Tip hrană</th><th scope="col">Pentru</th><t
 COLS = SKL.widths(COLS, [None, 21.4, 15.1, 19.9, 24.5], [65.36, 48.42, 47.42, 70.09, 91.34])  # + loaded min-content px (fix 1)
 def trow(r, open_=None, focus=None):
     return (f'<tr{" class=\"is-current\"" if open_ == r["id"] else ""}><th scope="row" class="s19-fname"><span class="s21-fn">{r["name"]}</span><span class="s21-fold">{use_txt(r)}</span></th>'
-            f'<td class="s21-nw">{sexw(r["for_sex"])}</td><td class="s21-nw">{state_cell(r)}</td><td class="s21-cuse">{use_txt(r)}</td>'
+            f'<td class="ip-nowrap">{sexw(r["for_sex"])}</td><td class="ip-nowrap">{state_cell(r)}</td><td class="s21-cuse">{use_txt(r)}</td>'
             f'<td class="s19-act">{editkey(r, open_ == r["id"], focus == r["id"])}</td></tr>')
 CAPTION = '<caption class="ip-sr">Tipurile de hrană, pentru cine sunt, starea lor și fermele care le folosesc</caption>'
 NOTE = ('Un tip retras nu mai apare în Livrare hrană și Hrană zilnică; livrările lui rămân în rapoarte. '
         'Un tip folosit nu se poate șterge, doar retrage.')
 def tlist(rows=ORDER, open_=None, focus=None, between=''):
     body = ''.join(trow(r, open_, focus) for r in rows)
-    return (f'<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
+    return (f'<section class="ip-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
             f'<span class="ip-note">{num(len(rows))} tipuri</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed s21-region" tabindex="0" role="region" aria-labelledby="h-tip">'
             f'<table class="ip-table ip-table--rowheads s19-table s21-table">{CAPTION}{COLS}<tbody>{body}</tbody></table></div>'
-            f'<p class="ip-note s4s-m0">{NOTE}</p></section>')
+            f'<p class="ip-note ip-m0">{NOTE}</p></section>')
 def shell(main, hdr=None, sb=None, inert=False):
     i = ' inert="inert"' if inert else ''
     return f'<div class="ip-shell"{i}>{sb or sidebar()}<main class="ip-shell__main">\n{hdr or header()}\n{main}\n</main></div>'
 def vp(open_=None, pressed_new=False, inert=False, rows=ORDER):
-    return f'<div class="s13-vp s18-vp">{shell(tlist(rows, open_), header(pressed_new, rows), inert=inert)}</div>'
+    return f'<div class="ip-dockpage s18-vp">{shell(tlist(rows, open_), header(pressed_new, rows), inert=inert)}</div>'
 
 # ================================================================= type panel (SidePanel beside the page, as S19)
 OPT = '<span class="s13-opt">(opțional)</span>'
@@ -186,15 +186,15 @@ def use_block(r, del_state='used', pressed=False, stock=None):
         f = FARM_OF[r['id']]
         if r['id'] in STOCK:
             kg = STOCK[r['id']] if stock is None else stock
-            line = f'{f}: livrări și hrană zilnică în Seria 2026. Stoc acum: <span class="ip-num s21-nw">{n(kg)} kg</span>.'
+            line = f'{f}: livrări și hrană zilnică în Seria 2026. Stoc acum: <span class="ip-num ip-nowrap">{n(kg)} kg</span>.'
         else:
             line = f'{f}: livrări în Seria 2026.'
         key = '<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="tp-del-why">Șterge tipul</button>'
-        why = f'<p class="ip-note s4s-m0" id="tp-del-why">Are livrări: rămâne în rapoarte, așa că nu se poate șterge, doar retrage.</p>'
-    return (f'<section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap s4s-m0" id="tp-use-h">Folosit la</h3>'
-            f'<p class="s4s-m0">{line}</p><div class="s21-delkey">{key}</div>{why}</section>')
-NEWUSE = ('<section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap s4s-m0" id="tp-use-h">Folosit la</h3>'
-          '<p class="s4s-m0">Nefolosit. Îl alegi în Livrare hrană și Hrană zilnică după ce îl adaugi.</p></section>')
+        why = f'<p class="ip-note ip-m0" id="tp-del-why">Are livrări: rămâne în rapoarte, așa că nu se poate șterge, doar retrage.</p>'
+    return (f'<section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap ip-m0" id="tp-use-h">Folosit la</h3>'
+            f'<p class="ip-m0">{line}</p><div class="s21-delkey">{key}</div>{why}</section>')
+NEWUSE = ('<section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap ip-m0" id="tp-use-h">Folosit la</h3>'
+          '<p class="ip-m0">Nefolosit. Îl alegi în Livrare hrană și Hrană zilnică după ce îl adaugi.</p></section>')
 def ctx(r):
     s = 'AMBELE SEXE' if r['for_sex'] is None else f'PENTRU {SEXW[r["for_sex"]][2].upper()}'
     u = FARM_OF.get(r['id'], 'nefolosit').upper()
@@ -207,7 +207,7 @@ def panel(title, note, body, key=SAVE, inert=False):
     return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="tp" aria-labelledby="tp-t"{i}>\n<div class="ip-sidepanel__head"><div>'
             f'<h2 class="ip-t-heading ip-m0" id="tp-t">{title}</h2>{nt}</div>'
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul tipului de hrană">{icon("x")}</button></div>\n'
-            f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
+            f'<div class="ip-sidepanel__body ip-sidepanel__body--form s19-pbody">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 def tpanel(r, act, key=SAVE, focus_name=False, inert=False, pressed_del=False, stock=None):
     used = r['id'] in FARM_OF
@@ -222,13 +222,13 @@ def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
 SK_R = ('<tr class="ip-table__skel"><th scope="row">' + skel('w2') + '</th>' + ''.join(f'<td class="{c}">{skel(w)}</td>' for c, w in (('', 'w2'), ('', 'w1'), ('s21-cuse', 'w2')))
         + '<td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă tipurile de hrană, cu starea lor.</p>'
-           f'<section class="s4-block" aria-labelledby="h-tip" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
+           f'<section class="ip-block" aria-labelledby="h-tip" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed s21-region" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table s21-table">'
            f'{COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
+LOADERR = (f'<section class="ip-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
-           f'<div class="ip-banner__body"><p class="s4s-m0">Tipurile de hrană nu s-au încărcat.</p>'
-           '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un tip nou și acum.</p></div>'
+           f'<div class="ip-banner__body"><p class="ip-m0">Tipurile de hrană nu s-au încărcat.</p>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un tip nou și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
@@ -242,13 +242,13 @@ NOTYPES = s4.empty_box('fără tipuri', ['Nu există niciun tip de hrană.', 'Ad
 # ================================================================= phone list (owner, read-only, as S19/S20)
 def phone_list():
     rows = ''.join(f'<tr><th scope="row" class="s19-fname"><span class="s21-fn">{r["name"]}</span><span class="ip-note s21-pfarm">{use_txt(r)}</span></th>'
-                   f'<td>{sexw(r["for_sex"])}</td><td class="s21-nw">{state_cell(r)}</td></tr>' for r in ORDER)
-    blk = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
+                   f'<td>{sexw(r["for_sex"])}</td><td class="ip-nowrap">{state_cell(r)}</td></tr>' for r in ORDER)
+    blk = (f'<section class="ip-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
            f'<span class="ip-note">{counts(FT)}</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-tip">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s21-table">{CAPTION}'
            f'<thead><tr><th scope="col">Tip hrană</th><th scope="col">Pentru</th><th scope="col">Stare</th></tr></thead><tbody>{rows}</tbody></table></div>'
-           f'<p class="ip-note s4s-m0">Un tip retras nu mai apare în formulare. Tipurile de hrană le adaugi și le editezi pe calculator.</p></section>')
+           f'<p class="ip-note ip-m0">Un tip retras nu mai apare în formulare. Tipurile de hrană le adaugi și le editezi pe calculator.</p></section>')
     cr = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     body = A.phone([f'<header class="ip-pagehead s2-phead s14-phead"><div>{cr}<h1>Tipuri de hrană</h1></div></header>', blk])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
@@ -260,7 +260,6 @@ def phone_list():
 # ================================================================= CSS (screen-only; tokens only; system classes untouched)
 CSS21 = '''
 .s21-table td{white-space:normal}
-.s21-nw{white-space:nowrap}
 .s21-region{container:s21-tipuri / inline-size}
 .s21-fold{display:none}
 /* S19P rule: beside the panel the region is under 760px (558 at 1280, 718 at 1440), so "Folosit la" folds under the type
@@ -299,7 +298,7 @@ desk('--breeder-2', 'Breeder 2 · panoul tipului', vp('ft-breeder2') + tpanel(B2
 # 3 · Starter (retired, used at Telița): tick Activ to reactivate; Șterge aria-disabled
 desk('--starter', 'Starter · tip retras', vp('ft-starter') + tpanel(ST_, act_field(False, ACT_OFF)), PH)
 # 4 · retire refused (D39 action): Activ unticked on Breeder 2 while 28 252 kg are in stock
-RET_E = (f'Breeder 2 nu se poate retrage: Hîrbovăț mai are <span class="ip-num s21-nw">{n(STOCK["ft-breeder2"])} kg</span> în stoc. '
+RET_E = (f'Breeder 2 nu se poate retrage: Hîrbovăț mai are <span class="ip-num ip-nowrap">{n(STOCK["ft-breeder2"])} kg</span> în stoc. '
          f'Bifează Activ la loc; îl retragi când stocul ajunge la 0 kg.')
 SAVE_NO = '<button type="button" class="ip-btn ip-btn--primary" aria-disabled="true" aria-describedby="tp-act-e">Salvează tipul</button>'
 desk('--retragere-refuzata', f'Breeder 2 · retragere refuzată: stoc la Hîrbovăț · {D39}: Activ debifat',
@@ -349,7 +348,7 @@ desk('--fara-acces', 'observator · fără acces', noaccess())
 desk('--niciun-tip', f'niciun tip · {D39}', shell(NOTYPES, header(rows=None, key=False), sidebar(no_series=True)))
 # 15 · S21P, D39: retiring is accepted once the stock is 0 kg (Breeder 2 at Hîrbovăț used up, Breeder 3 added for the hens):
 #      the counterpart of --retragere-refuzata, Activ unticked (focus) with no error, Salvează tipul live
-RET_OK = ('Stoc <span class="ip-num s21-nw">0 kg</span> la Hîrbovăț, deci îl poți retrage. După ce salvezi nu mai apare în Livrare hrană și Hrană zilnică; '
+RET_OK = ('Stoc <span class="ip-num ip-nowrap">0 kg</span> la Hîrbovăț, deci îl poți retrage. După ce salvezi nu mai apare în Livrare hrană și Hrană zilnică; '
           'livrările lui rămân în rapoarte.')
 desk('--retras-stoc-0', f'Breeder 2 · retragere cu stoc 0 kg · {D39}: stoc Hîrbovăț 0 kg, Breeder 3 adăugat',
      vp('ft-breeder2', rows=ROWS3) + tpanel(B2, act_field(False, RET_OK, focus=True), stock=0), PH)
