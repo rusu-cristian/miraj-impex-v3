@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 10:15 · Last commit: 2ba4872
+Updated: 2026-11-18 11:10 · Last commit: c0ab838
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 78 / 94 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN01; all SYS jobs done
+Done 79 / 94 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN02; all SYS jobs done
 
 ## Just finished
+- FIN01 Banner icon: §47 `.ip-banner > .ip-icon--16{margin-block:var(--ip-hair)}` + UserTable load-failed alignment; §46 LoginCard rule removed; no board HTML changed; 16 Banner boards got new shots (30 files); passed first review (c0ab838)
 - FIN cross-screen review: 16 jobs queued (must FIN01–05: Banner icon, Toast placement, Banner with action, Dialog scrim, current row; should FIN06–12; nice FIN13–16); generator chain + closed backlog items in design/notes/FIN.md
 - S1P Autentificare polish: §46 (LoginCard Banner icon on the line centre, quarter-arc busy spinner system-wide — S14 se exportă key + Button preview change look, shots S14-5 retaken — desktop card top 192); Intră aria-busy + aria-disabled while signing in; LoginCard preview band 768; D121 template-test exemption; 1 fix round (50c7857)
 - S1 Autentificare: row y 40489 (none was reserved), desktops x 0 (default) / 1520 (greșit), phones x 3040–6330 (default, parolă vizibilă, se intră, câmpuri goale, greșit, prea multe încercări, cont dezactivat, fără conexiune); A1 refusals word for word; SYS13 card unchanged; D121; passed first review (49f5ae8)
@@ -113,6 +114,7 @@ Done 78 / 94 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S22P: project/additions.css (§45) + all 26 project/S22-utilizatori*.dc.html (canvas.json unchanged); UserRow + OneTimePassword previews
 - S1: project/S1-autentificare*.dc.html (10 boards) + canvas.json
 - S1P: project/additions.css (§46) + project/S1-autentificare--se-intra.dc.html (S1 boards otherwise unchanged; desktop card top comes from §46)
+- FIN01: project/additions.css (§46 trimmed, §47)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
