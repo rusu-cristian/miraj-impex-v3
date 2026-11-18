@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 13:30 · Last commit: 3ad8ea6
+Updated: 2026-11-18 14:40 · Last commit: c396a0e
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 81 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN03; all SYS jobs done
+Done 82 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN04; all SYS jobs done
 
 ## Just finished
+- FIN03 Banner with action: §49 `.ip-banner--act` > icon + `__body` + `__key` (key wraps under the text start below 288px) + `--1l` one-line modifier; 25 Banner boards on 18 screens converted, 210 boards lose dead CSS; S22 load error role=alert + S19–S21 copy; §46 header fixed; D123; 1 fix round (S17 one-line centring) (c396a0e)
 - FIN02G generators: shared `canvas_rows.py`; rows keep their canvas.json x/y on rerun, canvas.json written only with --canvas, heights default to the screen's own file, overlap check on save; s3_canvas.py removed (use s3_build.py --canvas); rebuild orders in design/canvas/scripts/README.md; every row reruns byte-identical; passed first review (3ad8ea6)
 - FIN02 Toast: §48 `.ip-toastwrap` (+`--page` desktop bottom-right space-8, ≤ panel-w), `.ip-toast__txt/__undo`; screen copies removed (sstate_css + 14 generators, 143 boards, mostly CSS-only); S12 Prețuri salvate Toast + Anulează; D122; passed first review; generators now fragile on rerun → FIN02G queued (see notes/FIN.md) (8f36451)
 - FIN01 Banner icon: §47 `.ip-banner > .ip-icon--16{margin-block:var(--ip-hair)}` + UserTable load-failed alignment; §46 LoginCard rule removed; no board HTML changed; 16 Banner boards got new shots (30 files); passed first review (c0ab838)
@@ -64,7 +65,7 @@ Done 81 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN03 → FIN04 → … → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN04 → FIN05 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -118,6 +119,7 @@ Done 81 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S1P: project/additions.css (§46) + project/S1-autentificare--se-intra.dc.html (S1 boards otherwise unchanged; desktop card top comes from §46)
 - FIN01: project/additions.css (§46 trimmed, §47)
 - FIN02: project/additions.css (§48) + 143 boards on S6–S10, S12, S13, S15, S16, S18–S22 (canvas.json unchanged)
+- FIN03: project/additions.css (§46 header, §49) + 235 boards (25 Banner boards + dead-CSS removal; canvas.json unchanged)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
