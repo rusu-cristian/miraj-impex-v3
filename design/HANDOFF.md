@@ -3,9 +3,10 @@ Updated: 2026-11-18 · Last commit: c4ae55e
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 99 / 99 (final review running) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; final cross-screen review; all SYS jobs done
+Done 100 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; FX01; all SYS jobs done
 
 ## Just finished
+- FINAL review: 7 findings → FX01–FX07 (panel scroll, desktop headings, phone gaps, Banner/Toast copy + placement, CSS dedupe, small items, nav parent); D141 Banner at form end, D142 Înregistrează is the parent, D143 object-first Toasts (all to review); see notes/FINAL.md
 - FIN16 S4 leftovers: ciclu ales Stats 116px at 1280/1440; Seria 2025 "Vârf · ouă pe zi" 22 739 (SAPT 9, 02.05–08.05.2025); Rezumat + S2 De verificat lists ul/li; De verificat empty row on S4 ciclu ales + new S2 board manager · fermă goală (Telița) x 7740 (6 S2 boards +470); S4 one column below 1000px (S9/S10/S16 board rules gone, S16 scrolls re-measured); farm track in §65 trackbox, CycleSelector 416px, track text ≥11px everywhere; D140 to review; passed first review (c4ae55e)
 - FIN15B shell: §61–65 `ip-block`, `ip-grow`, `ip-dockpage`, `ip-sidepanel__body--form`, `ip-screen--fixed`/`__view`/`__savebar`, `ip-m0` (all sNN-m0), `ip-nowrap`, `ip-muted`, `ip-trackbox` + `ip-track--1160|1000|720|560`; 245 boards pixel-identical; D139 to review (same-CSS/different-job rules kept as screen CSS); 1 fix round (trackbox) (029306b)
 - FIN15 shell: §56–60 `ip-shell`/`__side`/`__main`, `ip-sidebar__account`, `ip-pagehead__meta`, `ip-sechead`, `ip-screen`/`__main`/`__tabbar`, `ip-sidepanel--dock`/`__title`/`__keys`, `ip-m0`, `ip-emptybox`, `ip-empty__line`, `ip-scrimhost`, `ip-savebar__sum--2l`, HallCard `ip-eggs__base`; 245 boards, pixel-identical except S6/S8 ferma-fara-pasari EmptyState key +8px (system step margin); D138 to review; FIN15B queued; passed first review (e283a57)
@@ -82,9 +83,10 @@ Done 99 / 99 (final review running) (all screens done; FIN01–FIN16 consistency
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- Final cross-screen review (FINAL), then Complete (in order; FIN02–FIN05 share generators)
+- FX01 → FX07 in order, then one more final pass, then Complete (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
+- To review (non-blocking, taken per standing instruction): D141 save-error Banner at form end, D142 Înregistrează as parent of Introdus azi + entry forms, D143 object-first Toasts.
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
 - Non-blocking: D95 guide week — app formula D02 puts 24.02.2026 in SAPT 21 (2 525 g, în normă); the workbook compares with week 20 (abatere). Confirm D02.
 - None blocking otherwise. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
