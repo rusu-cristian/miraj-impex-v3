@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 19:10 · Last commit: 4c17efa
+Updated: 2026-11-18 20:30 · Last commit: f747170
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 86 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN08; all SYS jobs done
+Done 87 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none (handover after FIN08); next FIN09; all SYS jobs done
 
 ## Just finished
+- FIN08 copy: prose "sapt. n" on S14/S18 (labels, Mono, formulas keep SAPT); S17 "Proprietar (tu)", "Mortalitate · H4.1"; S20 Toast "·"; FeedTotals (SYS02), S20 notes and SYS11 ♀/♂ → ip-sex spans; §29 `.ip-gimp__bn .ip-sex{line-height:1}`; `.s20-clip` position:relative; sys11_build finds the repo from its own path; 33 boards; D128; 1 fix round (f747170)
 - FIN07 Setări list pages: S22 "Adaugă utilizator" page-head secondary key, h2 "Utilizatori" + count, "Salvează utilizatorul", §42 skeleton (SYS12 SK changed, UserRow preview 2368); D127 add keys are verbs: S18 "Adaugă serie", S19 "Adaugă fermă", S21 "Adaugă tip" (panel titles stay nouns); 67 boards; passed first review (4c17efa)
 - FIN06 crumbs: §52 desktop `.ip-crumbs a` 24px hit area (negative margins, no layout shift, focus ring drawn with ::after so it never covers the h1 ink), phone `ip-crumbs--touch` ≥44×46 replacing s14-crumb/S19P padding (9 phone boards); D126; 1 fix round (ring over "Î") (404c6f7)
 - FIN05 current row: §51 extends §45 to EventRow lists; S16 desktop log row, S19 and S21 open rows marked `is-current` + aria-current on their key (no pressed key; add keys stay pressed); 21 boards; D125; review pass after a docs fix (s19s rerun note in scripts/README.md) (12d737c)
@@ -69,7 +70,7 @@ Done 86 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN08 → FIN09 → … → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN09 → FIN10 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -128,9 +129,11 @@ Done 86 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - FIN05: project/additions.css (§51) + 21 boards on S16, S19, S21
 - FIN06: project/additions.css (§52) + 9 phone boards (S14, S17 ×2 each; S18–S22 telefon)
 - FIN07: S18 (10), S19 (19), S21 (14), S22 (24) boards; UserRow preview
+- FIN08: project/additions.css (§29) + 33 boards on S7, S14, S17, S18, S20 (+ all 23 S20 boards for the shared .s20-clip line); FeedTotals + GuideImportPreview previews
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
+- 17–18.11.2026 session (S19 → FIN08): each job = fresh builder → fresh reviewer → fix round via SendMessage to the same builder (then a short re-review via SendMessage to the same reviewer when the fix touches system CSS). FIN jobs: builders diff every changed board with a normalising script (strip <style>, map old→new classes) and rebuild per design/canvas/scripts/README.md.
 - Rebuilding boards: follow design/canvas/scripts/README.md (per-row order, "never run" list, import chain). Since FIN02G every generator is safe to rerun.
 - 17–18.11.2026 session: S15–S18 each ran screen → ..S states → ..P polish; builders/reviewers resumed via SendMessage for fix rounds (same helper keeps context). Setări screens (S17, S18) are desktop-led: desktops first, phones after; ..S jobs move the phones right (x only). Generators that own a row: run the base build --canvas then the ..s build --canvas.
 - Regenerating S3/S10/S11/S14 boards via s4s/s4t imports with HEAD scripts gives different output from the repo (they were later rewritten by their own polish scripts): rebuild those rows only with their latest ..P/..S scripts.
