@@ -69,10 +69,10 @@ def date(d, week_line=None, ieri=False):
 def screen(main_parts, save, slug, hd=None, view_cls='', overlay=''):
     sc = SCROLL.get(slug, 0)
     style = f' style="margin-top:calc(-1 * {sc}px)"' if sc else ''
-    return f'''<div class="s7-screen s7s-vp">
+    return f'''<div class="ip-screen s7s-vp">
 {hd or B.HEAD}
 <div class="s7s-view{(" " + view_cls) if view_cls else ""}">
-<main class="s7-main"{style}>
+<main class="ip-screen__main"{style}>
 {"".join(main_parts)}
 </main>
 {overlay}
@@ -101,7 +101,7 @@ skcard = (f'<section class="ip-panel ip-entry" aria-hidden="true"><div class="ip
 skhall = f'<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("40%", SK22)}</div><div class="ip-hall__sections">{skcard * 2}</div></section>'
 sk = f'''<p class="ip-sr" role="status">Se încarcă secțiunile pentru <span class="ip-num">{dd(TODAY)}</span>…</p>
 <div class="s7s-skblock" aria-busy="true"><div class="ip-halls">{skhall}</div></div>'''
-sv1 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv1 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv1, 'se-incarca')))
 
 # 2 · deja introdus — 16.11 opened again after the 08:34 save: read-only cards, Tag "salvat", one form-level Editează (D60)
@@ -154,7 +154,7 @@ tl = next(f for f in C['farms'] if f['farm_id'] == 'telita')
 assert tl['cycle_status'] == 'closed' and tl['totals']['all'] == 0
 end = dt.date.fromisoformat(tl['cycle_end'])
 empty = f'''<div class="ip-empty"><span class="ip-lamp ip-lamp--off">ciclu închis</span><div>Ferma e goală din <span class="ip-num">{dd(end)}</span>. Ciclul pornește la prima populare sau transfer.</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Alege altă fermă</button></div>'''
-sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line">{rec14("mortality")}<span><span class="ip-num">0</span> secțiuni cu păsări</span></span></span>{save_off()}</div>'''
+sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{rec14("mortality")}<span><span class="ip-num">0</span> secțiuni cu păsări</span></span></span>{save_off()}</div>'''
 boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([date(TODAY, f'fără ciclu deschis · ultimul închis pe {dd(end)}'), empty], sv7, 'ferma-fara-pasari',
                hd=head(f'TELIȚA · {dd(TODAY)}'))))
 
@@ -174,7 +174,7 @@ sv9 = S7.savebar(line1(A9, r9), f'{lamp("fault", "refuzat")}<span>{SEC9} <span c
 boards.append(('motiv-lipsa', 'motiv lipsă · Mai mult deschis · exemplu de stare (D39)', screen([B.DATE, h9], sv9, 'motiv-lipsa')))
 TARGET['motiv-lipsa'] = 't-H11'
 
-CSS = B.CSS + SC.VIEW + SC.BANNER  # S7S's screen CSS (sstate_css), class names kept s7s- as S6 keeps s7-screen/s7-main
+CSS = B.CSS + SC.VIEW + SC.BANNER  # S7S's screen CSS (sstate_css), class names kept s7s- as S6 keeps ip-screen/ip-screen__main
 CSS_EXTRA = {
  'se-incarca': SC.SKEL + '''
 .s6s-skcheck{cursor:default}''',

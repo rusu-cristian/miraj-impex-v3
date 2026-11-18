@@ -24,11 +24,11 @@ async def main():
             pg = await b.new_page(viewport={'width': w, 'height': hs.get(st, 844) if ph else 1000})
             await pg.goto(f'file:///tmp/{"s2" if ph else "s4s"}/{st}.html'); await pg.wait_for_timeout(1200)
             if ph:  # phone: main content (with its padding) + the tab bar at the foot
-                mh = await pg.evaluate("(()=>{const m=document.querySelector('.s7-main');const l=m.lastElementChild.getBoundingClientRect().bottom;return Math.ceil(l+parseFloat(getComputedStyle(m).paddingBottom)+document.querySelector('.ip-tabbar').offsetHeight)})()")
+                mh = await pg.evaluate("(()=>{const m=document.querySelector('.ip-screen__main');const l=m.lastElementChild.getBoundingClientRect().bottom;return Math.ceil(l+parseFloat(getComputedStyle(m).paddingBottom)+document.querySelector('.ip-tabbar').offsetHeight)})()")
             else:
-                mh = await pg.evaluate("Math.ceil(document.querySelector('.s4-main').lastElementChild.getBoundingClientRect().bottom + 24)")
+                mh = await pg.evaluate("Math.ceil(document.querySelector('.ip-shell__main').lastElementChild.getBoundingClientRect().bottom + 24)")
             clip = await pg.evaluate("""[...document.querySelectorAll('.ip-readout *,.ip-stat *,.ip-filterbar *,.ip-pagehead *,.ip-table td,.ip-table th')].filter(e=>e.scrollWidth>e.clientWidth+1 && getComputedStyle(e).overflow!='visible').map(e=>e.className+':'+e.textContent.slice(0,40)).slice(0,8)""")
-            tw = await pg.evaluate("[...document.querySelectorAll('.ip-tablescroll')].map(r=>[Math.round(r.clientWidth), r.scrollWidth]).concat([[Math.round(document.querySelector('.s4-main,.s7-main').getBoundingClientRect().width), document.documentElement.scrollWidth]])")
+            tw = await pg.evaluate("[...document.querySelectorAll('.ip-tablescroll')].map(r=>[Math.round(r.clientWidth), r.scrollWidth]).concat([[Math.round(document.querySelector('.ip-shell__main,.ip-screen__main').getBoundingClientRect().width), document.documentElement.scrollWidth]])")
             ids = await pg.evaluate("(()=>{const c={};document.querySelectorAll('[id]').forEach(e=>c[e.id]=(c[e.id]||0)+1);const d=Object.keys(c).filter(k=>c[k]>1);const refs=[];document.querySelectorAll('[aria-describedby],[aria-labelledby],[aria-controls]').forEach(e=>['aria-describedby','aria-labelledby','aria-controls'].forEach(a=>(e.getAttribute(a)||'').split(/\\s+/).filter(Boolean).forEach(i=>{if(!document.getElementById(i))refs.push(a+':'+i)})));return {dup:d,broken:refs}})()")
             print(st, w, 'main h', mh, 'regions [client, scroll]', tw, 'clip', clip, ids)
             i = ORDER.index(st); name = 'S14' + (f'-{i}' if i else '') + ('' if W == 1440 or ph else f'-{W}') + '.png'

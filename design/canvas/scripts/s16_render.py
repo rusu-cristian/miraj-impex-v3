@@ -16,7 +16,7 @@ CHECK = r"""() => {
    ['aria-describedby','aria-labelledby','for','aria-controls','aria-activedescendant'].flatMap(a => (e.getAttribute(a) || '').split(/\s+/).filter(Boolean)))
    .filter(r => !document.getElementById(r));
  const unnamed = [...document.querySelectorAll('input:not([type=checkbox]),select,textarea,[role=combobox]')].filter(e => !(e.labels && e.labels.length) && !e.getAttribute('aria-labelledby') && !e.getAttribute('aria-label')).map(e => e.id || e.outerHTML.slice(0, 60));
- const pnl = document.querySelector('.s13-panel'); let under = null;
+ const pnl = document.querySelector('.ip-sidepanel--dock'); let under = null;
  if (pnl) { const px = pnl.getBoundingClientRect().left; under = [...document.querySelectorAll('.s13-vp *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > px + 1 && r.top < 1024 && r.bottom > 0; }).map(e => e.className.baseVal ?? e.className).slice(0, 4); }
  const lum = c => { const m = c.match(/[\d.]+/g).map(Number); const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }; return [.2126 * f(m[0]) + .7152 * f(m[1]) + .0722 * f(m[2]), m.length > 3 ? m[3] : 1] };
  const bgOf = e => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; const [, a] = lum(c); if (a > .5) return c; } return 'rgb(255,255,255)'; };
@@ -24,7 +24,7 @@ CHECK = r"""() => {
    const t = [...e.childNodes].some(nd => nd.nodeType === 3 && nd.textContent.trim()); if (!t) continue; const r = e.getBoundingClientRect(); if (!r.width || r.bottom < 0 || r.top > innerHeight) continue;
    const [l1] = lum(getComputedStyle(e).color), [l2] = lum(bgOf(e)); const cr = (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05); if (cr < 4.5) low.push(e.textContent.trim().slice(0, 24) + ' ' + cr.toFixed(2)); }
  const touch = innerWidth < 500;
- const scope = document.querySelector('.ip-scrim') || document.querySelector('.s13-panel, .ip-sidepanel--sheet') || document.body;
+ const scope = document.querySelector('.ip-scrim') || document.querySelector('.ip-sidepanel--dock, .ip-sidepanel--sheet') || document.body;
  const foc = [...scope.querySelectorAll('a[href],button,input,textarea,[tabindex]')].filter(e => !e.closest('[inert],[hidden]') && e.getAttribute('tabindex') !== '-1');
  const small = foc.map(e => { const t = e.matches('input,textarea') ? (e.closest('.ip-input') || e) : e; const r = t.getBoundingClientRect(); return [e, r]; })
    .filter(([e, r]) => r.width && Math.min(r.width, r.height) < (touch ? 44 : 24)).map(([e, r]) => (e.id || e.textContent.trim().slice(0, 16) || e.className) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));

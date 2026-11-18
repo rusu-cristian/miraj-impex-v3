@@ -123,10 +123,10 @@ ADD = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Adaug�
 ADD_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Adaugă</button>'
 
 def screen(parts, save, overlay=''):  # s7s_build.screen with this form's header
-    return f'''<div class="s7-screen s7s-vp">
+    return f'''<div class="ip-screen s7s-vp">
 {HEAD}
 <div class="s7s-view">
-<main class="s7-main s13-main">
+<main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
 {overlay}
@@ -167,8 +167,8 @@ CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''
 # ---------- desktop: SidePanel over S11 · Rapoarte · Hrană (manager), 16.11.2026 ----------
 DT = s4.TODAY; DTD = dt.date.fromisoformat(DT); DWEEK = (DTD - START).days // 7 + 1; assert DWEEK == 40
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DTD)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data livrării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {DWEEK} · ciclu din {dd(START)}</span></div>'''
-PANEL = f'''<aside class="ip-sidepanel s13-panel" id="lp" aria-labelledby="lp-t">
-<div class="ip-sidepanel__head"><div class="ip-row s13-phead"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("delivery")}</span><div><h2 class="ip-t-heading s13-m0" id="lp-t">Livrare hrană</h2><p class="ip-note ip-num s13-m0">HÎRBOVĂȚ · {dd(DTD)} · SAPT {DWEEK}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Livrare hrană">{icon("x")}</button></div>
+PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="lp" aria-labelledby="lp-t">
+<div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("delivery")}</span><div><h2 class="ip-t-heading ip-m0" id="lp-t">Livrare hrană</h2><p class="ip-note ip-num ip-m0">HÎRBOVĂȚ · {dd(DTD)} · SAPT {DWEEK}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Livrare hrană">{icon("x")}</button></div>
 <div class="ip-sidepanel__body s13-pbody">
 {farm(touch=False)}
 {DDATE}
@@ -178,7 +178,7 @@ PANEL = f'''<aside class="ip-sidepanel s13-panel" id="lp" aria-labelledby="lp-t"
 {note()}
 {NOPRICE}
 </div>
-<div class="ip-sidepanel__foot"><span class="ip-note" id="lp-why">Scrie cantitatea în kg</span><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="lp-why">Adaugă</button></div></div>
+<div class="ip-sidepanel__foot"><span class="ip-note" id="lp-why">Scrie cantitatea în kg</span><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="lp-why">Adaugă</button></div></div>
 </aside>'''
 PANEL = re.sub(r'((?:id|for|aria-describedby|aria-labelledby|aria-controls)="[^"]*")', lambda m: re.sub(r'\bf-', 'p-', m.group(1)), PANEL)  # S11 page has its own f-farm
 DH = 1024

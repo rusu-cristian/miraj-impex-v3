@@ -15,9 +15,9 @@ CHECK = """() => {
    ['aria-describedby','aria-labelledby','for','aria-controls'].flatMap(a => (e.getAttribute(a) || '').split(/\\s+/).filter(Boolean)))
    .filter(r => !document.getElementById(r));
  const unnamed = [...document.querySelectorAll('input,select,textarea,[role=combobox]')].filter(e => !(e.labels && e.labels.length) && !e.getAttribute('aria-labelledby') && !e.getAttribute('aria-label')).map(e => e.id);
- const over = [...document.querySelectorAll('.s7-screen *')].filter(e => e.getBoundingClientRect().right > 390.5).map(e => e.className).slice(0, 5);
+ const over = [...document.querySelectorAll('.ip-screen *')].filter(e => e.getBoundingClientRect().right > 390.5).map(e => e.className).slice(0, 5);
  const r = document.querySelector('.ip-root'); const mh = r.style.minHeight; r.style.minHeight = '0px';
- const natural = Math.ceil(document.querySelector('.s7-screen').getBoundingClientRect().height); r.style.minHeight = mh;
+ const natural = Math.ceil(document.querySelector('.ip-screen').getBoundingClientRect().height); r.style.minHeight = mh;
  return {dup, broken: refs, unnamed, over, sw: document.documentElement.scrollWidth, natural};
 }"""
 async def main():

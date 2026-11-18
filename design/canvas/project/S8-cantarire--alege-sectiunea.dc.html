@@ -16,9 +16,7 @@
 html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar 73 px at 390 (48 key + 2x12 padding + 1 top line; the 2-line summary, 36 px, sits inside the key height) + the field border and focus ring (1 + 2 + 2), so a focused field scrolls clear of the sticky SaveBar: 78 px */
 @media (max-width: 389.98px){html{scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}} /* under 390 a summary line can wrap between segments: up to 4 lines at 360 (measured, refusal state: 4x16 + 3x4 + 2x12 + 1 = 101 px) + 5 = 106 px */
 .s7-m0{margin:0}
-.s7-screen{width:390px;min-height:inherit;display:flex;flex-direction:column;background:var(--ground)}
 .s7-title{display:flex;flex-direction:column;min-width:0}
-.s7-main{flex:1;display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-4) var(--space-4) var(--space-8)}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}
@@ -27,7 +25,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s7-savebar{position:sticky;bottom:0;z-index:2}
 .s7s-vp{height:844px;min-height:0;overflow:hidden}
 .s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.s7s-view > .s7-main{flex:none}
+.s7s-view > .ip-screen__main{flex:none}
 .s7s-view--end{justify-content:flex-end}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
@@ -37,17 +35,16 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s8-pair > .ip-fieldmsg{grid-column:1 / -1}
 .s8-main--toast{padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--space-4) + var(--space-8))} /* the last field scrolls clear of the Toast (48 key + 2x12 padding + 16 from the edge) */
 .s7s-skblock{display:flex;flex-direction:column;gap:var(--space-6)}
-.s7s-skrow{align-items:start}
-.s9-modal{position:relative} /* the BottomSheet scrim fills the phone screen */</style>
+.s7s-skrow{align-items:start}</style>
 </helmet>
-<div class="ip-root" style="padding:0; width:390px; min-height:844px"><div class="s7-screen s8-screen s7s-vp s9-modal">
+<div class="ip-root" style="padding:0; width:390px; min-height:844px"><div class="ip-screen s8-screen s7s-vp ip-scrimhost">
 <header class="ip-formhead" inert>
 <a class="ip-iconbtn ip-iconbtn--touch" href="#acasa" aria-label="Înapoi la Acasă"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></a>
 <span class="ip-tile ip-rec ip-rec--weighing" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span>
 <div class="s7-title"><h1 class="ip-t-heading s7-m0">Cântărire</h1><p class="ip-note ip-num s7-m0">HÎRBOVĂȚ · 16.11.2026 · SAPT 40</p></div>
 </header>
 <div class="s7s-view" inert>
-<main class="s7-main">
+<main class="ip-screen__main">
 <div class="ip-field">
 <span class="ip-label" id="d-lbl">Data</span>
 <div class="s7-date">
@@ -66,7 +63,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 </section><div class="s8-pair"><div class="ip-field"><label class="ip-label" for="cv">CV <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num"><input id="cv" type="text" inputmode="decimal" placeholder="–" autocomplete="off" value=""/><span class="suffix">%</span></span></div><div class="ip-field"><label class="ip-label" for="uni">Uniformitate <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num"><input id="uni" type="text" inputmode="decimal" placeholder="–" autocomplete="off" value=""/><span class="suffix">%</span></span></div><div class="ip-field"><label class="ip-label" for="size">Mărime probă <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num"><input id="size" type="text" inputmode="numeric" placeholder="–" autocomplete="off" value=""/><span class="suffix">păsări</span></span></div></div>
 </main>
 </div>
-<div inert class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line"><span class="ip-rec ip-rec--weighing"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span><span>H1.1 <span class="ip-sex ip-sex--hen">♀</span> · –</span></span><span class="ip-ftot-sum__line"><span>de completat · Masa medie</span></span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Salvează</button></div>
+<div inert class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line"><span class="ip-rec ip-rec--weighing"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span><span>H1.1 <span class="ip-sex ip-sex--hen">♀</span> · –</span></span><span class="ip-savebar__line"><span>de completat · Masa medie</span></span></span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Salvează</button></div>
 <!-- BottomSheet (modal, §33): focus moves to the listbox on open, the chosen option active (aria-activedescendant; arrow keys
      move it, Enter or a tap picks it and closes the sheet), Tab cycles Închide <-> listbox (focus trap), Esc or Închide closes
      it and focus returns to the Secțiune combobox. Header, form and SaveBar behind are inert. -->

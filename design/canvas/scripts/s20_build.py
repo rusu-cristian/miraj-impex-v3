@@ -120,13 +120,13 @@ def header(cr, title, meta, keys='', tid=None):
     t = f' id="{tid}" tabindex="-1"' if tid else ''
     k = f'\n<div class="s20-keys">{keys}</div>' if keys else ''
     return (f'<header class="ip-pagehead">\n<div>\n{cr}\n<h1{t}>{title}</h1>\n'
-            f'<div class="ip-row s4-meta"><span class="ip-note">{meta}</span></div>\n</div>{k}\n</header>')
+            f'<div class="ip-row ip-pagehead__meta"><span class="ip-note">{meta}</span></div>\n</div>{k}\n</header>')
 def shell(hdr, main):
-    return f'<div class="s4-shell">{sidebar()}<main class="s4-main">\n{hdr}\n{main}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar()}<main class="ip-shell__main">\n{hdr}\n{main}\n</main></div>'
 def block(hid, title, inner, note='', count=''):
     c = f'<span class="ip-note">{count}</span>' if count else ''
     n = f'<p class="ip-note s4s-m0">{note}</p>' if note else ''
-    return (f'<section class="s4-block" aria-labelledby="{hid}"><div class="s4-head"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{c}</div>'
+    return (f'<section class="s4-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{c}</div>'
             f'{inner}{n}</section>')
 def framed(label_id, table, focus=True):
     t = ' tabindex="0"' if focus else ''
@@ -393,7 +393,7 @@ def phone_list():
                  f'<tr><th scope="row" class="ip-table__child">Coloane</th><td><span class="s19-secs"><span>{cols_txt(g)}</span>'
                  f'<span class="ip-note">fără date în ghid: {missing_txt(g)}</span></span></td></tr>'
                  f'<tr><th scope="row" class="ip-table__child">Folosit de</th><td><span class="s20-uses">{used_txt(g)}</span></td></tr></tbody>')
-    blk = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="s4-head"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2>'
+    blk = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2>'
            f'<span class="ip-note">{num(len(ORDER))} ghiduri</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-gh">'
            f'<table class="ip-table ip-table--rowheads s20-table s19-ptable"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, '

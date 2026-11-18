@@ -46,7 +46,7 @@ def header(mode):
 <div>
 <nav class="ip-crumbs" aria-label="Cale"><a href="#rapoarte">Rapoarte</a><span aria-hidden="true">›</span><a href="#rapoarte-hrana">Hrană</a><span aria-hidden="true">›</span><span aria-current="page">Prețuri</span></nav>
 <h1>Prețuri hrană</h1>
-<div class="ip-row s4-meta s12-meta">{s11.rec_ico(s11.COINS, 14)}<span class="ip-note">{meta}</span></div>
+<div class="ip-row ip-pagehead__meta s12-meta">{s11.rec_ico(s11.COINS, 14)}<span class="ip-note">{meta}</span></div>
 </div>
 </header>'''
 
@@ -95,7 +95,7 @@ def form(mode='default'):
                 '<button type="submit" class="ip-btn ip-btn--primary" disabled="disabled" aria-describedby="save-why">Salvează prețurile</button>')
         sample = ''
     return f'''<form class="s12-form" aria-labelledby="h-unp" novalidate="novalidate">
-<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
+<div class="ip-sechead"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <p class="ip-note s12-help" id="pr-help">Scrie prețul pe kg sau totalul de pe factură; celălalt se calculează din kg. Poți completa doar o parte din rânduri. După salvare, un preț se modifică doar cu un motiv și rămâne în jurnal.</p>
 <div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="Livrări fără preț, cele mai vechi întâi"><table class="ip-table ip-table--rowheads s11-table s12-table"><caption class="ip-sr">Livrări fără preț, cele mai vechi întâi</caption>{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody>{total}</table></div>
 <div class="s12-foot">{foot}</div>{sample}
@@ -108,7 +108,7 @@ def loading():
              f'<td class="edit">{sk()}</td><td class="edit">{sk()}</td>')  # input-sized bars: rows as tall as the default's
     rows = f'<tr>{cells}</tr>' * len(UNP)
     return f'''<form class="s12-form" aria-labelledby="h-unp" aria-busy="true" novalidate="novalidate">
-<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
+<div class="ip-sechead"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <p class="ip-note s12-help" id="pr-help">Scrie prețul pe kg sau totalul de pe factură; celălalt se calculează din kg. Poți completa doar o parte din rânduri. După salvare, un preț se modifică doar cu un motiv și rămâne în jurnal.</p>
 <p class="ip-sr" role="status">Se încarcă livrările fără preț.</p>
 <div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s11-table s12-table">{COLS}<thead><tr>{THS}</tr></thead><tbody>{rows}</tbody></table></div>
@@ -118,8 +118,8 @@ def loading():
 # ---------- state: none unpriced (reached after saving the 4: toast) ----------
 def done():
     return f'''<section class="s12-form" aria-labelledby="h-unp">
-<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
-<div class="s4s-emptybox"><div class="ip-empty">{lamp("off", "nimic fără preț")}<p class="s4s-empty-p">Toate livrările au preț.</p><p class="s4s-empty-p">Costul Seria 2026 include toate cele <span class="ip-num">{s11.N_ALL}</span> livrări · <span class="ip-num">{n(ALL_KG)} kg</span>.</p><a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-cost">Vezi costul hranei</a></div></div>
+<div class="ip-sechead"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
+<div class="ip-emptybox"><div class="ip-empty">{lamp("off", "nimic fără preț")}<p class="ip-empty__line">Toate livrările au preț.</p><p class="ip-empty__line">Costul Seria 2026 include toate cele <span class="ip-num">{s11.N_ALL}</span> livrări · <span class="ip-num">{n(ALL_KG)} kg</span>.</p><a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-cost">Vezi costul hranei</a></div></div>
 </section>'''
 # FIN02 (D122): bottom right like every desktop Toast (additions.css §48), with Anulează (owner, same day) as every save Toast
 TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{ico(s4.IC["check"])}<span class="ip-toast__txt">Prețuri salvate · <span class="ip-num">{len(UNP)}</span> livrări · '
@@ -128,13 +128,13 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
 # ---------- state: error (the list did not load; nothing typed yet, so nothing is lost) ----------
 def error():
     return f'''<section class="s12-form" aria-labelledby="h-unp">
-<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
+<div class="ip-sechead"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{ico(ALERT)}<div class="ip-banner__body"><p class="s12-m0">Nu am putut încărca livrările fără preț.</p><p class="s12-m0">Verifică conexiunea la internet, apoi reîncearcă. Prețurile salvate până acum nu s-au schimbat.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>
 </section>'''
 
 def page(mode='default'):
     body = form(mode) if mode in ('default', 'work') else {'done': done, 'error': error, 'loading': loading}[mode]()
-    return f'<div class="s4-shell">{s11.sidebar("Proprietar")}<main class="s4-main">\n{header(mode)}\n{body}\n</main></div>'
+    return f'<div class="ip-shell">{s11.sidebar("Proprietar")}<main class="ip-shell__main">\n{header(mode)}\n{body}\n</main></div>'
 
 CSS = s11.CSS + '''
 .s12-meta{align-items:center;gap:var(--space-2)}

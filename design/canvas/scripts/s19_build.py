@@ -89,7 +89,7 @@ CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a
           '<span aria-current="page">Ferme și secțiuni</span></nav>')
 def meta(farms=True):
     tail = f'{NB}·{NB}Hîrbovăț, Telița' if farms else ''
-    return f'<div class="ip-row s4-meta"><span class="ip-note">Tipul, ghidul și secțiunile fiecărei ferme{tail}</span></div>'
+    return f'<div class="ip-row ip-pagehead__meta"><span class="ip-note">Tipul, ghidul și secțiunile fiecărei ferme{tail}</span></div>'
 def newkey(pressed=False):
     p = ' is-pressed" aria-expanded="true" aria-controls="fp' if pressed else ''
     return f'<button type="button" class="ip-btn ip-btn--secondary{p}">{icon("plus", 16)}Adaugă fermă</button>'   # FIN07 (D127): keys are verbs (craft §6); the panel keeps its title
@@ -128,7 +128,7 @@ def frow(fid, open_=None, noguide=()):
 def flist(open_=None, noguide=()):
     rows = ''.join(frow(fid, open_, noguide) for fid in ORDER)
     note = ('<p class="ip-note s4s-m0">Un ghid nou se aplică de la ciclul următor al fermei. Secțiunile cu păsări nu se pot retrage.</p>')
-    return (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
+    return (f'<section class="s4-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
             f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed s19-region" tabindex="0" role="region" aria-labelledby="h-fer">'
             f'<table class="ip-table ip-table--rowheads s19-table"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'
@@ -136,7 +136,7 @@ def flist(open_=None, noguide=()):
 def page(body, open_=None, pressed_new=False, farms=True, inert=False, noguide=()):
     main = body if body is not None else flist(open_, noguide)
     i = ' inert="inert"' if inert else ''
-    return (f'<div class="s4-shell"{i}>{sidebar_owner(no_series=not farms)}<main class="s4-main">\n{header(pressed_new, farms)}\n{main}\n</main></div>')
+    return (f'<div class="ip-shell"{i}>{sidebar_owner(no_series=not farms)}<main class="ip-shell__main">\n{header(pressed_new, farms)}\n{main}\n</main></div>')
 
 # ================================================================= farm panel (SidePanel beside the page, D73)
 OPT = '<span class="s13-opt">(opțional)</span>'
@@ -222,12 +222,12 @@ def ctx(fid):
     return f'CREȘTERE · GOALĂ DIN {dd(cT["end_date"])}'
 def panel(title, note, body, key, inert=False):
     i = ' inert="inert"' if inert else ''
-    nt = f'<p class="ip-note ip-num s13-m0">{note}</p>' if note else ''
-    return (f'<aside class="ip-sidepanel s13-panel" id="fp" aria-labelledby="fp-t"{i}>\n<div class="ip-sidepanel__head"><div>'
-            f'<h2 class="ip-t-heading s13-m0" id="fp-t">{title}</h2>{nt}</div>'
+    nt = f'<p class="ip-note ip-num ip-m0">{note}</p>' if note else ''
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="fp" aria-labelledby="fp-t"{i}>\n<div class="ip-sidepanel__head"><div>'
+            f'<h2 class="ip-t-heading ip-m0" id="fp-t">{title}</h2>{nt}</div>'
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul fermei">{icon("x")}</button></div>\n'
             f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
-            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
+            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 SAVE = '<button type="button" class="ip-btn ip-btn--primary">Salvează ferma</button>'
 SAVE_NO = '<button type="button" class="ip-btn ip-btn--primary" aria-disabled="true" aria-describedby="fp-ghid-e">Salvează ferma</button>'
 ADD = '<button type="button" class="ip-btn ip-btn--primary">Adaugă ferma</button>'
@@ -255,7 +255,7 @@ def phone_list():
                  f'<tr><th scope="row" class="ip-table__child">Secțiuni</th><td><span class="s19-secs"><span>{sec_count(f)}</span>'
                  f'<span class="ip-note ip-num">{sec_codes(f)}</span></span></td></tr>'
                  f'<tr><th scope="row" class="ip-table__child">Ciclu</th><td>{cyc_cell(f)}</td></tr></tbody>')
-    blk = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
+    blk = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
            f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-fer">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'

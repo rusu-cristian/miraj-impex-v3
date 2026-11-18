@@ -2,7 +2,7 @@
 Hîrbovăț · Seria 2026, period "Ciclul curent", grain "Săpt." as the S4 default board). Rezumat is the S4 default board.
 python3 -I s4t_build.py <repo_root>
 Imports the S4 shell from s4s_build.py (sidebar, header, cycle selector + track, FilterBar pieces, formats, icons, write());
-S4TP: the S4 boards share s4s.CSS_S4, s4s.gline (Stat lines) and s4s.rnd (.5 up, D82) with S4/S4S. Figures come only from the extracts
+S4TP: the S4 boards share s4s.gline (Stat lines) and s4s.rnd (.5 up, D82) with S4/S4S. Figures come only from the extracts
 (sample-hirbovat-2026.json, counts-latest.json, guide-laying.json, transfers-seria2026.json); every derived figure is
 asserted against the figure the S4 board already shows. Writes design/canvas/project/S4-ferma--<tab>.dc.html and
 /tmp/s4s/S4-ferma--<tab>.html (plain wrappers for the render script)."""
@@ -55,7 +55,7 @@ def filterbar(tab):
     ch = chips(BIRD) if tab == 'pasari' else s4.CHIPS
     return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", s4.PERIODS, 0)}{s4.seg("Pas", ["Zi", "Săpt."], 1)}{s4.EXPORT}{ch}</div>'
 def page(tab, panel):
-    main = f'''<main class="s4-main">
+    main = f'''<main class="ip-shell__main">
 {s4.header('default')}
 {s4.cycle('default')}
 <div class="s4-tight">{filterbar(tab)}{tabs(tab)}</div>
@@ -122,7 +122,7 @@ def stats(*items): return '<div class="ip-stats s4-stats">' + ''.join(items) + '
 def top(hid, title, ro, st):
     return f'<section class="s4-top" aria-labelledby="{hid}"><h2 class="ip-sr" id="{hid}">{title}</h2>{ro}{st}</section>'
 def block(hid, title, note, body):
-    return f'<section class="s4-block" aria-labelledby="{hid}"><div class="s4-head"><h2 class="ip-t-heading" id="{hid}">{title}</h2><span class="ip-note">{note}</span></div>{body}</section>'
+    return f'<section class="s4-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2><span class="ip-note">{note}</span></div>{body}</section>'
 def tbox(cap, inner, cls=''):  # DataTable in the system scroll region (SYS06 .ip-tablescroll, framed) with system row headers (§32)
     return (f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="{cap}"><table class="ip-table ip-table--rowheads{(" " + cls) if cls else ""}">'
             f'<caption class="ip-sr">{cap}</caption>{inner}</table></div>')
@@ -592,7 +592,7 @@ def panel_productie():
     return top('h-key', 'Producție față de ghid', ro_productie(), st_productie()) + '\n' + tb_halls() + '\n' + tb_weeks()
 
 # ================================================================= CSS (screen only, tokens only) + write
-CSS = s4.CSS + '\n' + s4.CSS_S4 + '''
+CSS = s4.CSS + '''
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-hen{color:var(--rec-hen)}

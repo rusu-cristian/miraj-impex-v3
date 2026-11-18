@@ -9,9 +9,9 @@ async def main():
         for st in sys.argv[2:]:
             pg = await b.new_page(viewport={'width': 1440, 'height': 1000})
             await pg.goto(f'file://{R}/design/canvas/project/{st}.dc.html'); await pg.wait_for_timeout(1500)
-            mh = await pg.evaluate("Math.ceil(document.querySelector('.s4-main').lastElementChild.getBoundingClientRect().bottom + 24)")
+            mh = await pg.evaluate("Math.ceil(document.querySelector('.ip-shell__main').lastElementChild.getBoundingClientRect().bottom + 24)")
             wide = await pg.evaluate("""[...document.querySelectorAll('.ip-fsum *,.ip-table *,.ip-pagehead *')].filter(e=>e.scrollWidth>e.clientWidth+1 && getComputedStyle(e).overflow!='visible').map(e=>e.className+':'+e.textContent.slice(0,40)).slice(0,8)""")
-            tw = await pg.evaluate("[document.querySelector('.ip-table')?.getBoundingClientRect().width, document.querySelector('.s4-main').getBoundingClientRect().width, document.documentElement.scrollWidth]")
+            tw = await pg.evaluate("[document.querySelector('.ip-table')?.getBoundingClientRect().width, document.querySelector('.ip-shell__main').getBoundingClientRect().width, document.documentElement.scrollWidth]")
             print(st, 'main h', mh, 'widths', tw, 'clip', wide)
             hs[st] = max(mh, 1024)
             n = ORDER.index(st); name = 'S3.png' if n == 0 else f'S3-{n}.png'

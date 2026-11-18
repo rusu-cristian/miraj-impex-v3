@@ -336,15 +336,15 @@ def tabbar(vet=False, key_off=None, viewer=False):
     key = f'<a class="ip-tabbar__item" href="#inregistreaza"><span class="ip-tabbar__key">{icon("plus", 22)}</span>Înregistrează</a>'
     if key_off: key = key.replace('href="#inregistreaza"', f'role="link" tabindex="0" aria-disabled="true" aria-describedby="{key_off}"', 1)
     if viewer:  # S2V (D89): the viewer enters nothing, so no Înregistrează key: 4 items
-        return (f'<nav class="ip-tabbar s2-tabbar" aria-label="Navigare">{it("home", "Acasă", "#acasa", True)}{it("layers", "Serie", "#serie")}'
+        return (f'<nav class="ip-tabbar ip-screen__tabbar" aria-label="Navigare">{it("home", "Acasă", "#acasa", True)}{it("layers", "Serie", "#serie")}'
                 f'{it("chart", "Rapoarte", "#rapoarte")}{it("more", "Mai mult", "#mai-mult")}</nav>')
     items = (it('home', 'Acasă', '#acasa', True) + key + it('user', 'Cont', '#cont')) if vet else \
             (it('home', 'Acasă', '#acasa', True) + it('layers', 'Serie', '#serie') + key + it('chart', 'Rapoarte', '#rapoarte') + it('more', 'Mai mult', '#mai-mult'))
-    return f'<nav class="ip-tabbar s2-tabbar" aria-label="Navigare">{items}</nav>'
+    return f'<nav class="ip-tabbar ip-screen__tabbar" aria-label="Navigare">{items}</nav>'
 
 def phone(parts, vet=False, viewer=False):
-    return f'''<div class="s7-screen s2-phone">
-<main class="s7-main s2-main">
+    return f'''<div class="ip-screen">
+<main class="ip-screen__main s2-main">
 {"".join(parts)}
 </main>
 {tabbar(vet, viewer=viewer)}
@@ -357,7 +357,7 @@ def sidebar(role):
     assert sb.count('is-current') == 1 and 'href="#acasa" aria-current="page"' in sb
     return sb
 def desktop(role, parts):
-    return f'<div class="s4-shell">{sidebar(role)}<main class="s4-main">\n{"".join(parts)}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar(role)}<main class="ip-shell__main">\n{"".join(parts)}\n</main></div>'
 
 VET = phone([pagehead(CTX_VET, True), missing(), entrykeys(), introdus()], vet=True)
 MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True), introdus_empty(INTRO_MGR)])  # D87: Introdus azi last
@@ -365,7 +365,7 @@ MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}
 OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols">{alerts(True)}{unpriced()}</div>', stock(cap='Stoc hrană'), farms_block()])
 
 # ---------- CSS ----------
-PICK = ('body{', '.s7-m0{', '.s7-screen{', '.s7-main{')
+PICK = ('body{', '.s7-m0{')  # FIN15: .ip-screen/__main are additions.css §57
 CSS7 = '\n'.join(l for l in B.CSS.splitlines() if l.startswith(PICK)); assert CSS7.count('\n') == len(PICK) - 1
 CSS_SHARED = '''
 .s2-m0{margin:0}
@@ -374,11 +374,9 @@ CSS_SHARED = '''
 .s2-block > .ip-list__head{margin:0}
 .s2-more,.s2-lnk{display:inline-flex;align-items:center;min-height:var(--space-6);align-self:flex-start} /* text links keep a >=24px target (D46) */'''
 CSS_P = CSS7 + CSS_SHARED + '''
-.s2-phone{min-height:inherit}
 .s2-phead h1{margin:0}
-.s2-more{min-height:var(--control-h-touch)} /* touch: 48px target */
-.s2-tabbar{position:sticky;bottom:0;z-index:2;max-width:none} /* the bar spans the screen at its foot */'''
-CSS_D = s4.CSS + '\n' + s4.CSS_S4 + CSS_SHARED + '''
+.s2-more{min-height:var(--control-h-touch)} /* touch: 48px target */'''
+CSS_D = s4.CSS + CSS_SHARED + '''
 .s2-cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-6);align-items:start}
 .s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-small) + var(--space-2))} /* the panel's top on the alert list's top (under its head) */
 .s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}

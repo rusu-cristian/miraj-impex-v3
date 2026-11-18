@@ -308,10 +308,12 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-ftot--wide .ip-ftot__status{justify-self:start;align-self:start;padding-top:calc(2 * var(--ip-hair))}
 .ip-ftot--wide .ip-ftot__key{position:absolute;width:var(--ip-hair);height:var(--ip-hair);margin:calc(-1 * var(--ip-hair));padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 /* Compact (SaveBar summary): two short lines inside .ip-savebar__sum. Line 1: wheat + confirmed rows + kg today;
- * line 2: rows still to confirm + one Lamp for the stock (worst type first). */
-.ip-savebar__sum.ip-ftot-sum{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
-.ip-ftot-sum__line{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2)}
-.ip-ftot-sum .ip-rec{color:var(--c);display:inline-flex}
+ * line 2: rows still to confirm + one Lamp for the stock (worst type first). FIN15: the two-line summary is the SaveBar's
+ * own modifier (span.ip-savebar__sum.ip-savebar__sum--2l > span.ip-savebar__line × 2; was ip-ftot-sum/__line), also used
+ * by the S6 Zilnic and S8 Cântărire SaveBars. */
+.ip-savebar__sum.ip-savebar__sum--2l{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
+.ip-savebar__line{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-2)}
+.ip-savebar__sum--2l .ip-rec{color:var(--c);display:inline-flex}
 
 /* =====================================================================================================
  * SYS03 · FarmSummary for screens S3 (series level) and S2 (Acasă, owner). Spec: components.md › Additions › SYS03.
@@ -530,7 +532,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-eggs__calc dd{margin:0}
 .ip-eggs__val{grid-area:val;font:500 var(--ip-fs-alloc)/var(--ip-lh-alloc) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap}
 .ip-eggs__sub{grid-area:sub;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted);min-width:0}
-.ip-eggs__sub .ip-num,.ip-eggs__sub .ip-sex{white-space:nowrap}
+.ip-eggs__sub .ip-num,.ip-eggs__sub .ip-sex,.ip-eggs__sub .ip-eggs__base{white-space:nowrap} /* FIN15: span.ip-eggs__base = "din ♀ 8 475", the hens the % is from, never split (.ip-sex is inline-flex, so a no-break space before it does not hold; was S6's s6-nobr) */
 .ip-eggs__lamp{grid-area:lamp;justify-self:end}
 .ip-eggs__calc > div:not(:has(> .ip-eggs__lamp)){grid-template-areas:"key val" "sub sub"}
 .ip-hall--wide .ip-eggs__calc{flex-direction:row}
@@ -783,7 +785,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* ---------- 20. FeedTotals compact · segments ---------- */
 /* In the SaveBar summary each segment ("10 din 12 rânduri ·", "3 691,3 kg", Lamp, detail) is one flex item that never
  * breaks inside, so a narrow bar wraps between segments, never between a figure and its unit. */
-.ip-ftot-sum__line > *{white-space:nowrap}
+.ip-savebar__line > *{white-space:nowrap}
 
 /* =====================================================================================================
  * S3P · FarmSummary row stretch, for S3 (Seria). Spec: components.md › Additions › S3P. Moved out of the S3 screen
@@ -1794,3 +1796,66 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * of this rule (removed). Readout boxes are 56 wide for "SAPT 40" at 11px Mono (52 on phone), so the figure keeps
  * its sides. Weight, colour and family stay bundle.css's. */
 .ip-track :is(.todaylbl,.rotxt,.month){font-size:var(--ip-fs-caption)}
+
+/* =====================================================================================================
+ * FIN15 · Shared page shells, side panel, empty box and phone modal anchor, system-wide (were screen CSS copied into
+ * every generator). Spec: components.md › Additions › FIN15.
+ * ===================================================================================================== */
+
+/* ---------- 56. Desktop page shell: Sidebar + page, PageHeader meta line, section head (FIN15) ---------- */
+/* div.ip-shell > nav.ip-sidebar.ip-shell__side + main.ip-shell__main: the Sidebar keeps its width and runs the shell's
+ * full height; the page takes the rest (space-6 padding, space-6 between its blocks). The Sidebar foot
+ * div.ip-note.ip-sidebar__account holds the role (b, ink 500) and the Ieși text link (≥24px target, D46), over a line.
+ * PageHeader meta line div.ip-row.ip-pagehead__meta (Tags, ♀ · ♂, notes; wraps). Section head div.ip-sechead: the h2 left,
+ * a note or a text link right, on one baseline; a link there keeps a ≥24px target (D46). Was s4-shell/side/main/account/
+ * meta/head on every desktop board (S2–S4, S9–S22). */
+.ip-shell{display:flex;align-items:stretch}
+.ip-shell__side{flex:none;min-height:0}
+.ip-shell__main{flex:1;min-width:0;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
+.ip-sidebar__account{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2);border-top:var(--ip-hair) solid var(--line)}
+.ip-sidebar__account b{color:var(--ink);font-weight:500}
+.ip-sidebar__account .ip-link{display:inline-flex;align-items:center;justify-content:flex-end;min-width:var(--space-6);min-height:var(--space-6)}
+.ip-pagehead__meta{gap:var(--space-2) var(--space-3)}
+.ip-sechead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.ip-sechead h2{margin:0}
+.ip-sechead > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap}
+
+/* ---------- 57. Phone screen: column, main, BottomTabBar at its foot (FIN15) ---------- */
+/* div.ip-screen fills the phone frame (390 on a board; its width comes from the frame, the board root or the app window)
+ * as a column on ground, at least as tall as the frame (min-height inherited from the board root). main.ip-screen__main
+ * takes the rest: space-4 page edges, space-8 at the foot, space-6 between blocks (forms that need a tighter gap add
+ * their own). nav.ip-tabbar.ip-screen__tabbar = the BottomTabBar as the screen's last child: sticky at the foot, full
+ * screen width (bundle.css caps the bar at 390). Was s7-screen/s7-main (S6–S10, S13 phone forms), s2-phone and
+ * s2-tabbar (S2, S14, S17 phone pages). */
+.ip-screen{min-height:inherit;display:flex;flex-direction:column;background:var(--ground)}
+.ip-screen__main{flex:1;display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-4) var(--space-4) var(--space-8)}
+.ip-screen__tabbar{position:sticky;bottom:0;z-index:2;max-width:none}
+
+/* ---------- 58. SidePanel docked beside the page; head title row and foot keys; margin reset (FIN15) ---------- */
+/* aside.ip-sidepanel.ip-sidepanel--dock: the non-modal SidePanel (D73) fixed to the right edge of the positioned page,
+ * full height, panel-w wide; the page beside it keeps a panel-w right margin so nothing sits under it (screen layout).
+ * In its head, div.ip-row.ip-sidepanel__title holds the RecordTile and the title block (h2 + context line) on one line,
+ * space-2 apart; in its foot, div.ip-row.ip-sidepanel__keys holds the keys on one line, space-2 apart. The phone sheet
+ * (ip-sidepanel--sheet, section 39) uses the same title row. .ip-m0 drops the browser margin of a heading or paragraph
+ * that sits in a flex block with its own gaps. Was s13-panel/phead/pkeys/m0 (S9, S10, S13, S16, S18–S22). */
+.ip-sidepanel--dock{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w)}
+.ip-sidepanel__title{gap:var(--space-2);flex-wrap:nowrap}
+.ip-sidepanel__keys{gap:var(--space-2);flex-wrap:nowrap}
+.ip-m0{margin:0}
+
+/* ---------- 59. EmptyState · framed box, text lines, next step (FIN15) ---------- */
+/* div.ip-emptybox > div.ip-empty: an EmptyState that stands in for a page block (a tab panel, a list, a table) sits in
+ * that block's frame: panel, 1px line, radius-md. Its sentences are p.ip-empty__line: the first one (what is empty) in
+ * ink, the next ones (why, what still counts) in ink-secondary, no paragraph margin (the EmptyState gap spaces them).
+ * The next step (a Button or a text link, a direct child of .ip-empty) sits space-2 lower than the gap, apart from the
+ * text. Was s4s-emptybox/s4s-empty-p and the screen copy of the step rule (S2, S4, S11, S12 boards). */
+.ip-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
+.ip-empty__line{margin:0;color:var(--ink)}
+.ip-empty__line + .ip-empty__line{color:var(--ink-secondary)}
+.ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
+
+/* ---------- 60. Phone screen as a modal's anchor (FIN15) ---------- */
+/* .ip-scrimhost on the phone screen (div.ip-screen, or a screen's own frame) positions it, so a modal opened over it,
+ * the BottomSheet scrim (ip-scrim--sheet, sections 33/39) or the Dialog scrim (ip-scrim--phone, section 35), fills the
+ * whole screen, tab bar and SaveBar included. Was s9-modal (S2, S8, S9, S10, S14, S16–S18 phone boards). */
+.ip-scrimhost{position:relative}

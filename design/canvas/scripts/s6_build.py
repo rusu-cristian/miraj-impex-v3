@@ -5,8 +5,8 @@ Hîrbovăț, 16.11.2026, SAPT 40 (D23/D24), Dr. Ceban after the morning round, e
 start of the day (D53); yesterday hint = 15.11 and the mean of 09–15.11 (SYS05). No 3× warning and no refusal holds on
 this day (asserted), so no card carries a Tag except H3.1 "fără pierderi"; H3's lay is 70,1% vs ghid 74,1% (abatere).
 Composed from system classes only: FormHeader, DateField (s7_build shell), HallCard, EntryCard + SYS05 additions,
-CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). Screen-only CSS beyond S7's: .s6-nobr
-(S6P: keeps "din ♀ 8 475" on one line). Field names = section heading + label via aria-labelledby (S6P).
+CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). No screen-only CSS beyond S7's: "din ♀ 8 475"
+stays on one line through HallCard's span.ip-eggs__base (S6P, system since FIN15). Field names = section heading + label via aria-labelledby (S6P).
 One tall phone board (canvas.md: taller h for a long scrolling form), SaveBar sticky at the foot, as S7.
 python3 -I s6_build.py <repo_root> [heights.json, default s6_heights.json]
 Imports s7_build (it rewrites the S7 default board at 3162, byte-identical). Writes
@@ -156,7 +156,7 @@ def eggs(h, secs, hens, d=TODAY, ro=False):
             + f('inc', 'Incubabile', e['hatching_eggs'])
             + f'<div class="ip-field"><label class="ip-label" for="w-{u}" id="l-w-{u}">Masa medie<span class="ip-sr"> grame</span></label><span class="ip-input ip-eggs__weight ip-input--touch"><input id="w-{u}" inputmode="decimal" placeholder="–" autocomplete="off" value="{n(e["avg_egg_weight_g"], 1)}" aria-labelledby="t-eggs-{u} l-w-{u}"{" readonly" if ro else ""}><span class="suffix">g</span></span></div>')
     sgn = '+' if diff > 0 else (MINUS if diff < 0 else '')
-    sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else ' (prag <span class="ip-num">±3</span>)'} · <span class="s6-nobr">din <span class="ip-sex ip-sex--hen">♀ {n(hens)}</span></span>'
+    sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else ' (prag <span class="ip-num">±3</span>)'} · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {n(hens)}</span></span>'
     calc = (f'<dl class="ip-eggs__calc" aria-label="Calculat din câmpuri, doar citire"><div><dt>Total ouă</dt><dd class="ip-eggs__val">{n(tot)}</dd>'
             f'<dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat (<span class="ip-num">{n(e["floor_eggs"])}</span>)</dd></div>'
             f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">{n(lay, 1)}%</dd><dd class="ip-eggs__sub">{sub}</dd>'
@@ -202,17 +202,16 @@ line2 = f'{rec14("eggs")}<span><span class="ip-num">{n(egg_tot)}</span> ouă ·<
 # carries the figure, the guide and the ±3 threshold.
 SAVE = B.savebar(line1, line2, '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>')
 
-BODY = f'''<div class="s7-screen">
+BODY = f'''<div class="ip-screen">
 {HEAD}
-<main class="s7-main">
+<main class="ip-screen__main">
 {DATE}
 {HALLS_HTML}
 </main>
 {SAVE}
 </div>'''
 
-CSS = B.CSS + '''
-.s6-nobr{white-space:nowrap} /* "din ♀ 8 475" stays together: .ip-sex is inline-flex, so a no-break space before it does not hold in Chrome */'''
+CSS = B.CSS  # FIN15: "din ♀ 8 475" on one line is HallCard's span.ip-eggs__base (additions.css)
 root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{BODY}</div>'
 dc = f'''<!doctype html>
 <html lang="ro">

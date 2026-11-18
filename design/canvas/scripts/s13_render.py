@@ -11,7 +11,7 @@ CHECK = """() => {
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls]')].flatMap(e =>
    ['aria-describedby','aria-labelledby','for','aria-controls'].flatMap(a => (e.getAttribute(a) || '').split(/\\s+/).filter(Boolean)))
    .filter(r => !document.getElementById(r));
- const main = document.querySelector('.s7-main'); const sb = document.querySelector('.ip-savebar');
+ const main = document.querySelector('.ip-screen__main'); const sb = document.querySelector('.ip-savebar');
  return {dup, broken: refs, sw: document.documentElement.scrollWidth,
    mainBottom: main ? Math.round(main.getBoundingClientRect().bottom) : null, barTop: sb ? Math.round(sb.getBoundingClientRect().top) : null,
    body: (() => { const b = document.querySelector('.s13-pbody'); return b ? [b.scrollHeight, b.clientHeight] : null })()};

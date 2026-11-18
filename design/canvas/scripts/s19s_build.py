@@ -52,18 +52,18 @@ HDR = M.header()
 assert HDR.count(M.meta(True)) == 1
 HDR_NOLIST = HDR.replace(M.meta(True), M.meta(False))   # before the list is in, the meta names no farm
 def shell(main, sidebar=None, hdr=HDR):
-    return f'<div class="s4-shell">{sidebar or M.sidebar_owner()}<main class="s4-main">\n{hdr}\n{main}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar or M.sidebar_owner()}<main class="ip-shell__main">\n{hdr}\n{main}\n</main></div>'
 
 # ---- loading: the Ferme block with a framed table skeleton (the real columns, two farm rows)
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
 SK_R = ('<tr class="ip-table__skel"><th scope="row">' + skel('w3') + '</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w2', 'w2', 'w2'))
         + f'<td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghidul și secțiunile lor.</p>'
-           f'<section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
+           f'<section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table">'
            f'{M.COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Adaugă fermă stays (the name check runs on save)
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
+LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="s4s-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
@@ -74,7 +74,7 @@ def noaccess():
     box = s4.empty_box('fără acces', ['Nu ai acces la Ferme și secțiuni.',
                                       'Fermele, tipul, ghidul și secțiunile lor le setează proprietarul. Rolul tău, Observator, '
                                       'vede paginile seriilor și ale fermelor, și rapoartele.'], step, 'Acces')
-    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Ferme și secțiuni</h1></div></header>\n{box}\n</main></div>'
+    return f'<div class="ip-shell">{Q.sidebar_viewer()}<main class="ip-shell__main">\n<header class="ip-pagehead"><div><h1>Ferme și secțiuni</h1></div></header>\n{box}\n</main></div>'
 
 # ---- panel fields
 TEL_TIP = M.tip_field(sel='growth')
@@ -95,7 +95,7 @@ def tip_err():
 NEW_GHID_OUAT = M.gbox(GUIDE['g-laying'], '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Se aplică de la primul ciclu al fermei.</span>', 'laying')
 def save_banner(text):
     return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="fp-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
+            f'<p class="ip-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ---- tree states (SYS10 helpers; one edit row open at a time)
 def tree_x(fid, noguide=False, note=None, banner='', live='', **kw):

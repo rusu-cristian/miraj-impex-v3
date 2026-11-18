@@ -174,7 +174,7 @@ LEG = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i c
 def track(phone=False):
     svgs = track_svg(358) if phone else ''.join(track_svg(w) for w in TWS)
     sub = f'<span class="ip-note">{num(2)} serii · {num(2)} ferme · {num(3)} cicluri</span>'
-    return (f'<section class="s4-block" aria-labelledby="h-track"><div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>'
+    return (f'<section class="s4-block" aria-labelledby="h-track"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>'
             f'<div class="s4-tight"><div class="s18-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{LEG}</div></div></section>')
 
 # ================================================================= DataTable: series (group rows) and their cycles
@@ -228,14 +228,14 @@ def ptable():
         out += (f'<div class="s18-pser"><div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="g-{sid}">'
                 f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">{SER[sid]["name"]}: ciclurile pe ferme</caption>{COLS}<tbody>{g}{rows}</tbody></table></div>'
                 f'<div class="s18-pacts">{acts(sid, True)}</div>{WHY26 if sid == "seria-2026" else ""}</div>')
-    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
+    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{num(2)} serii · cele mai noi întâi</span></div>{out}<div class="s18-notes">{RO_NOTE}</div></section>')
 def table(touch=False):
     if touch: return ptable()
     body = (f'<tbody>{grow("seria-2026", touch)}{crow("telita", cT, START_T)}{crow("hirbovat", cH, START_H)}</tbody>'
             f'<tbody>{grow("seria-2025", touch)}{crow("hirbovat", cP, START_P, dedus=True)}{crow("telita")}</tbody>')
     notes = [WHY26, RO_NOTE]
-    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
+    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{num(2)} serii · cele mai noi întâi</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
             f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{DCOLS}{body}</table></div>'
@@ -243,7 +243,7 @@ def table(touch=False):
 
 # ================================================================= page (desktop) + header + sidebar
 CRUMBS = '<nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a><span aria-hidden="true">›</span><span aria-current="page">Serii</span></nav>'
-META = f'<div class="ip-row s4-meta"><span class="ip-note">Seriile anuale, populările și ciclurile lor pe ferme{NB}·{NB}Hîrbovăț, Telița</span></div>'
+META = f'<div class="ip-row ip-pagehead__meta"><span class="ip-note">Seriile anuale, populările și ciclurile lor pe ferme{NB}·{NB}Hîrbovăț, Telița</span></div>'
 def newkey(pressed=False, touch=False):
     t = ' ip-btn--touch' if touch else ''
     p = ' is-pressed" aria-expanded="true" aria-controls="sn' if pressed else ''   # the panel exists only while open
@@ -260,14 +260,14 @@ def sidebar_owner():
     assert sb.count('is-current') == 1 and 'href="#serii" aria-current="page"' in sb
     return sb
 def page(pressed=False):
-    return f'<div class="s4-shell">{sidebar_owner()}<main class="s4-main">\n{header(pressed)}\n{track()}\n{table()}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar_owner()}<main class="ip-shell__main">\n{header(pressed)}\n{track()}\n{table()}\n</main></div>'
 
 # ================================================================= Serie nouă form (SidePanel desktop, sheet on phone)
 TILE = f'<span class="ip-tile ip-rec ip-rec--placement" aria-hidden="true">{icon("placement")}</span>'
 def p_head(ctx, touch):
     t = ' ip-iconbtn--touch' if touch else ''
-    return (f'<div class="ip-sidepanel__head"><div class="ip-row s13-phead">{TILE}<div><h2 class="ip-t-heading s13-m0" id="sn-t">Serie nouă</h2>'
-            f'<p class="ip-note ip-num s13-m0">{ctx}</p></div></div><button type="button" class="ip-iconbtn{t}" aria-label="Închide Serie nouă">{icon("x")}</button></div>')
+    return (f'<div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title">{TILE}<div><h2 class="ip-t-heading ip-m0" id="sn-t">Serie nouă</h2>'
+            f'<p class="ip-note ip-num ip-m0">{ctx}</p></div></div><button type="button" class="ip-iconbtn{t}" aria-label="Închide Serie nouă">{icon("x")}</button></div>')
 def tfield(i, label, val='', hint='', touch=True, mono=False, focus=False, numeric=False, cls=''):
     t = ' ip-input--touch' if touch else ''
     v = f' value="{val}"' if val else ''
@@ -354,8 +354,8 @@ def effect(state, day, name='', year='', rows=()):
                 f'<span>Alege secțiunile Teliței și scrie câte găini și cocoși intră în fiecare. Aici vezi seria nouă și ciclul nou de la Telița.</span></div></div>')
     if state == 'refuz':
         return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="sn-ref">{icon("alert", 16)}<div class="s7s-banner__body">'
-                f'<p class="s13-m0">Telița are încă {n(R39ALL)} păsări din Seria 2026. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual.</p>'
-                f'<p class="s13-m0 s9-fxsub">în viață la Telița pe {num(dd(TODAY))}: {pair(R39["F"], R39["M"])}</p>'
+                f'<p class="ip-m0">Telița are încă {n(R39ALL)} păsări din Seria 2026. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual.</p>'
+                f'<p class="ip-m0 s9-fxsub">în viață la Telița pe {num(dd(TODAY))}: {pair(R39["F"], R39["M"])}</p>'
                 f'<ul class="s18-ways" aria-label="Ce poți face">'
                 f'<li><a class="ip-link" href="#/inregistreaza/transfer?din=telita">Mută păsările de la Telița</a></li>'
                 f'<li><a class="ip-link" href="#/inregistreaza/vanzare?ferma=telita">Vinde păsările de la Telița</a></li>'
@@ -385,9 +385,9 @@ def sheet(body, day, key):
     return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">{p_head("TELIȚA · " + dd(day) + " · SAPT 1", True)}'
             f'<div class="ip-sidepanel__body s13-pbody">{"".join(body)}</div><div class="ip-sidepanel__foot">{key}</div></aside>')
 def panel(body, day, key):
-    return (f'<aside class="ip-sidepanel s13-panel" id="sn" aria-labelledby="sn-t">\n{p_head("TELIȚA · " + dd(day) + " · SAPT 1", False)}\n'
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="sn" aria-labelledby="sn-t">\n{p_head("TELIȚA · " + dd(day) + " · SAPT 1", False)}\n'
             f'<div class="ip-sidepanel__body s13-pbody">\n{"".join(body)}\n</div>\n'
-            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
+            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 
 # ================================================================= phone list (owner)
 def p_header():
@@ -431,7 +431,7 @@ CSS18 = '''
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-ways .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)}
-.s18-vp > .s4-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
+.s18-vp > .ip-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
 .s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */'''
 X_CSS = '\n'.join(l for l in X.CSS.split('\n') if not l.startswith('.s11-select{'))   # FIN10 fix 1: no native select on S18–S22 desktops
 assert X_CSS != X.CSS
@@ -448,8 +448,8 @@ CSS_PL = Z_CSS + CSS18 + '''
 .s18-gact .ip-btn{white-space:nowrap}
 .s18-ways .ip-link{min-height:var(--control-h-touch)}
 .s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */'''
-SHEET = ''.join('\n' + l for l in SC.SIDE.split('\n') if l.startswith(('.s13-phead', '.s13-pbody')))
-assert SHEET.count('\n') == 2
+SHEET = ''.join('\n' + l for l in SC.SIDE.split('\n') if l.startswith('.s13-pbody'))
+assert SHEET.count('\n') == 1
 CSS_SH = ('body{margin:0}\n.s18-screen{height:100%;display:flex}' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
 .s18-ways .ip-link{min-height:var(--control-h-touch)} /* touch: each way out is a 48 px target */''')
 

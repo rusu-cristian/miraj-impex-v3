@@ -150,16 +150,16 @@ def sum_rows(nconf, nrows, kg, lead=''):
     rows = f'<span><span class="ip-num">{nconf} din {nrows}</span> rânduri ·</span>' if lead == '' else f'<span>{lead} · <span class="ip-num">{nrows}</span> rânduri ·</span>'
     return f'{FEED14}{rows}{kgs}'
 def savebar(line1, line2, key):
-    return f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line">{line1}</span><span class="ip-ftot-sum__line">{line2}</span></span>{key}</div>'''
+    return f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{line1}</span><span class="ip-savebar__line">{line2}</span></span>{key}</div>'''
 nconf = sum(1 for b in built if b[1]); total = round(sum(b[2] for b in built if b[1]), 1)
 worst = min(FTR, key=lambda f: f['days'])
 slamp = (lamp('warn', 'abatere') + f'<span>{FTN[worst["t"]]} <span class="ip-num">{n(worst["days"], 1)}</span> zile</span>') if not worst['ok'] else lamp('ok', 'în normă') + '<span>stoc</span>'
 SAVE = savebar(sum_rows(nconf, len(built), total), slamp, '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>')
 assert (nconf, n(total, 1)) == (10, f'3{NB}691,3')
 
-BODY = f'''<div class="s7-screen">
+BODY = f'''<div class="ip-screen">
 {HEAD}
-<main class="s7-main">
+<main class="ip-screen__main">
 {DATE}
 {COPY}
 {HALLS}
@@ -172,9 +172,7 @@ CSS = '''body{margin:0}
 html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))} /* WCAG 2.4.11: SaveBar 73 px at 390 (48 key + 2x12 padding + 1 top line; the 2-line summary, 36 px, sits inside the key height) + the field border and focus ring (1 + 2 + 2), so a focused field scrolls clear of the sticky SaveBar: 78 px */
 @media (max-width: 389.98px){html{scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w))}} /* under 390 a summary line can wrap between segments: up to 4 lines at 360 (measured, refusal state: 4x16 + 3x4 + 2x12 + 1 = 101 px) + 5 = 106 px */
 .s7-m0{margin:0}
-.s7-screen{width:390px;min-height:inherit;display:flex;flex-direction:column;background:var(--ground)}
 .s7-title{display:flex;flex-direction:column;min-width:0}
-.s7-main{flex:1;display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-4) var(--space-4) var(--space-8)}
 .s7-date{display:flex;gap:var(--space-2);align-items:center}
 .s7-date > .ip-input{flex:1;min-width:0}
 .s7-date > .ip-input > .ip-icon{color:var(--ink-secondary);flex:none}

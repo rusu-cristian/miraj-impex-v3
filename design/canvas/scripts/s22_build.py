@@ -32,7 +32,7 @@ S22P (D120): while a panel is open the list-head key is secondary (one primary p
 the DataTable current row (aria-current on the row's Acțiuni key, additions.css §45), the Cont note says each thing once,
 and the phone list adds the last sign-in line (Mono).
 FIN07 (D127): the page follows the S19–S21 list page: "Adaugă utilizator" is the page head's secondary key (pressed and
-expanded while its own add panel is open), the list head is an h2 "Utilizatori" with the count on the right (s4-head),
+expanded while its own add panel is open), the list head is an h2 "Utilizatori" with the count on the right (ip-sechead),
 the panel key reads "Salvează utilizatorul", and loading draws the §42 DataTable skeleton rows (SYS12 SK).
 python3 -I s22_build.py <repo_root> [s22_heights.json] [--canvas]
 Imports s19_build (rewrites the S19 boards and, through s18_build, S18/S17/S14S/S2/S7, byte-identical). Writes
@@ -93,7 +93,7 @@ assert U['CTX_NEW'].startswith('Cont nou · Observator · Hîrbovăț')
 # ================================================================= list (desktop): SYS12 UserRow + the S19P fold
 CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a><span aria-hidden="true">›</span>'
           '<span aria-current="page">Utilizatori</span></nav>')
-META = '<div class="ip-row s4-meta"><span class="ip-note">Cine intră în aplicație, cu ce rol și la ce ferme</span></div>'
+META = '<div class="ip-row ip-pagehead__meta"><span class="ip-note">Cine intră în aplicație, cu ce rol și la ce ferme</span></div>'
 def newkey(pressed=False):
     """FIN07 (D127): the page head's add key, secondary as S18 Adaugă serie, S19 Adaugă fermă, S21 Adaugă tip; pressed and
     expanded while its own add panel is open (D120/D125), so the panel's key is the view's one primary."""
@@ -133,14 +133,14 @@ for h in ('Login', 'Ferme', 'Ultima intrare'):
 # None = the column that takes the rest
 HEAD = SKL.widths(HEAD, [None, 15.4, 12.8, 17.6, 23.6, 9.9, 3.5], [89.8, 78.28, 61.08, 92.48, 133.06, 41.75, 32])  # + loaded min-content px (fix 1)
 def users(p, body, sumline, note='', **kw):
-    """SYS12 users() as an S19–S21 list block (FIN07): section.s4-block with the s4-head (h2 "Utilizatori" under the h1, the
+    """SYS12 users() as an S19–S21 list block (FIN07): section.s4-block with the ip-sechead (h2 "Utilizatori" under the h1, the
     count on the right; none while loading or failed), the key moved to the page head; the list box is the fold container."""
     s = U['users'](p, body, sumline, **kw)
     k = re.search(r'<button type="button" class="ip-btn ip-btn--primary" aria-haspopup="dialog">.*?Adaugă utilizator</button>', s).group(0)
     cnt = f'<span class="ip-note" id="{p}-sum">{sumline}</span>' if sumline else ''
     s = sub(s, f'<section class="ip-users" aria-labelledby="{p}-h"><div class="ip-list__head"><h3 class="ip-cap" id="{p}-h">Utilizatori</h3>'
                f'<p class="ip-note" id="{p}-sum">{sumline}</p>{k}</div>',
-            f'<section class="s4-block" aria-labelledby="{p}-h"><div class="s4-head"><h2 class="ip-t-heading" id="{p}-h">Utilizatori</h2>{cnt}</div>')
+            f'<section class="s4-block" aria-labelledby="{p}-h"><div class="ip-sechead"><h2 class="ip-t-heading" id="{p}-h">Utilizatori</h2>{cnt}</div>')
     if kw.get('table', True):
         if not sumline:   # no count line to describe the table
             s = sub(s, f' aria-describedby="{p}-sum"', '')
@@ -155,7 +155,7 @@ def ulist(us=BASE, focus=None, p='u', cur=None):
     return users(p, body, U["counts"](us), NOTE)
 def shell(main, sb=None, inert=False, pressed=False):
     i = ' inert="inert"' if inert else ''
-    return f'<div class="s4-shell"{i}>{sb or sidebar()}<main class="s4-main">\n{header(pressed)}\n{main}\n</main></div>'
+    return f'<div class="ip-shell"{i}>{sb or sidebar()}<main class="ip-shell__main">\n{header(pressed)}\n{main}\n</main></div>'
 def vp(main, inert=False, pressed=False):
     return f'<div class="s13-vp s18-vp">{shell(main, inert=inert, pressed=pressed)}</div>'
 
@@ -244,12 +244,12 @@ def ctx(u):
     return f'{u["role"].upper()} · {"ACTIV" if u["active"] else "DEZACTIVAT"} · {fm}'
 def panel(title, note, body, key=SAVE, inert=False):
     i = ' inert="inert"' if inert else ''
-    nt = f'<p class="ip-note ip-num s13-m0">{note}</p>' if note else ''
-    return (f'<aside class="ip-sidepanel s13-panel" id="up" aria-labelledby="up-t"{i}>\n<div class="ip-sidepanel__head"><div>'
-            f'<h2 class="ip-t-heading s13-m0" id="up-t">{title}</h2>{nt}</div>'
+    nt = f'<p class="ip-note ip-num ip-m0">{note}</p>' if note else ''
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="up" aria-labelledby="up-t"{i}>\n<div class="ip-sidepanel__head"><div>'
+            f'<h2 class="ip-t-heading ip-m0" id="up-t">{title}</h2>{nt}</div>'
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul utilizatorului">{icon("x")}</button></div>\n'
             f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
-            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
+            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 def upanel(u, farms_on=None, focus=False, extra='', inert=False, pressed=None, title=None):
     fo = (u['farms'] or '').split(', ') if farms_on is None else farms_on
     return panel(title or u['name'] + (' (tu)' if u.get('me') else ''), ctx(u),
@@ -257,7 +257,7 @@ def upanel(u, farms_on=None, focus=False, extra='', inert=False, pressed=None, t
                  inert=inert)
 def save_banner(text):
     return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="up-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
+            f'<p class="ip-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= dialogs (SYS12), Toast, states
 def scrim(dlg): return f'<div class="ip-scrim ip-scrim--page">{dlg}</div>'
@@ -289,7 +289,7 @@ def noaccess():
     box = s4.empty_box('fără acces', ['Nu ai acces la Utilizatori.',
                                       'Conturile și accesul la ferme le setează proprietarul. Rolul tău, Observator, vede paginile seriilor '
                                       'și ale fermelor, și rapoartele.'], step, 'Acces')
-    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Utilizatori</h1></div></header>\n{box}\n</main></div>'
+    return f'<div class="ip-shell">{Q.sidebar_viewer()}<main class="ip-shell__main">\n<header class="ip-pagehead"><div><h1>Utilizatori</h1></div></header>\n{box}\n</main></div>'
 EMPTY = users("u", row("u", OWN) + U["EMPTY"], U["counts"]([OWN]))
 
 # ================================================================= phone list (owner, read-only, as S19–S21)
@@ -300,7 +300,7 @@ def phone_list():
                    + (f'<span class="ip-note s22-pm">ultima intrare <span class="ip-num">{u["seen"]}</span></span>' if u['seen'] else
                       '<span class="ip-note s22-pm">– încă n-a intrat</span>') + '</th>'
                    f'<td class="s22-nw">{lamp("ok", "activ") if u["active"] else lamp("off", "dezactivat")}</td></tr>' for u in BASE)
-    blk = (f'<section class="s4-block" aria-labelledby="h-usr"><div class="s4-head"><h2 class="ip-t-heading" id="h-usr">Utilizatori</h2>'
+    blk = (f'<section class="s4-block" aria-labelledby="h-usr"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-usr">Utilizatori</h2>'
            f'<span class="ip-note">{U["counts"](BASE)}</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-usr">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s22-ptable"><caption class="ip-sr">Utilizatorii, cu rolul, fermele, ultima intrare și starea lor</caption>'

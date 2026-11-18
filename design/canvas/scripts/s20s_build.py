@@ -52,18 +52,18 @@ META0 = 'Ghidurile de creștere și de ouat, pe săptămâni și sexe'   # befor
 assert S.LIST_META.startswith(META0)
 HDR0 = S.header(S.crumbs('Ghiduri'), 'Ghiduri', META0, S.list_key())
 def lshell(main, sidebar=None, hdr=HDR0):
-    return f'<div class="s4-shell">{sidebar or S.sidebar()}<main class="s4-main">\n{hdr}\n{main}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar or S.sidebar()}<main class="ip-shell__main">\n{hdr}\n{main}\n</main></div>'
 
 # ---- loading: the Ghiduri block with a framed table skeleton (the real columns, two guide rows; additions §42)
 def skel(w, end=False): return f'<span class="ip-skel ip-skel--{w}{" ip-skel--end" if end else ""}"></span>'
 SK_R = (f'<tr class="ip-table__skel"><th scope="row">{skel("w2")}</th>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w1', 'w1'))
         + f'<td class="s19-act">{skel("w3", True)}</td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă ghidurile, cu tipul, săptămânile și ciclurile care le folosesc.</p>'
-           f'<section class="s4-block" aria-labelledby="h-gh" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
+           f'<section class="s4-block" aria-labelledby="h-gh" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s20-table">'
            f'{S.LCOLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
 # ---- load error: the Banner in place of the table; Importă ghid stays (the name check runs on save)
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="s4-head"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
+LOADERR = (f'<section class="s4-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="s4s-m0">Ghidurile nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți importa un ghid nou și acum.</p></div>'
@@ -74,7 +74,7 @@ def noaccess():
     box = s4.empty_box('fără acces', ['Nu ai acces la Ghiduri.',
                                       'Ghidurile le importă și le înlocuiește proprietarul. Rolul tău, Observator, vede comparația '
                                       'cu ghidul pe paginile fermelor și în rapoarte.'], step, 'Acces')
-    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Ghiduri</h1></div></header>\n{box}\n</main></div>'
+    return f'<div class="ip-shell">{Q.sidebar_viewer()}<main class="ip-shell__main">\n<header class="ip-pagehead"><div><h1>Ghiduri</h1></div></header>\n{box}\n</main></div>'
 # ---- no guide yet (D39 first use, as S19 --fara-ferme): no series either; the EmptyState holds the one next step
 def sidebar_first():
     sb = M.sidebar_owner(no_series=True)
@@ -146,7 +146,7 @@ def new_read(extra=''):
                 + G['foot'](P, True, f'Se salvează {NL} de rânduri în ghidul nou {NEWN}.')
                 + G['live'](f'Fișier citit: {NL} de rânduri, toate valide.'))
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="gi-save-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="s13-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Numele, tipul și cele {NL} de rânduri citite rămân aici. '
+            f'<p class="ip-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Numele, tipul și cele {NL} de rânduri citite rămân aici. '
             'Verifică conexiunea la internet, apoi reîncearcă.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the fault Banner (role=alert) above the keys; the name, '
@@ -156,7 +156,7 @@ SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the f
 def unused_detail():   # the detail of a laying guide with the new name and no cycle (s20_build parameters)
     pg = S.detail_page('g-laying', name=NEWN, cycles=[], pressed=True)
     assert 'azi</span>' not in pg and 'e azi în sapt.' not in pg and 'Ross 308 ouat<' not in pg
-    return one(pg, '<div class="s4-shell">', '<div class="s4-shell" inert="inert">')
+    return one(pg, '<div class="ip-shell">', '<div class="ip-shell" inert="inert">')
 DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Șterge ghidul {NEWN}</h2>'
        f'<p class="ip-dialog__note" id="dlg-n">Ghidul și cele {NL} de rânduri ale lui se șterg. Niciun ciclu nu îl folosește, deci nicio comparație '

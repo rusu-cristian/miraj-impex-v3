@@ -156,7 +156,7 @@ CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a
           '<span aria-current="page">Istoric modificări</span></nav>')
 SCOPE = f'Hîrbovăț,{NB2}Telița'
 def meta(scope=SCOPE):  # S2P: the · never ends or starts a line; "noi · Hîrbovăț, Telița" wraps as one unit (S17P)
-    return f'<div class="ip-row s4-meta"><span class="ip-note">Corecții, ștergeri și modificări din aceeași zi, cu valorile vechi și noi{NB2}·{NB2}{scope}</span></div>'
+    return f'<div class="ip-row ip-pagehead__meta"><span class="ip-note">Corecții, ștergeri și modificări din aceeași zi, cu valorile vechi și noi{NB2}·{NB2}{scope}</span></div>'
 META = meta()
 def header(bare=False):
     if bare: return '<header class="ip-pagehead"><div><h1>Istoric modificări</h1></div></header>'
@@ -182,8 +182,8 @@ def desk(state='default', user=None):
         box = s4.empty_box('fără acces', ['Nu ai acces la Istoric modificări.',
                                           'Istoricul îl văd managerii, pentru fermele lor, și proprietarul. Rolul tău, Observator, vede rapoartele și paginile fermelor.'],
                            step, 'Acces')
-        return f'<div class="s4-shell">{sidebar_viewer()}<main class="s4-main">\n{header(True)}\n{box}\n</main></div>'
-    return f'<div class="s4-shell">{sidebar_owner()}<main class="s4-main">\n{header()}\n{filterbar(user)}\n{block(state, user)}\n</main></div>'
+        return f'<div class="ip-shell">{sidebar_viewer()}<main class="ip-shell__main">\n{header(True)}\n{box}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar_owner()}<main class="ip-shell__main">\n{header()}\n{filterbar(user)}\n{block(state, user)}\n</main></div>'
 
 # ================================================================= phone (manager Ion Rusu, 390×844)
 def p_header():
@@ -198,7 +198,7 @@ def phone_page():
     body = A.phone([p_header(), p_filter(), block()])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
                  ('class="ip-tabbar__item" href="#mai-mult"', 'class="ip-tabbar__item is-current" href="#mai-mult" aria-current="page"'),
-                 ('<div class="s7-screen s2-phone">', '<div class="s7-screen s2-phone s14-phone">')):
+                 ('<div class="ip-screen">', '<div class="ip-screen s14-phone">')):
         assert body.count(a) == 1, a; body = body.replace(a, z)
     assert body.count('is-current') == 1
     return body

@@ -15,12 +15,12 @@ CHECK = """() => {
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls]')].flatMap(e =>
    ['aria-describedby','aria-labelledby','for','aria-controls'].flatMap(a => (e.getAttribute(a) || '').split(/\\s+/).filter(Boolean)))
    .filter(r => !document.getElementById(r));
- const over = [...document.querySelectorAll('.s7-main *')].filter(e => e.getBoundingClientRect().right > 390.5).map(e => e.className).slice(0, 5);
+ const over = [...document.querySelectorAll('.ip-screen__main *')].filter(e => e.getBoundingClientRect().right > 390.5).map(e => e.className).slice(0, 5);
  const sb = document.querySelector('.ip-savebar');
  return {dup, broken: refs, over, barH: Math.round(sb.getBoundingClientRect().height)};
 }"""
 SCROLL = """(t) => {
- const main = document.querySelector('.s7-main'); main.style.marginTop = '0px';
+ const main = document.querySelector('.ip-screen__main'); main.style.marginTop = '0px';
  const card = document.getElementById(t).closest('section'); const view = document.querySelector('.s7s-view').getBoundingClientRect();
  const r = card.getBoundingClientRect(); const pad = 16;
  return Math.max(0, Math.min(Math.ceil(r.bottom + pad - view.bottom), Math.floor(r.top - view.top - pad)));
@@ -36,7 +36,7 @@ async def main():
             await pg.goto(f'file:///tmp/s6s/{bd["stem"]}.html'); await pg.wait_for_timeout(600)
             if MEASURE and bd['target']:
                 sc[bd['slug']] = await pg.evaluate(SCROLL, bd['target'])
-                await pg.evaluate(f"() => document.querySelector('.s7-main').style.marginTop = '-{sc[bd['slug']]}px'")
+                await pg.evaluate(f"() => document.querySelector('.ip-screen__main').style.marginTop = '-{sc[bd['slug']]}px'")
             print(i, bd['slug'], sc.get(bd['slug'], 0), await pg.evaluate(CHECK))
             await pg.screenshot(path=str(R / f'design/shots/S6S-{i}.png'))
         await b.close()

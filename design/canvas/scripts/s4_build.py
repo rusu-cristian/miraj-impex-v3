@@ -11,4 +11,4 @@ spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__
 s4s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4s)  # reads sys.argv[1] (repo root)
 
 body = s4s.shell(s4s.main_page(panel=s4s.panel_default()))
-s4s.write('S4-ferma-rezumat', 'S4 · Fermă · Rezumat', body, H=H, css=s4s.CSS + '\n' + s4s.CSS_S4)
+s4s.write('S4-ferma-rezumat', 'S4 · Fermă · Rezumat', body, H=H, css=s4s.CSS)

@@ -9,11 +9,11 @@ CHECK = """() => {
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls]')].flatMap(e =>
    ['aria-describedby','aria-labelledby','for','aria-controls'].flatMap(a => (e.getAttribute(a) || '').split(/\\s+/).filter(Boolean)))
    .filter(r => !document.getElementById(r));
- const main = document.querySelector('.s7-main'); const sb = document.querySelector('.ip-savebar');
- const over = [...document.querySelectorAll('.s7-main *')].filter(e => e.getBoundingClientRect().right > 390.5).map(e => e.className).slice(0, 5);
+ const main = document.querySelector('.ip-screen__main'); const sb = document.querySelector('.ip-savebar');
+ const over = [...document.querySelectorAll('.ip-screen__main *')].filter(e => e.getBoundingClientRect().right > 390.5).map(e => e.className).slice(0, 5);
  return {dup, broken: refs, sw: document.documentElement.scrollWidth, over,
    natural: (() => { const r = document.querySelector('.ip-root'); const mh = r.style.minHeight; r.style.minHeight = '0px';
-     const h = Math.ceil(document.querySelector('.s7-screen').getBoundingClientRect().height); r.style.minHeight = mh; return h; })(),
+     const h = Math.ceil(document.querySelector('.ip-screen').getBoundingClientRect().height); r.style.minHeight = mh; return h; })(),
    mainBottom: Math.round(main.getBoundingClientRect().bottom), barH: Math.round(sb.getBoundingClientRect().height),
    docH: document.documentElement.scrollHeight};
 }"""

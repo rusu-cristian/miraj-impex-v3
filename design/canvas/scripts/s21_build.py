@@ -83,7 +83,7 @@ def counts(rows):
     return f'{num(a)} {"activ" if a == 1 else "active"}, {num(z)} {"retras" if z == 1 else "retrase"}'
 def meta(rows=FT):
     tail = f'{NB}·{NB}{counts(rows)}' if rows else ''
-    return f'<div class="ip-row s4-meta"><span class="ip-note">Tipurile de hrană din livrări și din hrana zilnică{tail}</span></div>'
+    return f'<div class="ip-row ip-pagehead__meta"><span class="ip-note">Tipurile de hrană din livrări și din hrana zilnică{tail}</span></div>'
 def newkey(pressed=False):
     p = ' is-pressed" aria-expanded="true" aria-controls="tp' if pressed else ''
     return f'<button type="button" class="ip-btn ip-btn--secondary{p}">{icon("plus", 16)}Adaugă tip</button>'   # FIN07 (D127): keys are verbs (craft §6); the panel keeps its title
@@ -119,14 +119,14 @@ NOTE = ('Un tip retras nu mai apare în Livrare hrană și Hrană zilnică; livr
         'Un tip folosit nu se poate șterge, doar retrage.')
 def tlist(rows=ORDER, open_=None, focus=None, between=''):
     body = ''.join(trow(r, open_, focus) for r in rows)
-    return (f'<section class="s4-block" aria-labelledby="h-tip"><div class="s4-head"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
+    return (f'<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
             f'<span class="ip-note">{num(len(rows))} tipuri</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed s21-region" tabindex="0" role="region" aria-labelledby="h-tip">'
             f'<table class="ip-table ip-table--rowheads s19-table s21-table">{CAPTION}{COLS}<tbody>{body}</tbody></table></div>'
             f'<p class="ip-note s4s-m0">{NOTE}</p></section>')
 def shell(main, hdr=None, sb=None, inert=False):
     i = ' inert="inert"' if inert else ''
-    return f'<div class="s4-shell"{i}>{sb or sidebar()}<main class="s4-main">\n{hdr or header()}\n{main}\n</main></div>'
+    return f'<div class="ip-shell"{i}>{sb or sidebar()}<main class="ip-shell__main">\n{hdr or header()}\n{main}\n</main></div>'
 def vp(open_=None, pressed_new=False, inert=False, rows=ORDER):
     return f'<div class="s13-vp s18-vp">{shell(tlist(rows, open_), header(pressed_new, rows), inert=inert)}</div>'
 
@@ -203,29 +203,29 @@ SAVE = '<button type="button" class="ip-btn ip-btn--primary">Salvează tipul</bu
 ADD = '<button type="button" class="ip-btn ip-btn--primary">Adaugă tipul</button>'
 def panel(title, note, body, key=SAVE, inert=False):
     i = ' inert="inert"' if inert else ''
-    nt = f'<p class="ip-note ip-num s13-m0">{note}</p>' if note else ''
-    return (f'<aside class="ip-sidepanel s13-panel" id="tp" aria-labelledby="tp-t"{i}>\n<div class="ip-sidepanel__head"><div>'
-            f'<h2 class="ip-t-heading s13-m0" id="tp-t">{title}</h2>{nt}</div>'
+    nt = f'<p class="ip-note ip-num ip-m0">{note}</p>' if note else ''
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="tp" aria-labelledby="tp-t"{i}>\n<div class="ip-sidepanel__head"><div>'
+            f'<h2 class="ip-t-heading ip-m0" id="tp-t">{title}</h2>{nt}</div>'
             f'<button type="button" class="ip-iconbtn" aria-label="Închide panoul tipului de hrană">{icon("x")}</button></div>\n'
             f'<div class="ip-sidepanel__body s13-pbody s19-pbody">\n{"".join(body)}\n</div>\n'
-            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
+            f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 def tpanel(r, act, key=SAVE, focus_name=False, inert=False, pressed_del=False, stock=None):
     used = r['id'] in FARM_OF
     return panel(r['name'], ctx(r), [name_field(r['name'], focus_name, used=used), for_ro(r) if used else for_seg(r['for_sex']), act,
                                      use_block(r, 'used' if used else 'free', pressed_del, stock)], key, inert)
 def save_banner(text):
     return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="tp-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
+            f'<p class="ip-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= states (list side)
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
 SK_R = ('<tr class="ip-table__skel"><th scope="row">' + skel('w2') + '</th>' + ''.join(f'<td class="{c}">{skel(w)}</td>' for c, w in (('', 'w2'), ('', 'w1'), ('s21-cuse', 'w2')))
         + '<td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>')
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă tipurile de hrană, cu starea lor.</p>'
-           f'<section class="s4-block" aria-labelledby="h-tip" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
+           f'<section class="s4-block" aria-labelledby="h-tip" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed s21-region" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table s21-table">'
            f'{COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="s4-head"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
+LOADERR = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="s4s-m0">Tipurile de hrană nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un tip nou și acum.</p></div>'
@@ -235,7 +235,7 @@ def noaccess():
     box = s4.empty_box('fără acces', ['Nu ai acces la Tipuri de hrană.',
                                       'Tipurile de hrană le setează proprietarul. Rolul tău, Observator, vede paginile seriilor '
                                       'și ale fermelor, și rapoartele.'], step, 'Acces')
-    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Tipuri de hrană</h1></div></header>\n{box}\n</main></div>'
+    return f'<div class="ip-shell">{Q.sidebar_viewer()}<main class="ip-shell__main">\n<header class="ip-pagehead"><div><h1>Tipuri de hrană</h1></div></header>\n{box}\n</main></div>'
 NOTYPES = s4.empty_box('fără tipuri', ['Nu există niciun tip de hrană.', 'Adaugă primul tip, ca să poți înregistra livrările și hrana zilnică.'],
                        '<button type="button" class="ip-btn ip-btn--primary">Adaugă primul tip</button>', 'Tipuri')
 
@@ -243,7 +243,7 @@ NOTYPES = s4.empty_box('fără tipuri', ['Nu există niciun tip de hrană.', 'Ad
 def phone_list():
     rows = ''.join(f'<tr><th scope="row" class="s19-fname"><span class="s21-fn">{r["name"]}</span><span class="ip-note s21-pfarm">{use_txt(r)}</span></th>'
                    f'<td>{sexw(r["for_sex"])}</td><td class="s21-nw">{state_cell(r)}</td></tr>' for r in ORDER)
-    blk = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="s4-head"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
+    blk = (f'<section class="s4-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
            f'<span class="ip-note">{counts(FT)}</span></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-tip">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s21-table">{CAPTION}'

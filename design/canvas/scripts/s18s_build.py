@@ -97,7 +97,7 @@ LEG_NOTR = re.sub(r'<span><i class="ip-rec ip-rec--transfer"></i>transfer <span 
 assert LEG_NOTR != T.LEG and 'transfer' not in LEG_NOTR
 def scene_track(sc):
     svgs = ''.join(scene_svg(w, sc) for w in T.TWS)
-    return (f'<section class="s4-block" aria-labelledby="h-track"><div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>'
+    return (f'<section class="s4-block" aria-labelledby="h-track"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>'
             f'<span class="ip-note">{sc["sub"]}</span></div>'
             f'<div class="s4-tight"><div class="s18-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{sc.get("leg", LEG_NOTR)}</div></div></section>')
 
@@ -153,7 +153,7 @@ assert gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată 
 assert gro('seria-2025', lamp('off', 'închisă'), f'an {num(2025)} · doar citire · ultimul ciclu încheiat {num(dd(cP["end_date"]))}', acts('seria-2025')) == T.grow('seria-2025')
 def stable(groups, notes, count):
     body = ''.join(f'<tbody>{g}</tbody>' for g in groups)
-    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
+    return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{count}</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
             f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{T.DCOLS}{body}</table></div>'
@@ -195,7 +195,7 @@ def sidebar(when='today'):
     return sb
 def page(track, table, pressed=False, inert=False, when='today'):
     i = ' inert="inert"' if inert else ''
-    return f'<div class="s4-shell"{i}>{sidebar(when)}<main class="s4-main">\n{T.header(pressed)}\n{track}\n{table}\n</main></div>'
+    return f'<div class="ip-shell"{i}>{sidebar(when)}<main class="ip-shell__main">\n{T.header(pressed)}\n{track}\n{table}\n</main></div>'
 assert page(T.track(), T.table()) == T.page()
 
 # ================================================================= loading / load error / no access
@@ -203,13 +203,13 @@ def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
 SK_G = f'<tr class="is-group ip-table__skel"><th scope="rowgroup" colspan="5">{skel("w2")}</th><td colspan="2">{skel("w3")}</td></tr>'
 SK_R = '<tr class="ip-table__skel">' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', 'w2', 'w3')) + '</tr>'
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă seriile și ciclurile lor pe ferme.</p>'
-           f'<section class="s4-block" aria-labelledby="h-track" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
+           f'<section class="s4-block" aria-labelledby="h-track" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
            f'<div class="s4-tight">{SKL.track()}{SKL.legend()}</div></section>\n'  # fix 1: + the legend line, as loaded
-           f'<section class="s4-block" aria-labelledby="h-ser" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
+           f'<section class="s4-block" aria-labelledby="h-ser" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s18-table">{T.DCOLS}'
            f'<tbody>{SK_G}{SK_R}{SK_R}</tbody><tbody>{SK_G}{SK_R}{SK_R}</tbody></table></div></section>')
 FAULT = f'<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Q.Z.FAULT}</svg>'
-LOADERR = (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
+LOADERR = (f'<section class="s4-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{FAULT}'
            f'<div class="ip-banner__body"><p class="s4s-m0">Seriile și ciclurile lor pe ferme nu s-au încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți crea o serie nouă și acum.</p></div>'
@@ -219,7 +219,7 @@ def noaccess():
     box = s4.empty_box('fără acces', ['Nu ai acces la Serii.',
                                       'Seriile le creează și le închide proprietarul. Rolul tău, Observator, vede paginile seriilor și ale fermelor, și rapoartele.'],
                        step, 'Acces')
-    return f'<div class="s4-shell">{Q.sidebar_viewer()}<main class="s4-main">\n<header class="ip-pagehead"><div><h1>Serii</h1></div></header>\n{box}\n</main></div>'
+    return f'<div class="ip-shell">{Q.sidebar_viewer()}<main class="ip-shell__main">\n<header class="ip-pagehead"><div><h1>Serii</h1></div></header>\n{box}\n</main></div>'
 
 # ================================================================= Serie nouă form states
 s4.IC.setdefault('chevup', '<path d="m18 15-6-6-6 6"/>')   # Lucide chevron-up (open SectionSelect, as S9)
@@ -268,7 +268,7 @@ def rows_err():
 def form_errors():
     return [name_err(), year_err(YEAR26), T.farm_field(TODAY, False), date_err(TODAY + dt.timedelta(days=1)), rows_err(), T.effect('empty', TODAY)]
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="sn-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="s13-m0">{NAME26} nu s-a creat: conexiunea s-a întrerupt. Ce ai scris rămâne aici; verifică internetul, apoi reîncearcă.</p>'
+            f'<p class="ip-m0">{NAME26} nu s-a creat: conexiunea s-a întrerupt. Ce ai scris rămâne aici; verifică internetul, apoi reîncearcă.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus">Reîncearcă</button></div>')
 def with_banner(parts, banner):
     """S9P: the fault Banner sits right above the EffectPreview (the last part)."""
@@ -309,7 +309,7 @@ def rows_picking():
 
 # ================================================================= CSS (screen only, tokens only)
 CSS18S = '''
-.s13-panel > .ip-sidepanel__body{position:relative} /* fix 1: hidden text in the panel body is placed inside it, so the board stays 1024 */'''
+.ip-sidepanel--dock > .ip-sidepanel__body{position:relative} /* fix 1: hidden text in the panel body is placed inside it, so the board stays 1024 */'''
 CSS_D = T.CSS_DESK + CSS18S
 CSS_SH = T.CSS_SH + SC.MODAL
 
@@ -375,7 +375,7 @@ SH = T.sheet(body, REPLAY, PKEY).replace('<aside class="ip-sidepanel ip-sidepane
                                           '<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t" inert="inert">', 1)
 assert 'inert="inert"' in SH and 'autofocus' not in SH   # focus is in the section sheet
 phone('--telefon-alege-sectiunea', f'Serie nouă · telefon · alege secțiunea · reluare {dd(REPLAY)}',
-      f'<div class="s18-screen s9-modal">{SH}{sheet_select("p2", ("H1", "H2"))}</div>', 844)
+      f'<div class="s18-screen ip-scrimhost">{SH}{sheet_select("p2", ("H1", "H2"))}</div>', 844)
 
 S18_OUT = json.loads(pathlib.Path('/tmp/s18/boards.json').read_text())
 assert [b['stem'] for b in S18_OUT] == [STEM, STEM + '--serie-noua', STEM + '--telefon', STEM + '--telefon-serie-noua', STEM + '--telefon-refuzat']

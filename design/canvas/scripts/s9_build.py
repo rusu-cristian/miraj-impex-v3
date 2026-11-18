@@ -204,10 +204,10 @@ def screen(parts, save, overlay='', head=None, view='', sheet=''):
     ine = ' inert' if sheet else ''
     h = head or HEAD
     if sheet: h = h.replace('<header class="ip-formhead">', '<header class="ip-formhead" inert>', 1); save = save.replace('<div class="ip-savebar', '<div inert class="ip-savebar', 1)
-    return f'''<div class="s7-screen s7s-vp{" s9-modal" if sheet else ""}">
+    return f'''<div class="ip-screen s7s-vp{" ip-scrimhost" if sheet else ""}">
 {h}
 <div class="s7s-view{view}"{ine}>
-<main class="s7-main s13-main">
+<main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
 {overlay}
@@ -282,15 +282,15 @@ CSS = P.CSS + SC.MAIN + SC.REC + SC.EFFECT + SCSS
 
 # ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 16.11.2026 ----------
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data transferului din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">Hîrbovăț SAPT {DWK} · ciclu din {dd(HSTART)}</span></div>'''
-PANEL = f'''<aside class="ip-sidepanel s13-panel" id="tp" aria-labelledby="tp-t">
-<div class="ip-sidepanel__head"><div class="ip-row s13-phead"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true">{icon("transfer")}</span><div><h2 class="ip-t-heading s13-m0" id="tp-t">Transfer</h2><p class="ip-note ip-num s13-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Transfer">{icon("x")}</button></div>
+PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="tp" aria-labelledby="tp-t">
+<div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true">{icon("transfer")}</span><div><h2 class="ip-t-heading ip-m0" id="tp-t">Transfer</h2><p class="ip-note ip-num ip-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Transfer">{icon("x")}</button></div>
 <div class="ip-sidepanel__body s13-pbody">
 {DDATE}
 {pick('empty', touch=False, date=DT)}
 {dest('empty', touch=False)}
 {effect('empty')}
 </div>
-<div class="ip-sidepanel__foot"><span class="ip-note" id="tp-why">Alege secțiunea din care muți</span><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="tp-why">Mută</button></div></div>
+<div class="ip-sidepanel__foot"><span class="ip-note" id="tp-why">Alege secțiunea din care muți</span><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="tp-why">Mută</button></div></div>
 </aside>'''
 PANEL = re.sub(r'((?:id|for|aria-describedby|aria-labelledby|aria-controls|aria-activedescendant)="[^"]*")', lambda m: re.sub(r'\b(sl|sc|sm|so|a|f|m|all|t|fx)-', r'p\1-', m.group(1)), PANEL)
 DH = SC.SIDE_H
@@ -300,7 +300,7 @@ KEY = f'<button type="button" class="ip-btn ip-btn--secondary">{s4.icon("transfe
 SPG = s4.shell(s4.main_page(panel=s4.panel_default())); assert SPG.count(KEY) == 1
 SPG = SPG.replace(KEY, KEY.replace('ip-btn--secondary"', 'ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="tp"'))
 DESK = f'<div class="s13-vp">{SPG}</div>'
-CSS_D = s4.CSS + '\n' + s4.CSS_STATES + '\n' + s4.CSS_S4 + SC.SIDE + SC.M0 + '''
+CSS_D = s4.CSS + '\n' + s4.CSS_STATES + SC.SIDE + SC.M0 + '''
 .s13-vp .s4-cycle,.s13-vp .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.EFFECT + SCSS
 
 # ---------- write ----------

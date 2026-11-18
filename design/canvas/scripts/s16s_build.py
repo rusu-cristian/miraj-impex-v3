@@ -100,8 +100,8 @@ boards.append(('salvat', f'salvat · {dd(Q.AT_D)}, {Q.AT_T}', 'p', Q.screen(
 # 2 · eroare la salvare — online only (spec §1): the draft stays (D60), fault Banner + Reîncearcă right above the preview
 #   (S9P), Salvează corecția stays enabled; the whole body fits above the foot (no scroll)
 BAN = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body">'
-       f'<p class="s13-m0">Corecția nu s-a salvat: {SEC} · {num(dd(RDAY))} · {hen(f"{OLD}{NBS}→{NBS}{NEW}")}. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="s13-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div>'
+       f'<p class="ip-m0">Corecția nu s-a salvat: {SEC} · {num(dd(RDAY))} · {hen(f"{OLD}{NBS}→{NBS}{NEW}")}. Verifică conexiunea și apasă Reîncearcă.</p>'
+       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div>'
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')  # S16P: focus after a failed save
 boards.append(('eroare-la-salvare', 'eroare la salvare', 'p', Q.screen(
     sheet(Q.head(True), [Q.BY, Q.counts(n(NEW), '0', OLD, 0, True), Q.motiv(Q.REASON), BAN, Q.effect()], FOOT))))
@@ -113,7 +113,7 @@ FX = Q.effect(); REC = re.search(r'<span class="ip-rec [^"]*s13-rec">.*?</svg></
 SKFX = (f'<div class="ip-effect s13-effect" aria-hidden="true">{REC}<div class="s9-fxbody">{SKL.line("ip-skel--w3", cls="ip-cap")}'
         f'{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2", cls="s9-fxsub")}</div></div>')
 # S16P: the status line is visible (in place of the "Introdus de …" line) and gives the disabled keys their reason
-SKEL = (f'<p class="ip-note s13-m0" role="status" id="ld">Se încarcă rândul din {num(dd(RDAY))} · Șterge și Salvează corecția se activează după încărcare.</p>'
+SKEL = (f'<p class="ip-note ip-m0" role="status" id="ld">Se încarcă rândul din {num(dd(RDAY))} · Șterge și Salvează corecția se activează după încărcare.</p>'
         f'<div class="s16-pair" aria-hidden="true">{SKL.field("count", 1)}{SKL.field("count", 1)}</div>{SKL.field("area", 2)}{SKFX}')
 KEYS_OFF = ('<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch" disabled aria-describedby="ld">Șterge</button>'
             '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="ld">Salvează corecția</button>')
@@ -129,7 +129,7 @@ def ro_field(i, sx, v):
             f'<span class="ip-input ip-count ip-count--{c} is-readonly"><input id="{i}" inputmode="numeric" value="{v}" readonly="readonly" aria-describedby="vb-why"/></span></div>')
 LOCK = (f'<p class="ip-note s16s-lock" id="vb-why"><span class="ip-tag ip-tag--neutral">blocat</span>'
         f'<span>zi trecută · o corectează managerul</span></p>')
-VB_NOTE = (f'<p class="s13-m0">Poți modifica sau șterge ce ai introdus doar în aceeași zi, până la {num("23:59")}. '
+VB_NOTE = (f'<p class="ip-m0">Poți modifica sau șterge ce ai introdus doar în aceeași zi, până la {num("23:59")}. '
            f'Pentru o corecție, spune-i managerului; el o salvează cu motiv.</p>')
 boards.append(('vet-blocat', 'vet · zi trecută · blocat', 'p', Q.screen(sheet(ro_head(), [
     f'<div>{Q.BY}{LOCK}</div>', f'<div class="s16-pair">{ro_field("cf-f", "F", OLD)}{ro_field("cf-m", "M", 0)}</div>', VB_NOTE],
@@ -141,10 +141,10 @@ def cmark(kind, cls, text):  # SYS06 cycle mark (as s9_build): record bar (if it
     return f'<span class="ip-cmark ip-cmark--{kind}{(" " + cls) if cls else ""}"><span class="ip-cmark__g" aria-hidden="true">{bar}<i class="ip-cmark__blk"></i></span>{text}</span>'
 XTILE = f'<span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true">{icon("transfer")}</span>'
 XTITLE = 'Corectează Transfer H2 → H4.2'
-XHEAD = (f'<div class="ip-sidepanel__head"><div class="ip-row s13-phead">{XTILE}<div><h2 class="ip-t-heading s13-m0" id="cp-t">{XTITLE}</h2>'
-         f'<p class="ip-note ip-num s13-m0">{"Telița → Hîrbovăț".upper()} · {dd(XDAY)}</p></div></div>'
+XHEAD = (f'<div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title">{XTILE}<div><h2 class="ip-t-heading ip-m0" id="cp-t">{XTITLE}</h2>'
+         f'<p class="ip-note ip-num ip-m0">{"Telița → Hîrbovăț".upper()} · {dd(XDAY)}</p></div></div>'
          f'<button type="button" class="ip-iconbtn ip-iconbtn--touch" aria-label="Închide Corectează">{icon("x")}</button></div>')
-XBY = (f'<p class="ip-note s13-m0">Importat din registru · {num(f"SAPT {TWK}")} la Telița · {num(f"SAPT {HWK}")} la Hîrbovăț</p>')
+XBY = (f'<p class="ip-note ip-m0">Importat din registru · {num(f"SAPT {TWK}")} la Telița · {num(f"SAPT {HWK}")} la Hîrbovăț</p>')
 def xfld(i, sx, v, saved):
     c, s, w = ('hen', '♀', 'găini') if sx == 'F' else ('rooster', '♂', 'cocoși')
     return (f'<div class="ip-field"><label class="ip-label" for="{i}">Mutate <span class="ip-sex ip-sex--{c}" aria-hidden="true">{s}</span><span class="ip-sr">{w}</span></label>'
@@ -168,9 +168,9 @@ boards.append(('ciclu-transfer', 'transfer · ciclul Telița rămâne deschis ·
 DSAVE_OFF = lambda why: f'<button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="{why}">Salvează corecția</button>'
 def dpanel(body, save, inert=False):
     ine = ' inert="inert" aria-hidden="true"' if inert else ''
-    return (f'<aside class="ip-sidepanel s13-panel" id="cp" aria-labelledby="cp-t"{ine}>\n{Q.head(False)}\n<div class="ip-sidepanel__body s13-pbody">\n'
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t"{ine}>\n{Q.head(False)}\n<div class="ip-sidepanel__body s13-pbody">\n'
             + '\n'.join(body) + '\n</div>\n<div class="ip-sidepanel__foot"><button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Șterge</button>'
-            f'<div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{save}</div></div>\n</aside>')
+            f'<div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{save}</div></div>\n</aside>')
 assert dpanel([BYMOD, Q.counts(n(NEW), '0', NEW, 0, False), Q.motiv(touch=False), Q.effect('empty')], Q.DSAVE).replace('\n', '') \
     == Q.panel(False).replace('\n', '')  # the S16 desktop panel (without its open focus), rebuilt from the same pieces
 def deffect(x):
@@ -194,7 +194,7 @@ def dcounts_refuz():  # the phone message names 14.11 and 4 124; on 16.11 the li
 # fix 1: the days with the first low figure as one range (14–15.11.2026: −6), then today (−8)
 DRUN = [d for d in DLOWN if DLOW[d] == DLOW[DLOWN[0]] and d != DDAY]; assert DRUN == ['2026-11-14', '2026-11-15'] and DLOW[DDAY] == -8
 DSPAN = dd(DRUN[0])[:5] + '–' + dd(DRUN[-1]) if len(DRUN) > 1 else dd(DRUN[0])
-DREFUZ = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s13-m0">'
+DREFUZ = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="ip-m0">'
           f'Corecția ar lăsa {SEC} cu {hen_v(n(DLOW[DLOWN[0]]))} găini pe {num(DSPAN)} și cu {hen_v(n(min(DLOW.values())))} azi, {num(dd(DDAY))}. '
           f'Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
 DESK_I = Q.DESK.replace('<div class="s13-vp s16-vp">', '<div class="s13-vp s16-vp" inert="inert" aria-hidden="true">', 1)
@@ -214,8 +214,8 @@ DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alert
        f'<div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button>'
        f'<button type="button" class="ip-btn ip-btn--destructive"{DKEY}>Șterge</button></div></div></div>')
 boards.append(('desktop-sterge-confirmare', 'desktop · Șterge · confirmare · exemplu de stare (D39)', 'd',
-               DESK_I + Q.panel(False).replace('<aside class="ip-sidepanel s13-panel" id="cp" aria-labelledby="cp-t">',
-                                        '<aside class="ip-sidepanel s13-panel" id="cp" aria-labelledby="cp-t" inert="inert" aria-hidden="true">', 1) + DLG))
+               DESK_I + Q.panel(False).replace('<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t">',
+                                        '<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t" inert="inert" aria-hidden="true">', 1) + DLG))
 
 # după ștergere — the panel closes; the page is S4 · Păsări generated again (s4s/s4t, method A, S16P fix 1) with the
 # H4.1 ♀ 14.11.2026 record removed in memory (s4s_build DROP): its 5 deaths go back to the birds alive from 14.11, so the
@@ -235,7 +235,7 @@ _key = re.search(r'<a class="ip-btn ip-btn--ghost" href="#corecteaza-ev\d+">Core
 assert _key and PGD.count(_key.group(0)) == 1
 PGD = PGD.replace(_key.group(0), _key.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost ip-focus"'))
 DSCROLL = HS.get('S16-corecteaza--desktop-dupa-stergere@scroll', 0)
-if DSCROLL: PGD = PGD.replace('<main class="s4-main">', f'<main class="s4-main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
+if DSCROLL: PGD = PGD.replace('<main class="ip-shell__main">', f'<main class="ip-shell__main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
 T_DEL = f'Șters · Mortalitate {SEC} · {num(dd(RDAY))} · în viață azi ♀ {num(n(DDEL[DDAY]))}'
 boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu de stare (D39)', 'd',
                f'<div class="s13-vp s16s-vp--full">{PGD}</div>' + toast(T_DEL, desk=True)))

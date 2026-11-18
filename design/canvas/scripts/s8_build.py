@@ -178,10 +178,10 @@ def status(c, w):
     return lamp('ok' if ok else 'warn', 'în normă' if ok else 'abatere') + f'<span><span class="ip-num">{pct(d)}</span> față de ghid</span>'
 
 def screen(parts, save, overlay='', c=HB):
-    return f'''<div class="s7-screen s8-screen">
+    return f'''<div class="ip-screen s8-screen">
 {head(c)}
 <div class="s7s-view">
-<main class="s7-main{" s8-main--toast" if overlay else ""}">
+<main class="ip-screen__main{" s8-main--toast" if overlay else ""}">
 {"".join(parts)}
 </main>
 {overlay}

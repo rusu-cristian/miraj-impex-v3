@@ -13,25 +13,16 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>body{margin:0}
-.s4-shell{display:flex;align-items:stretch}
-.s4-side{flex:none;min-height:0}
 .s4-grow{flex:1}
-.s4-account{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2);border-top:var(--ip-hair) solid var(--line)}
-.s4-account b{color:var(--ink);font-weight:500}
-.s4-account .ip-link{display:inline-flex;align-items:center;justify-content:flex-end;min-width:var(--space-6);min-height:var(--space-6)} /* S3 fix 1: desktop text link keeps a ≥24px target (D46) */
-.s4-main{flex:1;min-width:0;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
-.s4-meta{gap:var(--space-2) var(--space-3)}
 .s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
 .s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 .s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
-.s4-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
-.s4-head h2{margin:0}
 .s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
 .s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
 .s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
@@ -48,11 +39,7 @@
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
-.s4s-rel > .s4-shell{min-height:inherit}
-.s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
-.s4s-empty-p{margin:0;color:var(--ink)}
-.s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
-.ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
+.s4s-rel > .ip-shell{min-height:inherit}
 .s4s-sktile{gap:var(--space-2)}
 .s4s-sktotals{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
 .s4s-skrow{gap:var(--space-3);align-items:center}
@@ -67,7 +54,6 @@
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}
-.s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-hen{color:var(--rec-hen)}
@@ -84,11 +70,7 @@
 .s14-page{display:flex;flex-direction:column;gap:var(--space-6)}
 .s14-nw{white-space:nowrap} /* S14P fix 2: a figure and its lamp stay on one line */
 .s13-vp{position:relative;height:1024px;overflow:hidden;margin-right:var(--panel-w)}
-.s13-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w)}
-.s13-phead{gap:var(--space-2);flex-wrap:nowrap}
 .s13-pbody{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
-.s13-pkeys{gap:var(--space-2);flex-wrap:nowrap}
-.s13-m0{margin:0}
 .s13-rec{color:var(--c);display:inline-flex;flex:none}
 .s13-effect{align-items:flex-start}
 .s13-effect > .s13-rec{margin-top:var(--ip-hair)}
@@ -128,7 +110,7 @@
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-ways .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)}
-.s18-vp > .s4-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
+.s18-vp > .ip-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
 .s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */
 .s4s-m0{margin:0}
 .s18-foot{justify-content:flex-end}
@@ -177,23 +159,23 @@ h1[tabindex="-1"]{margin-block:calc((var(--ip-focus-w) + var(--ip-focus-offset))
 .s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */
 .s20-clip{position:relative;height:1024px;overflow:hidden}</style>
 </helmet>
-<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
+<div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="ip-shell"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
 <div class="ip-select ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-select__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl"><span class="ip-select__val"><b>Seria 2026</b></span><span class="ip-lamp ip-lamp--ok">deschisă</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
 <ul class="ip-menu ip-select__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2026" aria-selected="true"><span class="ip-select__chk" aria-hidden="true"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026</b><span class="ip-lamp ip-lamp--ok">deschisă</span></span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2025" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025</b><span class="ip-lamp ip-lamp--off">închisă</span></span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
 <a class="ip-nav" href="#acasa"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>Acasă</a><a class="ip-nav" href="#inregistreaza"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Înregistrează</a><a class="ip-nav" href="#serie"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>Serie</a><a class="ip-nav" href="#rapoarte"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Rapoarte</a><a class="ip-nav" href="#setari"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 18h4"/><path d="M12 18h8"/><circle cx="10" cy="18" r="2"/></svg>Setări</a><a class="ip-nav ip-nav--sub" href="#serii">Serii</a><a class="ip-nav ip-nav--sub" href="#ferme">Ferme și secțiuni</a><a class="ip-nav ip-nav--sub is-current" href="#ghiduri" aria-current="page">Ghiduri</a><a class="ip-nav ip-nav--sub" href="#tipuri-hrana">Tipuri de hrană</a><a class="ip-nav ip-nav--sub" href="#utilizatori">Utilizatori</a><a class="ip-nav ip-nav--sub" href="#istoric-modificari">Istoric modificări</a>
 <span class="s4-grow"></span>
-<div class="ip-note s4-account"><b>Proprietar</b><a class="ip-link" href="#iesi">Ieși</a></div>
-</nav><main class="s4-main">
+<div class="ip-note ip-sidebar__account"><b>Proprietar</b><a class="ip-link" href="#iesi">Ieși</a></div>
+</nav><main class="ip-shell__main">
 <header class="ip-pagehead">
 <div>
 <nav class="ip-crumbs" aria-label="Cale"><a href="#setari">Setări</a><span aria-hidden="true">›</span><a href="#ghiduri">Ghiduri</a><span aria-hidden="true">›</span><a href="#ghid-ross-308-crestere">Ross 308 creștere</a><span aria-hidden="true">›</span><span aria-current="page">Înlocuiește</span></nav>
 <h1>Înlocuiește Ross 308 creștere</h1>
-<div class="ip-row s4-meta"><span class="ip-note">Creștere · SAPT 1–25 · 50 de rânduri, câte unul pe săptămână și sex</span></div>
+<div class="ip-row ip-pagehead__meta"><span class="ip-note">Creștere · SAPT 1–25 · 50 de rânduri, câte unul pe săptămână și sex</span></div>
 </div>
 </header>
-<div class="s20-col"><section class="s4-block" aria-labelledby="h-in"><div class="s4-head"><h2 class="ip-t-heading" id="h-in">Ghid</h2></div><div class="s20-fields"><div class="ip-field"><label class="ip-label" for="gi-name">Nume</label><span class="ip-input"><input id="gi-name" type="text" autocomplete="off" value="Ross 308 creștere"/></span></div><div class="ip-field"><label class="ip-label" for="gi-tip">Tip</label><span class="ip-input is-readonly"><input id="gi-tip" type="text" readonly="readonly" value="Creștere" aria-describedby="gi-tip-h"/></span><span class="ip-hint" id="gi-tip-h">Tipul rămâne creștere: ghidul e folosit de Telița.</span></div></div></section>
-<section class="s4-block" aria-labelledby="h-tab"><div class="s4-head"><h2 class="ip-t-heading" id="h-tab">Tabelul ghidului</h2></div><p class="ip-note s4s-m0">Rândurile citite înlocuiesc toate cele 50 de rânduri de acum ale ghidului. Se compară apoi cu ele: Telița · Seria 2026.</p><section class="ip-gimp" aria-label="Import ghid"><div class="ip-gimp__src"><span class="ip-gimp__file"><b>Ross 308 creștere.csv</b><span class="ip-note">fișier .csv · tip creștere</span></span><p class="ip-gimp__counts" id="gi-sum"><span class="ip-num">0</span> rânduri citite · <span class="ip-num">0</span> valide</p></div><div class="ip-gimp__box"><div class="ip-empty"><span class="ip-lamp ip-lamp--off">fără date</span><span>Ross 308 creștere.csv are doar antetul, niciun rând de ghid.</span><button type="button" class="ip-btn ip-btn--secondary">Alege alt fișier</button></div></div><div class="ip-gimp__foot"><button type="button" class="ip-btn ip-btn--primary is-disabled" aria-disabled="true" aria-describedby="gi-foot">Salvează ghidul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button><p class="ip-note" id="gi-foot">Scrie rândurile ghidului sub antet sau alege alt fișier.</p></div><p class="ip-sr" role="status" aria-live="polite">Fișier citit: niciun rând.</p></section></section></div>
+<div class="s20-col"><section class="s4-block" aria-labelledby="h-in"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-in">Ghid</h2></div><div class="s20-fields"><div class="ip-field"><label class="ip-label" for="gi-name">Nume</label><span class="ip-input"><input id="gi-name" type="text" autocomplete="off" value="Ross 308 creștere"/></span></div><div class="ip-field"><label class="ip-label" for="gi-tip">Tip</label><span class="ip-input is-readonly"><input id="gi-tip" type="text" readonly="readonly" value="Creștere" aria-describedby="gi-tip-h"/></span><span class="ip-hint" id="gi-tip-h">Tipul rămâne creștere: ghidul e folosit de Telița.</span></div></div></section>
+<section class="s4-block" aria-labelledby="h-tab"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tab">Tabelul ghidului</h2></div><p class="ip-note s4s-m0">Rândurile citite înlocuiesc toate cele 50 de rânduri de acum ale ghidului. Se compară apoi cu ele: Telița · Seria 2026.</p><section class="ip-gimp" aria-label="Import ghid"><div class="ip-gimp__src"><span class="ip-gimp__file"><b>Ross 308 creștere.csv</b><span class="ip-note">fișier .csv · tip creștere</span></span><p class="ip-gimp__counts" id="gi-sum"><span class="ip-num">0</span> rânduri citite · <span class="ip-num">0</span> valide</p></div><div class="ip-gimp__box"><div class="ip-empty"><span class="ip-lamp ip-lamp--off">fără date</span><span>Ross 308 creștere.csv are doar antetul, niciun rând de ghid.</span><button type="button" class="ip-btn ip-btn--secondary">Alege alt fișier</button></div></div><div class="ip-gimp__foot"><button type="button" class="ip-btn ip-btn--primary is-disabled" aria-disabled="true" aria-describedby="gi-foot">Salvează ghidul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button><p class="ip-note" id="gi-foot">Scrie rândurile ghidului sub antet sau alege alt fișier.</p></div><p class="ip-sr" role="status" aria-live="polite">Fișier citit: niciun rând.</p></section></section></div>
 </main></div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>

@@ -140,10 +140,10 @@ def idx(sec, sx): return next(i for i, r in enumerate(ROWS) if r['section'] == s
 
 def screen(main_parts, save, view_cls='', scroll=0, overlay=''):
     style = f' style="margin-top:calc(-1 * {scroll}px)"' if scroll else ''
-    return f'''<div class="s7-screen s7s-vp">
+    return f'''<div class="ip-screen s7s-vp">
 {B.HEAD}
 <div class="s7s-view{(" " + view_cls) if view_cls else ""}">
-<main class="s7-main"{style}>
+<main class="ip-screen__main"{style}>
 {"".join(main_parts)}
 </main>
 {overlay}
@@ -219,7 +219,7 @@ sk = f'''<p class="ip-sr" role="status">Se încarcă rândurile pentru <span cla
 <div class="s7-copy" aria-hidden="true">{skel("45%", "var(--control-h-touch)")}{skel("55%", SK16)}</div>
 <div class="ip-halls">{skhall * 2}</div>
 </div>'''
-sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv7)))
 
 CSS = B.CSS + SC.VIEW + SC.BANNER

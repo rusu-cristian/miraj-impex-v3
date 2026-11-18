@@ -164,13 +164,13 @@ def sidebar(role='Proprietar', viewer=False, series='2026'):
     if not viewer: nav += f'<a class="ip-nav" href="#inregistreaza">{icon("plus")}Înregistrează</a>'
     nav += f'<a class="ip-nav is-current" href="#serie" aria-current="page">{icon("layers")}Serie</a><a class="ip-nav" href="#rapoarte">{icon("chart")}Rapoarte</a>'
     if not viewer: nav += f'<a class="ip-nav" href="#setari">{icon("settings")}Setări</a>'
-    return f'''<nav class="ip-sidebar s4-side" aria-label="Navigare">
+    return f'''<nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
 <div class="ip-select ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-select__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl">{cur}{icon('chev', 16)}</div>
 <ul class="ip-menu ip-select__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2026" aria-selected="{'true' if s26 else 'false'}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if s26 else ''}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026</b>{lamp('ok', 'deschisă')}</span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2025" aria-selected="{'false' if s26 else 'true'}"><span class="ip-select__chk" aria-hidden="true">{'' if s26 else icon('check', 16)}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025</b>{lamp('off', 'închisă')}</span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
 {nav}
 <span class="s4-grow"></span>
-<div class="ip-note s4-account"><b>{role}</b><a class="ip-link" href="#iesi">Ieși</a></div>
+<div class="ip-note ip-sidebar__account"><b>{role}</b><a class="ip-link" href="#iesi">Ieși</a></div>
 </nav>'''
 
 # ---------- page header ----------
@@ -189,7 +189,7 @@ def header(mode='default'):
 <div>
 {crumbs('2025')}
 <h1>Hîrbovăț</h1>
-<div class="ip-row s4-meta">{meta}</div>
+<div class="ip-row ip-pagehead__meta">{meta}</div>
 </div>
 <div class="ip-row">
 {acts}
@@ -208,7 +208,7 @@ def header(mode='default'):
 <div>
 {CRUMBS}
 <h1>Hîrbovăț</h1>
-<div class="ip-row s4-meta">{meta}</div>
+<div class="ip-row ip-pagehead__meta">{meta}</div>
 </div>
 <div class="ip-row">
 {acts}
@@ -508,10 +508,10 @@ def panel_default(ng=False, banner=''):
     al = alerts(ng)
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 {banner}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
-<section class="s4-block" aria-labelledby="h-sec"><div class="s4-head"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">6 secțiuni · 3 hale · 16.11.2026</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
+<section class="s4-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">6 secțiuni · 3 hale · 16.11.2026</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
 <div class="s4-split">
-<section class="s4-block" aria-labelledby="h-chk"><div class="s4-head"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><div class="ip-list">{"".join(al)}</div></section>
-<section class="s4-block" aria-labelledby="h-log"><div class="s4-head"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events)}</div></section>
+<section class="s4-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><div class="ip-list">{"".join(al)}</div></section>
+<section class="s4-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events)}</div></section>
 </div>
 </div>'''
 
@@ -528,16 +528,16 @@ def panel_loading():
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă rezumatul Hîrbovăț pentru ciclul curent.</p>
 <section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {CW} {CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
-<section class="s4-block" aria-hidden="true"><div class="s4-head"><h2 class="ip-t-heading">Secțiuni</h2></div><div class="s4-halls">{hall * 3}</div><div class="s4s-sktotals">{sk("s4s-w100 s4s-h16")}{sk("s4s-w70")}{sk("s4s-w50")}</div></section>
+<section class="s4-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Secțiuni</h2></div><div class="s4-halls">{hall * 3}</div><div class="s4s-sktotals">{sk("s4s-w100 s4s-h16")}{sk("s4s-w70")}{sk("s4s-w50")}</div></section>
 <div class="s4-split" aria-hidden="true">
-<section class="s4-block"><div class="s4-head"><h2 class="ip-t-heading">De verificat</h2></div><div class="ip-list">{row * 4}</div></section>
-<section class="s4-block"><div class="s4-head"><h2 class="ip-t-heading">Ultimele înregistrări</h2></div><div class="ip-list">{row * 4}</div></section>
+<section class="s4-block"><div class="ip-sechead"><h2 class="ip-t-heading">De verificat</h2></div><div class="ip-list">{row * 4}</div></section>
+<section class="s4-block"><div class="ip-sechead"><h2 class="ip-t-heading">Ultimele înregistrări</h2></div><div class="ip-list">{row * 4}</div></section>
 </div>
 </div>'''
 
 def empty_box(word, lines, step, aria='Rezumat'):
-    body = ''.join(f'<p class="s4s-empty-p">{l}</p>' for l in lines)
-    return f'<div class="s4s-emptybox" role="region" aria-label="{aria}"><div class="ip-empty">{lamp("off", word)}{body}{step}</div></div>'
+    body = ''.join(f'<p class="ip-empty__line">{l}</p>' for l in lines)
+    return f'<div class="ip-emptybox" role="region" aria-label="{aria}"><div class="ip-empty">{lamp("off", word)}{body}{step}</div></div>'
 
 # ---------- 2. no data in the period ----------
 # check: no Seria 2026 record at Hîrbovăț in 01.11–15.11.2025 (cycle from 10.02.2026, arrivals 22–28.02.2026, sample from 01.03.2026)
@@ -557,7 +557,7 @@ BANNER_NG = f'<div class="ip-banner ip-banner--info ip-banner--act" role="note">
 # ---------- 4. no access ----------
 def main_noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
-    return f'''<main class="s4-main">
+    return f'''<main class="ip-shell__main">
 {header('noaccess')}
 {empty_box("fără acces", ["Nu ai acces la această fermă."], step, "Acces")}
 </main>'''
@@ -566,7 +566,7 @@ def main_noaccess():
 def main_empty():
     step = '<a class="ip-link" href="#ciclu-seria-2025">Vezi ultimul ciclu</a>'
     lines = [f'Ferma e goală din {ddate(PREV_END)}. Ultimul ciclu: Seria 2025, {PREV_WEEKS} săpt.', 'Ciclul pornește la prima populare sau transfer.']
-    return f'''<main class="s4-main">
+    return f'''<main class="ip-shell__main">
 {header('empty')}
 {cycle('empty')}
 {empty_box("goală", lines, step, "Rezumat")}
@@ -658,10 +658,10 @@ def panel_past():
     none = f'<div class="ip-list"><div class="ip-empty s4s-none">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></div></div>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 <section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori, Seria 2025</h2>{readout_past()}{stats_past()}</section>
-<section class="s4-block" aria-labelledby="h-sec"><div class="s4-head"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
+<section class="s4-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
 <div class="s4-split">
-<section class="s4-block" aria-labelledby="h-chk"><div class="s4-head"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
-<section class="s4-block" aria-labelledby="h-log"><div class="s4-head"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events_past())}</div><p class="ip-note s4s-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
+<section class="s4-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
+<section class="s4-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events_past())}</div><p class="ip-note s4s-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
 </div>
 </div>'''
 
@@ -677,7 +677,7 @@ DLG = f'''<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="aler
 
 def main_page(mode='default', panel=None, ng=False):
     fb = filterbar(mode if mode in ('period', 'past') else 'default')
-    return f'''<main class="s4-main">
+    return f'''<main class="ip-shell__main">
 {header('past' if mode == 'past' else 'noguide' if ng else 'default')}
 {cycle(mode if mode in ('menu', 'past') else 'default')}
 <div class="s4-tight">{fb}{tabs}</div>
@@ -685,25 +685,16 @@ def main_page(mode='default', panel=None, ng=False):
 </main>'''
 
 CSS = '''body{margin:0}
-.s4-shell{display:flex;align-items:stretch}
-.s4-side{flex:none;min-height:0}
 .s4-grow{flex:1}
-.s4-account{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2);border-top:var(--ip-hair) solid var(--line)}
-.s4-account b{color:var(--ink);font-weight:500}
-.s4-account .ip-link{display:inline-flex;align-items:center;justify-content:flex-end;min-width:var(--space-6);min-height:var(--space-6)} /* S3 fix 1: desktop text link keeps a ≥24px target (D46) */
-.s4-main{flex:1;min-width:0;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
-.s4-meta{gap:var(--space-2) var(--space-3)}
 .s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
 .s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 .s4-block{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
-.s4-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
-.s4-head h2{margin:0}
 .s4-halls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
 .s4-hall{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
 .s4-hallhead{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
@@ -720,15 +711,11 @@ CSS = '''body{margin:0}
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
-.s4s-rel > .s4-shell{min-height:inherit}'''
+.s4s-rel > .ip-shell{min-height:inherit}'''
 # S4 boards only (default, states, tabs): S3 and S11 reuse CSS/CSS_STATES and must stay byte-identical
-CSS_S4 = '''.s4-head > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap} /* S4TP: "Tot jurnalul" keeps a ≥24px target (D46), as the tab foot links */'''
+# FIN15: CSS_S4 (the S4TP section-head link rule) is now additions.css §56 `.ip-sechead > .ip-link`
 # state boards only
-CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
-.s4s-empty-p{margin:0;color:var(--ink)}
-.s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
-.ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-sktile{gap:var(--space-2)}
+CSS_STATES = '''.s4s-sktile{gap:var(--space-2)}
 .s4s-sktotals{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
 .s4s-skrow{gap:var(--space-3);align-items:center}
 .s4s-skmain{display:flex;flex-direction:column;gap:var(--space-2);flex:1}
@@ -748,7 +735,7 @@ SYS = ROOT / 'design/system'
 HEIGHTS = json.loads(pathlib.Path(__file__).with_name('s4s_heights.json').read_text()) if pathlib.Path(__file__).with_name('s4s_heights.json').exists() else {}
 def write(stem, title, body, overlay='', H=None, css=None, vp=None):
     H = H or HEIGHTS.get(stem, 1874)
-    css = css if css is not None else CSS + '\n' + CSS_STATES + '\n' + CSS_S4
+    css = css if css is not None else CSS + '\n' + CSS_STATES
     vps = f'; --board-vp-h:{vp}px' if vp else ''  # FIN04 fix 1: a tall board's Dialog centres in its first viewport (additions.css §50)
     root = f'<div class="ip-root s4s-rel" style="padding:0; min-height:{H}px{vps}">{body}{overlay}</div>'
     dc = f'''<!doctype html>
@@ -787,7 +774,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 def shell(main, viewer=False, inert=False, series='2026'):
     sb = sidebar('Observator', viewer=True) if viewer else sidebar(series=series)
     inner = f'{sb}{main}'
-    return f'<div class="s4-shell"{" inert=\"inert\" aria-hidden=\"true\"" if inert else ""}>{inner}</div>'
+    return f'<div class="ip-shell"{" inert=\"inert\" aria-hidden=\"true\"" if inert else ""}>{inner}</div>'
 
 B = 'S4-ferma-rezumat--'
 BOARDS = [

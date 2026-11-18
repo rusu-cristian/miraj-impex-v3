@@ -49,10 +49,10 @@ assert B2['avg_daily_kg_last3'] == 3976
 def pscreen(parts, vet=True, overlay='', modal=False, end=False, key_off=None):
     """end: the viewport shows the foot of the page (scrolled to the bottom, as S6S "salvat"; sstate_css .s7s-view--end).
     key_off: id of the reason; the tab bar's Înregistrează key is aria-disabled with it (as the EntryKeys on that board)."""
-    inner = f'<div class="s7s-view{" s7s-view--end" if end else ""}"><main class="s7-main s2-main">\n{"".join(parts)}\n</main></div>\n{A.tabbar(vet, key_off)}'
+    inner = f'<div class="s7s-view{" s7s-view--end" if end else ""}"><main class="ip-screen__main s2-main">\n{"".join(parts)}\n</main></div>\n{A.tabbar(vet, key_off)}'
     if modal:  # the page under the Dialog is inert; the scrim covers the whole screen, tab bar included
         inner = f'<div class="s2s-under" inert="inert" aria-hidden="true">{inner}</div>'
-    return f'<div class="s7-screen s7s-vp s2-phone{" s9-modal" if modal else ""}">\n{inner}\n{overlay}\n</div>'
+    return f'<div class="ip-screen s7s-vp{" ip-scrimhost" if modal else ""}">\n{inner}\n{overlay}\n</div>'
 PH = lambda ctx: A.pagehead(ctx, True)
 
 def skrow(): return ('<div class="ip-ev ip-ev--skel" aria-hidden="true"><span class="ip-skel ip-skel--tile"></span><span class="ip-ev__main">'
@@ -115,7 +115,7 @@ boards.append(('ferma-goala', 'vet · fermă goală (Telița) · exemplu de star
 
 # 7 · vet · fără acces — no farm assigned: one EmptyState, no blocks (they all act on a farm)
 box = s4.empty_box('fără acces', ['Nu ai acces la nicio fermă.', 'Cere proprietarului să te adauge la ferma la care lucrezi.'], '', 'Acces')
-box = box.replace('<p class="s4s-empty-p">Nu ai acces', '<p class="s4s-empty-p" id="fa-n">Nu ai acces', 1); assert 'id="fa-n"' in box
+box = box.replace('<p class="ip-empty__line">Nu ai acces', '<p class="ip-empty__line" id="fa-n">Nu ai acces', 1); assert 'id="fa-n"' in box
 boards.append(('fara-acces', 'vet · fără acces', 'p', pscreen([PH(D), box], key_off='fa-n')))  # the tab bar key reads the EmptyState reason
 
 # 8 · vet · eroare la încărcare — online only (spec §1): fault Banner naming what failed + Reîncearcă; keys stay
@@ -191,16 +191,15 @@ def v_sidebar():
     return sb
 V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(cap='Stoc hrană'), A.farms_block()]
 VIEWER_P = A.phone(V_PARTS(True), viewer=True)
-VIEWER_D = f'<div class="s4-shell">{v_sidebar()}<main class="s4-main">\n{"".join(V_PARTS(False))}\n</main></div>'
+VIEWER_D = f'<div class="ip-shell">{v_sidebar()}<main class="ip-shell__main">\n{"".join(V_PARTS(False))}\n</main></div>'
 for v in (VIEWER_P, VIEWER_D):
     assert not any(w in v for w in ('Înregistrează', 'Introdus azi', 'preț', 'lei', 'Completează', 'ip-entrykey', 'ip-unpriced', 'Dr. Ceban ·'))
 CSS_V = A.CSS_P + '''
-.s2-phone .ip-fsum__name a{display:inline-block;padding:var(--space-3) var(--space-1);margin:calc(-1 * var(--space-3)) calc(-1 * var(--space-1))} /* touch: 48px hit area, line unchanged */
-.s2-phone .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch)}'''
+.ip-screen .ip-fsum__name a{display:inline-block;padding:var(--space-3) var(--space-1);margin:calc(-1 * var(--space-3)) calc(-1 * var(--space-1))} /* touch: 48px hit area, line unchanged */
+.ip-screen .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch)}'''
 
 # ---------- CSS ----------
-EMPTY_CSS = '\n'.join(l for l in s4.CSS_STATES.splitlines() if l.startswith(('.s4s-emptybox', '.s4s-empty-p', '.ip-empty > .ip-btn')))
-CSS_PS = A.CSS_P + SC.VIEW + SC.BANNER + SC.MODAL + '\n' + EMPTY_CSS + '''
+CSS_PS = A.CSS_P + SC.VIEW + SC.BANNER + SC.MODAL + '''
 .s2s-under{display:flex;flex-direction:column;flex:1;min-height:0} /* the inert page under the Dialog keeps the screen's column */'''
 CSS_DS = A.CSS_D + '\n' + s4.CSS_STATES
 

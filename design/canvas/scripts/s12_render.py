@@ -10,7 +10,7 @@ async def main():
         for st in sys.argv[2:]:
             pg = await b.new_page(viewport={'width': 1440, 'height': 1024})
             await pg.goto(f'file:///tmp/s4s/{st}.html'); await pg.wait_for_timeout(1200)
-            mh = await pg.evaluate("Math.ceil(document.querySelector('.s4-main').lastElementChild.getBoundingClientRect().bottom + 24)")
+            mh = await pg.evaluate("Math.ceil(document.querySelector('.ip-shell__main').lastElementChild.getBoundingClientRect().bottom + 24)")
             tw = await pg.evaluate("[...document.querySelectorAll('.ip-table')].map(t=>Math.round(t.getBoundingClientRect().width)).concat([document.documentElement.scrollWidth])")
             print(st, 'main h', mh, 'widths', tw)
             hs[st] = max(mh, 1024)

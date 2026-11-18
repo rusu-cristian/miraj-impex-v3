@@ -10,9 +10,9 @@ async def main():
         for st in sys.argv[2:]:
             pg = await b.new_page(viewport={'width': 1440, 'height': 1000})
             await pg.goto(f'file:///tmp/s4s/{st}.html'); await pg.wait_for_timeout(1200)
-            mh = await pg.evaluate("Math.ceil(document.querySelector('.s4-main').lastElementChild.getBoundingClientRect().bottom + 24)")
+            mh = await pg.evaluate("Math.ceil(document.querySelector('.ip-shell__main').lastElementChild.getBoundingClientRect().bottom + 24)")
             clip = await pg.evaluate("""[...document.querySelectorAll('.ip-table *,.ip-pagehead *,.ip-readout *,.ip-filterbar *')].filter(e=>e.scrollWidth>e.clientWidth+1 && getComputedStyle(e).overflow!='visible').map(e=>e.className+':'+e.textContent.slice(0,40)).slice(0,8)""")
-            tw = await pg.evaluate("[...document.querySelectorAll('.ip-table')].map(t=>Math.round(t.getBoundingClientRect().width)).concat([document.querySelector('.s4-main').getBoundingClientRect().width, document.documentElement.scrollWidth])")
+            tw = await pg.evaluate("[...document.querySelectorAll('.ip-table')].map(t=>Math.round(t.getBoundingClientRect().width)).concat([document.querySelector('.ip-shell__main').getBoundingClientRect().width, document.documentElement.scrollWidth])")
             print(st, 'main h', mh, 'widths', tw, 'clip', clip)
             hs[st] = max(mh, 1024)
             n = ORDER.index(st); name = 'S11.png' if n == 0 else f'S11-{n}.png'

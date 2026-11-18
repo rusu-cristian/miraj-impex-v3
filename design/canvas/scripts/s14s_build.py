@@ -48,7 +48,7 @@ def page_viewer_export():
 # ================================================================= desktop · eroare la încărcare
 def head_bare():  # crumbs + title only: the cycle line comes with the report, which did not load
     h = X.header()
-    h2, k = re.subn(r'\n<div class="ip-row s4-meta">.*?</div>\n</div>', '\n</div>', h, count=1, flags=re.S); assert k == 1
+    h2, k = re.subn(r'\n<div class="ip-row ip-pagehead__meta">.*?</div>\n</div>', '\n</div>', h, count=1, flags=re.S); assert k == 1
     return h2
 FAULT = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'  # Banner fault icon (system preview, as S2S)
 def page_error():
@@ -57,7 +57,7 @@ def page_error():
            '<div class="ip-banner__body"><p class="s4s-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
            '<p class="s4s-m0">Verifică conexiunea la internet, apoi reîncearcă.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>')
-    return f'<div class="s4-shell">{X.sidebar()}<main class="s4-main">\n{head_bare()}\n{fb}\n<div class="s14-page">{ban}</div>\n</main></div>'
+    return f'<div class="ip-shell">{X.sidebar()}<main class="ip-shell__main">\n{head_bare()}\n{fb}\n<div class="s14-page">{ban}</div>\n</main></div>'
 
 # ================================================================= desktop · fără fermă de ouat (manager with Telița only), D39
 cT = A.cT
@@ -66,7 +66,7 @@ def page_nolay():
     lines = ['Producția (ouă, ouat, incubabile) se raportează pe fermele de ouat; ferma ta, Telița, e de creștere.',
              f'Ultimul ciclu la Telița: Seria 2026, creștere, {num(cT["weeks"])} săpt., încheiat pe {num(s4.ddate(cT["end_date"]))}. Consumul și stocul de hrană sunt în Rapoarte › Hrană.']
     step = '<a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana">Deschide raportul Hrană</a>'
-    return (f'<div class="s4-shell">{s11.sidebar("Manager")}<main class="s4-main">\n{head_bare()}\n'
+    return (f'<div class="ip-shell">{s11.sidebar("Manager")}<main class="ip-shell__main">\n{head_bare()}\n'
             f'<div class="s14-page">{s4.empty_box("fără ouat", lines, step, "Producție")}</div>\n</main></div>')
 
 # ================================================================= phone · default (owner, 16.11.2026)
@@ -100,7 +100,7 @@ def phone_page(sheet=False):
     body = body.replace('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"', 1)
     body = body.replace('class="ip-tabbar__item" href="#rapoarte"', 'class="ip-tabbar__item is-current" href="#rapoarte" aria-current="page"', 1)
     assert body.count('is-current') == 1 and 'href="#rapoarte" aria-current="page"' in body
-    return body.replace('<div class="s7-screen s2-phone">', '<div class="s7-screen s2-phone s14-phone">', 1)
+    return body.replace('<div class="ip-screen">', '<div class="ip-screen s14-phone">', 1)
 
 # ================================================================= phone · filters open (S14P): the system BottomSheet over the page
 X_ICON = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'  # Lucide x (as the S9P sheet's Închide)
@@ -126,8 +126,8 @@ def p_sheet():
             '</div></div>')
 def phone_sheet():  # 390×844: the page (scrolled to its top) and tab bar inert under the scrim, the sheet at the foot
     b = phone_page(sheet=True)
-    for a, z in (('<div class="s7-screen s2-phone s14-phone">', '<div class="s7-screen s2-phone s14-phone s7s-vp s9-modal">'),
-                 ('<main class="s7-main s2-main">', '<div class="s7s-view" inert="inert"><main class="s7-main s2-main">'),
+    for a, z in (('<div class="ip-screen s14-phone">', '<div class="ip-screen s14-phone s7s-vp ip-scrimhost">'),
+                 ('<main class="ip-screen__main s2-main">', '<div class="s7s-view" inert="inert"><main class="ip-screen__main s2-main">'),
                  ('</main>', '</main></div>'), ('<nav class="ip-tabbar', '<nav inert="inert" class="ip-tabbar')):
         assert b.count(a) == 1, a; b = b.replace(a, z)
     assert b.endswith('</div>')
@@ -137,10 +137,10 @@ CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
 .s14-phone .s4-top,.s14-phone .s4-stats{grid-template-columns:minmax(0,1fr)} /* phone: Readout, then the Stats one per line */
 .s14-phone .ip-table--rowheads tbody th .s4t-sub{display:block} /* the week's dates under SAPT: a narrower sticky column, more figures in view */
 .s14-phone .ip-table--rowheads thead th:first-child{white-space:normal}
-.s14-phone .s4-head{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
+.s14-phone .ip-sechead{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s14-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s14-phone .s4t-lk{min-height:var(--control-h-touch)} /* touch: 48px target */
-.s14-phead .s4-meta{margin-top:var(--space-2)}
+.s14-phead .ip-pagehead__meta{margin-top:var(--space-2)}
 .s14-pfilter{gap:var(--space-2) var(--space-3)}'''
 CSS_SHEET = CSS_PHONE + SS.VIEW + SS.MODAL + '''
 .s14-fsheet{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0} /* S14P: phone FilterBar sheet, as the section 33 sheet */

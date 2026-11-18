@@ -83,9 +83,9 @@ CTX = f'{"Hîrbovăț".upper()} · {dd(RDAY)} · SAPT {WK}'   # S16P: the Mono c
 assert CTX == 'HÎRBOVĂȚ · 14.11.2026 · SAPT 40'
 def head(touch):
     t = ' ip-iconbtn--touch' if touch else ''
-    return (f'<div class="ip-sidepanel__head"><div class="ip-row s13-phead">{TILE}<div><h2 class="ip-t-heading s13-m0" id="cp-t">{TITLE}</h2>'
-            f'<p class="ip-note ip-num s13-m0">{CTX}</p></div></div><button type="button" class="ip-iconbtn{t}" aria-label="Închide Corectează">{icon("x")}</button></div>')
-BY = f'<p class="ip-note s13-m0">Introdus de {ENTRY["user"]} · {num(dd(RDAY) + ", " + ENTRY["at"][11:])} · Zilnic</p>'
+    return (f'<div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title">{TILE}<div><h2 class="ip-t-heading ip-m0" id="cp-t">{TITLE}</h2>'
+            f'<p class="ip-note ip-num ip-m0">{CTX}</p></div></div><button type="button" class="ip-iconbtn{t}" aria-label="Închide Corectează">{icon("x")}</button></div>')
+BY = f'<p class="ip-note ip-m0">Introdus de {ENTRY["user"]} · {num(dd(RDAY) + ", " + ENTRY["at"][11:])} · Zilnic</p>'
 MOD = (f'<div class="ip-ev__mod"><span class="ip-tag ip-tag--neutral">corectat</span><span>{hen(n(-OLD))} → {hen_v(n(-NEW))}</span>'
        f'<a class="ip-link" href="#istoric-H4.1-14.11">modificat de {AUD["user"]} · {num(dd(AT_D) + ", " + AT_T)}<span class="ip-sr">, vezi istoricul</span></a></div>')
 
@@ -157,7 +157,7 @@ def effect(state='set', today=PDAY):
     if state == 'refuz':
         neg = [d for d, v in LOW.items() if v < 0]; assert neg[0] == FIRST_NEG and len({LOW[d] for d in neg}) == 1
         days = ' și pe '.join(num(dd(d)) for d in neg)
-        return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="s13-m0">'
+        return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="ip-m0">'
                 f'Corecția ar lăsa {SEC} cu {hen_v(n(LOW[FIRST_NEG]))} găini pe {days}. Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
     pre, post = PRE, POST
     lines = ''.join(fxline(f'{SEC} · {"azi, " if d == today else ""}{dd(d)}', pre[d], post[d]) for d in pre)
@@ -174,7 +174,7 @@ def sheet(body, save, inert=False):
     return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="cp-t"{ine}>{head(True)}'
             f'<div class="ip-sidepanel__body s13-pbody">{"".join(body)}</div>'
             f'<div class="ip-sidepanel__foot">{DELK}{save}</div></aside>')
-def screen(sh, overlay=''): return f'<div class="s16-screen s9-modal">{sh}{overlay}</div>'
+def screen(sh, overlay=''): return f'<div class="s16-screen ip-scrimhost">{sh}{overlay}</div>'
 
 boards = []
 # 1 · telefon · reluare 15.11.2026 — Ion Rusu types 5 and the real reason, before saving at 10:12
@@ -209,12 +209,12 @@ assert '</li>' not in PG[_li:_i]
 PG = (PG[:_li] + '<li class="ip-ev ip-ev--act is-current">' + PG[_li + len('<li class="ip-ev ip-ev--act">'):_i]
       + KEY.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost" aria-expanded="true" aria-controls="cp" aria-current="true"') + PG[_i + len(KEY.group(0)):])
 SCROLL = HS.get('S16-corecteaza--desktop@scroll', 0)
-assert PG.count('<main class="s4-main">') == 1
-if SCROLL: PG = PG.replace('<main class="s4-main">', f'<main class="s4-main" style="margin-top:calc(-1 * {SCROLL}px)">')
+assert PG.count('<main class="ip-shell__main">') == 1
+if SCROLL: PG = PG.replace('<main class="ip-shell__main">', f'<main class="ip-shell__main" style="margin-top:calc(-1 * {SCROLL}px)">')
 DESK = f'<div class="s13-vp s16-vp">{PG}</div>'
 DSAVE = '<button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="fx">Salvează corecția</button>'
 def panel(focus):  # focus: just opened from the Jurnal key, focus on the first CountInput (S16P); Esc / Închide return it to that key
-    return f'''<aside class="ip-sidepanel s13-panel" id="cp" aria-labelledby="cp-t">
+    return f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="cp" aria-labelledby="cp-t">
 {head(False)}
 <div class="ip-sidepanel__body s13-pbody">
 <div>{BY}{MOD}</div>
@@ -222,16 +222,16 @@ def panel(focus):  # focus: just opened from the Jurnal key, focus on the first 
 {motiv(touch=False)}
 {effect('empty')}
 </div>
-<div class="ip-sidepanel__foot"><button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Șterge</button><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{DSAVE}</div></div>
+<div class="ip-sidepanel__foot"><button type="button" class="ip-btn ip-btn--destructive" aria-haspopup="dialog">Șterge</button><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{DSAVE}</div></div>
 </aside>'''
 PANEL = panel(True)
 
 # ---------- CSS (screen only, tokens only) ----------
 PAIR = '''
 .s16-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}'''
-# fix 1: the phone boards take only the sheet head/body rules from SC.SIDE (no .s13-vp/.s13-panel/.s13-pkeys, desktop only)
-SHEET = ''.join('\n' + l for l in SC.SIDE.split('\n') if l.startswith(('.s13-phead', '.s13-pbody')))
-assert SHEET.count('\n') == 2
+# fix 1: the phone boards take only the sheet head/body rules from SC.SIDE (no .s13-vp, desktop only; the head row is additions.css §58)
+SHEET = ''.join('\n' + l for l in SC.SIDE.split('\n') if l.startswith('.s13-pbody'))
+assert SHEET.count("\n") == 1
 CSS_P = '''body{margin:0}
 .s16-screen{height:100%;display:flex}''' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + SC.MODAL + PAIR
 CSS_D = T.CSS + SC.SIDE + SC.M0 + '''

@@ -100,7 +100,7 @@ def header(role):
 <div>
 <nav class="ip-crumbs" aria-label="Cale"><a href="#rapoarte">Rapoarte</a><span aria-hidden="true">›</span><span aria-current="page">Hrană</span></nav>
 <h1>Hrană</h1>
-<div class="ip-row s4-meta"><span class="ip-note">Seria 2026 · Hîrbovăț <span class="ip-num">SAPT 40</span>, ciclu din <span class="ip-num">10.02.2026</span> · Telița fără ciclu deschis din <span class="ip-num">28.02.2026</span></span></div>
+<div class="ip-row ip-pagehead__meta"><span class="ip-note">Seria 2026 · Hîrbovăț <span class="ip-num">SAPT 40</span>, ciclu din <span class="ip-num">10.02.2026</span> · Telița fără ciclu deschis din <span class="ip-num">28.02.2026</span></span></div>
 </div>
 {acts}
 </header>'''
@@ -121,7 +121,7 @@ def filterbar(mode='default'):
 
 def sec_head(hid, title, meta='', right=''):
     m = f'<span class="ip-note">{meta}</span>' if meta else ''
-    return f'<div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{m}</div>{right}</div>'
+    return f'<div class="ip-sechead"><div class="s11-headl"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{m}</div>{right}</div>'
 
 def tscroll(cap, inner, fit=False, rowheads=False):
     """S11X: a table that scrolls sideways inside its own box wherever the content area is narrower than the table (Consum
@@ -327,8 +327,8 @@ def sec_empty():
     last_feed = max(r['date'] for r in TD['rows']) if 'rows' in TD else TD['meta']['range'][1]
     assert last_feed < '2026-03-01', last_feed
     def box(hid, lines, step):
-        body = ''.join(f'<p class="s4s-empty-p">{l}</p>' for l in lines)
-        return f'<div class="s4s-emptybox"><div class="ip-empty s11-empty">{lamp("off", "fără date")}{body}{step}</div></div>'
+        body = ''.join(f'<p class="ip-empty__line">{l}</p>' for l in lines)
+        return f'<div class="ip-emptybox"><div class="ip-empty s11-empty">{lamp("off", "fără date")}{body}{step}</div></div>'
     itv = '<span class="ip-num">01.03.2026</span> și <span class="ip-num">16.11.2026</span>'
     IV_NOTE = 'Telița · <span class="ip-num">01.03–16.11.2026</span>'
     step_all = '<button type="button" class="ip-btn ip-btn--secondary">Vezi toate fermele</button>'
@@ -344,7 +344,7 @@ def page(role='Proprietar', mode='default'):
     elif mode == 'empty': body = sec_empty()
     else: body = f'<div class="s11-page">{sec_stock()}{sec_deliveries(role, mode)}{sec_consum()}{"" if role == "Observator" else sec_cost()}</div>'
     h = header(role)
-    return f'<div class="s4-shell">{sidebar(role)}<main class="s4-main">\n{h}\n{filterbar("empty" if mode == "empty" else "default")}\n{body}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar(role)}<main class="ip-shell__main">\n{h}\n{filterbar("empty" if mode == "empty" else "default")}\n{body}\n</main></div>'
 
 CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-page{display:flex;flex-direction:column;gap:var(--space-8)}

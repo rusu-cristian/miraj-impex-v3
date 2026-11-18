@@ -101,7 +101,7 @@ def header(mode='default'):
 <div>
 {crumbs}
 <h1>Producție</h1>
-<div class="ip-row s4-meta">{meta}</div>
+<div class="ip-row ip-pagehead__meta">{meta}</div>
 </div>
 {acts}
 </header>'''
@@ -298,7 +298,7 @@ def page_loading():
     return f'''<div class="s14-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Producție pentru Hîrbovăț, ciclul curent.</p>
 <section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {s4.CW} {s4.CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
-<section class="s4-block" aria-hidden="true"><div class="s4-head"><h2 class="ip-t-heading">Pe săptămâni și hale</h2></div>{tbl}</section>
+<section class="s4-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Pe săptămâni și hale</h2></div>{tbl}</section>
 </div>'''
 
 def page_empty():
@@ -319,14 +319,14 @@ def page(mode='default'):
     elif mode == 'past': body = f'<div class="s14-page">{top("past")}{tb_past()}</div>'
     else: body = f'<div class="s14-page">{top()}{tb_weeks()}</div>'
     fb = filterbar('empty' if mode == 'empty' else 'past' if mode == 'past' else 'default')
-    return f'<div class="s4-shell">{sidebar("2025" if mode == "past" else "2026")}<main class="s4-main">\n{header(hmode)}\n{fb}\n{body}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar("2025" if mode == "past" else "2026")}<main class="ip-shell__main">\n{header(hmode)}\n{fb}\n{body}\n</main></div>'
 
 # ================================================================= CSS: shared rules only (S4 shell + states, S4T tables, S11 farm select)
-_t4_base = s4.CSS + '\n' + s4.CSS_S4
+_t4_base = s4.CSS
 assert t4.CSS.startswith(_t4_base)
 S11_LINES = [l for l in s11.CSS.split('\n') if l.startswith(('.s11-farm', '.s11-select', '.s11-filterbar:has', '.ip-input > select + .ip-icon'))]
 assert len(S11_LINES) == 4, S11_LINES   # FIN10 fix 1: the select chevron rule is additions.css only
-CSS = (s4.CSS + '\n' + s4.CSS_STATES + '\n' + s4.CSS_S4 + t4.CSS[len(_t4_base):] + '\n' + '\n'.join(l for l in S11_LINES if not l.startswith('.ip-input > select'))
+CSS = (s4.CSS + '\n' + s4.CSS_STATES + t4.CSS[len(_t4_base):] + '\n' + '\n'.join(l for l in S11_LINES if not l.startswith('.ip-input > select'))
        + '\n.s14-page{display:flex;flex-direction:column;gap:var(--space-6)}'
        + '\n.s14-nw{white-space:nowrap} /* S14P fix 2: a figure and its lamp stay on one line */')  # S14P: the scroll region's position:relative is now additions.css section 36
 

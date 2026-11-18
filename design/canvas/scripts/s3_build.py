@@ -107,7 +107,7 @@ def header(mode='default'):
 <div>
 <nav class="ip-crumbs" aria-label="Cale"><span aria-current="page">{crumb}</span></nav>
 <h1>{title}</h1>
-<div class="ip-row s4-meta">{meta}</div>
+<div class="ip-row ip-pagehead__meta">{meta}</div>
 </div>
 <div class="ip-row">{exp}</div>
 </header>'''
@@ -142,7 +142,7 @@ def track(mode='default'):
     else:
         sub = f'<span class="ip-note ip-num">10.2025–12.2026 · 2 ferme · 2 cicluri</span>'
     return f'''<section class="s4-block" aria-labelledby="h-track">
-<div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>
+<div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2>{sub}</div>
 <div class="s4-tight"><div class="s3-trackbox">{svgs}</div>{legend}</div>
 </section>'''
 
@@ -217,7 +217,7 @@ def track_svg(mode, TW):
 def track_loading():  # same box as the live track (azi room 22 · lane 26 · gap 22 · lane 26 · axis 24, legend 16): no shift when it loads
     lane = f'<div class="s3-sklane">{sk("s3-sklbl")}{sk("s3-skbar")}</div>'
     return f'''<section class="s4-block" aria-hidden="true">
-<div class="s4-head"><h2 class="ip-t-heading">Cicluri pe ferme</h2></div>
+<div class="ip-sechead"><h2 class="ip-t-heading">Cicluri pe ferme</h2></div>
 <div class="s4-tight"><div class="s3-sktrack">{lane}{lane}<div class="s3-skaxis"></div></div><div class="s3-sklegend">{sk("s3-w24")}</div></div>
 </section>'''
 
@@ -279,14 +279,14 @@ def summaries(mode='default'):
     else:
         cards, note = fs_telita() + fs_hirbovat(), f'2 ferme · {ddate(TODAY)}'
     return f'''<section class="s4-block" aria-labelledby="h-farms">
-<div class="s4-head"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note{" ip-num" if any(c.isdigit() for c in note) else ""}">{note}</span></div>
+<div class="ip-sechead"><h2 class="ip-t-heading" id="h-farms">Ferme</h2><span class="ip-note{" ip-num" if any(c.isdigit() for c in note) else ""}">{note}</span></div>
 <div class="ip-fsums ip-fsums--stretch">{cards}</div>
 </section>'''
 def summaries_loading():
     card = (f'<div class="ip-fsum ip-fsum--wide s3-skcard"><div class="ip-fsum__head">{sk("s3-w30 s3-h16")}{sk("s3-w14")}</div>{sk("s3-w40")}'
             f'{sk("s3-w50 s3-h20")}' + ''.join(f'<div class="s3-skfig"><div class="s3-skrow">{sk("s3-w40")}{sk("s3-w20")}</div>{sk("s3-w60")}</div>' for _ in range(4)) + '</div>')
     return f'''<section class="s4-block" aria-hidden="true">
-<div class="s4-head"><h2 class="ip-t-heading">Ferme</h2></div>
+<div class="ip-sechead"><h2 class="ip-t-heading">Ferme</h2></div>
 <div class="ip-fsums ip-fsums--stretch">{card}{card}</div>
 </section>'''
 
@@ -376,7 +376,7 @@ def page(mode='default'):
         mid = track_loading() + summaries_loading(); panel = pasari_loading()
     else:
         mid = track(mode) + summaries(mode); panel = pasari(mode)
-    main = f'''<main class="s4-main">
+    main = f'''<main class="ip-shell__main">
 {header(mode)}
 {mid}
 <section class="s4-block" aria-label="Date pe ferme">
@@ -385,7 +385,7 @@ def page(mode='default'):
 </section>
 </main>'''
     sb = s4.sidebar('Observator', viewer=True) if mode == 'viewer' else s4.sidebar(series=series)
-    return f'<div class="s4-shell">{sb}{main}</div>'
+    return f'<div class="ip-shell">{sb}{main}</div>'
 
 CSS = s4.CSS + '''
 .s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}

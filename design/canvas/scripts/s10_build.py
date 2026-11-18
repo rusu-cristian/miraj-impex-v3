@@ -209,10 +209,10 @@ def screen(parts, save, overlay='', view='', modal=''):
     if modal:
         h = h.replace('<header class="ip-formhead">', '<header class="ip-formhead" inert>', 1)
         save = save.replace('<div class="ip-savebar', '<div inert class="ip-savebar', 1); ine = ' inert'
-    return f'''<div class="s7-screen s7s-vp{" s9-modal" if modal else ""}">
+    return f'''<div class="ip-screen s7s-vp{" ip-scrimhost" if modal else ""}">
 {h}
 <div class="s7s-view{view}"{ine}>
-<main class="s7-main s13-main">
+<main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
 {overlay}
@@ -221,9 +221,9 @@ def screen(parts, save, overlay='', view='', modal=''):
 </div>'''
 
 def tall(parts, save):  # the default board: the whole form, one tall phone board (canvas.md), SaveBar sticky at the foot
-    return f'''<div class="s7-screen">
+    return f'''<div class="ip-screen">
 {HEAD}
-<main class="s7-main s13-main">
+<main class="ip-screen__main s13-main">
 {"".join(parts)}
 </main>
 {save}
@@ -274,8 +274,8 @@ CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL
 
 # ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 16.11.2026, nothing typed ----------
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data vânzării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {WK} · ciclu din {dd(HSTART)}</span></div>'''
-PANEL = f'''<aside class="ip-sidepanel s13-panel" id="vp" aria-labelledby="vp-t">
-<div class="ip-sidepanel__head"><div class="ip-row s13-phead"><span class="ip-tile ip-rec ip-rec--sale" aria-hidden="true">{icon("sale")}</span><div><h2 class="ip-t-heading s13-m0" id="vp-t">Vânzare</h2><p class="ip-note ip-num s13-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Vânzare">{icon("x")}</button></div>
+PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="vp" aria-labelledby="vp-t">
+<div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--sale" aria-hidden="true">{icon("sale")}</span><div><h2 class="ip-t-heading ip-m0" id="vp-t">Vânzare</h2><p class="ip-note ip-num ip-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Vânzare">{icon("x")}</button></div>
 <div class="ip-sidepanel__body s13-pbody">
 {farm(u='p', touch=False)}
 {DDATE}
@@ -284,13 +284,13 @@ PANEL = f'''<aside class="ip-sidepanel s13-panel" id="vp" aria-labelledby="vp-t"
 {note(u='p')}
 {effect('empty', u='p')}
 </div>
-<div class="ip-sidepanel__foot"><span class="ip-note" id="vp-why">Scrie câte vinzi</span><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="vp-why">Înregistrează vânzarea</button></div></div>
+<div class="ip-sidepanel__foot"><span class="ip-note" id="vp-why">Scrie câte vinzi</span><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="vp-why">Înregistrează vânzarea</button></div></div>
 </aside>'''
 KEY = f'<button type="button" class="ip-btn ip-btn--secondary">{s4.icon("sale", 16)}Vânzare</button>'
 SPG = s4.shell(s4.main_page(panel=s4.panel_default())); assert SPG.count(KEY) == 1
 SPG = SPG.replace(KEY, KEY.replace('ip-btn--secondary"', 'ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="vp"'))
 DESK = f'<div class="s13-vp">{SPG}</div>'
-CSS_D = s4.CSS + '\n' + s4.CSS_STATES + '\n' + s4.CSS_S4 + SC.SIDE + SC.M0 + '''
+CSS_D = s4.CSS + '\n' + s4.CSS_STATES + SC.SIDE + SC.M0 + '''
 .s13-vp .s4-cycle,.s13-vp .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.OPT + SC.EFFECT + SC.FX
 
 # ---------- write ----------

@@ -71,7 +71,7 @@ def block(rows, note, foot=Y.FOOT):
     lst = f'<ul class="ip-list ip-list--change" aria-labelledby="h-chg">{Y.COLS}{"".join(rows)}</ul>'
     return (f'<section class="s4-block s17-block" aria-labelledby="h-chg"><div class="ip-list__head"><h2 class="ip-t-heading" id="h-chg">Modificări</h2>'
             f'<p class="ip-note">{note}</p></div>{lst}<p class="ip-note s4s-m0">{foot}</p></section>')
-def shell(sb, parts): return f'<div class="s4-shell">{sb}<main class="s4-main">\n' + '\n'.join(parts) + '\n</main></div>'
+def shell(sb, parts): return f'<div class="ip-shell">{sb}<main class="ip-shell__main">\n' + '\n'.join(parts) + '\n</main></div>'
 
 # ================================================================= 1 · din „modificat de” (owner): one record, all periods
 REC_TXT = f'Mortalitate · {REAL["sec"]} · ziua {REAL["day"]:%d.%m.%Y} · {REAL["farm"]}'
@@ -155,8 +155,8 @@ def p_sheet():
 def phone_sheet():  # as s14s_build.phone_sheet: the page (at its top) and the tab bar inert under the scrim, the sheet at the foot
     b = Y.phone_page()
     for a, z in (('aria-haspopup="dialog" aria-expanded="false"', 'aria-haspopup="dialog" aria-expanded="true" aria-controls="pf-sheet"'),
-                 ('<div class="s7-screen s2-phone s14-phone">', '<div class="s7-screen s2-phone s14-phone s7s-vp s9-modal">'),
-                 ('<main class="s7-main s2-main">', '<div class="s7s-view" inert="inert"><main class="s7-main s2-main">'),
+                 ('<div class="ip-screen s14-phone">', '<div class="ip-screen s14-phone s7s-vp ip-scrimhost">'),
+                 ('<main class="ip-screen__main s2-main">', '<div class="s7s-view" inert="inert"><main class="ip-screen__main s2-main">'),
                  ('</main>', '</main></div>'), ('<nav class="ip-tabbar', '<nav inert="inert" class="ip-tabbar')):
         assert b.count(a) == 1, a; b = b.replace(a, z)
     assert b.endswith('</div>')

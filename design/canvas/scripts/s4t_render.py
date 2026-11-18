@@ -11,7 +11,7 @@ async def main():
         for st in sys.argv[2:]:
             pg = await b.new_page(viewport={'width': 1440, 'height': 1000})
             await pg.goto(f'file:///tmp/s4s/{st}.html'); await pg.wait_for_timeout(1200)
-            mh = await pg.evaluate("Math.ceil(document.querySelector('.s4-main').lastElementChild.getBoundingClientRect().bottom + 24)")
+            mh = await pg.evaluate("Math.ceil(document.querySelector('.ip-shell__main').lastElementChild.getBoundingClientRect().bottom + 24)")
             clip = await pg.evaluate("""[...document.querySelectorAll('.ip-tablescroll,.ip-readout *,.ip-stat *,.ip-ev *,.ip-filterbar *')].filter(e=>e.scrollWidth>e.clientWidth+1 && getComputedStyle(e).overflow!='visible').map(e=>e.className+':'+e.textContent.slice(0,40)).slice(0,8)""")
             lists = await pg.evaluate("[...document.querySelectorAll('.ip-list--act')].map(l=>Math.round(l.getBoundingClientRect().width))")
             ids = await pg.evaluate("(()=>{const c={};document.querySelectorAll('[id]').forEach(e=>c[e.id]=(c[e.id]||0)+1);const d=Object.keys(c).filter(k=>c[k]>1);const refs=[];document.querySelectorAll('[aria-describedby],[aria-labelledby],[aria-controls]').forEach(e=>['aria-describedby','aria-labelledby','aria-controls'].forEach(a=>(e.getAttribute(a)||'').split(/\\s+/).filter(Boolean).forEach(i=>{if(!document.getElementById(i))refs.push(a+':'+i)})));return {dup:d,broken:refs}})()")
