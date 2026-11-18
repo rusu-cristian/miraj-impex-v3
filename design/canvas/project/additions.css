@@ -1524,11 +1524,25 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * destructive), ink-muted on the graphite primary key. Same 14px box and 2px stroke; no animation (craft §4). */
 .ip-spin{flex:none;border-color:var(--line);border-top-color:currentColor;transform:rotate(45deg)}
 .ip-btn--primary .ip-spin{border-color:var(--ink-muted);border-top-color:currentColor}
-/* LoginCard Banner (div.ip-banner.ip-login__msg): its 16px icon sits on the centre of the first 18px text line (the
- * section 38 field message rule). Every Banner has the same 1px offset (bundle.css .ip-banner: 16px icon at the top of
- * an 18px line); the system-wide rule .ip-banner > .ip-icon--16 waits for FIN, so other screens' boards don't change. */
-.ip-login__msg > .ip-icon{margin-top:var(--ip-hair)}
+/* LoginCard Banner icon: now the system-wide Banner rule, section 47 (FIN01). */
 /* Login page, desktop (section 31 amendment): the card's top edge sits at space-12 × 4 (192), so at 1024 high the card
  * rests on the upper third of the page instead of hugging the top; still top-anchored, so a Banner grows the card
  * downward and the wordmark and fields above it don't move. Phone (--phone) unchanged. */
 .ip-login-page:not(.ip-login-page--phone){padding-top:calc(var(--space-12) * 4)}
+
+/* =====================================================================================================
+ * FIN01 · Banner icon on its first line, system-wide. Spec: components.md › Additions › FIN01.
+ * ===================================================================================================== */
+
+/* ---------- 47. Banner · icon on its first line (FIN01) ---------- */
+/* bundle.css .ip-banner sets its 16px icon at the top of the first 18px text line, 1px high. A hair above and below
+ * centres it on that line (replaces the LoginCard-only rule of section 46). Both sides, so a Banner that centres its
+ * row (align-items:center, e.g. beside a key) keeps the icon where it was; the 18px margin box never outgrows the line.
+ * UserTable load failed (Banner > .ip-users__bnrow: the sentence, then Reîncearcă, wrapping under it when narrow): the
+ * sentence takes half the key's spare height above and below (control-h − 1lh), the row aligns to its top, so its first
+ * line sits on the key's centre line beside the key and at the top when wrapped; the icon drops by the same amount, so it
+ * stays on that first line at any width (was 8px above it). */
+.ip-banner > .ip-icon--16{margin-block:var(--ip-hair)}
+.ip-banner > .ip-users__bnrow{align-items:flex-start}
+.ip-banner > .ip-users__bnrow > .ip-users__bn{padding-block:calc((var(--control-h) - 1lh) / 2)}
+.ip-banner:has(> .ip-users__bnrow) > .ip-icon--16{margin-top:calc((var(--control-h) - 1lh) / 2 + var(--ip-hair))}
