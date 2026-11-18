@@ -344,9 +344,11 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-fsum__alive .ip-note{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 /* Key figures: rows split by rule, a line-strong-free list (the panel is the container). */
 .ip-fsum__figs{margin:0;border-top:var(--ip-hair) solid var(--rule)}
-.ip-fsum__fig{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"key val" "sub status";gap:var(--space-1) var(--space-3);padding:var(--space-2) 0;border-bottom:var(--ip-hair) solid var(--rule)}
+/* Narrow: the value spans the last two columns and the Lamp takes only the last, so the guide sub-line reaches the Lamp
+ * (not the wider value): a long growth sub-line fits a 390 phone panel (FIN13B). */
+.ip-fsum__fig{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"key val val" "sub sub status";gap:var(--space-1) var(--space-3);padding:var(--space-2) 0;border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-fsum__fig:last-child{border-bottom:0;padding-bottom:0}
-.ip-fsum__fig:not(:has(> .ip-fsum__status)){grid-template-areas:"key val" "sub sub"}
+.ip-fsum__fig:not(:has(> .ip-fsum__status)){grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"key val" "sub sub"}
 .ip-fsum__fig dt{grid-area:key;display:flex;align-items:center;gap:var(--space-1);min-width:0;font-size:var(--ip-fs-small);line-height:var(--ip-lh-figure);color:var(--ink-secondary)}
 .ip-fsum__fig dt .ip-rec{color:var(--c);display:inline-flex}
 .ip-fsum__fig dd{margin:0;min-width:0}

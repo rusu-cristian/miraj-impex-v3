@@ -10,7 +10,7 @@ S2-observator-desktop.png at their board heights.
 (then rebuild with s2_build.py)."""
 import asyncio, json, pathlib, sys
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 HJ = R / 'design/canvas/scripts/s2_heights.json'
 ORDER = [('S2-acasa', 390, 844, 's2', 'S2.png'), ('S2-acasa--manager', 390, 844, 's2', 'S2-1.png'),
          ('S2-acasa--manager-desktop', 1440, 1024, 's4s', 'S2-2.png'), ('S2-acasa--proprietar-desktop', 1440, 1024, 's4s', 'S2-3.png'),

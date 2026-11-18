@@ -1,7 +1,7 @@
 """python3 s11_render.py <out_heights.json> <stem>... : render design/canvas/project/<stem>.dc.html at 1440 (repo mirror), shot design/shots/S11[-n].png, record main height."""
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = ['S11-rapoarte-hrana', 'S11-rapoarte-hrana--se-incarca', 'S11-rapoarte-hrana--manager', 'S11-rapoarte-hrana--observator', 'S11-rapoarte-hrana--fara-livrari-in-perioada', 'S11-rapoarte-hrana--modifica-pret', 'S11-rapoarte-hrana--modifica-pret--eroare']
 async def main():
     hp = pathlib.Path(sys.argv[1]); hs = json.loads(hp.read_text()) if hp.exists() else {}

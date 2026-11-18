@@ -3,7 +3,7 @@ design/shots/S9.png, S9-1 … S9-6.png (canvas order) + S9-6-1280.png, and repor
 references, unnamed form controls, text under 4.5:1, targets under 44 (phone) / 24 (desktop), the tab order, the EffectPreview / Banner vs the SaveBar, the form end vs the SaveBar, and page elements under the open SidePanel."""
 import asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = [('S9-transfer', 390, 844, 's9'), ('S9-transfer--salvat', 390, 844, 's9'), ('S9-transfer--refuzat', 390, 844, 's9'),
          ('S9-transfer--eroare-la-salvare', 390, 844, 's9'), ('S9-transfer--alege-sectiunea', 390, 844, 's9'), ('S9-transfer--ciclu-nou', 390, 844, 's9'),
          ('S9-transfer--desktop', 1440, 1024, 's4s'), ('S9-transfer--desktop', 1280, 1024, 's4s')]

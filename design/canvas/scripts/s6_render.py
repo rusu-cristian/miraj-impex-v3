@@ -2,7 +2,7 @@
 and report the natural content height (for s6_heights.json), sideways overflow, duplicate ids and broken ARIA/label refs."""
 import asyncio, pathlib, sys
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 H = int(sys.argv[1]) if len(sys.argv) > 1 else 844
 CHECK = """() => {
  const ids = [...document.querySelectorAll('[id]')].map(e => e.id); const dup = ids.filter((x, i) => ids.indexOf(x) !== i);

@@ -1,7 +1,7 @@
 """python3 s12_render.py <out_heights.json> <stem>... : render /tmp/s4s/<stem>.html at 1440, shot design/shots/S12[-n].png, record main height (min 1024)."""
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = ['S12-preturi-hrana', 'S12-preturi-hrana--se-incarca', 'S12-preturi-hrana--in-lucru', 'S12-preturi-hrana--toate-livrarile-au-pret', 'S12-preturi-hrana--eroare']
 async def main():
     hp = pathlib.Path(sys.argv[1]); hs = json.loads(hp.read_text()) if hp.exists() else {}

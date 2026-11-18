@@ -1,6 +1,6 @@
 """SYS04: build StockReadout and CostBlock preview.html fragments. Figures from design/data/extracts (see READMEs)."""
 import pathlib
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system/components')
+ROOT = pathlib.Path(__file__).resolve().parent  # design/system/components from this script's place, so a copy writes into itself
 N = ' '   # thousands
 M = '−'   # true minus
 def g(s): return s.replace(' ', N)  # write grouped numbers with a plain space in source, emit U+202F
@@ -79,7 +79,7 @@ def cost_block(sfx, extra=False, wide=True):
 def cap(t): return f'<span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">{t}</span>'
 def h(t, i): return f'<h2 class="ip-cap" id="{i}" style="margin:0">{t}</h2>'
 
-STOCK = ('<!-- @dsCard group="Moment" height=1500 subtitle="SYS04" -->\n'
+STOCK = ('<!-- @dsCard group="Moment" height=1788 subtitle="SYS04" -->\n'
  '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
  + '<div>' + cap('S11 · Hrană · Stoc · 1440 (conținut 1136 px lângă bara laterală) · până la 4 pe rând') +
  '<div class="ip-stack" style="width:1136px;gap:var(--space-2)">' + h('Stoc · 16.11.2026', 'st-d') + stock_row('d') + FOOT + '</div></div>\n'
@@ -91,7 +91,7 @@ STOCK = ('<!-- @dsCard group="Moment" height=1500 subtitle="SYS04" -->\n'
  + '<p class="ip-note" style="margin:0">Hîrbovăț: sample (D27), sample-hirbovat-2026.json › stock_today, feed_by_type_daily. Telița: real, ciclu închis 28.02.2026 (cycles.json). "Stoc sub 0" (' + M + g('1 240') + ' kg, exemplul spec C2) și "Fermă exemplu" sunt exemple de stare (D39).</p>\n'
  '</div>\n')
 
-COST = ('<!-- @dsCard group="Data" height=1100 subtitle="SYS04" -->\n'
+COST = ('<!-- @dsCard group="Data" height=1273 subtitle="SYS04" -->\n'
  '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
  + '<div>' + cap('S11 · Hrană · Cost · 1440 (conținut 1136 px) · owner, manager, viewer (același markup; ascuns pentru vet)') +
  '<div style="width:1136px">' + cost_block('d') + '</div></div>\n'

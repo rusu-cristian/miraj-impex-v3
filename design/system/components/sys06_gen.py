@@ -227,7 +227,7 @@ v6b = readout('OUAT · HÎRBOVĂȚ · SAPT 40', 'ok', 'ÎN NORMĂ',
 
 def sect(title, body):
     return f'<div class="ip-stack" style="gap:var(--space-2)"><span class="ip-cap">{title}</span>{body}</div>'
-html = ('<!-- @dsCard group="Moment" height=1760 subtitle="GuideChart variants (SYS06)" -->\n'
+html = ('<!-- @dsCard group="Moment" height=2076 subtitle="GuideChart variants (SYS06)" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6);max-width:720px">'
         + sect('Mortalitate % · cumulată ♀ și ♂ · focus, cursor pe SAPT 40', v1)
         + sect('Hrană kg/zi · pe tip de hrană', v2)
@@ -262,7 +262,7 @@ base = readout(f'GREUTATE ♀ · TELIȚA · SERIA 2026 · SAPT 20', 'warn', 'ABA
     legend([('act', f'{HEN} efectiv (medie pe hale după găini)'), ('guide', 'ghid'), ('band', 'bandă ±5%')])
     + '<div class="ip-readout__sub">ciclu închis 28.02.2026, ultima cântărire SAPT 20, SAPT 21 fără cântărire.</div>')
 open(os.path.join(COMP, 'GuideChart/preview.html'), 'w').write(
-    '<!-- @dsCard group="Moment" height=340 -->\n<div class="ip-root" style="max-width:720px">' + base +
+    '<!-- @dsCard group="Moment" height=402 -->\n<div class="ip-root" style="max-width:720px">' + base +
     '<p class="ip-note">Telița · Seria 2026: greutăți reale (weighings-weekly.json, medie ponderată cu găinile din hală), ghid de creștere real (guide-growth.json).</p></div>\n')
 
 # ---------------------------------------------------------------- GuideMissing: the two GuideChart states, regenerated

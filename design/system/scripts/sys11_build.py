@@ -311,7 +311,7 @@ B.append(('Gol: doar antetul', wrap('h',
 
 col = 'calc(var(--space-12) * 14)'  # 672px: two previews side by side at 1440
 grid = ''.join(f'<div style="width:{col}">{cap(t)}{h}</div>' for t, h in B)
-html = ('<!-- @dsCard group="Data" height=2980 subtitle="SYS11" -->\n'
+html = ('<!-- @dsCard group="Data" height=3032 subtitle="SYS11" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
         f'<div>{cap("S20 · Ghiduri · import · desktop (lățime 672 px)")}'
         f'<div style="display:grid;grid-template-columns:repeat(2,{col});gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'

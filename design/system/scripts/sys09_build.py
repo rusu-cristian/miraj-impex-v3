@@ -1,6 +1,6 @@
 """Build SYS09 previews (EventRowActions, ChangeRow): python3 sys09_build.py"""
 import pathlib
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system/components')
+ROOT = pathlib.Path(__file__).resolve().parents[1] / 'components'  # from this script's place (design/system/scripts), so a copy writes into itself
 N = ' '  # thin no-break space for thousands
 
 def svg(paths, cls='ip-icon'):
@@ -151,7 +151,7 @@ def build_actions():
     d = act_blocks('-d'); m = act_blocks('-m') + act_phone_menus('-m')
     desk = ''.join(f'<div>{x}</div>' for x in d)
     phone = ''.join(f'<div>{x}</div>' for x in m)
-    html = ('<!-- @dsCard group="Data" height=2900 subtitle="SYS09" -->\n'
+    html = ('<!-- @dsCard group="Data" height=4024 subtitle="SYS09" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">Desktop · listă de 720 px (taste în rând, ≥ 480 px)</span><div class="ip-stack" style="width:720px;gap:var(--space-5)">{desk}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon (cheia Acțiuni, &lt; 480 px)</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{phone}</div></div></div>\n'
@@ -231,7 +231,7 @@ def build_change():
     d = change_blocks('-d'); m = change_blocks('-m')
     desk = ''.join(f'<div>{x}</div>' for x in d)
     phone = ''.join(f'<div>{x}</div>' for x in m)
-    html = ('<!-- @dsCard group="Data" height=1900 subtitle="SYS09" -->\n'
+    html = ('<!-- @dsCard group="Data" height=2692 subtitle="SYS09" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S17 · Istoric modificări · desktop (listă de 1136 px, un rând pe modificare, ≥ 720 px)</span><div class="ip-stack" style="width:1136px;gap:var(--space-5)">{desk}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon (stivuit)</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{phone}</div></div></div>\n'

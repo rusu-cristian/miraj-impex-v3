@@ -32,7 +32,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve()
 SRC = (ROOT / 'design/system/scripts/sys13_build.py').read_text(encoding='utf-8')
 CUT = '# ------------------------------------------------------------------ desktop card states'
 assert SRC.count(CUT) == 1
-L = {'__name__': 'sys13_parts'}
+L = {'__name__': 'sys13_parts', '__file__': str(ROOT / 'design/system/scripts/sys13_build.py')}  # sys13 finds the repo from its own path
 exec(compile(SRC.split(CUT)[0], 'sys13_build.py', 'exec'), L)
 card = L['card']
 assert L['MSG']['wrong'] == '<b>Login sau parolă greșită.</b>'   # A1 word for word, through SYS13

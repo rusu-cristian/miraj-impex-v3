@@ -4,7 +4,7 @@ record the board height (main content + 24, at least 1024). Prints table/region 
 and broken aria references."""
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = ['S14-rapoarte-productie', 'S14-rapoarte-productie--se-incarca', 'S14-rapoarte-productie--fara-date-in-perioada',
          'S14-rapoarte-productie--fara-ghid', 'S14-rapoarte-productie--seria-2025',
          # S14S (s14s_build.py; heights in s14s_heights.json): shots S14-5 … S14-8; the phone renders at 390 from /tmp/s2

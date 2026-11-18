@@ -5,7 +5,7 @@ ids, broken ARIA references, unnamed controls, text under 4.5:1, touch targets u
 s15_heights.json (then rebuild with s15_build.py <repo> s15_heights.json)."""
 import asyncio, json, pathlib, sys, re
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 HJ = R / 'design/canvas/scripts/s15_heights.json'
 src = (R / 'design/canvas/scripts/s2_render.py').read_text(encoding='utf-8')
 CHECK = re.search(r'CHECK = r"""(.*?)"""', src, re.S).group(1)  # the same checks as S2

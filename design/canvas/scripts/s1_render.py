@@ -3,7 +3,7 @@ and height (from /tmp/s1/<stem>.html, after document.fonts.ready) to design/shot
 s2_render.py's checks (ids, ARIA refs, names, contrast, targets, overflow) plus the natural height (must fit 1024 / 844)."""
 import asyncio, json, pathlib, sys, re
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 src = (R / 'design/canvas/scripts/s2_render.py').read_text(encoding='utf-8')
 CHECK = re.search(r'CHECK = r"""(.*?)"""', src, re.S).group(1)
 ONLY = sys.argv[1:]

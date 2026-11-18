@@ -5,7 +5,7 @@ names, contrast, targets, tab order, sheet body overflow, nothing under the pane
 space-6 (or page height − board height, if smaller: the page never ends above the board's foot) into s16_heights.json ("S16-corecteaza--desktop-dupa-stergere@scroll"); rebuild with s16s_build.py <repo> after."""
 import asyncio, json, pathlib, sys, re
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 HJ = R / 'design/canvas/scripts/s16_heights.json'
 src = (R / 'design/canvas/scripts/s16_render.py').read_text(encoding='utf-8')
 CHECK = re.search(r'CHECK = r"""(.*?)"""', src, re.S).group(1)  # the same checks as S16

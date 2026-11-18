@@ -2,7 +2,7 @@
 design/shots/S13.png, S13-1 … S13-4.png (canvas order) + S13-4-1280.png, and report overflow, duplicate ids and broken ARIA references."""
 import asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = [('S13-livrare-hrana', 390, 844, 's13'), ('S13-livrare-hrana--salvat', 390, 844, 's13'),
          ('S13-livrare-hrana--cantitate-lipsa', 390, 844, 's13'), ('S13-livrare-hrana--eroare-la-salvare', 390, 844, 's13'),
          ('S13-livrare-hrana--desktop', 1440, 1024, 's4s'), ('S13-livrare-hrana--desktop', 1280, 1024, 's4s')]  # last: S13-4-1280.png

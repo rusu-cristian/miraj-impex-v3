@@ -1,6 +1,6 @@
 """Build SYS08 previews (MissingRow, EntryKeys, UnpricedCount): python3 sys08_build.py"""
 import pathlib
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system/components')
+ROOT = pathlib.Path(__file__).resolve().parents[1] / 'components'  # from this script's place (design/system/scripts), so a copy writes into itself
 N = ' '  # thin no-break space for thousands
 
 def svg(paths, cls='ip-icon'):
@@ -103,7 +103,7 @@ def build_missing():
     d = missing('-d'); m = missing('-m')
     desk = ''.join(f'<div>{x}</div>' for x in d)
     phone = ''.join(f'<div>{x}</div>' for x in m)
-    html = ('<!-- @dsCard group="Data" height=2050 subtitle="SYS08" -->\n'
+    html = ('<!-- @dsCard group="Data" height=2940 subtitle="SYS08" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S2 · Acasă · Lipsesc date · desktop (coloană de 560 px)</span><div class="ip-stack" style="width:560px;gap:var(--space-5)">{desk}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{phone}</div></div></div>\n'
@@ -152,7 +152,7 @@ def build_keys():
     ]
     dd = ''.join(f'<div>{cap(t)}{b}</div>' for t, b in d)
     mm = ''.join(f'<div>{cap(t)}{b}</div>' for t, b in m)
-    html = ('<!-- @dsCard group="Actions" height=1250 subtitle="SYS08" -->\n'
+    html = ('<!-- @dsCard group="Actions" height=1464 subtitle="SYS08" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S2 · Acasă · chei de introducere · 1440 (conținut 1136 px)</span><div class="ip-stack" style="width:1136px;gap:var(--space-5)">{dd}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{mm}</div></div></div>\n'
@@ -196,7 +196,7 @@ def build_unpriced():
     ]
     dd = ''.join(f'<div style="width:360px">{cap(t)}{b}</div>' for t, b in d)
     mm = ''.join(f'<div>{cap(t)}{b}</div>' for t, b in m)
-    html = ('<!-- @dsCard group="Data" height=900 subtitle="SYS08" -->\n'
+    html = ('<!-- @dsCard group="Data" height=1371 subtitle="SYS08" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S2 · Acasă · proprietar · desktop (coloană de 360 px)</span><div class="ip-row" style="align-items:flex-start;gap:var(--space-5)">{dd}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{mm}</div></div></div>\n'

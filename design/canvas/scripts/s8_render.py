@@ -3,7 +3,7 @@ to design/shots/S8[-n].png at the board height (natural content height, at least
 and report sideways overflow, duplicate ids, broken ARIA/label refs and unnamed fields. Rebuild with the heights after."""
 import asyncio, json, pathlib, sys
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = ['S8-cantarire', 'S8-cantarire--gol', 'S8-cantarire--in-norma', 'S8-cantarire--abatere',
          'S8-cantarire--valoare-refuzata', 'S8-cantarire--salvat', 'S8-cantarire--eroare-la-salvare',
          # S8S (s8s_build.py): shots S8-7 … S8-12; the sheet board is one 844 screen (s7s-vp)

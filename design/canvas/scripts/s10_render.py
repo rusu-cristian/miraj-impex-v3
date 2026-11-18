@@ -5,7 +5,7 @@ scroll, duplicate ids, broken ARIA references, unnamed form controls, text under
 --heights writes the default board's natural height to s10_heights.json (then rebuild with s10_build.py)."""
 import asyncio, json, pathlib, sys
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 HJ = R / 'design/canvas/scripts/s10_heights.json'
 ORDER = [('S10-vanzare', 390, 844, 's10'), ('S10-vanzare--confirmare', 390, 844, 's10'), ('S10-vanzare--refuzat', 390, 844, 's10'),
          ('S10-vanzare--salvat', 390, 844, 's10'), ('S10-vanzare--eroare-la-salvare', 390, 844, 's10'),

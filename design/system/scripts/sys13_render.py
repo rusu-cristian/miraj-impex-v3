@@ -1,7 +1,7 @@
 """Render the SYS13 previews (LoginCard, Wordmark) at 1440: python3 sys13_render.py <tag>"""
 import sys, asyncio, pathlib
 from playwright.async_api import async_playwright
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system')
+ROOT = pathlib.Path(__file__).resolve().parents[1]  # design/system from this script's place (design/system/scripts), as sys11_render
 OUT = pathlib.Path('/tmp/sys13'); OUT.mkdir(exist_ok=True)
 OV = """() => [...document.querySelectorAll('.ip-login,.ip-login__form,.ip-field,.ip-input,.ip-banner,.ip-login-page,.ip-phone,.ip-sidebar,.ip-wordmark')]
   .filter(e => e.scrollWidth > e.clientWidth+1 || e.getBoundingClientRect().width > e.parentElement.getBoundingClientRect().width+1)

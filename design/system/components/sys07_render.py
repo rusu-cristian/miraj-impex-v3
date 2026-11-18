@@ -1,7 +1,7 @@
 """Render SexCountRow preview at 1440 and 390: python3 sys07_render.py <tag>"""
 import sys, asyncio, pathlib
 from playwright.async_api import async_playwright
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system')
+ROOT = pathlib.Path(__file__).resolve().parents[1]  # design/system from this script's place (design/system/components)
 OUT = pathlib.Path('/tmp/sys07'); OUT.mkdir(exist_ok=True)
 async def main():
     tag = sys.argv[1] if len(sys.argv) > 1 else 'r'

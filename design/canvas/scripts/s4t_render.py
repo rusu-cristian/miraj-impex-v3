@@ -2,7 +2,7 @@
 linking the repo's tokens/bundle/additions) at 1440, shot design/shots/S4T-<n>.png, record the board height (main content + 24)."""
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 ORDER = ['S4-ferma--pasari', 'S4-ferma--hrana', 'S4-ferma--greutate', 'S4-ferma--productie']
 async def main():
     hp = pathlib.Path(sys.argv[1]); hs = json.loads(hp.read_text()) if hp.exists() else {}

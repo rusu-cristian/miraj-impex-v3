@@ -1,7 +1,7 @@
 """Render SYS06 previews at 1440 and 390 and check sideways scroll: python3 sys06_render.py <tag>"""
 import sys, asyncio, pathlib
 from playwright.async_api import async_playwright
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system')
+ROOT = pathlib.Path(__file__).resolve().parents[1]  # design/system from this script's place (design/system/components)
 OUT = pathlib.Path('/tmp/sys06'); OUT.mkdir(exist_ok=True)
 COMPS = ('GuideChart', 'GuideMissing', 'GuideChartVariants', 'RecordCodePlus')
 async def main():

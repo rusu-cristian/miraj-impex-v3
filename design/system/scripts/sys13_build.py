@@ -3,7 +3,7 @@ Copy is spec A1's (title "Impex Line", fields "Login" / "Parolă", key "Intră",
 Login `petrea` is A1's sample; `ion.rusu` and the password `k7mq4tzw9bhe` are SYS12 state examples (D39):
 Ion Rusu signing in with the temporary password from his reset. Brand: PRODUCT.md (name, no logo)."""
 import pathlib
-REPO = pathlib.Path('/home/claude/miraj-impex-v3')
+REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
 
 def svg(paths, cls='ip-icon ip-icon--16'):

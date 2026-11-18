@@ -1,7 +1,7 @@
 """Build the SYS10 preview (SectionTree, S19 Ferme și secțiuni): python3 sys10_build.py
 Names and codes come from design/data/extracts/farms-sections.json (real); guide names are illustrative (D22)."""
 import json, pathlib
-REPO = pathlib.Path('/home/claude/miraj-impex-v3')
+REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
 DATA = json.loads((REPO / 'design/data/extracts/farms-sections.json').read_text(encoding='utf-8'))
 
@@ -239,7 +239,7 @@ WIDE = tree('p', 'Secțiuni, toate fermele',
 
 OPEN = ('Hîrbovăț · meniul H1.1', 'Telița · meniul H2')  # the open menu hangs below its table: reserve the room
 grid = ''.join(f'<div style="width:var(--panel-w){";padding-bottom:calc(var(--space-12) * 2)" if t.startswith(OPEN) else ""}">{cap(t)}{h}</div>' for t, h in B)
-html = ('<!-- @dsCard group="Data" height=3660 subtitle="SYS10" -->\n'
+html = ('<!-- @dsCard group="Data" height=3701 subtitle="SYS10" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
         f'<div>{cap("S19 · panoul fermei · desktop (lățime panou 440 px)")}'
         f'<div style="display:grid;grid-template-columns:repeat(3,var(--panel-w));gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'

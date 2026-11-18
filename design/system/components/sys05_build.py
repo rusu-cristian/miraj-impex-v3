@@ -1,7 +1,7 @@
 """SYS05: build EntryCardPlus and HallCard preview.html fragments.
 Figures: design/data/extracts/sample-hirbovat-2026.json (16.11.2026 and 09.11–15.11.2026, sample D27)."""
 import pathlib
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system/components')
+ROOT = pathlib.Path(__file__).resolve().parent  # design/system/components from this script's place, so a copy writes into itself
 N = ' '  # thousands
 M = '−'  # true minus
 def g(s):

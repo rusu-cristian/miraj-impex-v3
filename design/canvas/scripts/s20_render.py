@@ -6,7 +6,7 @@ page height (desktop min 1024) except --salvat (1024, the page clipped under the
 --w 1280 renders the desktops at 1280 as S20-<i>-1280.png (no heights written)."""
 import asyncio, json, pathlib, sys, re
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 HJ = R / 'design/canvas/scripts/s20_heights.json'
 src = (R / 'design/canvas/scripts/s2_render.py').read_text(encoding='utf-8')
 CHECK = re.search(r'CHECK = r"""(.*?)"""', src, re.S).group(1)

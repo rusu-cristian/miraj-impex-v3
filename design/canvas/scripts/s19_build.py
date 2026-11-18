@@ -48,7 +48,7 @@ cT, cH, WK, GUIDE, FARM, FS = T.cT, T.cH, T.WK, T.GUIDE, T.FARM, T.FS
 SRC = (ROOT / 'design/system/scripts/sys10_build.py').read_text(encoding='utf-8')
 CUT = '# ------------------------------------------------------------------ blocks'
 assert SRC.count(CUT) == 1
-ST = {'__name__': 'sys10_parts'}
+ST = {'__name__': 'sys10_parts', '__file__': str(ROOT / 'design/system/scripts/sys10_build.py')}  # sys10 finds the repo from its own path
 exec(compile(SRC.split(CUT)[0], 'sys10_build.py', 'exec'), ST)
 assert ST['DATA'] == FS and ST['BIRDS'] == {'hirbovat': True, 'telita': False}
 

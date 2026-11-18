@@ -1,7 +1,7 @@
 """python3 s3_render.py <out_heights.json> <stem>... : render design/canvas/project/<stem>.dc.html at 1440 (repo mirror), shot design/shots/S3[-n].png, record main height."""
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3'); ORDER = ['S3-seria-2026', 'S3-seria-2026--se-incarca', 'S3-seria-2026--seria-inchisa', 'S3-seria-2026--fara-acces']
+R = pathlib.Path(__file__).resolve().parents[3]; ORDER = ['S3-seria-2026', 'S3-seria-2026--se-incarca', 'S3-seria-2026--seria-inchisa', 'S3-seria-2026--fara-acces']
 async def main():
     hp = pathlib.Path(sys.argv[1]); hs = json.loads(hp.read_text()) if hp.exists() else {}
     async with async_playwright() as p:

@@ -5,7 +5,7 @@ how far it must scroll so the card ends 16 px above the SaveBar (never past its 
 s6s_heights.json ("scroll"); rebuild with s6s_build.py afterwards (the offsets are baked into the boards)."""
 import asyncio, json, pathlib, sys
 from playwright.async_api import async_playwright
-R = pathlib.Path('/home/claude/miraj-impex-v3')
+R = pathlib.Path(__file__).resolve().parents[3]
 HP = R / 'design/canvas/scripts/s6s_heights.json'
 MEASURE = '--measure' in sys.argv
 ONLY = sys.argv[sys.argv.index('--only') + 1] if '--only' in sys.argv else None  # --only <slug>: render (and measure) one board

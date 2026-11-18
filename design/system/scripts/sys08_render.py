@@ -1,7 +1,7 @@
 """Render SYS08 previews at 1440 and 390: python3 sys08_render.py <tag>"""
 import sys, asyncio, pathlib
 from playwright.async_api import async_playwright
-ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system')
+ROOT = pathlib.Path(__file__).resolve().parents[1]  # design/system from this script's place (design/system/scripts), as sys11_render
 OUT = pathlib.Path('/tmp/sys08'); OUT.mkdir(exist_ok=True)
 async def main():
     tag = sys.argv[1] if len(sys.argv) > 1 else 'r'
