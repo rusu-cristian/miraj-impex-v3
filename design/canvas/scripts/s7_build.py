@@ -54,9 +54,10 @@ def pair(f, m, sr=''):
 def lamp(kind, word): return f'<span class="ip-lamp ip-lamp--{kind}">{word}</span>'
 
 # ---------- header + date + copy key ----------
+# FX07/D142: every entry form's back link goes to Înregistrează (the Sidebar item / tab bar key, #inregistreaza)
 FARM = 'HÎRBOVĂȚ'
 HEAD = f'''<header class="ip-formhead">
-<a class="ip-iconbtn ip-iconbtn--touch" href="#acasa" aria-label="Înapoi la Acasă">{icon("back")}</a>
+<a class="ip-iconbtn ip-iconbtn--touch" href="#inregistreaza" aria-label="Înapoi la Înregistrează">{icon("back")}</a>
 <span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>
 <div class="s7-title"><h1 class="ip-t-heading ip-m0">Hrană zilnică</h1><p class="ip-note ip-num ip-m0">{FARM} · {dd(TODAY)} · SAPT {WEEK}</p></div>
 </header>'''

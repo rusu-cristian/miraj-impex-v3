@@ -159,13 +159,10 @@ def vet_sidebar():
     sb = sb.replace(par, par + subs, 1)
     assert sb.count('is-current') == 1 and sb.count('class="ip-nav') == 6 and 'href="#introdus-azi" aria-current="page"' in sb
     return sb
-# S15P: breadcrumb above the h1, as the S4 / S11 / S14 desktop heads (parent › this page); S15 opens from Acasă's
-# Introdus azi block ("Vezi pe secțiuni", S2), so the parent is Acasă
-CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#acasa">Acasă</a><span aria-hidden="true">›</span>'
-          '<span aria-current="page">Introdus azi</span></nav>')
-HEAD_D = Q.pagehead(A.CTX_VET, Q.LEAD).replace(' s2-phead', '', 1)
-assert HEAD_D.count('<div><h1>') == 1
-HEAD_D = HEAD_D.replace('<div><h1>', f'<div>{CRUMBS}<h1>', 1)
+# S15P: breadcrumb above the h1, as the S4 / S11 / S14 desktop heads (parent › this page); FX07/D142: the parent is
+# Înregistrează (the Sidebar group this page sits in), not Acasă, though S2's Introdus azi block also links here
+HEAD_D = Q.pagehead(A.CTX_VET, Q.LEAD, Q.CRUMBS).replace(' s2-phead', '', 1)
+assert HEAD_D.count(f'<div>{Q.CRUMBS}<h1>') == 1
 DESK = f'<div class="ip-shell">{vet_sidebar()}<main class="ip-shell__main s15s-desk">\n{HEAD_D}{A.desk_heads("".join(groups()))}\n</main></div>'  # FX02: desktop section heads (s2_build.desk_heads)
 boards.append(('desktop', 'vet · desktop', 'd', DESK))
 

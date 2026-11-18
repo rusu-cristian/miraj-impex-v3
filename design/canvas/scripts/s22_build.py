@@ -7,7 +7,7 @@ added (or after Resetează parola); the add form has no password field. D118: th
 People: Proprietar (you, the owner; no name in the kit, D96/D104), Ion Rusu (manager), Dr. Ceban (vet) as on the earlier
 boards (craft §7, illustrative); Petrea (spec A2's dialog sample) and Observator exemplu are D39 state examples (SYS12),
 named in the board titles, as are every sign-in time and both passwords. Farms real (farms-sections.json).
-Boards (row below S21: y 38221 + 1024 + 120 = 39365; x step w + 80; desktops first, then the phone):
+Boards (row below S21: y 38233 + 1024 + 120 = 39377; x step w + 80; desktops first, then the phone):
   S22-utilizatori          list: PageHeader (Setări › Utilizatori, "Adaugă utilizator"), UserRow list under an h2 + count
   --ion-rusu               list beside the non-modal user SidePanel: Nume (focus), Login read-only, Rol Select + what the
                            role does, Ferme checkboxes, Cont block (Resetează parola, Dezactivează contul)

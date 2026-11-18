@@ -56,8 +56,8 @@ TEL_WHY = 'fără ciclu deschis'
 def kgs(v): return f'<span class="ip-num">{n(v)}{NB}kg</span>'
 
 # ---------- phone form (S7 shell) ----------
-HEAD = B.HEAD.replace('href="#acasa" aria-label="Înapoi la Acasă"', 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"') \
-    .replace(icon('feed'), icon('delivery')).replace('Hrană zilnică', 'Livrare hrană').replace(dd(B.TODAY), dd(EDAY))
+assert 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"' in B.HEAD  # FX07/D142: the S7 shell's back link
+HEAD = B.HEAD.replace(icon('feed'), icon('delivery')).replace('Hrană zilnică', 'Livrare hrană').replace(dd(B.TODAY), dd(EDAY))
 assert HEAD.count('Livrare hrană') == 1 and dd(EDAY) in HEAD and icon('delivery') in HEAD
 
 def farm(ro=False, touch=True):

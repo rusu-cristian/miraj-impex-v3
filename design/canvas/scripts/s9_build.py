@@ -74,8 +74,8 @@ def cmark(kind, cls, text):  # SYS06 cycle mark: bar (record that caused it) + m
 CHK = '<svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
 
 # ---------- phone form (S7 shell) ----------
-HEAD = B.HEAD.replace('href="#acasa" aria-label="Înapoi la Acasă"', 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"') \
-    .replace('ip-rec--feed', 'ip-rec--transfer').replace(icon('feed'), icon('transfer')).replace('Hrană zilnică', 'Transfer') \
+assert 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"' in B.HEAD  # FX07/D142: the S7 shell's back link
+HEAD = B.HEAD.replace('ip-rec--feed', 'ip-rec--transfer').replace(icon('feed'), icon('transfer')).replace('Hrană zilnică', 'Transfer') \
     .replace(f'{B.FARM} · {dd(B.TODAY)} · SAPT {B.WEEK}', f'SERIA 2026 · {dd(DAY)}')
 assert HEAD.count('Transfer') == 1 and dd(DAY) in HEAD and 'ip-rec--transfer' in HEAD and 'SAPT' not in HEAD
 WKLINE = f'Telița SAPT {TWK} · Hîrbovăț SAPT {HWK}'

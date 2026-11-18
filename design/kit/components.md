@@ -370,6 +370,8 @@ Phone navigation on `panel`. The centre Înregistrează key is a 48px graphite c
 
 Phone form header: back, the title with its RecordTile, and a context line in mono (farm · date · SAPT).
 
+- **Back link (FX07, D142):** on every entry form (S6–S10, S13) the back IconButton is `href="#inregistreaza"`, `aria-label="Înapoi la Înregistrează"`: the Înregistrează Sidebar item / tab bar key, the forms' parent (screens.md nav map).
+
 
 ## SaveBar
 
@@ -380,7 +382,7 @@ The sticky save area of a phone form: a summary with record icons and ♀/♂ fi
 
 Breadcrumbs as uppercase captions, then the title (24px), type and guide tags, a meta line (♀ · ♂ · SAPT · cycle start) and actions on the right.
 
-- **Breadcrumbs hit area (FIN06, additions.css §52):** each parent link is a target of its own without moving the line: desktop ≥24px tall (`space-6`, D46; word + 5px each side, e.g. "SERIA 2026" 79×24); its focus ring is drawn round the word by `::after` and stops at the h1's top edge. A title focused by script (`h1[tabindex="-1"]`, after a save) draws its ring the same way, in the h1's 2px margins, so the head never grows (FX02, §66). Phone page heads use `nav.ip-crumbs.ip-crumbs--touch` with the word in `span.ip-crumbs__txt`: ≥44px (46 tall, word + 8 wide, "SETĂRI" 50×46); the word takes the focus ring.
+- **Breadcrumbs hit area (FIN06, additions.css §52):** each parent link is a target of its own without moving the line: desktop ≥24px tall (`space-6`, D46; word + 5px each side, e.g. "SERIA 2026" 79×24); its focus ring is drawn round the word by `::after` and stops at the h1's top edge. A title focused by script (`h1[tabindex="-1"]`, after a save) draws its ring the same way, in the h1's 2px margins, so the head never grows (FX02, §66). Phone page heads use `nav.ip-crumbs.ip-crumbs--touch` with the word in `span.ip-crumbs__txt`: ≥44px (46 tall, word + 8 wide, "SETĂRI" 50×46); the word takes the focus ring (S14, S15 since FX07, S17–S22 phones).
 
 
 ## Tabs
@@ -912,3 +914,7 @@ CSS in additions.css section 66 (new; both copies, identical); S2/S15 desktop ma
 ### FX06 · Small fixes: AlertRow rule, scroll-region focus, Banner order, S16 page end, 18.11.2026
 - **AlertRow** (§35, both copies identical): the alerts-list no-wrap rule keeps only `.ip-list--alerts .ip-ev__main .ip-sex`; a bare main-line `span.ip-num` is §1's (FX05). All boards and previews pixel-identical. UserRow preview: load failed has no count note in the list head (as S22).
 - **Boards:** every DataTable scroll region is focusable (`tabindex=0`; S19–S22 telefon lists, S20 Folosit de); S18–S22 save errors and the SectionTree preview/README save error (sys10) give the retry line before what is kept (Banner › Failure copy); S16 desktop după ștergere shows the page at its end at every width (D146). Copy: S2 „Lipsesc date” și „Introdus azi” nu s-au încărcat.; S13 Toast "Livrare adăugată · 24 000 kg Breeder 2 · stoc Hîrbovăț: 31 450 kg · fără preț" (C5's price note in craft §6 words, 3 lines at 390, read by its `role=status`); S4 "Vârf · ouă pe zi" shows the bare figure; S3 seria închisă "–" is a SexCount figure (`span.ip-sex > b`, Mono 500). No new tokens.
+
+### FX07 · Navigation parent Înregistrează, 18.11.2026
+- **Crumbs and back links** (D142): S15 desktop crumb "Înregistrează › Introdus azi" (was Acasă); the 9 S15 phones take the §52 touch crumb (`ip-crumbs--touch` > `a` > `span.ip-crumbs__txt`, same geometry as S17: link 104×46, crumb 16–30, h1 from 30); S6, S7, S8 back links (31 boards, from the S7 shell) say "Înapoi la Înregistrează", as S9/S10/S13. Every link points at `#inregistreaza`, the target of the Sidebar item and the tab bar key (no Înregistrează board, as `#setari`).
+- **Measured** (fallback fonts): desktop link 106×24 at 1440 and 1280, ring flush with the h1 top, over no ink; phone ring on the word, over no ink; S6–S8 FormHeader titles one line at 390, boards pixel-identical. S15 telefon 1608 → 1620. No CSS change, no new tokens.

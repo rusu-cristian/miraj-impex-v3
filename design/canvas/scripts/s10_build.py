@@ -73,8 +73,8 @@ CHK = '<svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><
 def num(v): return f'<span class="ip-num">{v}</span>'
 
 # ---------- form parts ----------
-HEAD = B.HEAD.replace('href="#acasa" aria-label="Înapoi la Acasă"', 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"') \
-    .replace('ip-rec--feed', 'ip-rec--sale').replace(icon('feed'), icon('sale')).replace('Hrană zilnică', 'Vânzare') \
+assert 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"' in B.HEAD  # FX07/D142: the S7 shell's back link
+HEAD = B.HEAD.replace('ip-rec--feed', 'ip-rec--sale').replace(icon('feed'), icon('sale')).replace('Hrană zilnică', 'Vânzare') \
     .replace(f'{B.FARM} · {dd(B.TODAY)} · SAPT {B.WEEK}', f'SERIA 2026 · {dd(DT)}')
 assert HEAD.count('Vânzare') == 1 and 'ip-rec--sale' in HEAD and 'SAPT' not in HEAD
 

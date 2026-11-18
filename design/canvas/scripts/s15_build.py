@@ -118,8 +118,15 @@ def groups():
         group('g-ca', 'Cântărire', NOTE_CA, wt_rows()),
     ]
 
-def pagehead(ctx, note):
-    return (f'<header class="ip-pagehead s2-phead"><div><h1>Introdus azi</h1><p class="ip-note ip-num ip-m0">{ctx}</p>'
+# FX07/D142: Înregistrează is the parent (Sidebar item / tab bar key #inregistreaza, as the entry forms' back links); phones
+# take the system touch crumb (additions.css section 52), as the S14/S17–S22 phones; s15s_build uses CRUMBS on the desktop
+CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#inregistreaza">Înregistrează</a><span aria-hidden="true">›</span>'
+          '<span aria-current="page">Introdus azi</span></nav>')
+CRUMBS_P = CRUMBS.replace('<a href="#inregistreaza">Înregistrează</a>', '<a href="#inregistreaza"><span class="ip-crumbs__txt">Înregistrează</span></a>', 1) \
+    .replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)
+assert CRUMBS_P.count('ip-crumbs__txt') == 1 and 'ip-crumbs--touch' in CRUMBS_P
+def pagehead(ctx, note, crumbs=CRUMBS_P):
+    return (f'<header class="ip-pagehead s2-phead"><div>{crumbs}<h1>Introdus azi</h1><p class="ip-note ip-num ip-m0">{ctx}</p>'
             f'<p class="ip-note ip-m0 s15-lead">{note}</p></div></header>')
 N_REC = 6 + 3 + 1 + 12
 LEAD = f'Dr. Ceban · {num(4)} salvări, {num(N_REC)} înregistrări</p><p class="ip-note ip-m0">Poți modifica sau șterge până la {num("23:59")}.'

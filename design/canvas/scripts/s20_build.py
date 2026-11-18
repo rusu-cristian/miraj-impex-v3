@@ -7,7 +7,7 @@ and guide-laying.json (Ross 308 ouat, vârsta 19–65 = SAPT 1–47, hrană g �
 which cycles use each guide from cycles.json + farms-sections.json (through s18_build). Guide and file names illustrative
 (D22). The import preview is SYS11's GuideImportPreview (additions.css §29): its helpers are read from
 design/system/scripts/sys11_build.py (the part above its preview blocks, so nothing is written there).
-Boards (row below S19: y 34577 + 1024 + 120 = 35721; x step w + 80; desktops first):
+Boards (row below S19: y 34589 + 1024 + 120 = 35733; x step w + 80; desktops first):
   S20-ghiduri                  list: PageHeader (Setări › Ghiduri, "Importă ghid"), DataTable of guides (Tip, Săptămâni,
                                Coloane + fără date în ghid, Folosit de, Deschide)
   --ross-308-ouat              guide detail (laying): Folosit de (Hîrbovăț 2026 open SAPT 40, Hîrbovăț 2025 closed), small

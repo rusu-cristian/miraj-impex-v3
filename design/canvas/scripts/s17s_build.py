@@ -1,4 +1,4 @@
-"""S17S · Istoric modificări · state boards (17.11.2026). Appended to the S17 row (y 30184): new desktops after the 5 S17
+"""S17S · Istoric modificări · state boards (17.11.2026). Appended to the S17 row (y 30196): new desktops after the 5 S17
 desktops (x 7600 …), the S17 phone moved right after them (only its x, as S16S did), the new phone after it.
 - din-modificat-de (owner, desktop): Istoric opened from the H4.1 14.11.2026 row's "modificat de Ion Rusu · 15.11.2026, 10:12"
   link (S4 · Păsări Jurnal, S16): one record, every period. No FilterBar (user, farm, period and type don't apply to one
