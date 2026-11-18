@@ -1,4 +1,4 @@
-"""S14S · Rapoarte · Producție states (16.11.2026). Appended to the S14 row (y 23214) after its 5 boards, desktops then the phone:
+"""S14S · Rapoarte · Producție states (16.11.2026). Appended to the S14 row (y 23234) after its 5 boards, desktops then the phone:
 - observator · se exportă (desktop): the default page for the Observator role (Sidebar Acasă · Serie · Rapoarte, account
   "Observator", D91/D92: same content, Producție has no prices) with Exportă .xlsx running (spinner in the key, label kept,
   a hidden role=status line names the file's filters). Merged: Observator parity board + export in progress.
@@ -144,11 +144,11 @@ CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
 .s14-pfilter{gap:var(--space-2) var(--space-3)}'''
 CSS_SHEET = CSS_PHONE + SS.VIEW + SS.MODAL + '''
 .s14-fsheet{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0} /* S14P: phone FilterBar sheet, as the section 33 sheet */
-.s14-fsheet__body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-5);padding:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
+.s14-fsheet__body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-4);border-top:var(--ip-hair) solid var(--rule)} /* fields space-4 apart, as every sheet and panel form (section 62), FX03 */
 .s14-fsheet .ip-seg{display:flex}
 .s14-fsheet .ip-seg__item{flex:1 1 auto;justify-content:center}
 .s14-fsheet .s11-select{width:100%}
-.s14-fsheet__exp{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-5);border-top:var(--ip-hair) solid var(--rule)}
+.s14-fsheet__exp{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s14-fsheet__exp > .ip-btn{width:100%}
 .s14-fsheet__exp > .ip-hint{margin:0}'''
 

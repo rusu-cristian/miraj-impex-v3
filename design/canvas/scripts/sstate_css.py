@@ -3,7 +3,7 @@ keyless Banner body (s7s-banner; a Banner with an action key is additions.css §
 .ip-toastwrap[--page], .ip-toast__txt, .ip-toast__undo). Class names stay `s7s-`
 (the screen and its main are additions.css §57 ip-screen/__main since FIN15; the 390×844 viewport, its view and the
 sticky SaveBar are §63 ip-screen--fixed/__view/__savebar since FIN15B). Strings are concatenated in this order by s7s_build (its boards are byte-identical to before).
-MAIN: the phone form main gap (space-5; ip-screen__main is space-6). SIDE / M0 (both '' since FIN15/FIN15B, additions.css §58/§62) / REC / EFFECT: the desktop entry form's record icon
+MAIN ('' since FX03: every phone form main keeps ip-screen__main's space-6, additions.css §57). SIDE / M0 (both '' since FIN15/FIN15B, additions.css §58/§62) / REC / EFFECT: the desktop entry form's record icon
 and EffectPreview line-up, shared by s13_build and s9_build. Class names stay `s13-` (as S6 reuses s7s-); s13_build
 concatenates them in its own order (its boards are byte-identical to before).
 FIN03: the Banner-action layout moved to additions.css §49 (.ip-banner--act, __body, __key)."""
@@ -23,7 +23,7 @@ SKEL = '''
 SIDE_H = 1024
 SIDE = ''  # FIN15B: the page beside the docked panel (ip-dockpage) and the form body (ip-sidepanel__body--form) are additions.css §62
 
-MAIN = '\n.s13-main{gap:var(--space-5)}'  # the phone form main gap (ip-screen__main is space-6)
+MAIN = ''  # FX03: the phone form main gap is ip-screen__main's space-6 (additions.css §57), as S6-S8; was .s13-main{gap:space-5}
 
 M0 = ''  # FIN15: .ip-m0 and the docked SidePanel (ip-sidepanel--dock, __title, __keys) are additions.css §58
 

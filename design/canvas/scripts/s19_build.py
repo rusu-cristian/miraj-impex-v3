@@ -5,7 +5,7 @@ sections H1 H2 H3 H6 H5-1 H5-2, empty since its cycle closed 28.02.2026 (D25); H
 H1 H3 H4 with compartments H1.1 … H4.2, laying cycle open from 10.02.2026 (SAPT 40). Guide names illustrative (D22).
 The farm panel's section tree is the SYS10 SectionTree (additions.css §28): its markup helpers are read from
 design/system/scripts/sys10_build.py (the part above its preview blocks, so nothing is written there).
-Boards (row below S18: y 32813 + 1624 + 120 = 34557; x step w + 80; D110):
+Boards (row below S18: y 32833 + 1624 + 120 = 34577; x step w + 80; D110):
   S19-ferme-sectiuni                         desktop list: PageHeader (Setări › Ferme și secțiuni, "Adaugă fermă"), DataTable
                                              of farms (Tip, Ghid Tag, Secțiuni, Ciclu, Editează)
   --hirbovat                                 list beside the non-modal farm SidePanel (Hîrbovăț): Nume (focus), Tip read-only

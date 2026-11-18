@@ -207,7 +207,7 @@ def screen(parts, save, overlay='', head=None, view='', sheet=''):
     return f'''<div class="ip-screen ip-screen--fixed{" ip-scrimhost" if sheet else ""}">
 {h}
 <div class="ip-screen__view{view}"{ine}>
-<main class="ip-screen__main s13-main">
+<main class="ip-screen__main">
 {"".join(parts)}
 </main>
 {overlay}

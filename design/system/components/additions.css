@@ -1827,8 +1827,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* ---------- 57. Phone screen: column, main, BottomTabBar at its foot (FIN15) ---------- */
 /* div.ip-screen fills the phone frame (390 on a board; its width comes from the frame, the board root or the app window)
  * as a column on ground, at least as tall as the frame (min-height inherited from the board root). main.ip-screen__main
- * takes the rest: space-4 page edges, space-8 at the foot, space-6 between blocks (forms that need a tighter gap add
- * their own). nav.ip-tabbar.ip-screen__tabbar = the BottomTabBar as the screen's last child: sticky at the foot, full
+ * takes the rest: space-4 page edges, space-8 at the foot, space-6 between blocks and between the fields of every phone
+ * form (S6–S10, S13; FX03: no screen sets its own; sheets, panels and login keep space-4). nav.ip-tabbar.ip-screen__tabbar = the BottomTabBar as the screen's last child: sticky at the foot, full
  * screen width (bundle.css caps the bar at 390). Was s7-screen/s7-main (S6–S10, S13 phone forms), s2-phone and
  * s2-tabbar (S2, S14, S17 phone pages). */
 .ip-screen{min-height:inherit;display:flex;flex-direction:column;background:var(--ground)}

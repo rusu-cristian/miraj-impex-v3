@@ -126,7 +126,7 @@ def screen(parts, save, overlay=''):  # s7s_build.screen with this form's header
     return f'''<div class="ip-screen ip-screen--fixed">
 {HEAD}
 <div class="ip-screen__view">
-<main class="ip-screen__main s13-main">
+<main class="ip-screen__main">
 {"".join(parts)}
 </main>
 {overlay}
@@ -192,7 +192,7 @@ assert SPG.count('class="ip-tablescroll ip-tablescroll--framed" role="region" ta
 DESK = f'<div class="ip-dockpage">{SPG}</div>'
 assert DH == SC.SIDE_H
 CSS_D = s11.CSS + SC.SIDE + '''
-''' + CSS.split(SC.MAIN, 1)[1]  # desktop split marker: everything after the phone main gap
+''' + CSS[len(P.CSS + SC.MAIN):]  # everything after the phone screen CSS and its main gap (MAIN '' since FX03)
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S13-livrare-hrana', 'S13 · Livrare hrană'

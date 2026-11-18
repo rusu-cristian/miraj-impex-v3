@@ -212,7 +212,7 @@ def screen(parts, save, overlay='', view='', modal=''):
     return f'''<div class="ip-screen ip-screen--fixed{" ip-scrimhost" if modal else ""}">
 {h}
 <div class="ip-screen__view{view}"{ine}>
-<main class="ip-screen__main s13-main">
+<main class="ip-screen__main">
 {"".join(parts)}
 </main>
 {overlay}
@@ -223,7 +223,7 @@ def screen(parts, save, overlay='', view='', modal=''):
 def tall(parts, save):  # the default board: the whole form, one tall phone board (canvas.md), SaveBar sticky at the foot
     return f'''<div class="ip-screen">
 {HEAD}
-<main class="ip-screen__main s13-main">
+<main class="ip-screen__main">
 {"".join(parts)}
 </main>
 {save}
