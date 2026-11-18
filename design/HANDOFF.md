@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 5bf6af8
+Updated: 2026-11-18 · Last commit: 606be9f
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 102 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX03; next FX04; all SYS jobs done
+Done 103 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX04; next FX05; all SYS jobs done
 
 ## Just finished
+- FX03 phone gaps: every phone form main 24px (S9, S10, S13 from 20; sstate_css MAIN ''), S14/S17 filter sheets 16; S10 telefon h 2088; rows S2–S1 moved +20 by hand in canvas.json (user approved; S2 y 20942), generator docstrings updated; D145 to review; 1 fix round (canvas gap) (606be9f)
 - FX02 headings: S2 (7) + S15 desktops → ip-block/ip-sechead/h2.ip-t-heading 16px (MissingRow, EntryKeys too; UnpricedCount caption kept, top aligned; D144 to review); §66 focused-heading ::after ring (S20 salvat head 64); heights via --canvas S2 1176/1176/1156, S15 1552; passed review (5bf6af8)
 - FX01 panel scroll: §62 `.ip-sidepanel--dock > .ip-sidepanel__body{position:relative}` (from s18s); S10 desktop scroll 1281→1024; all 44 docked boards scroll = canvas h; passed review (314e6b3)
 - FINAL review: 7 findings → FX01–FX07 (panel scroll, desktop headings, phone gaps, Banner/Toast copy + placement, CSS dedupe, small items, nav parent); D141 Banner at form end, D142 Înregistrează is the parent, D143 object-first Toasts (all to review); see notes/FINAL.md
@@ -160,6 +161,7 @@ Done 102 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FI
 - FIN16: project/additions.css (§1, §65) + 168 boards (new S2-acasa manager fermă goală board) + canvas.json (S2 row)
 - FX01: project/additions.css (§62) + 8 S18S boards (CSS only)
 - FX02: project/additions.css (§66) + 31 boards (8 desktops markup, 23 S20 CSS) + canvas.json (4 heights)
+- FX03: 18 boards (S9, S10, S13 phones, S14/S17 telefon-filtre) + canvas.json (S10 telefon h, 190 boards y +20)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
