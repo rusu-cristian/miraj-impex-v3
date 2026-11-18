@@ -215,8 +215,8 @@ O.append(('Parola temporară · cont nou, după Copiază: lampă „copiată”'
 O.append(('Copierea nu a mers (focus pe parolă, selectată)', dialog('k', 'Parola nouă pentru Ion Rusu',
     otp('k', CTX_RESET, PW_RESET, 'Ion Rusu', failed=True, focus='pw'), btn('Închide', 'primary'))))
 O.append(('Resetarea nu a mers (focus pe Reîncearcă, Esc = Anulează)', dialog('l', 'Resetează parola lui Ion Rusu',
-    banner('fault', ['<b>Parola lui Ion Rusu nu s-a resetat;</b> cea veche merge în continuare.',
-                     'Verifică conexiunea la internet, apoi apasă Reîncearcă.'],
+    banner('fault', ['<b>Parola lui Ion Rusu nu s-a resetat.</b>',
+                     'Verifică conexiunea la internet, apoi apasă Reîncearcă. Parola veche merge în continuare.'],
            'l-why'),
     btn('Anulează') + btn('Reîncearcă', 'primary', focus=True, extra=' aria-describedby="l-why"'), desc='l-why')))
 O.append(('Dezactivează · confirmare (A2), focus pe Anulează; apoi Toast', dialog('m', 'Dezactivează contul lui Petrea',

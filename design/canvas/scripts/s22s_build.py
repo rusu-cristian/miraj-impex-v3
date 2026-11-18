@@ -64,8 +64,8 @@ def dlg_reset():   # SYS12 "Resetează parola · confirmare": focus on Anulează
     return (U['dialog']('rp', 'Resetează parola lui Ion Rusu', RP_BODY,
                        BTN('Anulează', focus=True, extra=' autofocus="autofocus"') + BTN('Resetează parola', 'primary'), desc='rp-n'))
 def dlg_reset_failed():   # SYS12 "Resetarea nu a mers": fault Banner (no role) described by the dialog and Reîncearcă (focus)
-    why = U['banner']('fault', ['<b>Parola lui Ion Rusu nu s-a resetat;</b> cea veche merge în continuare.',
-                                'Verifică conexiunea la internet, apoi apasă Reîncearcă.'], 'rf-why')
+    why = U['banner']('fault', ['<b>Parola lui Ion Rusu nu s-a resetat.</b>',
+                                'Verifică conexiunea la internet, apoi apasă Reîncearcă. Parola veche merge în continuare.'], 'rf-why')
     return (U['dialog']('rf', 'Resetează parola lui Ion Rusu', why,
                        BTN('Anulează') + BTN('Reîncearcă', 'primary', focus=True, extra=' autofocus="autofocus" aria-describedby="rf-why"'),
                        desc='rf-why'))
