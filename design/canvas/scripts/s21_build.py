@@ -245,7 +245,7 @@ def phone_list():
                    f'<td>{sexw(r["for_sex"])}</td><td class="ip-nowrap">{state_cell(r)}</td></tr>' for r in ORDER)
     blk = (f'<section class="ip-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2>'
            f'<span class="ip-note">{counts(FT)}</span></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-tip">'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-tip">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s21-table">{CAPTION}'
            f'<thead><tr><th scope="col">Tip hrană</th><th scope="col">Pentru</th><th scope="col">Stare</th></tr></thead><tbody>{rows}</tbody></table></div>'
            f'<p class="ip-note ip-m0">Un tip retras nu mai apare în formulare. Tipurile de hrană le adaugi și le editezi pe calculator.</p></section>')
@@ -327,8 +327,8 @@ desk('--salvat', f'salvat · {D39}: Breeder 3 adăugat', shell(tlist(ROWS3, focu
 # 9 · eroare la salvare (D39): the same new type, draft kept, Banner + Reîncearcă (focus) under the fields
 desk('--eroare-la-salvare', f'Tip nou · eroare la salvare · {D39}: Breeder 3',
      NEWVP + panel('Tip nou', '', [name_field('Breeder 3'), for_seg('F'), act_field(True, ACT_ON + ' Îl poți retrage oricând.'),
-                                   save_banner('Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. '
-                                               'Verifică conexiunea la internet, apoi apasă Reîncearcă.'), NEWUSE], ADD), PH)
+                                   save_banner('Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. '
+                                               'Ce ai scris rămâne în panou.'), NEWUSE], ADD), PH)
 # 10 · Șterge (D39): Breeder 3 unused → its Dialog over the inert page and panel, focus on Anulează
 DLG = ('<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        '<h2 id="dlg-t">Șterge tipul de hrană Breeder 3</h2>'

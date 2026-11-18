@@ -140,7 +140,7 @@ boards = []
 boards.append(('', 'telefon', screen(FORM(), B.savebar(sum1(), SUM2, ADD))))
 # 2 · salvat — read-only form, C5 Toast (with undo), Livrare nouă
 toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Livrare adăugată · '
-         f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]} · stoc Hîrbovăț: <span class="ip-num">{n(AFTER)}</span> kg · preț de adăugat de proprietar</span>'
+         f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]} · stoc Hîrbovăț: <span class="ip-num">{n(AFTER)}</span> kg · fără preț</span>'  # C5 (FX06): ends on the price note, craft §6 "fără preț"; 3 lines at 390
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm(ro=True), DATE_RO, ftype(ro=True), qty(state='ro'), effect(BEFORE, AFTER, AVG3, DAYS, when='înainte'), note(ro=True), NOPRICE]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='adăugat · '), f'<span>{EV["user"]} ·</span><span><span class="ip-num">{EV["at"][11:]}</span> · fără preț</span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Livrare nouă</button>'), overlay=toast)))

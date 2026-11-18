@@ -302,7 +302,7 @@ def phone_list():
                    f'<td class="ip-nowrap">{lamp("ok", "activ") if u["active"] else lamp("off", "dezactivat")}</td></tr>' for u in BASE)
     blk = (f'<section class="ip-block" aria-labelledby="h-usr"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-usr">Utilizatori</h2>'
            f'<span class="ip-note">{U["counts"](BASE)}</span></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-usr">'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-usr">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable s22-ptable"><caption class="ip-sr">Utilizatorii, cu rolul, fermele, ultima intrare și starea lor</caption>'
            f'<thead><tr><th scope="col">Nume · rol · ferme · intrare</th><th scope="col">Stare</th></tr></thead><tbody>{rows}</tbody></table></div>'
            f'<p class="ip-note ip-m0">Utilizatorii îi adaugi și îi editezi pe calculator.</p></section>')
@@ -383,8 +383,8 @@ desk('--salvat', f'Dr. Ceban salvat · {D39}: Telița adăugată',
      shell(ulist(WITH_C2, focus='ceban')) + toast('Dr. Ceban salvat · Veterinar la Telița și Hîrbovăț', 'Salvează utilizatorul',
                                                    "the panel closes and focus goes back to Dr. Ceban's Acțiuni key"))
 # 8 · eroare la salvare (D39): the same change, draft kept, Banner + Reîncearcă (focus) under the fields
-SAVE_ERR = save_banner('Modificările lui Dr. Ceban nu s-au salvat: conexiunea s-a întrerupt. Ce ai bifat rămâne în panou. '
-                       'Verifică conexiunea la internet, apoi apasă Reîncearcă.')
+SAVE_ERR = save_banner('Modificările lui Dr. Ceban nu s-au salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. '
+                       'Ce ai bifat rămâne în panou.')
 desk('--eroare-la-salvare', f'Dr. Ceban · eroare la salvare · {D39}: Telița bifată',
      vp(ulist(cur='ceban')) + upanel(CEBAN, farms_on=('Telița', 'Hîrbovăț'), extra=SAVE_ERR), PH)
 # 9 · your own account: the only active owner keeps the role (A2), farms "toate", Dezactivează aria-disabled with the reason

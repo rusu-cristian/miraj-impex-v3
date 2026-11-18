@@ -1,8 +1,9 @@
 """python3 s16s_render.py [--measure] [stems…] : render the S16S boards listed by s16s_build.py in /tmp/s16/states.json at their
 board width and height to design/shots/S16-5.png, S16-6.png, … (board order), with s16_render.py's checks (ids, ARIA refs,
 names, contrast, targets, tab order, sheet body overflow, nothing under the panel).
---measure: on the desktop-dupa-stergere board (built with scroll 0) read the top of the Jurnal block, write scroll = top −
-space-6 (or page height − board height, if smaller: the page never ends above the board's foot) into s16_heights.json ("S16-corecteaza--desktop-dupa-stergere@scroll"); rebuild with s16s_build.py <repo> after."""
+--measure: on the desktop-dupa-stergere board, at 1440 and 1280, print the focused Corectează's top/bottom and the page's
+top/bottom; writes nothing. FX06: that board's page sits at its end by CSS (s16s_build), at every width, so no scroll is stored
+(was "S16-corecteaza--desktop-dupa-stergere@scroll" in s16_heights.json, which left the key at y 1076 at 1280)."""
 import asyncio, json, pathlib, sys, re
 from playwright.async_api import async_playwright
 R = pathlib.Path(__file__).resolve().parents[3]
@@ -23,9 +24,10 @@ async def main():
             await pg.goto(f'file:///tmp/s16/{st}.html'); await pg.wait_for_timeout(800)
             r = await pg.evaluate(CHECK); print(st, w, json.dumps(r, ensure_ascii=False))
             if measure:
-                sh = await pg.evaluate('document.querySelector(".ip-dockpage").scrollHeight')  # page height (the board clips it)
-                hs = json.loads(HJ.read_text()); hs[MS + '@scroll'] = min(r['jurnal'] - 24, sh - h); HJ.write_text(json.dumps(hs, indent=1) + '\n')
-                print('scroll', hs[MS + '@scroll']); await pg.close(); break
+                for vw in (w, 1280):
+                    await pg.set_viewport_size({'width': vw, 'height': h}); await pg.wait_for_timeout(200)
+                    print(vw, await pg.evaluate('[".ip-focus", "main.ip-shell__main"].map(s => { const r = document.querySelector(s).getBoundingClientRect(); return [s, Math.round(r.top), Math.round(r.bottom)]; })'))
+                await pg.close(); break
             await pg.screenshot(path=str(R / 'design/shots' / f'S16-{i}.png'))
             await pg.close()
         await b.close()

@@ -213,7 +213,7 @@ B.append(('Salvarea a eșuat: rândul rămâne deschis, cu codul scris (focus pe
                [farm_row('hirbovat')] + section_rows('i', 'hirbovat', after={'H1': edit_row('i', 3, 'Compartiment nou în H1', 'H1.3')})
                + [add_row('hirbovat')],
                banner=banner('fault', ['Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.',
-                                       'Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă Reîncearcă.'], focus=True))))
+                                       'Verifică conexiunea la internet, apoi apasă Reîncearcă. Codul scris rămâne în rând.'], focus=True))))
 DIALOG = ('<div class="ip-scrim"><div class="ip-dialog" role="dialog" aria-modal="true" aria-labelledby="j-t" aria-describedby="j-d">'
           '<h2 id="j-t">Retrage secțiunea H5-2 de la Telița</h2>'
           '<p id="j-d" style="margin:0">H5-2 nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte.</p>'

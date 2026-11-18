@@ -146,8 +146,8 @@ def new_read(extra=''):
                 + G['foot'](P, True, f'Se salvează {NL} de rânduri în ghidul nou {NEWN}.')
                 + G['live'](f'Fișier citit: {NL} de rânduri, toate valide.'))
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="gi-save-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="ip-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Numele, tipul și cele {NL} de rânduri citite rămân aici. '
-            'Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
+            f'<p class="ip-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. '
+            f'Numele, tipul și cele {NL} de rânduri citite rămân aici.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the fault Banner (role=alert) above the keys; the name, '
               'the type and the rows read stay as typed and read. -->')

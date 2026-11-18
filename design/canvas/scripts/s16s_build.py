@@ -220,8 +220,9 @@ boards.append(('desktop-sterge-confirmare', 'desktop · Șterge · confirmare ·
 # după ștergere — the panel closes; the page is S4 · Păsări generated again (s4s/s4t, method A, S16P fix 1) with the
 # H4.1 ♀ 14.11.2026 record removed in memory (s4s_build DROP): its 5 deaths go back to the birds alive from 14.11, so the
 # Jurnal (page 1, 15 rows) loses that row and the 16th moves up, and every total counts the deletion (head ♀ 25 257, Readout
-# mortality, Pe secțiuni H4.1 ♀ 4 122, SAPT 40). Toast "Mortalitate ștearsă · …" (object first, D143) + Anulează. Page full width (no panel), scrolled to the
-# Jurnal or, if the page ends sooner, to its end (measured: s16s_render.py --measure).
+# mortality, Pe secțiuni H4.1 ♀ 4 122, SAPT 40). Toast "Mortalitate ștearsă · …" (object first, D143) + Anulează. Page full width (no panel), scrolled to its
+# end at every board width, as the browser leaves it when the panel closes (FX06, CSS below; was a scroll measured at 1440, which
+# left the focused key at y 1076 at 1280, under the fold).
 _sp = importlib.util.spec_from_file_location('s4t_build_drop', HERE / 's4t_build.py')
 T2 = importlib.util.module_from_spec(_sp); T2.DROP = (RDAY, SEC, 'F'); _sp.loader.exec_module(T2)
 assert T2.s4.DROPQ == NEW and T2.s4.alive[(SEC, 'F')] == DDEL[DDAY] == 4122
@@ -234,8 +235,6 @@ assert f'din {n(1097)}' in PGD and '#istoric-H4.1-14.11' not in PGD and hen(n(FT
 _key = re.search(r'<a class="ip-btn ip-btn--ghost" href="#corecteaza-ev\d+">Corectează<span class="ip-sr"> Mortalitate H4\.2, 14\.11\.2026</span></a>', PGD)
 assert _key and PGD.count(_key.group(0)) == 1
 PGD = PGD.replace(_key.group(0), _key.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost ip-focus"'))
-DSCROLL = HS.get('S16-corecteaza--desktop-dupa-stergere@scroll', 0)
-if DSCROLL: PGD = PGD.replace('<main class="ip-shell__main s4-main">', f'<main class="ip-shell__main s4-main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
 T_DEL = f'Mortalitate ștearsă · {SEC} · {num(dd(RDAY))} · în viață azi ♀ {num(n(DDEL[DDAY]))}'
 boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu de stare (D39)', 'd',
                f'<div class="ip-dockpage s16s-vp--full">{PGD}</div>' + toast(T_DEL, desk=True)))
@@ -246,7 +245,9 @@ CSS_ADD = '''
 .s16s-lock{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2);margin:var(--space-1) 0 0}'''
 CSS_P = Q.CSS_P + CSS_ADD
 CSS_D = Q.CSS_D + SC.BANNER + '''
-.s16s-vp--full{right:0} /* panel closed: the page takes the full width */'''
+.s16s-vp--full{right:0} /* panel closed: the page takes the full width */
+.s16s-vp--full > .ip-shell{height:100%} /* FX06: the page scrolled to its end at any width: the Sidebar fills the board, */
+.s16s-vp--full > .ip-shell > .ip-shell__main{align-self:flex-end} /* the page's foot on the board's foot, its top above */'''
 
 # ---------- write ----------
 STEM0, TITLE0 = Q.STEM0, Q.TITLE0

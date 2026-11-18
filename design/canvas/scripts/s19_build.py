@@ -257,7 +257,7 @@ def phone_list():
                  f'<tr><th scope="row" class="ip-table__child">Ciclu</th><td>{cyc_cell(f)}</td></tr></tbody>')
     blk = (f'<section class="ip-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
            f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-fer">'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-fer">'
            f'<table class="ip-table ip-table--rowheads s19-table s19-ptable"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'
            f'{rows}</table></div>'
            f'<p class="ip-note ip-m0">Fermele și secțiunile le editezi pe calculator.</p></section>')

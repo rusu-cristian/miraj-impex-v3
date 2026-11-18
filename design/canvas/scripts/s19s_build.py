@@ -111,7 +111,7 @@ def edit(level, label, value, e=None, focus=True, is_last=True):
     return r
 TREE_BANNER = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body">'
                '<p class="ip-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
-               '<p class="ip-m0">Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p></div>'
+               '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Codul scris rămâne în rând.</p></div>'
                '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')  # FX04 (D143): §49 + Reîncearcă (focus, S16P)
 ORDER_UP = ['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2']
 assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
@@ -148,7 +148,7 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
 desk('--salvat', f'salvat · {D39}: ghidul Teliței ales din „fără ghid”', SAVED + TOAST, hd('--salvat'))
 # 5 · eroare la salvare (D39, the same edit): draft kept, Banner + Reîncearcă (focus) under the fields it covers
 BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),
-        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou. Verifică conexiunea la internet, apoi apasă Reîncearcă.'),
+        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou.'),
         M.tree_farm('telita', noguide=True)]
 desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales din „fără ghid”',
      M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)

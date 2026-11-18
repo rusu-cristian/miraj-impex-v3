@@ -231,7 +231,7 @@ PEGG_W = sum(r['avg_egg_weight_g'] * r['total_eggs'] for r in _pw) / sum(r['tota
 PEGG_WK = sorted({r['cycle_week'] for r in _pw if r['total_eggs']})
 assert PEGG_NOW == 9314 and sum(r['total_eggs'] for r in _pw) + PEGG_NOW == PD['meta']['totals']['total_eggs'] == 4606935
 assert (PEGG_WK[0], PEGG_WK[-1]) == (5, s4.PFIN) == (5, 47) and n(PEGG_W, 1) == '62,0' and abs(PEGG_W - 61.9677) < 1e-4
-OLD_PEAK = f'<span class="ip-stat__val">{n(22739)}<small>ouă/zi</small></span>'  # FIN16: S4's peak-week Stat (was its SAPT 47 egg weight, 69,9 g)
+OLD_PEAK = f'<span class="ip-stat__val">{n(22739)}</span>'  # FIN16: S4's peak-week Stat (was its SAPT 47 egg weight, 69,9 g); FX06: no unit, the caption says "ouă pe zi"
 def stats_past():
     sp = s4.stats_past()
     old = [d for d in sp.split('\n') if 'Vârf · ouă pe zi' in d]  # FIN16: S14 keeps its own egg-mass Stat in that place

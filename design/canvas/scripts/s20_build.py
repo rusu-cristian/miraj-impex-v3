@@ -128,9 +128,8 @@ def block(hid, title, inner, note='', count=''):
     n = f'<p class="ip-note ip-m0">{note}</p>' if note else ''
     return (f'<section class="ip-block" aria-labelledby="{hid}"><div class="ip-sechead"><h2 class="ip-t-heading" id="{hid}">{title}</h2>{c}</div>'
             f'{inner}{n}</section>')
-def framed(label_id, table, focus=True):
-    t = ' tabindex="0"' if focus else ''
-    return f'<div class="ip-tablescroll ip-tablescroll--framed"{t} role="region" aria-labelledby="{label_id}">{table}</div>'
+def framed(label_id, table):  # FX06: every scroll region is focusable (Folosit de too)
+    return f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="{label_id}">{table}</div>'
 
 # ---- what a guide holds (list and detail)
 def weeks_txt(g):
@@ -201,7 +200,7 @@ def used_block(g, name, cyc):
     farms = sorted({FARM[c['farm_id']]['name'] for c in cyc})
     k = len(cyc)
     note = f'E și ghidul fermei {", ".join(farms)}: ciclul ei următor îl folosește.'
-    return block('h-use', 'Folosit de', framed('h-use', tb, focus=False), note, cyc_words(k))
+    return block('h-use', 'Folosit de', framed('h-use', tb), note, cyc_words(k))
 
 def spark(g, k, s, last_wk):
     """Small curve (SYS06 .ip-spark, 160×48) of the guide's own figure: x = guide week over the whole guide, so curves of one
@@ -395,7 +394,7 @@ def phone_list():
                  f'<tr><th scope="row" class="ip-table__child">Folosit de</th><td><span class="s20-uses">{used_txt(g)}</span></td></tr></tbody>')
     blk = (f'<section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2>'
            f'<span class="ip-note">{num(len(ORDER))} ghiduri</span></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" aria-labelledby="h-gh">'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-gh">'
            f'<table class="ip-table ip-table--rowheads s20-table s19-ptable"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, '
            f'coloanele și ciclurile care le folosesc</caption>{rows}</table></div>'
            f'<p class="ip-note ip-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>')

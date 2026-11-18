@@ -266,7 +266,7 @@ def fs_prev():  # Hîrbovăț · Seria 2025 (real previous flock; no flock count
             + fig('eggs', f'Masă medie ou · SAPT {s4.PFIN}', f'{n(fin["avg_egg_weight_g"], 1)}<small>g</small>', GN))
     return f'''<article class="ip-fsum ip-fsum--wide" aria-labelledby="fs-hirbovat" aria-describedby="fs-hirbovat-c">{fs_head('hirbovat', 'Hîrbovăț', '#/ferme/hirbovat?ciclu=cyc-hirbovat-2025', lamp('off', 'închis'))}
 <p class="ip-fsum__cycle" id="fs-hirbovat-c">{ddate(cP['start_date'])}–{ddate(cP['end_date'])} · {cP['weeks']} săpt. · început dedus</p>
-<div class="ip-fsum__alive"><span class="ip-cap">Populat · început dedus {ddate(cP['start_date'])}</span><div><span class="ip-pair ip-pair--lg"><b>–</b></span><span class="ip-note">{s4.NOFLOCK}</span></div></div>
+<div class="ip-fsum__alive"><span class="ip-cap">Populat · început dedus {ddate(cP['start_date'])}</span><div><span class="ip-pair ip-pair--lg"><span class="ip-sex"><b>–</b></span></span><span class="ip-note">{s4.NOFLOCK}</span></div></div>
 <dl class="ip-fsum__figs">{figs}</dl></article>'''
 NOACC = ['Nu ai acces la această fermă.', 'Cere acces proprietarului.']
 def summaries(mode='default'):
@@ -400,17 +400,14 @@ CSS = s4.CSS + '''
 .s3-diff{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s3-notes{display:flex;flex-direction:column;gap:var(--space-1)}
 .s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
-.s3-skmeta .ip-skel{display:block}
 .s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}
 .s3-sktrack{padding-top:calc(var(--space-5) + 2 * var(--ip-hair))}
 .s3-sklane + .s3-sklane{margin-top:calc(var(--space-5) + 2 * var(--ip-hair))}
 .s3-sklbl{width:60%;display:block}
 .s3-skbar{height:calc(var(--space-6) + var(--ip-hair) + var(--ip-hair));display:block}
 .s3-skaxis{height:var(--space-6)} /* the month axis room, left empty */
-.s3-sklegend .ip-skel{display:block}
 .s3-sklegend{height:var(--space-4);display:flex;align-items:center}
 .s3-skcard{gap:var(--space-3)}
-.s3-skcard .ip-skel,.s3-panel .ip-skel{display:block}
 .s3-skfig{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
 .s3-skrow{display:flex;justify-content:space-between}
 .s3-right{margin-left:auto}

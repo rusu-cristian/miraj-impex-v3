@@ -120,7 +120,7 @@ boards.append(('fara-acces', 'vet · fără acces', 'p', pscreen([PH(D), box], k
 
 # 8 · vet · eroare la încărcare — online only (spec §1): fault Banner naming what failed + Reîncearcă; keys stay
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("fault", 16)}<div class="ip-banner__body">'
-       f'<p class="ip-m0">Lipsesc date și Introdus azi nu s-au încărcat. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p></div>'
+       f'<p class="ip-m0">„Lipsesc date” și „Introdus azi” nu s-au încărcat. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p></div>'
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscreen([PH(A.CTX_VET), ban, A.entrykeys()])))
 

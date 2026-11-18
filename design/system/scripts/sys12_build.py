@@ -192,7 +192,8 @@ L.append(('Se încarcă (skeleton, aria-busy)', users('f', SK + '<tr><td colspan
 FAIL = ('<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">' + svg(IC['fault']) + '<div class="ip-banner__body">'
         '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi apasă Reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
         + btn('Reîncearcă', 'secondary').replace('ip-btn--secondary"', 'ip-btn--secondary ip-banner__key"') + '</div>')
-L.append(('Eroare la încărcare (fără tabel)', users('g', '', '– lista nu s-a încărcat', extra=FAIL, table=False)))
+# FX06: the list head names no count while the list failed (as S22 since FIN07): the alert says it
+L.append(('Eroare la încărcare (fără tabel)', users('g', '', '', extra=FAIL, table=False).replace('<p class="ip-note" id="g-sum"></p>', '', 1)))
 
 # dialogs (the row menu's actions)
 O.append(('Resetează parola · confirmare (focus pe Anulează)', dialog('h', 'Resetează parola lui Ion Rusu',

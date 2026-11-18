@@ -1348,9 +1348,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* AlertRow list (opt-in, div.ip-list.ip-list--alerts): the list sets the row layout from its own width. Under 480px
  * (phone) the text takes the whole first line after the tile, and the action link and the status lamp share a second
  * line, link under the text (48px target) and lamp in the right column (D86); from 480px one line, as section 4.
- * A figure never splits from its unit: the title's span.ip-num and .ip-sex groups stay on one line (as the S4 shell). */
+ * A figure never splits from its unit: the title's .ip-sex groups stay on one line (its bare span.ip-num: section 1, FX05). */
 .ip-list--alerts{container-type:inline-size}
-.ip-list--alerts .ip-ev__main > span.ip-num,.ip-list--alerts .ip-ev__main .ip-sex{white-space:nowrap}
+.ip-list--alerts .ip-ev__main .ip-sex{white-space:nowrap}
 @container (max-width: 479.98px){
   .ip-list--alerts > .ip-ev--alert{flex-wrap:wrap;row-gap:0}
   .ip-list--alerts > .ip-ev--alert > .ip-ev__main{flex:1 1 calc(100% - var(--record-tile) - var(--space-3))}
