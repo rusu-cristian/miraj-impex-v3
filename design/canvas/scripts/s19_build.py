@@ -6,7 +6,7 @@ H1 H3 H4 with compartments H1.1 … H4.2, laying cycle open from 10.02.2026 (SAP
 The farm panel's section tree is the SYS10 SectionTree (additions.css §28): its markup helpers are read from
 design/system/scripts/sys10_build.py (the part above its preview blocks, so nothing is written there).
 Boards (row below S18: y 32813 + 1624 + 120 = 34557; x step w + 80; D110):
-  S19-ferme-sectiuni                         desktop list: PageHeader (Setări › Ferme și secțiuni, "Fermă nouă"), DataTable
+  S19-ferme-sectiuni                         desktop list: PageHeader (Setări › Ferme și secțiuni, "Adaugă fermă"), DataTable
                                              of farms (Tip, Ghid Tag, Secțiuni, Ciclu, Editează)
   --hirbovat                                 list beside the non-modal farm SidePanel (Hîrbovăț): Nume (focus), Tip read-only
                                              (cycle open), Ghid Select + next-cycle rule, SectionTree, Salvează ferma
@@ -91,7 +91,7 @@ def meta(farms=True):
     return f'<div class="ip-row s4-meta"><span class="ip-note">Tipul, ghidul și secțiunile fiecărei ferme{tail}</span></div>'
 def newkey(pressed=False):
     p = ' is-pressed" aria-expanded="true" aria-controls="fp' if pressed else ''
-    return f'<button type="button" class="ip-btn ip-btn--secondary{p}">{icon("plus", 16)}Fermă nouă</button>'
+    return f'<button type="button" class="ip-btn ip-btn--secondary{p}">{icon("plus", 16)}Adaugă fermă</button>'   # FIN07 (D127): keys are verbs (craft §6); the panel keeps its title
 def header(pressed=False, farms=True):
     key = f'\n<div class="ip-row">{newkey(pressed)}</div>' if farms else ''   # no farms: the EmptyState holds the one next step
     return f'<header class="ip-pagehead">\n<div>\n{CRUMBS}\n<h1>Ferme și secțiuni</h1>\n{meta(farms)}\n</div>{key}\n</header>'

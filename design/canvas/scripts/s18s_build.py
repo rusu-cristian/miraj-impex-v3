@@ -4,7 +4,7 @@ page, as S17): the new desktops follow the two S18 desktops; the S18 phones move
 phones follow them. Today = 16.11.2026 (D23/D24) unless the board is a replay of the real creation (07.10.2025, D73/D83).
 Boards
   --se-incarca                  header kept, CycleTrack skeleton (S2P ip-trackskel) + framed table skeleton, hidden status
-  --eroare-la-incarcare         header kept (Serie nouă stays), fault Banner + Reîncearcă in place of track and table
+  --eroare-la-incarcare         header kept (Adaugă serie stays), fault Banner + Reîncearcă in place of track and table
   --fara-acces                  Observator Sidebar, title only, EmptyState "Nu ai acces la Serii." + "Înapoi la Acasă"
                                 (a manager or a vet: the same picture with their own nav and role sentence; not drawn, one board)
   --desktop-scris               replay 07.10.2025: the list as it was before the creation (Seria 2025 only, Hîrbovăț open
@@ -16,7 +16,7 @@ Boards
                                 Hîrbovăț, so the list beside it is drawn on the same premise (the move not entered: Telița
                                 open SAPT 58, no Hîrbovăț cycle in Seria 2026); fault Banner, Creează seria disabled
   --salvat                      replay 07.10.2025 after Creează seria: panel closed, Seria 2026 in the list (Telița open,
-                                SAPT 1, populare), Toast in B4 words + Anulează, focus back on Serie nouă
+                                SAPT 1, populare), Toast in B4 words + Anulează, focus back on Adaugă serie
   --inchide-seria               16.11.2026, D39: Seria 2025 as if not closed yet (its last cycle ended 28.01.2026), its
                                 Închide seria pressed, Dialog "Închide Seria 2025" over the inert page, focus on Anulează
   --telefon-eroare-la-salvare   replay 07.10.2025: the typed sheet kept, fault Banner + Reîncearcă right above the
@@ -348,7 +348,7 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')   # fix 1: undo until 23:59 (owner), as S9/S10; S18P: B4 words
 assert WK_T0 == 1 and GUIDE[cT['guide_id']] == GUIDE['g-growth'] == 'Ross 308 creștere'
 NEWKEY = T.newkey(); assert NEWKEY.count('class="ip-btn ip-btn--secondary"') == 1
-FOCUS_NOTE = ('<!-- S18P focus after Creează seria: the panel closes and focus returns to Serie nouă, the key that opened it; '
+FOCUS_NOTE = ('<!-- S18P focus after Creează seria: the panel closes and focus returns to Adaugă serie, the key that opened it; '
               'the Toast (role=status) announces the save and keeps Anulează in the tab order. -->')
 SAVED = page(scene_track(SC_AFTER), TBL_AFTER, when='after'); assert SAVED.count(NEWKEY) == 1
 SAVED = SAVED.replace(NEWKEY, FOCUS_NOTE + NEWKEY.replace('class="ip-btn ip-btn--secondary"', 'class="ip-btn ip-btn--secondary ip-focus"'))

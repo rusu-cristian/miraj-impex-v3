@@ -3,7 +3,7 @@ through s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws t
 (y 39345): the new desktops follow the 16 S22 desktops; the S22 phone moves right (x only). Today = 16.11.2026.
 Markup is the SYS12 UserRow / OneTimePassword / Dialog (additions.css §30) through the S22 helpers; no new screen CSS.
 S22P: SYS12 dialog() is role=alertdialog and otp() leaves the status region empty on a failed copy (the screen-side
-overrides are gone); panel boards mark the current row (§45) and step the add key down (D120).
+overrides are gone); panel boards mark the current row (§45). FIN07: the S22 list page (page-head add key, h2 list head).
 People as S22: Proprietar (you), Ion Rusu, Dr. Ceban (kit, illustrative); Petrea (A2 sample), Observator exemplu, every
 sign-in time, both passwords and every failure are D39 state examples, said in the board titles.
 Boards (desktops, 1440×1024)
@@ -53,7 +53,7 @@ def ulist_open(us, key, item, up=False, p='u'):
     finally:
         U['row'] = orig
     assert body.count('aria-expanded="true"') == 1 and body.count(' is-active') == 1
-    return f'<div class="s4-block">{S.users(p, body, U["counts"](us))}{S.NOTE}</div>'
+    return S.users(p, body, U["counts"](us), S.NOTE)
 MENU_NOTE = ('<!-- Row menu (SYS12, APG menu button): focus is on the item marked is-active; ↑/↓, Home/End, type-ahead move; '
              'Esc or Tab closes it and focus goes back to the Acțiuni key; disabled items stay focusable and inert, their reason '
              'tied by aria-describedby. -->')

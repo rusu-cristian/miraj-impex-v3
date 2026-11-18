@@ -180,8 +180,10 @@ L.append(('Rând dezactivat · Petrea: Reactivează; Resetează parola indisponi
 EMPTY = ('<tr class="ip-users__empty"><td colspan="7"><span class="ip-lamp ip-lamp--off">doar tu</span>'
          '<span>Doar tu ai acces. Adaugă primul utilizator.</span></td></tr>')
 L.append(('Gol · doar proprietarul (A2 Empty)', users('e', row('e', OWNER) + EMPTY, counts([OWNER]))))
-SK = ''.join('<tr aria-hidden="true" class="ip-users__skel">' + ''.join(
-    f'<td><span class="ip-skel ip-skel--w{w}"></span></td>' for w in (2, 3, 3, 3, 2, 3)) + '<td></td></tr>' for _ in range(4))
+# FIN07: the DataTable skeleton row (additions.css §42): two tr.ip-table__skel rows, one bar per cell, the action bar at the end
+SK = ''.join('<tr aria-hidden="true" class="ip-table__skel">' + ''.join(
+    f'<td><span class="ip-skel ip-skel--w{w}"></span></td>' for w in (2, 3, 3, 3, 2, 3))
+    + '<td class="ip-users__act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>' for _ in range(2))
 L.append(('Se încarcă (skeleton, aria-busy)', users('f', SK + '<tr><td colspan="7" class="ip-users__srcell"><span class="ip-sr">Se încarcă utilizatorii</span></td></tr>',
                                                    '<span class="ip-users__wait">Se încarcă.</span>', busy=True)))
 FAIL = ('<div class="ip-banner ip-banner--fault">' + svg(IC['fault']) + '<div class="ip-users__bnrow"><p class="ip-users__bn">'
@@ -222,7 +224,7 @@ FOOT = ('<p class="ip-note" style="margin:0;max-width:{w}">Din kit: numele Ion R
         '„Proprietar exemplu” și „Observator exemplu”, celelalte loginuri, orele ultimei intrări, contul dezactivat al lui '
         'Petrea și cele două parole.</p>')
 
-ur = ('<!-- @dsCard group="Data" height=2432 subtitle="SYS12" -->\n'
+ur = ('<!-- @dsCard group="Data" height=2368 subtitle="SYS12" -->\n'
       '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
       f'<div>{cap("S22 · Utilizatori · listă · desktop (lățime 1056 px)")}'
       f'<div class="ip-stack" style="gap:var(--space-8)">{lst}</div></div>\n'

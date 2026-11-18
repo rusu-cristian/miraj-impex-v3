@@ -6,7 +6,7 @@ deliveries) and the extracts README (Hîrbovăț deliveries and stock are sample
 D116: a used type can be retired but never deleted; retiring is refused while a farm still has it in stock (the vets feed
 it daily); "Pentru" is fixed once a type is used; names unique ignoring case and diacritics (as D111/D114).
 Boards (row below S20: y 35701 + 2380 + 120 = 38201; x step w + 80; desktops first, then the phone):
-  S21-tipuri-hrana          list: PageHeader (Setări › Tipuri de hrană, "Tip nou"), DataTable (Tip hrană, Pentru, Stare
+  S21-tipuri-hrana          list: PageHeader (Setări › Tipuri de hrană, "Adaugă tip"), DataTable (Tip hrană, Pentru, Stare
                             lamp, Folosit la, Editează)
   --breeder-2               list beside the non-modal SidePanel: Nume (focus), Pentru read-only (used), Activ ticked with the
                             stock rule, Folosit la + Șterge tipul aria-disabled with its reason
@@ -19,7 +19,7 @@ Boards (row below S20: y 35701 + 2380 + 120 = 38201; x step w + 80; desktops fir
   --eroare-la-salvare       D39: the same new type, save failed: fault Banner + Reîncearcă (focus), draft kept
   --sterge                  D39: Breeder 3 unused → Șterge tipul live, its Dialog (focus on Anulează)
   --se-incarca              header kept (meta without counts), §42 skeleton rows
-  --eroare-la-incarcare     fault Banner + Reîncearcă in place of the table, Tip nou kept
+  --eroare-la-incarcare     fault Banner + Reîncearcă in place of the table, Adaugă tip kept
   --fara-acces              Observator (a manager or a vet: same picture, own nav and role sentence)
   --niciun-tip              D39 first use: EmptyState + "Adaugă primul tip" (no series yet)
   --retras-stoc-0           S21P, D39: Activ unticked on Breeder 2 with Hîrbovăț stock at 0 kg (Breeder 3 added): accepted
@@ -85,7 +85,7 @@ def meta(rows=FT):
     return f'<div class="ip-row s4-meta"><span class="ip-note">Tipurile de hrană din livrări și din hrana zilnică{tail}</span></div>'
 def newkey(pressed=False):
     p = ' is-pressed" aria-expanded="true" aria-controls="tp' if pressed else ''
-    return f'<button type="button" class="ip-btn ip-btn--secondary{p}">{icon("plus", 16)}Tip nou</button>'
+    return f'<button type="button" class="ip-btn ip-btn--secondary{p}">{icon("plus", 16)}Adaugă tip</button>'   # FIN07 (D127): keys are verbs (craft §6); the panel keeps its title
 def header(pressed=False, rows=FT, key=True):
     k = f'\n<div class="ip-row">{newkey(pressed)}</div>' if key else ''
     return f'<header class="ip-pagehead">\n<div>\n{CRUMBS}\n<h1>Tipuri de hrană</h1>\n{meta(rows)}\n</div>{k}\n</header>'
@@ -329,7 +329,7 @@ desk('--eroare-la-salvare', f'Tip nou · eroare la salvare · {D39}: Breeder 3',
 DLG = ('<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        '<h2 id="dlg-t">Șterge tipul de hrană Breeder 3</h2>'
        '<p class="ip-dialog__note" id="dlg-n">Breeder 3 nu are livrări și nici hrană zilnică, așa că dispare din listă și din formulare. '
-       'Dacă îl vrei înapoi, îl adaugi din nou cu Tip nou.</p>'
+       'Dacă îl vrei înapoi, îl adaugi din nou cu Adaugă tip.</p>'
        '<div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button>'
        '<button type="button" class="ip-btn ip-btn--destructive">Șterge tipul</button></div></div></div>')
 desk('--sterge', f'Breeder 3 · Șterge tipul · {D39}: tip nou, nefolosit',

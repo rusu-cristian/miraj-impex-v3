@@ -13,7 +13,7 @@ through s3_build, which asserts them against transfers-seria2026):
   the board is a D39 state example, labelled: as if the move had not been entered, Telița would hold the birds that
   arrived at Hîrbovăț (♀ 26 765 · ♂ 3 060 = 29 825, D28 — replaces the kit's 26 881). Spec sample "Seria 2027 · 2027".
 Boards (row below S17: y 30164 + 2529 + 120 = 32813; x step w + 80):
-  S18-serii                       desktop, owner, the list: PageHeader (Setări › Serii, "Serie nouă"), CycleTrack full
+  S18-serii                       desktop, owner, the list: PageHeader (Setări › Serii, "Adaugă serie"), CycleTrack full
                                   with both series, DataTable of series (group rows) and their cycles, notes
   S18-serii--serie-noua           desktop, the list reflowed beside the non-modal SidePanel "Serie nouă" (D73), nothing typed,
                                   Telița and Azi preset, focus on Nume
@@ -243,7 +243,7 @@ META = f'<div class="ip-row s4-meta"><span class="ip-note">Seriile anuale, popul
 def newkey(pressed=False, touch=False):
     t = ' ip-btn--touch' if touch else ''
     p = ' is-pressed" aria-expanded="true" aria-controls="sn' if pressed else ''   # the panel exists only while open
-    return f'<button type="button" class="ip-btn ip-btn--secondary{t}{p}">{icon("plus", 16)}Serie nouă</button>'
+    return f'<button type="button" class="ip-btn ip-btn--secondary{t}{p}">{icon("plus", 16)}Adaugă serie</button>'   # FIN07 (D127): keys are verbs (craft §6); the panel keeps its title
 def header(pressed=False):
     return (f'<header class="ip-pagehead">\n<div>\n{CRUMBS}\n<h1>Serii</h1>\n{META}\n</div>\n'
             f'<div class="ip-row">{newkey(pressed)}</div>\n</header>')

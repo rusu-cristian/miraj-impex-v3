@@ -62,7 +62,7 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghid
            f'<section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table">'
            f'{M.COLS}<tbody>{SK_R}{SK_R}</tbody></table></div></section>')
-# ---- load error: the Banner in place of the table; Fermă nouă stays (the name check runs on save)
+# ---- load error: the Banner in place of the table; Adaugă fermă stays (the name check runs on save)
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-fer"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="s4s-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'

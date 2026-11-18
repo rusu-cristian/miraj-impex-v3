@@ -1210,8 +1210,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* Empty (A2): your own row, then an off Lamp "doar tu" + the spec sentence; the head's key is the next step. */
 .ip-users__t tr.ip-users__empty > td{height:auto;padding-block:var(--space-3);white-space:normal;color:var(--ink-secondary)}
 .ip-users__empty .ip-lamp{margin-right:var(--space-3)}
-/* Loading: static skeleton rows (aria-busy on the table); a hidden cell names it. Load failed: fault Banner + Reîncearcă. */
-.ip-users__skel .ip-skel{display:block}
+/* Loading: two section 42 skeleton rows (tr.ip-table__skel, FIN07; aria-busy on the table); a hidden cell names it. Load failed: fault Banner + Reîncearcă. */
 .ip-users__t td.ip-users__srcell{height:auto;padding:0;border:0}
 .ip-users__wait{color:var(--ink-muted)}
 .ip-users__bn{margin:0}
