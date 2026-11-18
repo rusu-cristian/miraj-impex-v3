@@ -187,7 +187,7 @@ def desk(state='default', user=None):
 
 # ================================================================= phone (manager Ion Rusu, 390×844)
 def p_header():
-    h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="s14-crumb">Setări</span></a>')
+    h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     return f'<header class="ip-pagehead s2-phead s14-phead"><div>{h}<h1>Istoric modificări</h1></div></header>'
 def p_filter():
     pf = Z.p_filter()

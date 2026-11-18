@@ -238,7 +238,7 @@ NOFARMS = s4.empty_box('fără ferme', ['Nu există nicio fermă.', 'Adaugă pri
 
 # ================================================================= phone list (owner, read-only, D110)
 def p_header():
-    h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="s14-crumb">Setări</span></a>')
+    h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     return f'<header class="ip-pagehead s2-phead s14-phead"><div>{h}<h1>Ferme și secțiuni</h1></div></header>'
 def phone_list():
     """Phone (D110): one framed table, a group row per farm and one row per field (fits 358 px; no sideways scroll)."""
@@ -298,7 +298,6 @@ CSS19 = '''
 CSS_DESK = T.CSS_DESK + SC.OPT + CSS19
 CSS_PL = T.CSS_PL + CSS19 + '''
 .s19-ptable td{height:auto;padding-block:var(--space-2)}
-.s14-phead .ip-crumbs a{padding-inline:var(--space-1);margin-inline:calc(-1 * var(--space-1))} /* S19P fix 1: "Setări" tap area 50×46 (≥44), line unchanged */
 .s19-ptable .ip-table__child{width:calc(var(--space-12) * 2);vertical-align:middle}'''
 
 # ================================================================= write

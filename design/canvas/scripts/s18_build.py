@@ -370,7 +370,7 @@ def panel(body, day, key):
 
 # ================================================================= phone list (owner)
 def p_header():
-    h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="s14-crumb">Setări</span></a>')
+    h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     return f'<header class="ip-pagehead s2-phead s14-phead"><div>{h}<h1>Serii</h1></div></header>'
 def phone_list():
     key = f'<div class="s18-pkey">{newkey(touch=True)}</div>'

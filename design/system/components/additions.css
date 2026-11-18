@@ -1635,3 +1635,29 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 :is(.ip-table tr,.ip-list > .ip-ev):is(.is-current,:has([aria-current="true"])) .ip-tag--neutral{background:var(--rule)}
 :is(.ip-table tr,.ip-list > .ip-ev):is(.is-current,:has([aria-current="true"])) :is(.ip-btn--ghost,.ip-iconbtn):is(:hover,.is-hover):not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--rule)}
 :is(.ip-table tr,.ip-list > .ip-ev):is(.is-current,:has([aria-current="true"])) :is(.ip-btn--ghost,.ip-iconbtn):is(:active,.is-pressed):not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--line)}
+
+/* =====================================================================================================
+ * FIN06 · Breadcrumb hit area, system-wide. Spec: components.md › PageHeader › Breadcrumbs, Additions › FIN06.
+ * ===================================================================================================== */
+
+/* ---------- 52. Breadcrumbs · hit area: desktop ≥24px (D46), touch ≥44px (FIN06) ---------- */
+/* nav.ip-crumbs[aria-label] > a (each parent page), span[aria-hidden] "›", span[aria-current=page]. bundle.css draws the
+ * line (11/14 uppercase, space-2 gap); this section only grows each link's target, never the line or the words:
+ * - desktop: the link is an inline-flex box space-6 (24) tall and (space-6 − 1lh)/2 (5) wider on each side, pulled back by
+ *   the same negative margins, so the crumb line keeps its 14px and nothing moves ("SERIA 2026" 69×14 → 79×24). The box
+ *   overhangs the title's 2px top margin by 3px: position:relative (no z-index) paints it over the h1, so that strip
+ *   still takes the click. The focus ring hugs the word, drawn by ::after (border, focus-w, radius-xs, no hit test)
+ *   instead of the outline: 2px off the 14px line at the sides and top, and flush with it below, so its lower edge stops
+ *   at the line's foot + focus-w = the h1's top edge and never covers the title's first ink (a circumflex on "Înlocuiește"
+ *   starts at that edge; the old 2px-offset outline overlapped it by 2px).
+ * - touch (ip-crumbs--touch, phone page heads; replaces the S14S/S14P/S19P screen rules .s14-phead / .s14-crumb): the link
+ *   reaches space-4 beyond the line above and below and space-1 at the sides, same negative margins (46 tall, word + 8 wide;
+ *   "SETĂRI" 50×46, "RAPOARTE" 72×46); with the phone screen's space-4 top padding the area starts at the screen's top edge.
+ *   A ring round that area would cross the title, so the word itself, span.ip-crumbs__txt inside the link, takes the
+ *   system ring (2px focus, 2px offset, radius-xs) and the link draws none. A word under 36px wide needs a wider area. */
+.ip-crumbs a{position:relative;display:inline-flex;align-items:center;min-height:var(--space-6);margin-block:calc((1lh - var(--space-6)) / 2);padding-inline:calc((var(--space-6) - 1lh) / 2);margin-inline:calc((1lh - var(--space-6)) / 2)}
+.ip-crumbs a:is(:focus-visible,.ip-focus){outline:none}
+.ip-crumbs a:is(:focus-visible,.ip-focus)::after{content:"";position:absolute;inset:calc((var(--space-6) - 1lh) / 2 - var(--ip-focus-offset) - var(--ip-focus-w)) calc((var(--space-6) - 1lh) / 2 - var(--ip-focus-offset) - var(--ip-focus-w)) calc((var(--space-6) - 1lh) / 2 - var(--ip-focus-w));border:var(--ip-focus-w) solid var(--focus);border-radius:var(--radius-xs);pointer-events:none}
+.ip-crumbs--touch a{min-height:0;padding:var(--space-4) var(--space-1);margin:calc(-1 * var(--space-4)) calc(-1 * var(--space-1))}
+.ip-crumbs--touch a:is(:focus-visible,.ip-focus)::after{content:none}
+.ip-crumbs--touch a:is(:focus-visible,.ip-focus) > .ip-crumbs__txt{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset);border-radius:var(--radius-xs)}

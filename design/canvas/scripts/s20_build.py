@@ -395,7 +395,7 @@ def phone_list():
            f'<table class="ip-table ip-table--rowheads s20-table s19-ptable"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, '
            f'coloanele și ciclurile care le folosesc</caption>{rows}</table></div>'
            f'<p class="ip-note s4s-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>')
-    cr = crumbs('Ghiduri').replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="s14-crumb">Setări</span></a>')
+    cr = crumbs('Ghiduri').replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     body = A.phone([f'<header class="ip-pagehead s2-phead s14-phead"><div>{cr}<h1>Ghiduri</h1></div></header>', blk])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
                  ('class="ip-tabbar__item" href="#mai-mult"', 'class="ip-tabbar__item is-current" href="#mai-mult" aria-current="page"')):

@@ -85,10 +85,11 @@ def p_readout():  # the Readout without its GuideChart (chart, keyboard help, li
     assert 'ip-chart' not in ro and 'lay-' not in ro
     return ro
 CRUMB = '<a href="#rapoarte">Rapoarte</a>'
-def p_header():  # S14P: the crumb text sits in its own span, which takes the focus ring (the link keeps its 46px tap area)
+def p_header():  # S14P/FIN06: system touch crumb (additions.css section 52): the word's span takes the ring, the link the 46px tap area
     h = X.header().replace('<header class="ip-pagehead">', '<header class="ip-pagehead s2-phead s14-phead">', 1)
     assert h.count(CRUMB) == 1
-    return h.replace(CRUMB, '<a href="#rapoarte"><span class="s14-crumb">Rapoarte</span></a>')
+    assert h.count('<nav class="ip-crumbs"') == 1  # FIN06: system touch crumb (section 52)
+    return h.replace(CRUMB, '<a href="#rapoarte"><span class="ip-crumbs__txt">Rapoarte</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)
 def phone_page(sheet=False):
     top = t4.top('h-key', 'Producție față de ghid, ciclul curent', p_readout(), X.stats_cur())
     pf = p_filter()
@@ -139,10 +140,7 @@ CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
 .s14-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s14-phone .s4t-lk{min-height:var(--control-h-touch)} /* touch: 48px target */
 .s14-phead .s4-meta{margin-top:var(--space-2)}
-.s14-pfilter{gap:var(--space-2) var(--space-3)}
-.s14-phead .ip-crumbs a{position:relative;display:inline-flex;align-items:center;padding-block:var(--space-4);margin-block:calc(-1 * var(--space-4))} /* touch: 46px hit area, line unchanged; positioned so the h1 drawn after it does not take taps on its lower part */
-.s14-phead .ip-crumbs a:focus-visible{outline:none} /* S14P: the ring hugs the word (its span), not the 46px tap area that crosses the title */
-.s14-phead .ip-crumbs a:focus-visible > .s14-crumb,.s14-phead .ip-crumbs a.ip-focus > .s14-crumb{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset);border-radius:var(--radius-xs)}'''
+.s14-pfilter{gap:var(--space-2) var(--space-3)}'''
 CSS_SHEET = CSS_PHONE + SS.VIEW + SS.MODAL + '''
 .s14-fsheet{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0} /* S14P: phone FilterBar sheet, as the section 33 sheet */
 .s14-fsheet__body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-5);padding:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
