@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 4167727
+Updated: 2026-11-18 · Last commit: ee76b87
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 93 / 97 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN13B; all SYS jobs done
+Done 94 / 97 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN14; all SYS jobs done
 
 ## Just finished
+- FIN13B previews: §9 FarmSummary narrow row 3-column grid (25px overflow gone; S2/S3 boards pixel-identical); 34 dsCard heights = content + 32; every sys and canvas script finds the repo from __file__ (s1/s19 pass __file__ into sys13/sys10); D123/FIN01/FIN03 notes superseded by D134; D135 to review; 1 fix round (render paths) (ee76b87)
 - FIN13 system docs + previews: §55 track text 11px (S4 Readout box 48→56), §34 key margin, hidden track/chart aria "sapt." (table names keep SAPT, D134 to review), SYS11 ip-sex, previews on §53 (SexCountRow draws mixed key), §49 UserRow Banner, SectionTree/Checkbox/EntryKeys/Button/CycleTrack/FeedTotals/LoginCard docs; old §6/§18 select rules + ip-users__bnrow dropped; 140 boards markup, 18 pixels; FIN13B queued (preview overflow, dsCard heights, paths); passed first review (4167727)
 - FIN12 data fixes: S19 nume-gol example "Telița 2"; S13 Fermă + S14/S14S Fermă filter → §53 `.ip-select`, Telița disabled ("fără ciclu deschis" / "creștere, fără ouă"); S8 aria-labelledby sec-l; select in a sheet opens a sheet on top, outer inert (D133, to review); S10 mixed key drawable on no 844 board → FIN13 preview; 1 docs fix round (215e71e)
 - FIN11G skeleton geometry: §54 + scripts/skel.py; loading = loaded geometry at 1440 and 1280 (Readouts, CycleTrack + legend, `ip-stat--skel`, tables share `--ip-colw` share + `--ip-colmin` th::after strut, ≤0.3px; field skeleton S6/S7/S8/S16); S11 se-incarca h 1246, S4 se-incarca 1520 (user OK'd canvas.json edit), S8 911; D132 to review; open: S2 head line 8px, S16 status line, S3 s3-sk*; 1 fix round (1280) (8cf3bbb)
@@ -76,7 +77,7 @@ Done 93 / 97 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN13B → FIN14 → FIN15 → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN14 → FIN15 → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -142,6 +143,7 @@ Done 93 / 97 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - FIN11G: project/additions.css (§54) + 163 boards + canvas.json (S4 se-incarca 1520, S8 se-incarca 911, S11 se-incarca 1246)
 - FIN12: 23 boards (S8 ×10, S13 ×4, S14 ×8, S19 --nume-gol)
 - FIN13: project/additions.css (§29, §34, §55, removed §6/§18 select rules + ip-users__bnrow) + 140 boards (18 changed pixels: S4, S9, S10, S17, S20)
+- FIN13B: project/additions.css (§9; boards unchanged)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
