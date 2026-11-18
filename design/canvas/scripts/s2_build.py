@@ -98,6 +98,20 @@ assert (LAY, LAYG, MH['F'], MH['M']) == (74.0, 74.1, 5.54, 11.93)
 def head(cap, note, hid):
     return f'<div class="ip-list__head"><h2 class="ip-cap" id="{hid}">{cap}</h2><p class="ip-note">{note}</p></div>'
 
+# FX02: on desktop a page block is the system's section.ip-block > div.ip-sechead > h2.ip-t-heading (16/22) + its note, as
+# every other desktop page (S3, S4, S9–S22); phones keep the caption heads above. The blocks are drawn once (phone markup)
+# and desk_heads() rewrites them for the desktop page: s2-block blocks, MissingRow and EntryKeys. UnpricedCount keeps its
+# caption: that head is inside its panel (RecordTile + caption), as a Readout caption, not a page block head.
+HEAD_RE = re.compile(r'<div class="(?:ip-list__head|ip-missing__head)"><h2 class="ip-cap"( id="[^"]+")>(.*?)</h2><p class="ip-note">(.*?)</p></div>')
+EK_RE = re.compile(r'<section class="ip-entrykeys"( aria-labelledby="[^"]+")><h2 class="ip-cap"( id="[^"]+")>(.*?)</h2>')
+def desk_heads(html):
+    html = HEAD_RE.sub(r'<div class="ip-sechead"><h2 class="ip-t-heading"\1>\2</h2><span class="ip-note">\3</span></div>', html)
+    html = EK_RE.sub(r'<section class="ip-entrykeys ip-block"\1><div class="ip-sechead"><h2 class="ip-t-heading"\2>\3</h2></div>', html)
+    html = html.replace('<section class="s2-block"', '<section class="ip-block"').replace('<section class="ip-missing"', '<section class="ip-missing ip-block"')
+    assert not re.search(r'ip-list__head|ip-missing__head|s2-block', html), 'a caption block head left on desktop'
+    assert re.findall(r'<h2 class="ip-cap"[^>]*>', html) in ([], ['<h2 class="ip-cap" id="up">']), 'only the UnpricedCount panel keeps a caption'
+    return html
+
 def day_row(day, sec, sx):  # one section × sex × day of S['daily'] (alive at the end of that day, grams of the day before)
     r = {(x['date'], x['section'], x['sex']): x for x in S['daily']}
     prev = (dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat()
@@ -357,7 +371,7 @@ def sidebar(role):
     assert sb.count('is-current') == 1 and 'href="#acasa" aria-current="page"' in sb
     return sb
 def desktop(role, parts):
-    return f'<div class="ip-shell">{sidebar(role)}<main class="ip-shell__main">\n{"".join(parts)}\n</main></div>'
+    return f'<div class="ip-shell">{sidebar(role)}<main class="ip-shell__main">\n{desk_heads("".join(parts))}\n</main></div>'
 
 VET = phone([pagehead(CTX_VET, True), missing(), entrykeys(), introdus()], vet=True)
 MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True), introdus_empty(INTRO_MGR)])  # D87: Introdus azi last
@@ -367,16 +381,18 @@ OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols
 # ---------- CSS ----------
 PICK = ('body{',)  # FIN15: .ip-screen/__main are additions.css §57; FIN15B: .s7-m0 is ip-m0 (§58)
 CSS7 = '\n'.join(l for l in B.CSS.splitlines() if l.startswith(PICK)); assert CSS7.count('\n') == len(PICK) - 1
-CSS_SHARED = '''
+CSS_BLOCK = '''
 .s2-block{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
-.s2-block > .ip-list__head{margin:0}
+.s2-block > .ip-list__head{margin:0}'''  # phone blocks only (FX02: desktop blocks are additions.css §61 ip-block)
+CSS_LINK = '''
 .s2-more,.s2-lnk{display:inline-flex;align-items:center;min-height:var(--space-6);align-self:flex-start} /* text links keep a >=24px target (D46) */'''
+CSS_SHARED = CSS_BLOCK + CSS_LINK
 CSS_P = CSS7 + CSS_SHARED + '''
 .s2-phead h1{margin:0}
 .s2-more{min-height:var(--control-h-touch)} /* touch: 48px target */'''
-CSS_D = s4.CSS + CSS_SHARED + '''
+CSS_D = s4.CSS + CSS_LINK + '''
 .s2-cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--space-6);align-items:start}
-.s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-small) + var(--space-2))} /* the panel's top on the alert list's top (under its head) */
+.s2-cols > .ip-unpriced{margin-top:calc(var(--ip-lh-heading) + var(--space-3))} /* the panel's top on the alert list's top (under its section head, FX02) */
 .s2-fsums{grid-template-columns:repeat(2,minmax(0,1fr))}
 .ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */'''  # FIN15B: the CycleTrack width box is additions.css §65 ip-trackbox
 

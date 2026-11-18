@@ -1929,3 +1929,18 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 @container (max-width: 1159.98px){.ip-track--1160{display:none}.ip-track--1000{display:block}}
 @container (max-width: 999.98px){.ip-trackbox:has(> .ip-track--720) > .ip-track--1000{display:none}.ip-track--720{display:block}}
 @container (max-width: 719.98px){.ip-trackbox:has(> .ip-track--560) > .ip-track--720{display:none}.ip-track--560{display:block}}
+
+/* =====================================================================================================
+ * FX02 · A heading focused by script keeps its place. Spec: components.md › Additions › FX02.
+ * ===================================================================================================== */
+
+/* ---------- 66. Focused heading: a ring that never moves the page (FX02) ---------- */
+/* A heading that takes focus by script, h1–h3[tabindex="-1"] (the page title after a save, S20 "salvat"), draws its ring
+ * as the desktop crumb links do (section 52): the outline is dropped and ::after draws a focus-w border round the
+ * heading's box, focus-w outside it above and below and focus-w + focus-offset at the sides (the system ring's reach).
+ * The PageHeader h1's 2px block margins (bundle.css) hold the ring exactly: it ends flush with the crumb line's foot and
+ * the meta line's top and covers no ink of either. The box itself does not change, so the head keeps its height and
+ * nothing under it moves. Was S20's screen rule h1[tabindex="-1"]{margin-block: (focus-w + focus-offset) × 2}, which
+ * grew the head from 64 to 76 while the title held focus. */
+:is(h1,h2,h3)[tabindex="-1"]:is(:focus-visible,.ip-focus){position:relative;outline:none}
+:is(h1,h2,h3)[tabindex="-1"]:is(:focus-visible,.ip-focus)::after{content:"";position:absolute;inset:calc(-1 * var(--ip-focus-w)) calc(-1 * (var(--ip-focus-w) + var(--ip-focus-offset)));border:var(--ip-focus-w) solid var(--focus);border-radius:var(--radius-xs);pointer-events:none}

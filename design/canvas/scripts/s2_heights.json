@@ -2,7 +2,7 @@
  "S2-acasa": 900,
  "S2-acasa--manager": 1856,
  "S2-acasa--manager-desktop": 1024,
- "S2-acasa--proprietar-desktop": 1136,
+ "S2-acasa--proprietar-desktop": 1176,
  "S2-acasa--se-incarca": 844,
  "S2-acasa--inainte-de-12": 844,
  "S2-acasa--zi-trecuta-blocat": 844,
@@ -14,7 +14,7 @@
  "S2-acasa--manager-desktop--se-incarca": 1024,
  "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0": 1024,
  "S2-acasa--proprietar-desktop--se-incarca": 1024,
- "S2-acasa--proprietar-desktop--toate-cu-pret": 1136,
+ "S2-acasa--proprietar-desktop--toate-cu-pret": 1176,
  "S2-acasa--observator": 2172,
- "S2-acasa--observator-desktop": 1116
+ "S2-acasa--observator-desktop": 1156
 }

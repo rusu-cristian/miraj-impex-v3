@@ -166,7 +166,7 @@ CRUMBS = ('<nav class="ip-crumbs" aria-label="Cale"><a href="#acasa">Acasă</a><
 HEAD_D = Q.pagehead(A.CTX_VET, Q.LEAD).replace(' s2-phead', '', 1)
 assert HEAD_D.count('<div><h1>') == 1
 HEAD_D = HEAD_D.replace('<div><h1>', f'<div>{CRUMBS}<h1>', 1)
-DESK = f'<div class="ip-shell">{vet_sidebar()}<main class="ip-shell__main s15s-desk">\n{"".join([HEAD_D] + groups())}\n</main></div>'
+DESK = f'<div class="ip-shell">{vet_sidebar()}<main class="ip-shell__main s15s-desk">\n{HEAD_D}{A.desk_heads("".join(groups()))}\n</main></div>'  # FX02: desktop section heads (s2_build.desk_heads)
 boards.append(('desktop', 'vet · desktop', 'd', DESK))
 
 # phones: Înregistrează is the current tab on S15 (s15_build.nav_here)
@@ -177,7 +177,6 @@ CSS_ADD = '''
 .s15s-busy{gap:var(--space-6)} /* the two skeleton lists sit as the groups do (s2-main gap) */'''
 CSS_P = Q.CSS_VP + CSS_ADD
 CSS_D = A.CSS_D + Q.CSS_ADD + SC.REC + '''
-.ip-shell__main > .ip-pagehead h1{margin:0}
 .s15s-desk > *{max-width:calc(var(--space-12) * 20)} /* one reading column: figures and their keys stay within reach (960px) */'''
 
 # ---------- write ----------

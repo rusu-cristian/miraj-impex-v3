@@ -215,7 +215,7 @@ def v_sidebar():
     return sb
 V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(cap='Stoc hrană'), A.farms_block()]
 VIEWER_P = A.phone(V_PARTS(True), viewer=True)
-VIEWER_D = f'<div class="ip-shell">{v_sidebar()}<main class="ip-shell__main">\n{"".join(V_PARTS(False))}\n</main></div>'
+VIEWER_D = f'<div class="ip-shell">{v_sidebar()}<main class="ip-shell__main">\n{A.desk_heads("".join(V_PARTS(False)))}\n</main></div>'  # FX02: desktop section heads
 for v in (VIEWER_P, VIEWER_D):
     assert not any(w in v for w in ('Înregistrează', 'Introdus azi', 'preț', 'lei', 'Completează', 'ip-entrykey', 'ip-unpriced', 'Dr. Ceban ·'))
 CSS_V = A.CSS_P + '''
