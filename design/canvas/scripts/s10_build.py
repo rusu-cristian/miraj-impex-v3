@@ -251,7 +251,7 @@ boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (
 ref_save = B.savebar(f'{lamp("fault", "refuzat")}<span>{RS}</span>', f'<span>cel mult {roo(RM)}</span>', SELL_OFF)
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([farm(), DATE, rows('refuz'), buyer(), note(), effect('refuz')], ref_save, view=' ip-screen__view--end'), 'vp'))
 # 4 · salvat — read-only form scrolled to its end, Toast with Anulează (undo the same day), Vânzare nouă
-toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Vândut · '
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Vânzare înregistrată · '
          f'♀ {num(n(TOT[0]))} · ♂ {num(n(TOT[1]))} · Hîrbovăț · ciclul închis</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm('ro'), DATE_RO, rows('ro'), buyer(True), note(True), effect()]
 boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.savebar(sum1(lead='vândut'), f'<span>poți anula până la {num("23:59")}</span>',
@@ -259,8 +259,8 @@ boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.sav
 # 5 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă right above the EffectPreview, form scrolled to its
 #   end (as S9P), typed values kept as a draft (D60), key stays enabled
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Vânzarea nu s-a salvat: '
-       f'{pair(*TOT)}, Hîrbovăț, {num(dd(DT))}. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
+       f'{pair(*TOT)}, Hîrbovăț, {num(dd(DT))}. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
+       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare · exemplu de stare (D39)', screen([farm(), DATE, rows('all'), buyer(), note(), ban, effect()], B.savebar(sum1(), SUM2, SELL), view=' ip-screen__view--end'), 'vp'))
 # 6 · parțială — Toate on H4.1 and H4.2 only (D39 example from counts-latest): the farm keeps ♀ 17 028 · ♂ 1 729, the cycle
 #   continues, so Înregistrează vânzarea saves directly (no Dialog); form scrolled to its end (the preview)

@@ -16,8 +16,8 @@ Boards
   --nume-folosit          D39: Fermă nouă "Hirbovat" (ouat): the name is taken by Hîrbovăț (compared without case and
                           diacritics, D111)
   --ghid-lista            D39: Telița without a guide, the Ghid list open (Fără ghid · Ghiduri de creștere)
-  --adauga-compartiment   D39: Hîrbovăț, Adaugă compartiment in H1, "H1.3" typed, save failed: tree Banner, code kept,
-                          focus on the row's Salvează (the retry)
+  --adauga-compartiment   D39: Hîrbovăț, Adaugă compartiment in H1, "H1.3" typed, save failed: tree Banner + Reîncearcă
+                          (focus, S16P; FX04, was the row's Salvează), code kept
   --cod-duplicat          D39: Hîrbovăț, "H1.2" typed in the new-compartment row: error, focus in the field
   --redenumeste-cod-gol   D39: Telița, Redenumește H5-2 with the code cleared: error, focus in the field
   --retrasa-mutata        D39: Telița after the Retrage H5-2 Dialog (H5-2 retrasă, listed last, no key) and then Mută în
@@ -66,7 +66,7 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghid
 LOADERR = (f'<section class="ip-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="ip-m0">Fermele și secțiunile lor nu s-au încărcat.</p>'
-           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Poți adăuga o fermă nouă și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 # ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
 def noaccess():
@@ -109,9 +109,10 @@ def edit(level, label, value, e=None, focus=True, is_last=True):
         r = r.replace(a, 'class="ip-input ip-stree__in is-error is-focus"')
         assert r.count(err('st-e-err', e)) == 1   # S19P: alert icon, as the panel field errors (SYS10 draws it since FIN13)
     return r
-TREE_BANNER = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="ip-grow">'
+TREE_BANNER = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body">'
                '<p class="ip-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
-               '<p class="ip-m0">Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă din nou Salvează.</p></div></div>')
+               '<p class="ip-m0">Codul scris rămâne în rând. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p></div>'
+               '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')  # FX04 (D143): §49 + Reîncearcă (focus, S16P)
 ORDER_UP = ['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2']
 assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
 MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
@@ -147,7 +148,7 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
 desk('--salvat', f'salvat · {D39}: ghidul Teliței ales din „fără ghid”', SAVED + TOAST, hd('--salvat'))
 # 5 · eroare la salvare (D39, the same edit): draft kept, Banner + Reîncearcă (focus) under the fields it covers
 BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),
-        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou. Verifică conexiunea la internet, apoi reîncearcă.'),
+        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou. Verifică conexiunea la internet, apoi apasă Reîncearcă.'),
         M.tree_farm('telita', noguide=True)]
 desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales din „fără ghid”',
      M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)
@@ -166,10 +167,9 @@ desk('--nume-folosit', f'Fermă nouă · nume deja folosit · {D39}: „Hirbovat
 # 8 · Ghid list open (D39 fără ghid): filtered to the farm's type
 desk('--ghid-lista', f'Telița fără ghid · lista Ghid deschisă · {D39}',
      M.vp('telita', noguide=('telita',)) + M.fpanel('telita', TEL_TIP, M.ghid_field('telita', 'open'), M.tree_farm('telita', noguide=True)), PH)
-# 9 · Adaugă compartiment H1.3, save failed (D39): Banner over the tree, the code kept, focus on the row's Salvează
+# 9 · Adaugă compartiment H1.3, save failed (D39): Banner + Reîncearcă (focus, S16P; FX04) over the tree, the code kept in the row
 r = edit(3, 'Compartiment nou în H1', 'H1.3', focus=False)
-a = 'class="ip-btn ip-btn--secondary">Salvează'; assert r.count(a) == 1
-r = r.replace(a, 'class="ip-btn ip-btn--secondary ip-focus">Salvează')
+assert r.count('class="ip-btn ip-btn--secondary">Salvează') == 1
 desk('--adauga-compartiment', f'Hîrbovăț · Adaugă compartiment H1.3 · salvarea a eșuat · {D39}',
      M.vp('hirbovat') + M.fpanel('hirbovat', HIR_TIP, M.ghid_field('hirbovat'), tree_x('hirbovat', banner=TREE_BANNER, after={'H1': r})), PH)
 # 10 · cod duplicat (D39): "H1.2" typed in the new-compartment row

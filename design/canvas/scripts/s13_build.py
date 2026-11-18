@@ -122,10 +122,10 @@ SUM2 = f'<span><span class="ip-num">{dd(EDAY)}</span> ·</span><span>fără pre�
 ADD = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Adaugă</button>'
 ADD_OFF = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="sb-sum">Adaugă</button>'
 
-def screen(parts, save, overlay=''):  # s7s_build.screen with this form's header
+def screen(parts, save, overlay='', view=''):  # s7s_build.screen with this form's header; view ' ip-screen__view--end': scrolled to its end
     return f'''<div class="ip-screen ip-screen--fixed">
 {HEAD}
-<div class="ip-screen__view">
+<div class="ip-screen__view{view}">
 <main class="ip-screen__main">
 {"".join(parts)}
 </main>
@@ -139,18 +139,19 @@ boards = []
 # 1 · telefon — the 10.11.2026 delivery typed, before Adaugă
 boards.append(('', 'telefon', screen(FORM(), B.savebar(sum1(), SUM2, ADD))))
 # 2 · salvat — read-only form, C5 Toast (with undo), Livrare nouă
-toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Adăugat · '
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Livrare adăugată · '
          f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]} · stoc Hîrbovăț: <span class="ip-num">{n(AFTER)}</span> kg · preț de adăugat de proprietar</span>'
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm(ro=True), DATE_RO, ftype(ro=True), qty(state='ro'), effect(BEFORE, AFTER, AVG3, DAYS, when='înainte'), note(ro=True), NOPRICE]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='adăugat · '), f'<span>{EV["user"]} ·</span><span><span class="ip-num">{EV["at"][11:]}</span> · fără preț</span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Livrare nouă</button>'), overlay=toast)))
 # 3 · cantitate lipsă — kg left empty (validated on blur): field error naming the fix, Adaugă disabled
 boards.append(('cantitate-lipsa', 'cantitate lipsă', screen(FORM('error', None), B.savebar(sum1(None), f'{lamp("fault", "refuzat")}<span>scrie cantitatea în kg</span>', ADD_OFF))))
-# 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft
+# 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă (focus, S16P), typed values kept as a draft; the Banner
+#   ends the form, scrolled to its end, right above the SaveBar (D141, as S9/S10)
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Livrarea nu s-a salvat: '
-       f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]}, Hîrbovăț, <span class="ip-num">{dd(EDAY)}</span>. Verifică conexiunea și apasă Reîncearcă.</p>'
-       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + FORM(), B.savebar(sum1(), SUM2, ADD))))
+       f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]}, Hîrbovăț, <span class="ip-num">{dd(EDAY)}</span>. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
+       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
+boards.append(('eroare-la-salvare', 'eroare la salvare', screen(FORM() + [ban], B.savebar(sum1(), SUM2, ADD), view=' ip-screen__view--end')))
 
 CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''
 .s13-err{margin:0}

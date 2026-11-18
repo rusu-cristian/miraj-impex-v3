@@ -142,11 +142,12 @@ sv5 = S7.savebar(line1(A5, r5), f'{lamp("fault", "refuzat")}<span>{SEC5} <span c
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([B.DATE, h5], sv5, 'refuzat')))
 TARGET['refuzat'] = 't-H12'
 
-# 6 · eroare la salvare — connectivity (spec §1): fault Banner + Reîncearcă, typed values kept (draft), Salvează enabled (D60)
+# 6 · eroare la salvare — connectivity (spec §1): fault Banner + Reîncearcă (focus, S16P), typed values kept (draft), Salvează enabled (D60);
+#   the Banner ends the form, scrolled to its end, right above the SaveBar (D141, as S9/S10)
 r6 = removals(B.ALL); eg6 = sum(x[1] for x in B.EGGS)
 assert (r6, eg6) == ((8, 1), 18688)
-ban6 = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Nu s-a salvat Zilnic din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{len(B.ALL)}</span> secțiuni · {sexv("F", f"{MINUS}{r6[0]}")} · {sexv("M", f"{MINUS}{r6[1]}")} · <span class="ip-num">{n(eg6)}</span> ouă). Verifică conexiunea și apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban6, B.DATE, B.HALLS_HTML], B.SAVE, 'eroare-la-salvare')))
+ban6 = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Zilnic nu s-a salvat: <span class="ip-num">{len(B.ALL)}</span> secțiuni · {sexv("F", f"{MINUS}{r6[0]}")} · {sexv("M", f"{MINUS}{r6[1]}")} · <span class="ip-num">{n(eg6)}</span> ouă, <span class="ip-num">{dd(TODAY)}</span>. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>'''
+boards.append(('eroare-la-salvare', 'eroare la salvare', screen([B.DATE, B.HALLS_HTML, ban6], B.SAVE, 'eroare-la-salvare', view_cls='ip-screen__view--end')))
 
 # 7 · fermă fără păsări — Telița: cycle closed 28.02.2026, 0 birds (counts-latest, real): EmptyState with the next step
 C = json.load(open(ROOT / 'design/data/extracts/counts-latest.json', encoding='utf-8'))
@@ -158,8 +159,8 @@ sv7 = f'''<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__su
 boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([date(TODAY, f'fără ciclu deschis · ultimul închis pe {dd(end)}'), empty], sv7, 'ferma-fara-pasari',
                hd=head(f'TELIȚA · {dd(TODAY)}'))))
 
-# 8 · salvat — right after Salvează at the foot of the form: Toast (spec C1 copy) + Anulează, read-only, Editează (D60)
-toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀ <span class="ip-num">{MINUS}{r2[0]}</span> · ♂ <span class="ip-num">{MINUS}{r2[1]}</span></span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
+# 8 · salvat — right after Salvează at the foot of the form: Toast (spec C1 copy, object first: D143) + Anulează, read-only, Editează (D60)
+toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Zilnic salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀ <span class="ip-num">{MINUS}{r2[0]}</span> · ♂ <span class="ip-num">{MINUS}{r2[1]}</span></span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, h2], SAVED_BAR, 'salvat', view_cls='ip-screen__view--end', overlay=toast)))
 
 # 9 · motiv lipsă (S6M, D79) — D39 state example: H1.1 ♀ Sacrificare 2 typed, Motiv left on "Alege" (refusal, D53: blocks

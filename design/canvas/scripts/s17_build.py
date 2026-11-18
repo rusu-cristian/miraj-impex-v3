@@ -122,7 +122,7 @@ def block(state='default', user=None):
         head_note = f'{num(PER_TXT)}{who}'
         lst = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Z.FAULT}</svg>'
                f'<div class="ip-banner__body"><p class="ip-m0">Istoricul modificărilor din {num(PER_TXT)}, toate fermele, nu s-a încărcat.</p>'
-               '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Filtrele rămân cum le-ai ales.</p></div>'
+               '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Filtrele rămân cum le-ai ales.</p></div>'
                '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>')
     else:
         head_note = f'{count_txt(len(rows))}{who} · {num(PER_TXT)}' + (' · cele mai noi întâi' if rows else '')

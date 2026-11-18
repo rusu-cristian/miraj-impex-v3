@@ -281,7 +281,7 @@ LOADING = ('<p class="ip-sr" role="status">Se încarcă utilizatorii, cu rolul �
 # FIN03 (D123): the Banner with action (additions.css §49), role=alert and the S19–S21 copy; the alert announces it, so the
 #   list's status line stays empty (it repeated the Banner's first sentence)
 FAIL = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{U["svg"](U["IC"]["fault"])}<div class="ip-banner__body">'
-        '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
+        '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi apasă Reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
         + sub(BTN("Reîncearcă", "secondary"), 'class="ip-btn ip-btn--secondary"', 'class="ip-btn ip-btn--secondary ip-banner__key"') + '</div>')
 LOADERR = users("u", "", "", extra=FAIL, table=False)   # FIN07: as S19S/S21, the list head names no count; the alert says it
 def noaccess():
@@ -384,7 +384,7 @@ desk('--salvat', f'Dr. Ceban salvat · {D39}: Telița adăugată',
                                                    "the panel closes and focus goes back to Dr. Ceban's Acțiuni key"))
 # 8 · eroare la salvare (D39): the same change, draft kept, Banner + Reîncearcă (focus) under the fields
 SAVE_ERR = save_banner('Modificările lui Dr. Ceban nu s-au salvat: conexiunea s-a întrerupt. Ce ai bifat rămâne în panou. '
-                       'Verifică conexiunea la internet, apoi reîncearcă.')
+                       'Verifică conexiunea la internet, apoi apasă Reîncearcă.')
 desk('--eroare-la-salvare', f'Dr. Ceban · eroare la salvare · {D39}: Telița bifată',
      vp(ulist(cur='ceban')) + upanel(CEBAN, farms_on=('Telița', 'Hîrbovăț'), extra=SAVE_ERR), PH)
 # 9 · your own account: the only active owner keeps the role (A2), farms "toate", Dezactivează aria-disabled with the reason

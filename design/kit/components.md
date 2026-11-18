@@ -304,12 +304,14 @@ Shows the result of a transfer, sale or correction before saving, including any 
 
 An inline message (info, warn, fault, ok): the status tint with a 1px status border and icon. The text stays `ink`.
 
-**With action (FIN03, additions.css §49):** every Banner that carries a key (Reîncearcă, a Button link, an `ip-link` such as Alege ghidul) is `div.ip-banner.ip-banner--act` > 16px icon, `div.ip-banner__body` (the sentences; `p`s space-2 apart), then the key with `.ip-banner__key`. The icon stays on the first text line (§47); the body wraps; the key sits at the end, centred on the Banner's height. When the body would get narrower than space-12 × 6 (288) beside it (phone, SidePanel), the key wraps under the text, at the text's start, space-3 below. Text that stays one line beside a Button key adds `ip-banner--1l` (text, icon and key on one centre line). A load error says what failed and the fix in two sentences: "<what> nu s-au încărcat." / "Verifică conexiunea la internet, apoi reîncearcă." (+ what still works, "Poți … și acum."), `role="alert"`.
+**With action (FIN03, additions.css §49):** every Banner that carries a key (Reîncearcă, a Button link, an `ip-link` such as Alege ghidul) is `div.ip-banner.ip-banner--act` > 16px icon, `div.ip-banner__body` (the sentences; `p`s space-2 apart), then the key with `.ip-banner__key`. The icon stays on the first text line (§47); the body wraps; the key sits at the end, centred on the Banner's height. When the body would get narrower than space-12 × 6 (288) beside it (phone, SidePanel), the key wraps under the text, at the text's start, space-3 below. Text that stays one line beside a Button key adds `ip-banner--1l` (text, icon and key on one centre line). A load error says what failed and the fix in two sentences: "<what> nu s-au încărcat." / "Verifică conexiunea la internet, apoi apasă Reîncearcă." (+ what still works, "Poți … și acum."), `role="alert"`.
+
+**Failure copy (FX04, D143):** the object leads. Save error: "<Obiect> nu s-a salvat: <what was typed>, <day>." (the action's own verb where it is not a save: "nu s-a creat", "nu s-a resetat"); load error: "<Obiecte> nu s-au încărcat."; then one retry line on every failure Banner, "Verifică conexiunea la internet, apoi apasă Reîncearcă.", which names the Banner's own key (so every failure Banner carries Reîncearcă), and what is kept ("Ce ai scris rămâne …"). **Placement (D141):** a save-error Banner is the last part of the form, above the SaveBar or panel keys, the phone view scrolled to its end (`ip-screen__view--end`); after the failed save Reîncearcă takes the focus (S16P). Load errors stay where the content would be.
 
 
 ## Toast
 
-A save confirmation in `control` (graphite), with an optional undo. Not used for errors.
+A save confirmation in `control` (graphite), with an optional undo. Not used for errors. **Copy (FX04, D143):** object first, then the verb, then the figures: "Zilnic salvat · …", "Transfer salvat · …", "Livrare adăugată · …", "Mortalitate ștearsă · …" (never "Salvat · …", "Șters · …").
 
 **Placement (FIN02, additions.css §48):** phone: `div.ip-toastwrap` inset `space-4` at the foot of the screen's view, above the SaveBar or BottomTabBar (in the phone full-screen sheet: above its foot); desktop: `ip-toastwrap--page`, bottom right of the page, `space-8` from both edges, at most `panel-w` wide. A save Toast carries Anulează: `span.ip-toast__txt` + `button.ip-link.ip-toast__undo`.
 
@@ -896,3 +898,8 @@ CSS in additions.css section 66 (new; both copies, identical); S2/S15 desktop ma
 
 ### FX03 · Phone form field gap, 18.11.2026
 - **Phone form gap** (§57): every phone form main (`main.ip-screen__main`: S6–S10, S13) spaces its fields space-6 (24) and sets no gap of its own (S9, S10, S13 lose `.s13-main` space-5); sheets, SidePanel form bodies, the S14/S17 filter sheet (was space-5) and login space-4 (16). Heights: S10 telefon 2068 → 2088. Decided by: Claude, to review (D145).
+
+### FX04 · Failure Banner placement and copy; Toast lead, 18.11.2026
+- **Banner placement** (D141): S6, S7, S8, S13 save errors move from under the FormHeader to the end of the form (S6/S7/S13 scrolled to the end); S13's stock line no longer sits under the SaveBar. Reîncearcă is focused after a failed save on every save-error board (S6–S10, S13 added).
+- **Banner copy** (D143): lead "<Obiect> nu s-a salvat: …" / "<Obiecte> nu s-au încărcat.", retry line "Verifică conexiunea la internet, apoi apasă Reîncearcă." on 23 boards (S2, S6–S10, S12–S22); S19 Adaugă compartiment's tree Banner becomes the §49 Banner with Reîncearcă (focus; was keyless, retry on the row's Salvează).
+- **Toast copy** (D143): object first on S6–S10, S13, S15, S16 (see Toast). No CSS change; no new tokens; board heights and canvas.json unchanged.

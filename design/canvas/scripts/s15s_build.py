@@ -7,7 +7,7 @@ Boards (phones 390×844 viewports, D60; the desktop a page at 1440):
 - se-incarca            vet · head known (route + user), two skeleton lists, hidden status line
 - eroare-la-incarcare   vet · fault Banner naming the day + Reîncearcă (S2S/S12 pattern), no figures
 - actiuni-deschis       vet · 16.11 live · Acțiuni open on Mortalitate H4.2 (the step before the S15 Dialog), focus Editează
-- dupa-stergere         vet · H4.2 row gone, Mortalitate head ♀ −5 · ♂ −1, Toast "Șters · …" + Anulează (H4.2 ♀ 4 110 again)
+- dupa-stergere         vet · H4.2 row gone, Mortalitate head ♀ −5 · ♂ −1, Toast "Mortalitate ștearsă · …" + Anulează (H4.2 ♀ 4 110 again)
 - dupa-2359             vet · page of 16.11 still open after 23:59: keys aria-disabled + reason, menu open on H1.1;
                         merged: H1.1 "modificat la 09:52" (D39, the S2S dupa-2359 time on the Mortalitate save)
 - manager-10-11         manager Ion Rusu · 10.11.2026 replay (D73): his own Livrare hrană 24 000 kg Breeder 2 (11:52,
@@ -100,7 +100,7 @@ boards.append(('se-incarca', 'vet · se încarcă', 'p', Z.pscreen([
 
 # 2 · eroare la încărcare — online only (spec §1): fault Banner with the day and the fix + Reîncearcă; no figures
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{A.icon("fault", 16)}<div class="ip-banner__body">'
-       f'<p class="ip-m0">Înregistrările tale din {num(D)} nu s-au încărcat. Verifică conexiunea și reîncearcă.</p></div>'
+       f'<p class="ip-m0">Înregistrările tale din {num(D)} nu s-au încărcat. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p></div>'
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', Z.pscreen([
     Q.pagehead(A.CTX_VET, lead('Dr. Ceban')), ban], vet=True)))
@@ -113,7 +113,7 @@ boards.append(('actiuni-deschis', 'vet · Acțiuni deschis', 'p', Z.pscreen([
 # 4 · după ștergere — the H4.2 row is gone, the group head counts without it, Toast with Anulează (graphite, role=status)
 fresh()
 toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{A.icon("check", 16)}'
-         f'<p class="ip-toast__txt">Șters · Mortalitate {DEL} · în viață ♀ {num(n(dF["alive_start"]))}</p>'
+         f'<p class="ip-toast__txt">Mortalitate ștearsă · {DEL} · în viață ♀ {num(n(dF["alive_start"]))}</p>'
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 boards.append(('dupa-stergere', 'vet · după ștergere', 'p', Z.pscreen([
     Q.pagehead(A.CTX_VET, lead(counts(21))), *groups(skip=DEL), toast], vet=True)))

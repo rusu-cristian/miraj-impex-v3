@@ -192,16 +192,17 @@ ft5, f5 = ftot(b5)
 tot5 = round(sum(b['kg'] for b in b5), 1); br2 = round(f5[0]['after'])
 assert n(tot5, 1) == f'4{NB}398,9' and br2 == 27611 and n(f5[1]['days'], 1) == '3,8'
 sv5, _, _ = savebar(b5, '<span>Dr. Ceban ·</span><span>poți modifica până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Editează</button>', lead='salvat')
-toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Salvat · <span class="ip-num">12</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc Breeder 2: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
+toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Hrană zilnică salvată · <span class="ip-num">12</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc Breeder 2: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE}</div>', halls(b5), ft5], sv5, overlay=toast)))
 
-# 6 · eroare la salvare — connectivity: fault Banner + Reîncearcă, typed values kept (draft in the browser)
+# 6 · eroare la salvare — connectivity: fault Banner + Reîncearcă (focus, S16P), typed values kept (draft in the browser); the Banner
+#   ends the form, scrolled to its end, right above the SaveBar (D141, as S9/S10)
 m = default_modes(); b6 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft6, f6 = ftot(b6)
 sv6, nc6, tot6 = savebar(b6, stocklamp(f6), SAVE_KEY)
 assert (nc6, n(tot6, 1)) == (10, f'3{NB}691,3')
-ban = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Nu s-au salvat cele <span class="ip-num">{nc6}</span> rânduri din <span class="ip-num">{dd(TODAY)}</span> (<span class="ip-num">{n(tot6, 1)}</span> kg). Verifică conexiunea și apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>'''
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban, B.DATE, B.COPY, halls(b6), ft6], sv6)))
+ban = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Hrana zilnică nu s-a salvat: <span class="ip-num">{nc6}</span> rânduri · <span class="ip-num">{n(tot6, 1)}</span> kg, <span class="ip-num">{dd(TODAY)}</span>. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p><p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>'''
+boards.append(('eroare-la-salvare', 'eroare la salvare', screen([B.DATE, B.COPY, halls(b6), ft6, ban], sv6, view_cls='ip-screen__view--end')))
 
 # 7 · se încarcă — static Skeleton rows (no shimmer); header and date are known from the route
 def skel(w, h=None): return f'<div class="ip-skel" style="width:{w}{";height:" + h if h else ""}"></div>'

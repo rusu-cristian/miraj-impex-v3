@@ -100,7 +100,7 @@ boards.append(('salvat', f'salvat · {dd(Q.AT_D)}, {Q.AT_T}', 'p', Q.screen(
 # 2 · eroare la salvare — online only (spec §1): the draft stays (D60), fault Banner + Reîncearcă right above the preview
 #   (S9P), Salvează corecția stays enabled; the whole body fits above the foot (no scroll)
 BAN = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body">'
-       f'<p class="ip-m0">Corecția nu s-a salvat: {SEC} · {num(dd(RDAY))} · {hen(f"{OLD}{NBS}→{NBS}{NEW}")}. Verifică conexiunea și apasă Reîncearcă.</p>'
+       f'<p class="ip-m0">Corecția nu s-a salvat: {SEC} · {num(dd(RDAY))} · {hen(f"{OLD}{NBS}→{NBS}{NEW}")}. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
        f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div>'
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')  # S16P: focus after a failed save
 boards.append(('eroare-la-salvare', 'eroare la salvare', 'p', Q.screen(
@@ -220,7 +220,7 @@ boards.append(('desktop-sterge-confirmare', 'desktop · Șterge · confirmare ·
 # după ștergere — the panel closes; the page is S4 · Păsări generated again (s4s/s4t, method A, S16P fix 1) with the
 # H4.1 ♀ 14.11.2026 record removed in memory (s4s_build DROP): its 5 deaths go back to the birds alive from 14.11, so the
 # Jurnal (page 1, 15 rows) loses that row and the 16th moves up, and every total counts the deletion (head ♀ 25 257, Readout
-# mortality, Pe secțiuni H4.1 ♀ 4 122, SAPT 40). Toast "Șters · …" + Anulează. Page full width (no panel), scrolled to the
+# mortality, Pe secțiuni H4.1 ♀ 4 122, SAPT 40). Toast "Mortalitate ștearsă · …" (object first, D143) + Anulează. Page full width (no panel), scrolled to the
 # Jurnal or, if the page ends sooner, to its end (measured: s16s_render.py --measure).
 _sp = importlib.util.spec_from_file_location('s4t_build_drop', HERE / 's4t_build.py')
 T2 = importlib.util.module_from_spec(_sp); T2.DROP = (RDAY, SEC, 'F'); _sp.loader.exec_module(T2)
@@ -236,7 +236,7 @@ assert _key and PGD.count(_key.group(0)) == 1
 PGD = PGD.replace(_key.group(0), _key.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost ip-focus"'))
 DSCROLL = HS.get('S16-corecteaza--desktop-dupa-stergere@scroll', 0)
 if DSCROLL: PGD = PGD.replace('<main class="ip-shell__main s4-main">', f'<main class="ip-shell__main s4-main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
-T_DEL = f'Șters · Mortalitate {SEC} · {num(dd(RDAY))} · în viață azi ♀ {num(n(DDEL[DDAY]))}'
+T_DEL = f'Mortalitate ștearsă · {SEC} · {num(dd(RDAY))} · în viață azi ♀ {num(n(DDEL[DDAY]))}'
 boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu de stare (D39)', 'd',
                f'<div class="ip-dockpage s16s-vp--full">{PGD}</div>' + toast(T_DEL, desk=True)))
 

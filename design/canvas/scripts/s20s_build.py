@@ -66,7 +66,7 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă ghidurile, cu tipul, s�
 LOADERR = (f'<section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="ip-m0">Ghidurile nu s-au încărcat.</p>'
-           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți importa un ghid nou și acum.</p></div>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Poți importa un ghid nou și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 # ---- no access (Observator; a manager or a vet: same picture, their own nav and role sentence)
 def noaccess():
@@ -147,7 +147,7 @@ def new_read(extra=''):
                 + G['live'](f'Fișier citit: {NL} de rânduri, toate valide.'))
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="gi-save-err">{icon("alert", 16)}<div class="ip-banner__body">'
             f'<p class="ip-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Numele, tipul și cele {NL} de rânduri citite rămân aici. '
-            'Verifică conexiunea la internet, apoi reîncearcă.</p>'
+            'Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the fault Banner (role=alert) above the keys; the name, '
               'the type and the rows read stay as typed and read. -->')

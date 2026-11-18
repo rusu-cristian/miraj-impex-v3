@@ -228,7 +228,7 @@ LOADING = (f'<p class="ip-sr" role="status">Se încarcă tipurile de hrană, cu 
 LOADERR = (f'<section class="ip-block" aria-labelledby="h-tip"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-tip">Tipuri</h2></div>'
            f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}'
            f'<div class="ip-banner__body"><p class="ip-m0">Tipurile de hrană nu s-au încărcat.</p>'
-           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un tip nou și acum.</p></div>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Poți adăuga un tip nou și acum.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div></section>')
 def noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
@@ -328,7 +328,7 @@ desk('--salvat', f'salvat · {D39}: Breeder 3 adăugat', shell(tlist(ROWS3, focu
 desk('--eroare-la-salvare', f'Tip nou · eroare la salvare · {D39}: Breeder 3',
      NEWVP + panel('Tip nou', '', [name_field('Breeder 3'), for_seg('F'), act_field(True, ACT_ON + ' Îl poți retrage oricând.'),
                                    save_banner('Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. '
-                                               'Verifică conexiunea la internet, apoi reîncearcă.'), NEWUSE], ADD), PH)
+                                               'Verifică conexiunea la internet, apoi apasă Reîncearcă.'), NEWUSE], ADD), PH)
 # 10 · Șterge (D39): Breeder 3 unused → its Dialog over the inert page and panel, focus on Anulează
 DLG = ('<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        '<h2 id="dlg-t">Șterge tipul de hrană Breeder 3</h2>'

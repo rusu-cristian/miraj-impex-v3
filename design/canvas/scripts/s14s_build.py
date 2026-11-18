@@ -55,7 +55,7 @@ def page_error():
     fb = X.filterbar().replace(EXP, s11.export(True))
     ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{FAULT}</svg>'
            '<div class="ip-banner__body"><p class="ip-m0">Raportul Producție pentru Hîrbovăț, ciclul curent, nu s-a încărcat.</p>'
-           '<p class="ip-m0">Verifică conexiunea la internet, apoi reîncearcă.</p></div>'
+           '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă.</p></div>'
            '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key">Reîncearcă</button></div>')
     return f'<div class="ip-shell">{X.sidebar()}<main class="ip-shell__main">\n{head_bare()}\n{fb}\n<div class="s14-page">{ban}</div>\n</main></div>'
 
