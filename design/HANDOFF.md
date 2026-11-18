@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: a3a9bd2
+Updated: 2026-11-18 · Last commit: 756841b
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 110 / 112 (last pass done → FY01–FY04) (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FY03; next FY04; all SYS jobs done
+Done 111 / 112 (last pass done → FY01–FY04) (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FY04 (last job), then Complete; all SYS jobs done
 
 ## Just finished
+- FY03: S2 observator phone FarmSummary `ip-fsum--touch` (s2s copies gone), §9 touch min-width 44 (`calc(var(--control-h-touch) - var(--space-1))`), observator h 2172→2140; rows S14–S1 moved −32 by hand (user approved), docstrings follow; 1 fix round (756841b)
 - FY02: S18 cycle column "07.10.2025–28.02.2026", "07.03.2025–28.01.2026 · început dedus", open cycle "din 07.03.2025 · început dedus" (8 boards); 13 generator docstrings match canvas.json row ys; 1 fix round (wording) (a3a9bd2)
 - FY01 S22 Dialogs: sys12 dialog() → ip-dialog__note + ip-dialog__keys, Anulează secondary; .ip-users__dlg/__dfoot removed; 7 boards + OneTimePassword preview; passed review (99005ea)
 - FINAL2 last pass: FINAL findings all resolved; 4 new (FY01 S22 Dialogs, FY02 S18 range, FY03 S2 observator touch targets, FY04 Banner paragraphs D147 to review); row gaps closed by hand (user approved, 235 boards; notes/FINAL2.md)
@@ -176,6 +177,7 @@ Done 110 / 112 (last pass done → FY01–FY04) (final review done → FX01–FX
 - FINAL2: canvas.json (rows from S3 down moved up: S3 −124, S11–S14 −141, S8–S1 −157)
 - FY01: project/additions.css (§30) + 7 S22 boards
 - FY02: 8 S18 boards
+- FY03: project/additions.css (§9) + S2-acasa--observator + canvas.json (observator h, 171 boards y −32)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
