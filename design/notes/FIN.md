@@ -16,6 +16,10 @@ Every Dialog is role="alertdialog" with focus on Anulează; every Lamp has a wor
 ## Unclear, carried in jobs
 SectionTree aria-controls (FIN13); EntryCardPlus/HallCard section-first naming; S16 boards not drawn: Dialog prefill, cycle-change Dialog, focus return.
 
+## Open from FIN08 (SYS01 / SYS11)
+- SYS01: hidden CycleTrack and chart aria-labels/descs (S2–S4, S10, S16, S18) still write "azi SAPT 40" / "SAPT 3–40"; screen readers may spell SAPT. One system pass to "sapt. n" (D128 left them).
+- SYS11: refused-row reasons and the error-list row links still use a plain ♀/♂ glyph ("Rândul 8 are deja sapt. 4 ♀."); give them the `ip-sex` aria-hidden glyph + `ip-sr` word as the info note (D128).
+
 ## Decisions for the user to review
 D110–D121 (Claude, recommended); defaults D15–D109 "to review"; flagged D24, D25, D27, D53, D59, D63, D64/D91 (viewer prices vs spec §1), D78/D118 (password departs from spec A2), D95/D02 (guide week formula).
 

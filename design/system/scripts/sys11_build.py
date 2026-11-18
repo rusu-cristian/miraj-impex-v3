@@ -2,7 +2,7 @@
 Guide figures come from design/data/extracts/guide-growth.json and guide-laying.json (real workbook guide values);
 guide and file names are illustrative (D22). The three refused rows of the error state are state examples (D39)."""
 import json, pathlib
-REPO = pathlib.Path('/home/claude/miraj-impex-v3')
+REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
 EXT = REPO / 'design/data/extracts'
 GROW = json.loads((EXT / 'guide-growth.json').read_text(encoding='utf-8'))['rows']
@@ -280,7 +280,7 @@ B.append(('Filtru Refuzate · focus pe celula „#REF!” (după linkul din rezu
 lr = number(laying_rows())
 LF = 'Ross 308 ouat'
 INFO_L = ('Ouat % lipsește la vârsta 19–24 și 64–65 (sapt. 1–6 și 46–47), iar tabelul nu are coloanele Greutate g, '
-          'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile ♀.')
+          'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">de găini</span>.')
 B.append(('Ouat · tabel lipit (real, 94 de rânduri): vârstă și SAPT (SAPT = vârstă − 18, D26)', wrap('e',
     src_line('e', 'Tabel lipit', 'din clipboard · tip ouat', counts(len(lr), len(lr), 0), 'Lipește alt tabel')
     + banner('ok', f'<p><b>Toate cele {len(lr)} de rânduri sunt valide.</b> Verifică cifrele și salvează ghidul.</p>')

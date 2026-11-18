@@ -38,7 +38,7 @@ EXP = s11.export()
 assert X.filterbar().count(EXP) == 1
 EXP_RUN = ('<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end" aria-busy="true" aria-disabled="true" aria-describedby="exp-st">'  # Button · loading (system preview): spinner, label kept; busy + aria-disabled while it runs (LoginCard busy pattern: repeat presses ignored)
            '<span class="ip-spin" aria-hidden="true"></span>Exportă .xlsx</button>'
-           f'<span class="ip-sr" role="status" id="exp-st">Se pregătește fișierul .xlsx: Producție Hîrbovăț, ciclul curent, SAPT {X.WEEKS_ALL[0]}–{X.WK}.</span>')
+           f'<span class="ip-sr" role="status" id="exp-st">Se pregătește fișierul .xlsx: Producție Hîrbovăț, ciclul curent, sapt. {X.WEEKS_ALL[0]}–{X.WK}.</span>')
 # S14P: the busy key's look (variant colours kept over the aria-disabled grey, cursor:progress) is additions.css section 37
 def page_viewer_export():
     pg = X.page()
@@ -114,7 +114,7 @@ def p_sheet():
             f'{icon("chev", 16)}</span></div>')
     exp = ('<div class="s14-fsheet__exp"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-describedby="pf-exp">'
            f'{icon("download", 16)}Exportă .xlsx</button>'
-           f'<p class="ip-hint" id="pf-exp">Tabelul pe săptămâni și hale cu filtrele de mai sus: Hîrbovăț, ciclul curent, <span class="ip-num">SAPT {X.WEEKS_ALL[0]}–{X.WK}</span>.</p></div>')
+           f'<p class="ip-hint" id="pf-exp">Tabelul pe săptămâni și hale cu filtrele de mai sus: Hîrbovăț, ciclul curent, <span class="ip-num">sapt. {X.WEEKS_ALL[0]}–{X.WK}</span>.</p></div>')
     return ('<div class="ip-scrim ip-scrim--sheet">'
             '<div class="ip-sheet s14-fsheet" role="dialog" aria-modal="true" id="pf-sheet" aria-labelledby="pf-t" aria-describedby="pf-d">'
             '<div class="ip-sheet__handle" aria-hidden="true"></div>'

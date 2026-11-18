@@ -44,7 +44,7 @@ cP = T.cP
 SRC = (ROOT / 'design/system/scripts/sys11_build.py').read_text(encoding='utf-8')
 CUT = '# ------------------------------------------------------------------ blocks'
 assert SRC.count(CUT) == 1
-G = {'__name__': 'sys11_parts'}
+G = {'__name__': 'sys11_parts', '__file__': str(ROOT / 'design/system/scripts/sys11_build.py')}  # sys11 finds the repo from its own path
 exec(compile(SRC.split(CUT)[0], 'sys11_build.py', 'exec'), G)
 
 # ================================================================= data (extracts only)
@@ -269,7 +269,7 @@ def weekly_block(g, name, cyc):
     for k, lbl, u, sexes in cols:
         for s in sexes:
             gp = gaps(g, k, s)
-            if gp: gl.append(f'{lbl.lower()} {SEXW[s][0]} la sapt. {", ".join(gp)}')
+            if gp: gl.append(f'{lbl.lower()} <span class="ip-sex ip-sex--{SEXW[s][1]}" aria-hidden="true">{SEXW[s][0]}</span><span class="ip-sr">{SEXW[s][2]}</span> la sapt. {", ".join(gp)}')
     note = f'„–” = fără date în ghid: {"; ".join(gl)}.' if gl else ''
     if lay:
         note += ' Ghidul e pe vârstă; SAPT = vârstă − 18 (ciclul de ouat începe la vârsta 19).'
@@ -330,7 +330,7 @@ INFO_G = (f'Greutatea lipsește la sapt. 24–25 (rândurile {gl[0]}–{gl[-1]})
 gle = [r['line'] for r in er if r['v']['body_weight_g'] is None]
 INFO_E = INFO_G.replace(f'{gl[0]}–{gl[-1]}', f'{gle[0]}–{gle[-1]}')
 INFO_L = ('Ouat % lipsește la vârsta 19–24 și 64–65 (sapt. 1–6 și 46–47), iar tabelul nu are coloanele Greutate g, '
-          'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile ♀.')
+          'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">de găini</span>.')
 def repl_note(g, n_new):
     cs = ', '.join(f'{FARM[c["farm_id"]]["name"]} · {SER[c["series_id"]]}' for c in CYC[g])
     return (f'Rândurile citite înlocuiesc toate cele {NROWS[g]} de rânduri de acum ale ghidului. '
@@ -372,7 +372,7 @@ FOCUS_NOTE = ('<!-- Focus after Salvează ghidul: the guide detail opens with fo
 def saved():
     g = 'g-growth'
     toast = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">'
-             f'{GUIDE[g]} salvat · {NROWS[g]} de rânduri înlocuite; Telița · Seria 2026 se compară cu ele</span>'
+             f'{GUIDE[g]} salvat · {NROWS[g]} de rânduri înlocuite · Telița · Seria 2026 se compară cu ele</span>'
              '<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
     pg = detail_page(g, focus_h1=True)
     a = '<h1 id="g-h1" tabindex="-1">'; assert pg.count(a) == 1
@@ -427,7 +427,7 @@ h1[tabindex="-1"]{margin-block:calc((var(--ip-focus-w) + var(--ip-focus-offset))
 .s20-week th[scope=row]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s20-now{margin-left:var(--space-2);font-family:var(--font-sans);white-space:nowrap}
 .s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */
-.s20-clip{height:''' + str(SC.SIDE_H) + '''px;overflow:hidden}'''
+.s20-clip{position:relative;height:''' + str(SC.SIDE_H) + '''px;overflow:hidden}'''
 CSS_DESK = M.CSS_DESK + CSS20
 CSS_PL = M.CSS_PL + CSS20
 

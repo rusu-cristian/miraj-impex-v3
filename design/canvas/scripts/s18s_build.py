@@ -137,7 +137,7 @@ def crow_at(fid, cyc, start, week, dedus=False):
     return r
 def open_(c): return dict(c, end_date=None)
 def why(sid, farm, week):
-    return f'<p class="ip-note s4s-m0" id="why-{sid}">{SER[sid]["name"]} se poate închide după ce se încheie ciclul de la {farm} (deschis, SAPT {week}).</p>'
+    return f'<p class="ip-note s4s-m0" id="why-{sid}">{SER[sid]["name"]} se poate închide după ce se încheie ciclul de la {farm} (deschis, sapt. {week}).</p>'
 def gro(sid, st, note, acts):
     return (f'<tr class="is-group"><th scope="rowgroup" colspan="5" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{SER[sid]["name"]}</span>{st}'
             f'<span class="ip-note">{note}</span></span></th><td colspan="2" class="s18-gact"><span class="s18-acts">{acts}</span></td></tr>')

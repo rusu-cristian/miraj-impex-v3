@@ -79,7 +79,7 @@ def page_record():
     ban = (f'<div class="ip-banner ip-banner--info ip-banner--act ip-banner--1l">{icon("info", 16)}'   # static: present on load, no live role (S17P)
            f'<div class="ip-banner__body"><p class="s4s-m0">Vezi doar modificările înregistrării Mortalitate · {REAL["sec"]} · ziua <span class="ip-num">{REAL["day"]:%d.%m.%Y}</span> · {REAL["farm"]}, din tot istoricul.</p></div>'
            '<a class="ip-btn ip-btn--secondary ip-banner__key" href="#istoric-modificari">Arată toate modificările</a></div>')   # back to the 4 săpt. default
-    note = f'1 modificare · Mortalitate {REAL["sec"]} · ziua {num(format(REAL["day"], "%d.%m.%Y"))} · tot istoricul'
+    note = f'1 modificare · Mortalitate · {REAL["sec"]} · ziua {num(format(REAL["day"], "%d.%m.%Y"))} · tot istoricul'
     foot = ('Istoricul unei înregistrări arată fiecare corecție sau ștergere a ei, cu valorile vechi și noi. '
             'Rândul deschide secțiunea în ziua înregistrării.')
     return shell(Y.sidebar_owner(), [Y.header(), ban, block([chg_row(REAL)], note, foot)])
@@ -100,7 +100,7 @@ def interval():
         assert b.count(a) == 1, a; b = b.replace(a, z)
     return f'<span class="ip-interval" role="group" aria-label="Interval">{s4.datef("iv-a", "de la", IV_A)}{b}</span>'
 def page_manager():
-    users = list(Y.USER_OPTS); users.insert(users.index('Ion Rusu · manager') + 1, 'Manager (tu)')   # the D39 manager himself, unnamed (D96)
+    users = [('Proprietar' if u == 'Proprietar (tu)' else u) for u in Y.USER_OPTS]; users.insert(users.index('Ion Rusu · manager') + 1, 'Manager (tu)')   # the D39 manager himself, unnamed (D96)
     fb = (f'<div class="ip-filterbar s11-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", Y.PER, 3)}{interval()}'
           f'{Y.select("f-user", "Utilizator", users, users[0])}{Y.chips()}<p class="ip-err ip-filterbar__err" id="iv-b-err">{IV_ERR}</p></div>')
     h = Y.header()

@@ -97,7 +97,7 @@ def ftot(built, start_override=None):
         sign = '♀' if sx == 'F' else '♂'; c = 'hen' if sx == 'F' else 'rooster'
         if azi is None: kgcell = '<span class="ip-ftot__val">–</span><span class="ip-ftot__sub">nimic confirmat</span>'
         else:
-            left = f'fără {sign} ' + ', '.join(b['sec'] for b in miss) if miss else 'toate confirmate'
+            left = f'fără <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span><span class="ip-sr">{"găini" if sx == "F" else "cocoși"}</span> ' + ', '.join(b['sec'] for b in miss) if miss else 'toate confirmate'  # FIN08: coloured sign
             kgcell = f'<span class="ip-ftot__val">{n(azi, 1)}<small>kg</small></span><span class="ip-ftot__sub">{left}</span>'
         stsub = ('<span class="ip-ftot__sub">stoc sub 0</span>' if below0 else '') + (f'<span class="ip-ftot__sub">din <span class="ip-num">{n(round(start))}</span> kg</span>' if azi is not None else '<span class="ip-ftot__sub">stoc acum</span>')
         daysub = 'se termină azi' if below0 else f'până pe <span class="ip-num">{dd(TODAY + dt.timedelta(days=int(days)))}</span>'

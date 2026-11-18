@@ -212,7 +212,7 @@ def acts(sid, touch):
     if SER[sid]['status'] == 'active':
         a += f'<button type="button" class="ip-btn ip-btn--secondary{t}" disabled="disabled" aria-describedby="why-{sid}">Închide seria<span class="ip-sr"> {SER[sid]["name"]}</span></button>'
     return a
-WHY26 = f'<p class="ip-note s4s-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț (deschis, SAPT {WK}).</p>'
+WHY26 = f'<p class="ip-note s4s-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț (deschis, sapt. {WK}).</p>'
 RO_NOTE = '<p class="ip-note s4s-m0">O serie închisă e doar citire.</p>'   # S18P: the cycle-start sentence cut (B4 rule, said by the EffectPreview)
 def ptable():
     """Phone (fix 1): one framed scroll table per series (group row + its cycles); the series keys sit under it, outside the

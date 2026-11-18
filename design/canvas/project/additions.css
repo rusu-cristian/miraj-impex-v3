@@ -1125,6 +1125,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__bn{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
 .ip-gimp__bn > p{margin:0}
 .ip-gimp__bn b{font-weight:500}
+.ip-gimp__bn .ip-sex{line-height:1} /* a coloured ♀/♂ in the text (inline-flex Mono, 18px box) keeps the 13/18 line box (FIN08) */
 .ip-gimp__errs{margin:0;padding-left:var(--space-4)}
 .ip-gimp__errs .ip-link{font-family:inherit}
 /* Filter bar: caption + SegmentedControl of toggle buttons (aria-pressed). Buttons get the control font back. */

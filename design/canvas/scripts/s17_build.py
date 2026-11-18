@@ -144,7 +144,7 @@ def select(i, label, opts, sel):
     o = ''.join(f'<option{" selected=\"selected\"" if t == sel else ""}>{t}</option>' for t in opts)
     return (f'<span class="s11-farm"><label class="ip-label" for="{i}">{label}</label><span class="ip-input s11-select"><select id="{i}">{o}</select>'
             f'{icon("chev", 16)}</span></span>')
-USER_OPTS = ['Toți utilizatorii'] + [f'{u} · {r}' for u, r in USERS] + ['Proprietar']
+USER_OPTS = ['Toți utilizatorii'] + [f'{u} · {r}' for u, r in USERS] + ['Proprietar (tu)']   # FIN08: the owner boards' own entry, as "Manager (tu)" on the manager board
 def chips():
     return ('<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">'
             + ''.join(s4.chip(k, w) for k, w in TYPES) + '</div>')
