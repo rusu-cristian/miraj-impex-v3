@@ -123,14 +123,18 @@ def banner(kind, body, id_=None):
 def dialog(p, title, body, foot, desc=None):
     """Every SYS12 Dialog is role=alertdialog (S22P, D120): the confirms (reset, deactivate) as every confirm in the
     project, and the password step too, because the reset confirm turns into it in place (one role, never switched)
-    and it holds a once-only warning the owner must act on (Închide)."""
+    and it holds a once-only warning the owner must act on (Închide).
+    FY01 (FIN04, D124): the Dialog of every other screen: a bare body paragraph is the note `p.ip-dialog__note`
+    (ink-secondary, §35; still the aria-describedby target), the keys sit in `div.ip-dialog__keys`, Anulează secondary."""
     if desc is None and f'id="{p}-once"' in body:   # the password step: the once rule is the alert (S22P fix 1)
         desc = f'{p}-once'
+    if body.startswith('<p id="'):   # the confirm sentence
+        body = '<p class="ip-dialog__note" id="' + body[len('<p id="'):]
     d = f' aria-describedby="{desc}"' if desc else ''
-    return (f'<div class="ip-dialog ip-users__dlg" role="alertdialog" aria-modal="true" aria-labelledby="{p}-t"{d}>'
-            f'<h2 id="{p}-t">{title}</h2>{body}<div class="ip-users__dfoot">{foot}</div></div>')
+    return (f'<div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="{p}-t"{d}>'
+            f'<h2 id="{p}-t">{title}</h2>{body}<div class="ip-dialog__keys">{foot}</div></div>')
 
-def btn(label, kind='ghost', focus=False, extra=''):
+def btn(label, kind='secondary', focus=False, extra=''):   # FY01: Anulează is secondary, as in every other Dialog
     f = ' ip-focus' if focus else ''
     return f'<button type="button" class="ip-btn ip-btn--{kind}{f}"{extra}>{label}</button>'
 

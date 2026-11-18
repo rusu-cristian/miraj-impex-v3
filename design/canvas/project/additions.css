@@ -1205,9 +1205,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-users__wait{color:var(--ink-muted)}
 .ip-users__bn{margin:0}
 .ip-users__bn b{font-weight:500}
-/* Dialogs (Resetează parola, Dezactivează, the password): Dialog unchanged; body text and the foot keys, right-aligned. */
-.ip-users__dlg > p{margin:0}
-.ip-users__dfoot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--space-2)}
+/* Dialogs (Resetează parola, Dezactivează, the password): the system Dialog, body line p.ip-dialog__note and keys
+ * div.ip-dialog__keys as every Dialog (sections 35/50, FY01). */
 
 /* OneTimePassword: div.ip-otp inside the Dialog. Context line (what happened, login) → label[for] → the password in a
  * real read-only TextField (input[readonly], sunken, full width), Plex Mono at the readout size, the 12 characters
