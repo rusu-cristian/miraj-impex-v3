@@ -290,7 +290,7 @@ def sec_cost():
 # ---------- states ----------
 def sk(c=''): return s4.sk(c)
 def sec_loading():
-    ro = f'<li><div class="ip-readout ip-readout--stock s11-skro">{sk("s4s-w60")}{sk("s4s-w40 s4s-h28")}{sk("s4s-w100")}{sk("s4s-w100")}{sk("s4s-w100")}</div></li>'
+    ro = f'<li><div class="ip-readouts__skel">{sk() * 5}</div></li>'  # §35 StockReadout skeleton, as S2/S8 (FIN11; was s11-skro)
     def tbl(ths, rows, cost=''):  # the real thead; skeleton cells keep each column's alignment
         cols = re.findall(r'<th scope="col"(?: class="([^"]*)")?>', ths)  # num → td.num; s11-thedit → td.s11-pc (same right edge)
         cl = lambda c: (' class="' + ' '.join(['num'] * ('num' in c.split()) + ['s11-pc'] * ('s11-thedit' in c.split())) + '"') if 'num' in c.split() else ''
@@ -368,8 +368,6 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-foot > .ip-link{white-space:nowrap;flex:none}
 .s11-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s11-table td.num > .ip-skel{margin-left:auto}
-.s11-skro{gap:var(--space-2);min-height:calc(var(--space-12) * 4)}
-.s11-skro .ip-skel{background:var(--readout-line)}
 .s11-empty{padding:var(--space-8) var(--space-4)}
 .s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */
 .s11-err{margin:0;white-space:normal;align-items:flex-start} /* field error line (S11M Motiv, S12 prices) */

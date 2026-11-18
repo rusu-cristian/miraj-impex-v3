@@ -181,9 +181,10 @@ EMPTY = ('<tr class="ip-users__empty"><td colspan="7"><span class="ip-lamp ip-la
          '<span>Doar tu ai acces. Adaugă primul utilizator.</span></td></tr>')
 L.append(('Gol · doar proprietarul (A2 Empty)', users('e', row('e', OWNER) + EMPTY, counts([OWNER]))))
 # FIN07: the DataTable skeleton row (additions.css §42): two tr.ip-table__skel rows, one bar per cell, the action bar at the end
+# FIN11: the Acțiuni bar is an IconButton wide (§42 --key, control-h), so the column keeps its loaded 40px (a --w3 bar made it 80)
 SK = ''.join('<tr aria-hidden="true" class="ip-table__skel">' + ''.join(
     f'<td><span class="ip-skel ip-skel--w{w}"></span></td>' for w in (2, 3, 3, 3, 2, 3))
-    + '<td class="ip-users__act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr>' for _ in range(2))
+    + '<td class="ip-users__act"><span class="ip-skel ip-skel--key ip-skel--end"></span></td></tr>' for _ in range(2))
 L.append(('Se încarcă (skeleton, aria-busy)', users('f', SK + '<tr><td colspan="7" class="ip-users__srcell"><span class="ip-sr">Se încarcă utilizatorii</span></td></tr>',
                                                    '<span class="ip-users__wait">Se încarcă.</span>', busy=True)))
 FAIL = ('<div class="ip-banner ip-banner--fault">' + svg(IC['fault']) + '<div class="ip-users__bnrow"><p class="ip-users__bn">'

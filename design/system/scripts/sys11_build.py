@@ -160,7 +160,7 @@ def table(p, kind, rows, label, focus=None, busy=False, body=None, sum_=True):
 CH = {'line': 2, 'age': 2, 'week': 2, 'sex': 1, 'feed_g': 3, 'body_weight_g': 4, 'lay_pct': 4}
 def skel_body(kind, n=6):
     keys = ['line'] + (['age'] if kind == 'laying' else []) + ['week', 'sex'] + [k for k, _ in COLS[kind]]
-    bar = lambda k: f'<span class="ip-skel ip-gimp__sk{CH[k]}{"" if k == "sex" else " ip-skel--end"}"></span>'
+    bar = lambda k: f'<span class="ip-skel ip-skel--ch{CH[k]}{"" if k == "sex" else " ip-skel--end"}"></span>'  # §42 ch widths (FIN11)
     tds = ''.join(f'<td class="{"ip-gimp__sex" if k == "sex" else "num"}">{bar(k)}</td>' for k in keys)
     return ''.join(f'<tr class="ip-table__skel" aria-hidden="true">{tds}<td class="ip-gimp__chk"></td></tr>' for _ in range(n))
 

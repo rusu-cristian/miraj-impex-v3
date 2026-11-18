@@ -23,7 +23,7 @@ Boards
                                 EffectPreview (S9P), Creează seria enabled
   --telefon-alege-sectiunea     replay 07.10.2025: H1 and H2 filled, a third row's SectionSelect open as the §33 sheet:
                                 H1/H2 "în listă" disabled, H3 … H5-2 "goală" enabled, H3 active (over the inert form)
-No new system class: screen CSS `.s18s-*` (table skeleton cells; the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
+No new system class: the skeletons are additions.css §35 `ip-trackskel` and §42 `tr.ip-table__skel` (FIN11; were `.s18s-trackskel`/`.s18s-skt`); screen CSS: one panel-body rule (the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
 python3 -I s18s_build.py <repo_root> [--canvas]   (heights from s18_heights.json; renders: s18_render.py <stems>)"""
 import sys, re, json, pathlib, importlib.util, datetime as dt
 
@@ -199,13 +199,13 @@ assert page(T.track(), T.table()) == T.page()
 
 # ================================================================= loading / load error / no access
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
-SK_G = f'<tr class="is-group"><th scope="rowgroup" colspan="5">{skel("w2")}</th><td colspan="2">{skel("w3")}</td></tr>'
-SK_R = '<tr>' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', 'w2', 'w3')) + '</tr>'
+SK_G = f'<tr class="is-group ip-table__skel"><th scope="rowgroup" colspan="5">{skel("w2")}</th><td colspan="2">{skel("w3")}</td></tr>'
+SK_R = '<tr class="ip-table__skel">' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', 'w2', 'w3')) + '</tr>'
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă seriile și ciclurile lor pe ferme.</p>'
            f'<section class="s4-block" aria-labelledby="h-track" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
-           f'<div class="ip-trackskel s18s-trackskel" aria-hidden="true"><span class="ip-skel"></span><span class="ip-skel"></span><span class="ip-skel"></span></div></section>\n'
+           f'<div class="ip-trackskel" aria-hidden="true"><span class="ip-skel"></span><span class="ip-skel"></span><span class="ip-skel"></span></div></section>\n'
            f'<section class="s4-block" aria-labelledby="h-ser" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed s18s-skt" aria-hidden="true"><table class="ip-table ip-table--rowheads s18-table">{T.COLS}'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s18-table">{T.COLS}'
            f'<tbody>{SK_G}{SK_R}{SK_R}</tbody><tbody>{SK_G}{SK_R}{SK_R}</tbody></table></div></section>')
 FAULT = f'<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Q.Z.FAULT}</svg>'
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
@@ -308,8 +308,6 @@ def rows_picking():
 
 # ================================================================= CSS (screen only, tokens only)
 CSS18S = '''
-.s18s-skt .ip-skel{display:block;max-width:100%}
-.s18s-skt td,.s18s-skt th{vertical-align:middle}
 .s13-panel > .ip-sidepanel__body{position:relative} /* fix 1: hidden text in the panel body is placed inside it, so the board stays 1024 */'''
 CSS_D = T.CSS_DESK + CSS18S
 CSS_SH = T.CSS_SH + SC.MODAL

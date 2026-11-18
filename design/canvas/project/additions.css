@@ -1160,13 +1160,10 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__gap{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
 /* Loading line and skeleton rows (aria-busy on the table): six section 42 rows (tr.ip-table__skel, aria-hidden) under the
  * real head, no hidden text row (the counts line says "Se citește fișierul.", the live region names the file). Each bar
- * is as wide as the column's figures will be, in ch of the cell's Plex Mono (Rând, SAPT, Vârstă 2; Sex 1; hrană g 3;
- * greutate g, ouat % 4), at the figures' edge (.ip-skel--end on numbers); Verificare stays empty (S20P). */
+ * is as wide as the column's figures will be, section 42's .ip-skel--ch1…4 in ch of the cell's Plex Mono (Rând, SAPT,
+ * Vârstă 2; Sex 1; hrană g 3; greutate g, ouat % 4; FIN11, were .ip-gimp__sk1…4), at the figures' edge (.ip-skel--end
+ * on numbers); Verificare stays empty (S20P). */
 .ip-gimp__wait{color:var(--ink-muted)}
-.ip-gimp__t .ip-gimp__sk1{width:1ch}
-.ip-gimp__t .ip-gimp__sk2{width:2ch}
-.ip-gimp__t .ip-gimp__sk3{width:3ch}
-.ip-gimp__t .ip-gimp__sk4{width:4ch}
 .ip-gimp__box > .ip-empty{padding-block:var(--space-8)}
 /* Foot: Salvează ghidul (primary; aria-disabled while rows are refused) + Anulează, the reason note beside them. */
 .ip-gimp__foot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
@@ -1372,7 +1369,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-dialog__keys--stack > .ip-btn{width:100%}
 /* Skeletons (static sunken bars, no shimmer). StockReadout: ul.ip-readouts > li > div.ip-readouts__skel[aria-hidden]
  * holding 5 ip-skel bars (caption, value, two key-value lines, the shorter third), a light panel box in the readout's
- * column. CycleTrack: div.ip-trackskel[aria-hidden], one ip-skel bar per lane then the month axis bar (last). */
+ * column. CycleTrack: div.ip-trackskel[aria-hidden], one ip-skel bar per lane then the month axis bar (last).
+ * Every StockReadout and CycleTrack skeleton uses these: S2, S8 and, since FIN11, S11 (was .s11-skro) and S18. */
 .ip-readouts__skel{flex:1;width:100%;min-width:0;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4);background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .ip-readouts__skel > .ip-skel{display:block;width:100%}
 .ip-readouts__skel > .ip-skel:first-child{width:40%}
@@ -1463,6 +1461,15 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table__skel > th,.ip-table__skel > td{vertical-align:middle}
 .ip-table__skel .ip-skel{display:block;max-width:100%}
 .ip-table__skel .ip-skel--end{margin-left:auto}
+/* Skeleton width modifiers for any skeleton bar (FIN11). --ch1…4: as wide as 1–4 figures, in ch of the font the bar
+ * inherits (the Plex Mono of a figure cell), for a column whose figures have a known length (SYS11 se citește rows;
+ * replaces .ip-gimp__sk1…4). --key: as wide as an IconButton (control-h), for the action column of a row that holds one
+ * (UserRow Acțiuni), so the loading table keeps the loaded column widths (a --w3 bar widened that column 40 → 80). */
+.ip-skel--ch1{width:1ch}
+.ip-skel--ch2{width:2ch}
+.ip-skel--ch3{width:3ch}
+.ip-skel--ch4{width:4ch}
+.ip-skel--key{width:var(--control-h)}
 
 /* =====================================================================================================
  * S20P · FileDrop paste target. Spec: components.md › Additions › S20P.
