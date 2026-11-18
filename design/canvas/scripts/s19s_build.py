@@ -1,5 +1,5 @@
 """S19S · Ferme și secțiuni · state boards (spec B1; D110, D75, D111). Imports s19_build (which rewrites the 10 S19 boards,
-and through s18_build the S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S19 states on the same row (y 34589).
+and through s18_build the S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S19 states on the same row (y 34432).
 Desktops first (a Setări page, as S17S/S18S): the new desktops follow the nine S19 desktops; the S19 phone moves right
 (x only). Today = 16.11.2026 (D23/D24). Real: farms, types, codes, halls, Hîrbovăț open SAPT 40, Telița empty from
 28.02.2026; guide names illustrative (D22). Every edit not in the extracts is a D39 example, said in the board title.

@@ -1,4 +1,4 @@
-"""S14S · Rapoarte · Producție states (16.11.2026). Appended to the S14 row (y 23234) after its 5 boards, desktops then the phone:
+"""S14S · Rapoarte · Producție states (16.11.2026). Appended to the S14 row (y 23093) after its 5 boards, desktops then the phone:
 - observator · se exportă (desktop): the default page for the Observator role (Sidebar Acasă · Serie · Rapoarte, account
   "Observator", D91/D92: same content, Producție has no prices) with Exportă .xlsx running (spinner in the key, label kept,
   a hidden role=status line names the file's filters). Merged: Observator parity board + export in progress.

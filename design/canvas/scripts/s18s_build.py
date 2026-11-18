@@ -1,5 +1,5 @@
 """S18S · Serii · state boards (spec B3; D107). Imports s18_build (which rewrites the 5 S18 boards, and through s17_build
-the S17/S14S/S2/S7 boards, byte-identical) and draws the S18 states on the same row (y 32845). Desktops first (a Setări
+the S17/S14S/S2/S7 boards, byte-identical) and draws the S18 states on the same row (y 32688). Desktops first (a Setări
 page, as S17): the new desktops follow the two S18 desktops; the S18 phones move right (x only, as S16S/S17S); the new
 phones follow them. Today = 16.11.2026 (D23/D24) unless the board is a replay of the real creation (07.10.2025, D73/D83).
 Boards
@@ -128,13 +128,13 @@ SC_D39 = dict(day=TODAY, d1=dt.date(2027, 1, 1), no25=True, blocks=[B25_CLOSED, 
 # ================================================================= the series table for a scene (s18_build.crow / grow / acts)
 def crow_at(fid, cyc, start, week, dedus=False):
     """s18_build.crow for a cycle as it stood on the scene's day: open cycles read SAPT <week>; an open inferred start
-    keeps its "dedus" word."""
+    reads "din <start> · început dedus", as the closed range and S3/S4/S20 (FY02)."""
     keep = T.WK; T.WK = week
     try: r = T.crow(fid, cyc, start, dedus=dedus)
     finally: T.WK = keep
     if dedus and not cyc['end_date']:
         a = f'din {num(dd(cyc["start_date"]))}'; assert r.count(a) == 1
-        r = r.replace(a, a + '<span class="ip-note"> dedus</span>')
+        r = r.replace(a, a + '<span class="ip-note"> · început dedus</span>')
     return r
 def open_(c): return dict(c, end_date=None)
 def why(sid, farm, week):

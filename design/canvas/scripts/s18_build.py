@@ -12,7 +12,7 @@ through s3_build, which asserts them against transfers-seria2026):
 - Refusal (B3 rule) "Telița are încă … păsări din Seria 2026": Telița is empty in counts-latest (closed 28.02.2026), so
   the board is a D39 state example, labelled: as if the move had not been entered, Telița would hold the birds that
   arrived at Hîrbovăț (♀ 26 765 · ♂ 3 060 = 29 825, D28 — replaces the kit's 26 881). Spec sample "Seria 2027 · 2027".
-Boards (row below S17: y 30196 + 2529 + 120 = 32845; x step w + 80):
+Boards (row below S17: y 30039 + 2529 + 120 = 32688; x step w + 80):
   S18-serii                       desktop, owner, the list: PageHeader (Setări › Serii, "Adaugă serie"), CycleTrack full
                                   with both series, DataTable of series (group rows) and their cycles, notes
   S18-serii--serie-noua           desktop, the list reflowed beside the non-modal SidePanel "Serie nouă" (D73), nothing typed,
@@ -187,7 +187,9 @@ def crow(fid, cyc=None, start='', st=None, dedus=False):
                 f'<td colspan="6" class="ip-muted">– fără date pentru Seria 2025 la {f["name"]} (registrul începe cu Seria 2026)</td></tr>')
     href = f'#/ferme/{fid}?ciclu={cyc["id"]}'
     end = dd(cyc['end_date']) if cyc['end_date'] else None
-    per = (f'<span class="s18-cyc"><span>{num(dd(cyc["start_date"]))}{"<span class=\"ip-note\"> dedus</span>" if dedus else ""} –</span> <span>{num(end)}</span></span>' if end
+    # FIN09/FY02: "start–end" unspaced, "· început dedus" after the range (as S3/S4/S20); the only break is after the dash
+    per = (f'<span class="s18-cyc"><span>{num(dd(cyc["start_date"]) + "–")}</span><wbr><span>{num(end)}'
+           f'{"<span class=\"ip-note\"> · început dedus</span>" if dedus else ""}</span></span>' if end
            else f'din {num(dd(cyc["start_date"]))}')
     wk = num(cyc['weeks']) if end else num(f'SAPT {WK}')
     stt = lamp('off', 'închis') if end else lamp('ok', 'deschis')
