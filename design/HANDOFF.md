@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 7a03a6f
+Updated: 2026-11-18 · Last commit: 5c81931
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 105 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX06; next FX07; all SYS jobs done
+Done 106 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FX07; next last review pass; all SYS jobs done
 
 ## Just finished
+- FX06 small items: S16 dupa-stergere shows the page end at every width (focus 836 at 1280; D146 to review); S4 Vârf no repeated unit; S3 dash `.ip-sex > b`; 7 regions tabindex=0; retry line first on every Banner (incl. SectionTree preview); S2 „Lipsesc date” și „Introdus azi”; S13 Toast "· fără preț"; S3 skeleton + §35 duplicates dropped; 1 fix round (5c81931)
 - FX05: §1 EventRow figure nowrap (+ MissingRow normal), §42 `.ip-skel{display:block}`, §63 `html:has(.ip-screen__savebar)` scroll-padding; 212 boards style-only, 415/415 shots identical; Banner/Toast/SectionTree/UserRow/OneTimePassword/EntryCardPlus previews on D143 copy; sys05 keeps ip-eggs__base; passed review (7a03a6f)
 - FX04 copy: failure Banners "<Obiect> nu s-a salvat: …" / "<Obiecte> nu s-au încărcat." + one retry line "Verifică conexiunea la internet, apoi apasă Reîncearcă."; S6/S7/S8/S13 Banner at form end (D141); Toasts object first (D143); Reîncearcă focus on every form; 31 boards; passed review; copy nits → FX06, system previews → FX05 (71bfa8d)
 - FX03 phone gaps: every phone form main 24px (S9, S10, S13 from 20; sstate_css MAIN ''), S14/S17 filter sheets 16; S10 telefon h 2088; rows S2–S1 moved +20 by hand in canvas.json (user approved; S2 y 20942), generator docstrings updated; D145 to review; 1 fix round (canvas gap) (606be9f)
@@ -91,7 +92,7 @@ Done 105 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FI
 - FX01 → FX07 in order, then one more final pass, then Complete (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
-- To review (non-blocking, taken per standing instruction): D141 save-error Banner at form end, D142 Înregistrează as parent of Introdus azi + entry forms, D143 object-first Toasts.
+- To review (non-blocking, taken per standing instruction): D146 S16 page-end scroll; D141 save-error Banner at form end, D142 Înregistrează as parent of Introdus azi + entry forms, D143 object-first Toasts.
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
 - Non-blocking: D95 guide week — app formula D02 puts 24.02.2026 in SAPT 21 (2 525 g, în normă); the workbook compares with week 20 (abatere). Confirm D02.
 - None blocking otherwise. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
@@ -166,6 +167,7 @@ Done 105 / 107 (final review done → FX01–FX07) (all screens done; FIN01–FI
 - FX03: 18 boards (S9, S10, S13 phones, S14/S17 telefon-filtre) + canvas.json (S10 telefon h, 190 boards y +20)
 - FX04: 31 boards (23 Banner, 8 Toast)
 - FX05: project/additions.css (§1, §42, §63) + 212 boards (style only)
+- FX06: project/additions.css (§35) + 24 boards
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
