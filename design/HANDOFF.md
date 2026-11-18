@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 18:00 · Last commit: 404c6f7
+Updated: 2026-11-18 19:10 · Last commit: 4c17efa
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 85 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN07; all SYS jobs done
+Done 86 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN08; all SYS jobs done
 
 ## Just finished
+- FIN07 Setări list pages: S22 "Adaugă utilizator" page-head secondary key, h2 "Utilizatori" + count, "Salvează utilizatorul", §42 skeleton (SYS12 SK changed, UserRow preview 2368); D127 add keys are verbs: S18 "Adaugă serie", S19 "Adaugă fermă", S21 "Adaugă tip" (panel titles stay nouns); 67 boards; passed first review (4c17efa)
 - FIN06 crumbs: §52 desktop `.ip-crumbs a` 24px hit area (negative margins, no layout shift, focus ring drawn with ::after so it never covers the h1 ink), phone `ip-crumbs--touch` ≥44×46 replacing s14-crumb/S19P padding (9 phone boards); D126; 1 fix round (ring over "Î") (404c6f7)
 - FIN05 current row: §51 extends §45 to EventRow lists; S16 desktop log row, S19 and S21 open rows marked `is-current` + aria-current on their key (no pressed key; add keys stay pressed); 21 boards; D125; review pass after a docs fix (s19s rerun note in scripts/README.md) (12d737c)
 - FIN04 Dialog scrim: §50 `.ip-scrim--page` (grid, Dialog centred, covers SidePanel; tall boards set `--board-vp-h` on the root to centre in their first viewport — S4 ciclu-nou 1024); S10 confirmare → §35 phone scrim; s4s/s10/s18s/s19 scrim + dialog copies removed (14 Dialog boards, 142 dead-CSS boards); s10_render checks `.ip-dialog__keys`; D124; 1 fix round (d819850)
@@ -68,7 +69,7 @@ Done 85 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN07 → FIN08 → … → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN08 → FIN09 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -126,6 +127,7 @@ Done 85 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - FIN04: project/additions.css (§50) + 156 boards (14 Dialog boards + dead-CSS removal; canvas.json unchanged)
 - FIN05: project/additions.css (§51) + 21 boards on S16, S19, S21
 - FIN06: project/additions.css (§52) + 9 phone boards (S14, S17 ×2 each; S18–S22 telefon)
+- FIN07: S18 (10), S19 (19), S21 (14), S22 (24) boards; UserRow preview
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
