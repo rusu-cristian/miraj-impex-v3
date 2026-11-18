@@ -157,7 +157,7 @@ def unused_detail():   # the detail of a laying guide with the new name and no c
     pg = S.detail_page('g-laying', name=NEWN, cycles=[], pressed=True)
     assert 'azi</span>' not in pg and 'e azi în sapt.' not in pg and 'Ross 308 ouat<' not in pg
     return one(pg, '<div class="s4-shell">', '<div class="s4-shell" inert="inert">')
-DLG = (f'<div class="ip-scrim s19-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
+DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Șterge ghidul {NEWN}</h2>'
        f'<p class="ip-dialog__note" id="dlg-n">Ghidul și cele {NL} de rânduri ale lui se șterg. Niciun ciclu nu îl folosește, deci nicio comparație '
        f'nu se schimbă. Dacă îl vrei înapoi, îl imporți din nou din {NEWF}.</p>'

@@ -292,8 +292,7 @@ CSS19 = '''
 .s19-combo.is-disabled:focus-visible{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)} /* aria-disabled keeps focus (the hint says why) */
 .s19-pop{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:4;list-style:none;margin:0}
 .s19-pop[hidden]{display:none}
-.s19-pbody{position:relative}
-.s19-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center} /* the Dialog over the whole desktop page (as S16S/S18S) */'''
+.s19-pbody{position:relative}'''
 CSS_DESK = T.CSS_DESK + SC.OPT + CSS19
 CSS_PL = T.CSS_PL + CSS19 + '''
 .s19-ptable td{height:auto;padding-block:var(--space-2)}
@@ -356,7 +355,7 @@ desk('--retragere-blocata', 'Hîrbovăț · retragere blocată: H1.1 are păsăr
      vp('hirbovat') + fpanel('hirbovat', tip_field('hirbovat', readonly=True), ghid_field('hirbovat'),
                              tree_farm('hirbovat', open_code='H1.1', istate={4: 'is-active'})), PH)
 # 5 · Retrage H5-2 Dialog (D39), focus on Anulează, page and panel inert
-DLG = (f'<div class="ip-scrim s19-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
+DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Retrage secțiunea H5-2 de la Telița</h2>'
        f'<p class="ip-dialog__note" id="dlg-n">H5-2 nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte. '
        f'O secțiune retrasă nu se mai poate reactiva.</p>'

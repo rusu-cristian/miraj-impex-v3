@@ -248,7 +248,7 @@ def save_banner(text):
             f'<p class="s13-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= dialogs (SYS12), Toast, states
-def scrim(dlg): return f'<div class="ip-scrim s19-scrim">{dlg}</div>'
+def scrim(dlg): return f'<div class="ip-scrim ip-scrim--page">{dlg}</div>'
 BTN = U['btn']
 def dlg_off(u):   # A2: the sentence, then SYS12's undo line; focus on Anulează
     body = f'<p id="do-n">{u["name"]} nu va mai putea intra. Datele introduse de el rămân. Poți reactiva contul oricând.</p>'

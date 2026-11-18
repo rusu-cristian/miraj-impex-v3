@@ -32,7 +32,7 @@ CHECK = r"""() => {
    .filter(([e, r]) => r.width && Math.min(r.width, r.height) < (touch ? 44 : 24)).map(([e, r]) => (e.id || e.textContent.trim().slice(0, 16) || e.className) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
  const order = foc.filter(e => !e.matches('label.ip-check')).map(e => e.getAttribute('aria-label') || e.id || e.textContent.trim().slice(0, 14));
  const barT = sb ? sb.getBoundingClientRect().top : 1e9; const vis = sel => [...document.querySelectorAll(sel)].map(e => { const r = e.getBoundingClientRect(); return Math.round(r.top) + '-' + Math.round(r.bottom) + (r.bottom > barT + 1 ? ' UNDER' : ''); });
- return {low, small, order, fxpos: vis('#fx'), dlg: vis('.ip-dialog'), dlgkeys: vis('.s4s-dlgfoot .ip-btn'), banpos: vis('.s7-main > .ip-banner'), dup, broken: refs, unnamed, sw: document.documentElement.scrollWidth, under,
+ return {low, small, order, fxpos: vis('#fx'), dlg: vis('.ip-dialog'), dlgkeys: vis('.ip-dialog__keys .ip-btn'), banpos: vis('.s7-main > .ip-banner'), dup, broken: refs, unnamed, sw: document.documentElement.scrollWidth, under,
    mainBottom: main ? Math.round(main.getBoundingClientRect().bottom) : null, parts: tall, barTop: sb ? Math.round(sb.getBoundingClientRect().top) : null,
    barH: sb ? Math.round(sb.getBoundingClientRect().height) : null,
    sumLines: sb ? [...sb.querySelectorAll('.ip-ftot-sum__line')].map(l => Math.round(l.getBoundingClientRect().height)) : null,

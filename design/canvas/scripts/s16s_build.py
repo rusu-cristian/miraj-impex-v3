@@ -1,7 +1,7 @@
 """S16S · Corectează · state boards (spec E1, SYS09, D70/D71, D101; design/notes/S16.md state list), built on s16_build.py.
 python3 -I s16s_build.py <repo_root> [--canvas]
 Imports s16_build with s16_heights.json (it rewrites the 5 S16 boards byte-identical, never canvas.json), reuses its sheet head, record line, CountInputs, Motiv, EffectPreview, Dialog wording, desktop page + panel and
-CSS; Toast + Anulează / Banner-with-action CSS from sstate_css (as S9/S10/S15S); desktop scrim = the S4S Dialog rule.
+CSS; Toast + Anulează / Banner-with-action CSS from sstate_css (as S9/S10/S15S); desktop Dialog scrim = additions.css §50 (ip-scrim--page, FIN04).
 Boards (phones 390×844, the sheet of additions.css §39; desktops 1440×1024 beside / over S4 · Păsări, 16.11.2026, D23):
 - salvat                     15.11.2026, 10:12: the sheet as the record now is (♀ 5, "corectat · modificat de Ion Rusu ·
                              15.11.2026, 10:12"), nothing typed, Toast "Corecție salvată …" + Anulează
@@ -201,7 +201,7 @@ boards.append(('desktop-refuzat', 'desktop · refuzat · sub 0 · exemplu de sta
                Q.DESK + dpanel([BYMOD, dcounts_refuz(), Q.motiv(touch=False), DREFUZ], DSAVE_OFF('fx'))))
 # the panel had no Motiv typed, so the Dialog opened empty (S16P prefill rule) and the owner typed DEL_WHY in it
 DMOT, DKEY = Q.dlg_motiv(DEL_WHY, touch=False); assert DKEY == ''
-DLG = (f'<div class="ip-scrim s4s-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
+DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Șterge Mortalitate {SEC} din {num(dd(RDAY))}</h2>'
        f'<p class="ip-dialog__note" id="dlg-n">Se șterge rândul introdus de {Q.ENTRY["user"]} la {num(Q.ENTRY["at"][11:])} și corectat de {Q.AUD["user"]} pe '
        f'{num(dd(Q.AT_D))}: {hen(n(-NEW))} · {roo("0")}. Găini în viață în {SEC} azi: {hen(n(DPRE[DDAY]))} → {hen(n(DDEL[DDAY]))}. '
@@ -246,10 +246,8 @@ CSS_ADD = '''
 .s16s-skarea{width:100%;height:calc(var(--space-12) * 2)}
 .s16s-skfx{width:100%;height:calc(var(--space-12) * 3)}
 .s16s-lock{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2);margin:var(--space-1) 0 0}'''
-SCRIM = ''.join('\n' + l for l in s4.CSS_STATES.split('\n') if l.startswith('.s4s-scrim'))
-assert SCRIM.count('\n') == 1
 CSS_P = Q.CSS_P + CSS_ADD
-CSS_D = Q.CSS_D + SC.BANNER + SCRIM + '''
+CSS_D = Q.CSS_D + SC.BANNER + '''
 .s16s-vp--full{margin-right:0} /* panel closed: the page takes the full width */'''
 
 # ---------- write ----------

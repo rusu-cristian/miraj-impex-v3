@@ -661,13 +661,13 @@ def panel_past():
 </div>'''
 
 # ---------- 7. new cycle dialog ----------
-DLG = f'''<div class="ip-scrim s4s-scrim"><div class="ip-dialog s4s-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note">
+DLG = f'''<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note">
 <h2 id="dlg-t">Începe ciclu nou la Hîrbovăț</h2>
-<p class="s4s-dlgnote" id="dlg-note">Ciclul curent (sapt. {WK}) se închide pe 16.11.2026. Săptămâna ghidului pornește de la 1.</p>
+<p class="ip-dialog__note" id="dlg-note">Ciclul curent (sapt. {WK}) se închide pe 16.11.2026. Săptămâna ghidului pornește de la 1.</p>
 <div class="ip-field"><label class="ip-label" for="nc-date">Data de început</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="nc-date" type="text" inputmode="numeric" value="16.11.2026" placeholder="zz.ll.aaaa" aria-describedby="nc-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data de început din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="nc-date-h">SAPT 1 · ciclu nou din 16.11.2026</span></div>
 <div class="ip-field"><label class="ip-label" for="nc-guide">Ghid</label><span class="ip-input"><select id="nc-guide" aria-describedby="nc-guide-h"><option selected="selected">Ross 308 ouat</option></select>{icon("chev", 16)}</span><span class="ip-hint" id="nc-guide-h">ghidul fermei · ouat</span></div>
 <div class="ip-field"><label class="ip-label" for="nc-why">Motiv</label><span class="ip-input ip-input--area"><textarea id="nc-why" rows="3" required="required" aria-required="true" aria-describedby="nc-why-h"></textarea></span><span class="ip-hint" id="nc-why-h">Obligatoriu. Apare în jurnalul de modificări.</span></div>
-<div class="ip-row s4s-dlgfoot"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary">{icon("cycle", 16)}Începe ciclu nou</button></div>
+<div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary">{icon("cycle", 16)}Începe ciclu nou</button></div>
 </div></div>'''
 
 def main_page(mode='default', panel=None, ng=False):
@@ -740,15 +740,11 @@ CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) soli
 .s4s-list{list-style:none;margin:0;padding:0}
 .s4s-mitem{width:100%;border:0;background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;justify-content:flex-start;gap:var(--space-2)}
 .s4s-gap{width:var(--space-4);flex:none}
-.s4s-scrim{position:absolute;inset:0;border-radius:0;align-items:flex-start;padding-top:calc(var(--space-12) * 4);z-index:5}
-.s4s-dialog{gap:var(--space-4)}
-.s4s-dlgnote{margin:0;color:var(--ink-secondary)}
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
 .ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
-.s4s-dlgfoot{justify-content:flex-end;gap:var(--space-2)}
 .s4s-cycmenu[hidden]{display:none}
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}'''
@@ -756,10 +752,11 @@ CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) soli
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'
 HEIGHTS = json.loads(pathlib.Path(__file__).with_name('s4s_heights.json').read_text()) if pathlib.Path(__file__).with_name('s4s_heights.json').exists() else {}
-def write(stem, title, body, overlay='', H=None, css=None):
+def write(stem, title, body, overlay='', H=None, css=None, vp=None):
     H = H or HEIGHTS.get(stem, 1874)
     css = css if css is not None else CSS + '\n' + CSS_STATES + '\n' + CSS_S4
-    root = f'<div class="ip-root s4s-rel" style="padding:0; min-height:{H}px">{body}{overlay}</div>'
+    vps = f'; --board-vp-h:{vp}px' if vp else ''  # FIN04 fix 1: a tall board's Dialog centres in its first viewport (additions.css §50)
+    root = f'<div class="ip-root s4s-rel" style="padding:0; min-height:{H}px{vps}">{body}{overlay}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>
@@ -811,4 +808,4 @@ BOARDS = [
 ]
 if __name__ == '__main__':
     for stem, title, body, ov in BOARDS:
-        write(stem, title, body, ov)
+        write(stem, title, body, ov, vp=1024 if stem == B + 'ciclu-nou' else None)  # board viewport 1440×1024 (canvas.md)

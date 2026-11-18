@@ -324,7 +324,7 @@ desk('--eroare-la-salvare', f'Tip nou · eroare la salvare · {D39}: Breeder 3',
                                    save_banner('Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Ce ai scris rămâne în panou. '
                                                'Verifică conexiunea la internet, apoi reîncearcă.'), NEWUSE], ADD), PH)
 # 10 · Șterge (D39): Breeder 3 unused → its Dialog over the inert page and panel, focus on Anulează
-DLG = ('<div class="ip-scrim s19-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
+DLG = ('<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        '<h2 id="dlg-t">Șterge tipul de hrană Breeder 3</h2>'
        '<p class="ip-dialog__note" id="dlg-n">Breeder 3 nu are livrări și nici hrană zilnică, așa că dispare din listă și din formulare. '
        'Dacă îl vrei înapoi, îl adaugi din nou cu Tip nou.</p>'

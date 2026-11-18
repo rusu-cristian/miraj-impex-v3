@@ -1598,3 +1598,18 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * beside the key at every desktop width; a Banner whose text can wrap or whose key can wrap stays without it. */
 .ip-banner--act.ip-banner--1l > .ip-banner__body{min-height:var(--control-h);justify-content:center}
 .ip-banner--act.ip-banner--1l > .ip-icon--16{margin-top:calc((var(--control-h) - 1lh) / 2 + var(--ip-hair))}
+
+/* =====================================================================================================
+ * FIN04 · One Dialog scrim on desktop pages, system-wide. Spec: components.md › Dialog, Additions › FIN04.
+ * ===================================================================================================== */
+
+/* ---------- 50. Dialog · page scrim (FIN04) ---------- */
+/* div.ip-scrim.ip-scrim--page > div.ip-dialog[role=alertdialog][aria-modal=true]: the desktop counterpart of section 35's
+ * ip-scrim--phone. It fills the positioned page (the board's .ip-root) over the Sidebar, the page and any open SidePanel
+ * (above the Toast, section 48) and centres the Dialog both ways, with bundle.css's space-6 round it. The page shell and
+ * the SidePanel under it are inert; focus starts on Anulează. Body line p.ip-dialog__note and keys
+ * div.ip-dialog__keys as section 35 (one line, right-aligned, Anulează first). In the app the scrim is the viewport (fixed,
+ * scroll locked), so the Dialog centres in the window. A board taller than its viewport sets --board-vp-h (the viewport
+ * height, e.g. 1024px) on its root: the scrim still covers the whole board, and the Dialog centres in that first viewport,
+ * as at scroll 0. Unset, the Dialog centres in the whole page (one grid row = the padded scrim). */
+.ip-scrim--page{position:absolute;inset:0;z-index:5;border-radius:0;display:grid;grid-template-rows:calc(var(--board-vp-h, 100% + 2 * var(--space-6)) - 2 * var(--space-6));align-content:start;justify-items:center;align-items:center}

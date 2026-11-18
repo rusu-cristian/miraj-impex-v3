@@ -23,7 +23,7 @@ Boards
                                 EffectPreview (S9P), Creează seria enabled
   --telefon-alege-sectiunea     replay 07.10.2025: H1 and H2 filled, a third row's SectionSelect open as the §33 sheet:
                                 H1/H2 "în listă" disabled, H3 … H5-2 "goală" enabled, H3 active (over the inert form)
-No new system class: screen CSS `.s18s-*` (desktop scrim, table skeleton cells; the Toast is additions.css §48, FIN02).
+No new system class: screen CSS `.s18s-*` (table skeleton cells; the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
 python3 -I s18s_build.py <repo_root> [--canvas]   (heights from s18_heights.json; renders: s18_render.py <stems>)"""
 import sys, re, json, pathlib, importlib.util, datetime as dt
 
@@ -309,7 +309,6 @@ def rows_picking():
 
 # ================================================================= CSS (screen only, tokens only)
 CSS18S = '''
-.s18s-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center} /* the Dialog over the whole desktop page (as S16S) */
 .s18s-skt .ip-skel{display:block;max-width:100%}
 .s18s-skt td,.s18s-skt th{vertical-align:middle}
 .s13-panel > .ip-sidepanel__body{position:relative} /* fix 1: hidden text in the panel body is placed inside it, so the board stays 1024 */'''
@@ -355,7 +354,7 @@ SAVED = page(scene_track(SC_AFTER), TBL_AFTER, when='after'); assert SAVED.count
 SAVED = SAVED.replace(NEWKEY, FOCUS_NOTE + NEWKEY.replace('class="ip-btn ip-btn--secondary"', 'class="ip-btn ip-btn--secondary ip-focus"'))
 desk('--salvat', f'salvat · reluare {dd(REPLAY)}', SAVED + TOAST, hd('--salvat'))
 # 8 · Închide seria Dialog (D39: Seria 2025 not closed yet), over the inert page, focus on Anulează
-DLG = (f'<div class="ip-scrim s18s-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
+DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Închide Seria 2025</h2>'
        f'<p class="ip-dialog__note" id="dlg-n">Ultimul ei ciclu, Hîrbovăț ouat, s-a încheiat prin golire pe {num(dd(cP["end_date"]))}, după {num(cP["weeks"])} săpt. '
        f'Închisă, seria rămâne doar citire: paginile și rapoartele o arată mai departe, dar nu mai primește înregistrări sau corecții.</p>'

@@ -70,15 +70,11 @@
 .s4s-list{list-style:none;margin:0;padding:0}
 .s4s-mitem{width:100%;border:0;background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;justify-content:flex-start;gap:var(--space-2)}
 .s4s-gap{width:var(--space-4);flex:none}
-.s4s-scrim{position:absolute;inset:0;border-radius:0;align-items:flex-start;padding-top:calc(var(--space-12) * 4);z-index:5}
-.s4s-dialog{gap:var(--space-4)}
-.s4s-dlgnote{margin:0;color:var(--ink-secondary)}
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
 .ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
-.s4s-dlgfoot{justify-content:flex-end;gap:var(--space-2)}
 .s4s-cycmenu[hidden]{display:none}
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}
@@ -180,7 +176,6 @@
 .s19-pop{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:4;list-style:none;margin:0}
 .s19-pop[hidden]{display:none}
 .s19-pbody{position:relative}
-.s19-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center} /* the Dialog over the whole desktop page (as S16S/S18S) */
 .s21-table td{white-space:normal}
 .s21-nw{white-space:nowrap}
 .s21-region{container:s21-tipuri / inline-size}
@@ -219,7 +214,7 @@
 <div class="ip-field"><label class="ip-label" for="tp-name">Nume</label><span class="ip-input"><input id="tp-name" type="text" autocomplete="off" value="Breeder 3"/></span></div><div class="ip-field"><span class="ip-label" id="tp-for-l">Pentru</span><span class="ip-seg s19-seg" role="radiogroup" aria-labelledby="tp-for-l" aria-required="true" aria-describedby="tp-for-h"><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ambele sexe</span><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0"><span class="ip-sex ip-sex--hen">♀</span> Găini</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1"><span class="ip-sex ip-sex--rooster">♂</span> Cocoși</span></span><span class="ip-hint" id="tp-for-h">În Hrană zilnică apare doar la sexul ales.</span></div><div class="ip-field"><label class="ip-check is-checked"><input type="checkbox" class="ip-sr" id="tp-act" checked="checked" aria-describedby="tp-act-h"/><span class="ip-check__box"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Activ</label><span class="ip-hint" id="tp-act-h">Apare în Livrare hrană și Hrană zilnică. Îl poți retrage oricând.</span></div><section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap s4s-m0" id="tp-use-h">Folosit la</h3><p class="s4s-m0">Nefolosit: Breeder 3 nu are livrări și nici hrană zilnică.</p><div class="s21-delkey"><button type="button" class="ip-btn ip-btn--destructive is-pressed" aria-haspopup="dialog">Șterge tipul</button></div></section>
 </div>
 <div class="ip-sidepanel__foot s18-foot"><div class="ip-row s13-pkeys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary">Salvează tipul</button></div></div>
-</aside><div class="ip-scrim s19-scrim"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n"><h2 id="dlg-t">Șterge tipul de hrană Breeder 3</h2><p class="ip-dialog__note" id="dlg-n">Breeder 3 nu are livrări și nici hrană zilnică, așa că dispare din listă și din formulare. Dacă îl vrei înapoi, îl adaugi din nou cu Tip nou.</p><div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--destructive">Șterge tipul</button></div></div></div></div>
+</aside><div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n"><h2 id="dlg-t">Șterge tipul de hrană Breeder 3</h2><p class="ip-dialog__note" id="dlg-n">Breeder 3 nu are livrări și nici hrană zilnică, așa că dispare din listă și din formulare. Dacă îl vrei înapoi, îl adaugi din nou cu Tip nou.</p><div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--destructive">Șterge tipul</button></div></div></div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
 class Component extends DCLogic { renderVals() { return {}; } }

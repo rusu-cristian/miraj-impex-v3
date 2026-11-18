@@ -5,7 +5,7 @@ Phone boards reuse the S7 phone form shell by import (s7s_build → s7_build: Fo
 2-line summary, viewport/Toast/Banner CSS from sstate_css), S13's record-icon/EffectPreview/"(opțional)" rules and S9's
 EffectPreview line rules + modal anchor (sstate_css, s13-/s9- names kept); the rows are the system SexCountRow (SYS07,
 stacked phone layout), the cycle marks the CycleTrack vocabulary (`ip-cmark--end sale`, SYS06), the Dialog the system
-Dialog with S4's dialog placement rules (taken from s4s_build.CSS_STATES, s4s- names kept). The desktop board reuses
+Dialog in the phone scrim (additions.css section 35, ip-scrim--phone, keys stacked; FIN04). The desktop board reuses
 the S4 Hîrbovăț farm page (s4s_build shell) with the system SidePanel beside it (non-modal, D73), "Vânzare" pressed.
 Content: the extracts hold no sale. Hîrbovăț alive on 16.11.2026 (D23) is the sample (counts-latest, D27): ♀ 25 252 · ♂ 2 685
 in 6 sections. The phone boards show a D39 state example consistent with it: the whole flock sold on 16.11.2026 (Toate on
@@ -226,11 +226,11 @@ boards.append(('', 'telefon · toată ferma · exemplu de stare (D39)', tall(FOR
 DLG = f'''
 <!-- Dialog (modal alertdialog): focus starts on Anulează (craft §5); Esc or Anulează closes it and focus returns to Înregistrează
      vânzarea. The form behind is inert. -->
-<div class="ip-scrim s4s-scrim"><div class="ip-dialog s4s-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note dlg-fx">
+<div class="ip-scrim ip-scrim--phone"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note dlg-fx">
 <h2 id="dlg-t">Înregistrează vânzarea și închide ciclul la Hîrbovăț</h2>
-<p class="s4s-dlgnote" id="dlg-note">Vinzi toate păsările din Hîrbovăț pe {num(dd(DT))}: {pair(*TOT)}. Ferma ajunge la 0 păsări și ciclul ei se închide.</p>
+<p class="ip-dialog__note" id="dlg-note">Vinzi toate păsările din Hîrbovăț pe {num(dd(DT))}: {pair(*TOT)}. Ferma ajunge la 0 păsări și ciclul ei se închide.</p>
 <div class="ip-effect s13-effect" id="dlg-fx">{rec("sale", 16)}<div class="s9-fxbody"><span class="s9-fxcyc">{cmark("end", "sale", CLOSE)}<span class="s9-fxsub">Seria 2026 · {num(dd(HSTART))} – {num(dd(DT))}</span></span></div></div>
-<div class="ip-row s4s-dlgfoot s10-dlgfoot"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Înregistrează vânzarea</button></div>
+<div class="ip-dialog__keys ip-dialog__keys--stack"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Înregistrează vânzarea</button></div>
 </div></div>'''
 boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (D39)', screen(FORM(), B.savebar(sum1(), SUM2, SELL), view=' s7s-view--end', modal=DLG), 'vp'))
 # 3 · refuzat — H4.2 ♂ 500 typed over the 476 alive (D39 state example): row error, preview = fault Banner, key disabled;
@@ -258,12 +258,11 @@ SELL_PART = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">
 boards.append(('partiala', 'parțială · ciclul continuă · exemplu de stare (D39)', screen([farm(), DATE, rows('part'), buyer(), note(), effect('part')],
               B.savebar(sum1(PSOLD), SUM2_PART, SELL_PART), view=' s7s-view--end'), 'vp'))
 
-# the Dialog placement rules and the select chevron rule come from S4S (s4s- names kept, not copied)
-PICK = ('.s4s-scrim{', '.s4s-dialog{', '.s4s-dlgnote{', '.s4s-dlgfoot{', '.ip-input > select + .ip-icon{')
-S4DLG = ''.join('\n' + l for l in s4.CSS_STATES.splitlines() if l.startswith(PICK))
-assert S4DLG.count('\n') == len(PICK)
-CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL + S4DLG + '''
-.s10-dlgfoot > .ip-btn{flex:1 1 auto} /* phone Dialog (294 px inside): the two keys don't fit one line, so each takes a full line, Anulează first */'''
+# the select chevron rule comes from S4S; the phone Dialog is additions.css section 35 (ip-scrim--phone, FIN04)
+PICK = ('.ip-input > select + .ip-icon{',)
+S4SEL = ''.join('\n' + l for l in s4.CSS_STATES.splitlines() if l.startswith(PICK))
+assert S4SEL.count('\n') == len(PICK)
+CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL + S4SEL
 
 # ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 16.11.2026, nothing typed ----------
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data vânzării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {WK} · ciclu din {dd(HSTART)}</span></div>'''
