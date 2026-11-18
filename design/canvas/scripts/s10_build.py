@@ -290,8 +290,7 @@ KEY = f'<button type="button" class="ip-btn ip-btn--secondary">{s4.icon("sale", 
 SPG = s4.shell(s4.main_page(panel=s4.panel_default())); assert SPG.count(KEY) == 1
 SPG = SPG.replace(KEY, KEY.replace('ip-btn--secondary"', 'ip-btn--secondary is-pressed" aria-expanded="true" aria-controls="vp"'))
 DESK = f'<div class="ip-dockpage">{SPG}</div>'
-CSS_D = s4.CSS + '\n' + s4.CSS_STATES + SC.SIDE + SC.M0 + '''
-.ip-dockpage .s4-cycle,.ip-dockpage .s4-top{grid-template-columns:minmax(0,1fr)} /* beside the panel the S4 main is 720 px (1440) / 560 px (1280): the track and the Readout take the full width, the Stats go under them (no clipped figures) */''' + SC.REC + SC.OPT + SC.EFFECT + SC.FX
+CSS_D = s4.CSS + '\n' + s4.CSS_STATES + SC.SIDE + SC.M0 + SC.REC + SC.OPT + SC.EFFECT + SC.FX
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S10-vanzare', 'S10 · Vânzare'

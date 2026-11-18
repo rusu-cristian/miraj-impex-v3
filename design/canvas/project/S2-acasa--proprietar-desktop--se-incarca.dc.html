@@ -16,7 +16,8 @@
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
-.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-main{container:s4main / inline-size} /* FIN16: the S4 page lays itself out from its own width (beside a SidePanel 720 / 560) */
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 8 + var(--space-8)) minmax(0,1fr);gap:var(--space-6);align-items:start} /* FIN16: 416 + 24 leave the track box a CycleTrack step (additions.css §65): 720 at 1440, 560 at 1280 */
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
@@ -38,6 +39,11 @@
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
 .s4s-rel > .ip-shell{min-height:inherit}
+@container s4main (max-width: 999.98px){ /* FIN16: the narrow page (720 / 560 beside a SidePanel): one column; the track takes the page width (its 720 / 560 drawings), the field keeps its width */
+.s4-cycle,.s4-top,.s4-halls,.s4-split{grid-template-columns:minmax(0,1fr)}
+.s4-cycle > .ip-field{max-width:calc(var(--space-12) * 8 + var(--space-8))}
+.s4-cycle > .s4-tight{padding-top:0}
+}
 .s2-block{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
 .s2-block > .ip-list__head{margin:0}
 .s2-more,.s2-lnk{display:inline-flex;align-items:center;min-height:var(--space-6);align-self:flex-start} /* text links keep a >=24px target (D46) */
@@ -56,8 +62,7 @@
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
-.s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
-.s4s-none{padding:var(--space-6) var(--space-4)}</style>
+.s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="ip-shell"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>

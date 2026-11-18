@@ -123,11 +123,15 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
 .ip-ev:disabled,.ip-ev.is-disabled,.ip-ev[aria-disabled="true"]{background:transparent;color:var(--ink-disabled);cursor:not-allowed}
 .ip-ev.is-disabled .ip-ev__meta,.ip-ev[aria-disabled="true"] .ip-ev__meta{color:var(--ink-disabled)}
 /* A list of interactive rows must not clip the focus ring (bundle.css .ip-list has overflow:hidden).
- * The list stays rounded: first/last rows take its outer corners so hover/pressed fills stay inside them. */
-.ip-list:has(> .ip-ev:is(a,button)){overflow:visible}
-.ip-list > .ip-ev:is(a,button):first-child{border-top-left-radius:var(--radius-md);border-top-right-radius:var(--radius-md)}
-.ip-list > .ip-ev:is(a,button):last-child{border-bottom-left-radius:var(--radius-md);border-bottom-right-radius:var(--radius-md)}
-.ip-list > .ip-ev:is(a,button):focus-visible,.ip-list > .ip-ev.ip-focus{position:relative;z-index:1} /* ring paints over the next row */
+ * The list stays rounded: first/last rows take its outer corners so hover/pressed fills stay inside them.
+ * FIN16: in a ul/ol list a row link sits in its own li (ul.ip-list > li > a.ip-ev, the S4 Rezumat lists): the li draws
+ * the rule between rows (bundle.css draws it under every .ip-ev but a last child, and the link is its li's only child),
+ * at the same place, so the list looks as a list of bare row links. */
+.ip-list:has(> .ip-ev:is(a,button), > li > .ip-ev:is(a,button)){overflow:visible}
+.ip-list > .ip-ev:is(a,button):first-child,.ip-list > li:first-child > .ip-ev:is(a,button){border-top-left-radius:var(--radius-md);border-top-right-radius:var(--radius-md)}
+.ip-list > .ip-ev:is(a,button):last-child,.ip-list > li:last-child > .ip-ev:is(a,button){border-bottom-left-radius:var(--radius-md);border-bottom-right-radius:var(--radius-md)}
+.ip-list > .ip-ev:is(a,button):focus-visible,.ip-list > .ip-ev.ip-focus,.ip-list > li > .ip-ev:is(a,button):focus-visible,.ip-list > li > .ip-ev.ip-focus{position:relative;z-index:1} /* ring paints over the next row */
+.ip-list > li:has(> .ip-ev:is(a,button)) + li{border-top:var(--ip-hair) solid var(--rule)}
 
 /* Pressed contrast (D34a): on `rule`, ink-muted (4.4:1) and the ok lamp word (4.3:1) fall under 4.5:1, so inside a
  * pressed ghost/secondary Button, IconButton or EventRow, ink-muted text and lamp words switch to ink-secondary.
@@ -1914,7 +1918,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * then 720 below 1000 and 560 below 720 when the box has them (a box without the narrower drawing keeps the 1000 one).
  * The hidden ones are display:none, so they leave the tab order and the accessibility tree; same ARIA for each. As
  * ip-chartbox (section 16): the query's widths are the viewBox widths (container queries can't read a variable). Was
- * s2-, s3- and s18-trackbox/track--N (S2, S3, S18–S22); FIN16 uses it for the S4/S9/S10 1280 track text size. */
+ * s2-, s3- and s18-trackbox/track--N (S2, S3, S18–S22). FIN16: the S4 farm track (S4, S9, S10, S16, S17 boards) has all four
+ * drawings; S4 sizes its box to 720 / 560 (1440 / 1280, beside the CycleSelector or alone beside a SidePanel). */
 .ip-trackbox{container-type:inline-size}
 .ip-track--1000,.ip-track--720,.ip-track--560{display:none}
 @container (max-width: 1159.98px){.ip-track--1160{display:none}.ip-track--1000{display:block}}

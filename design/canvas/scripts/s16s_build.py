@@ -235,7 +235,7 @@ _key = re.search(r'<a class="ip-btn ip-btn--ghost" href="#corecteaza-ev\d+">Core
 assert _key and PGD.count(_key.group(0)) == 1
 PGD = PGD.replace(_key.group(0), _key.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost ip-focus"'))
 DSCROLL = HS.get('S16-corecteaza--desktop-dupa-stergere@scroll', 0)
-if DSCROLL: PGD = PGD.replace('<main class="ip-shell__main">', f'<main class="ip-shell__main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
+if DSCROLL: PGD = PGD.replace('<main class="ip-shell__main s4-main">', f'<main class="ip-shell__main s4-main" style="margin-top:calc(-1 * {DSCROLL}px)">', 1)
 T_DEL = f'Șters · Mortalitate {SEC} · {num(dd(RDAY))} · în viață azi ♀ {num(n(DDEL[DDAY]))}'
 boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu de stare (D39)', 'd',
                f'<div class="ip-dockpage s16s-vp--full">{PGD}</div>' + toast(T_DEL, desk=True)))

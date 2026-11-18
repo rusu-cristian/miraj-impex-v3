@@ -55,7 +55,7 @@ def filterbar(tab):
     ch = chips(BIRD) if tab == 'pasari' else s4.CHIPS
     return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", s4.PERIODS, 0)}{s4.seg("Pas", ["Zi", "Săpt."], 1)}{s4.EXPORT}{ch}</div>'
 def page(tab, panel):
-    main = f'''<main class="ip-shell__main">
+    main = f'''<main class="ip-shell__main s4-main">
 {s4.header('default')}
 {s4.cycle('default')}
 <div class="s4-tight">{filterbar(tab)}{tabs(tab)}</div>
@@ -601,7 +601,8 @@ CSS = s4.CSS + '''
 .s4t-sub{color:var(--ink-secondary);font-family:var(--font-mono);font-size:var(--ip-fs-small)}
 .s4t-state{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s4t-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
-.s4t-lk{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap;flex:none}'''
+.s4t-lk{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap;flex:none}
+@container s4main (max-width: 999.98px){.s4t-split{grid-template-columns:minmax(0,1fr)}} /* FIN16: the narrow page (beside a SidePanel): one column, so the Jurnal keys stay inline (SYS09 >= 480px) */'''
 
 B = 'S4-ferma--'
 BOARDS = [

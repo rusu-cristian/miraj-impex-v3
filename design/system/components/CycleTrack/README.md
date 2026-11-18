@@ -11,6 +11,7 @@ The signature: the series' cycles over calendar time, one lane per farm.
   - the transfer link and dot in `rec-transfer`
   - a sale end mark in `rec-sale`
 - **Today:** the "azi" line in `ok-lamp` across both lanes, with a small Readout per open cycle ("SAPT 41").
+- **Block labels:** series · type · length (closed) or start date (open), shortened until they fit their block with room to spare: drop the length (`Seria 2026 · creștere`), then the series word (`S 2026 · creștere`), then no label; the link's `aria-label` keeps everything (FIN16: the preview's Telița label ran 19.5 units past its block; the preview now draws the real cycle, 07.10.2025–28.02.2026, the transfer 22.02–28.02.2026 and SAPT 40).
 - **Track text:** the azi label, the Readout figure and the month labels are 11px (`caption` size; bundle.css drew them at 10, below the craft floor), set by additions.css for every `svg.ip-track` (FIN13). The Readout box is 56 wide for "SAPT 40" at 11px Mono (52 on phone).
 - **Interaction:** clicking a block opens that farm at that cycle.
 - **Variants:**

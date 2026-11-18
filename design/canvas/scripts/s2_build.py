@@ -208,7 +208,7 @@ def alerts(owner=False, u=''):
     items = [re.sub(r'(<div class="ip-ev__meta ip-num">)(.*?)(</div>)', lambda m: m[1] + ' · '.join(nw(g) for g in m[2].split(' · ')) + m[3], a, count=1) for a in items]
     assert all(a.count(FARM_P) == 1 for a in items)
     note = f'{num(len(items))} alerte · {"toate fermele" if owner else "fermele tale"} · {num(D)}'
-    return f'<section class="s2-block" aria-labelledby="{u}dv">{head("De verificat", note, u + "dv")}<div class="ip-list ip-list--alerts">{"".join(items)}</div></section>'
+    return f'<section class="s2-block" aria-labelledby="{u}dv">{head("De verificat", note, u + "dv")}<ul class="ip-list ip-list--alerts" aria-labelledby="{u}dv">{"".join(items)}</ul></section>'  # FIN16: ul/li, as the S4 Rezumat
 
 def stock(u='', cap='Zile de hrană'):
     def ro(fid, s, sign, word):

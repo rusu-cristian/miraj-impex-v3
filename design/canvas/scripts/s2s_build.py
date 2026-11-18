@@ -65,10 +65,10 @@ def skblock(cap, note, hid, body):
     return f'<section class="s2-block" aria-labelledby="{hid}" aria-busy="true">{A.head(cap, note, hid)}{body}</section>'
 STATUS = lambda what: f'<p class="ip-sr" role="status">Se încarcă {what} pentru <span class="ip-num">{D}</span>…</p>'
 
-def ek_off(note_html, u='x'):
-    """EntryKeys disabled (SYS08): links without href, aria-disabled, the one reason under the grid."""
+def ek_off(note_html, u='x', manager=False):
+    """EntryKeys disabled (SYS08): links without href, aria-disabled, the one reason under the grid (manager: all 6 keys)."""
     li = ''.join(f'<li><a class="ip-btn ip-btn--secondary ip-entrykey" role="link" tabindex="0" aria-disabled="true" aria-describedby="{u}ek-n">{tile(k)}'
-                 f'<span class="ip-entrykey__txt"><span>{lb}</span><span class="ip-note">{hint}</span></span></a></li>' for k, lb, hint, _ in A.KEYS[:3])
+                 f'<span class="ip-entrykey__txt"><span>{lb}</span><span class="ip-note">{hint}</span></span></a></li>' for k, lb, hint, _ in (A.KEYS if manager else A.KEYS[:3]))
     return (f'<section class="ip-entrykeys" aria-labelledby="{u}ek"><h2 class="ip-cap" id="{u}ek">Înregistrează</h2><ul class="ip-entrykeys__list">{li}</ul>'
             f'<p class="ip-note" id="{u}ek-n">{note_html}</p></section>')
 
@@ -124,6 +124,30 @@ ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{ic
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key">Reîncearcă</button></div>')
 boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscreen([PH(A.CTX_VET), ban, A.entrykeys()])))
 
+# 8b · manager · fermă goală (Telița) — FIN16: the "De verificat" empty state (SYS01 AlertRow: off lamp "nimic de verificat"
+# + one sentence, the list's own empty row li.ip-list__empty, as "nimic introdus"). A manager whose only farm is Telița
+# (D39: the assignment, as board 6), empty since 28.02.2026 (real): no birds, no feed rows, no stock in use, so no alert.
+# Zile de hrană keeps only Telița's off Readout; every entry key is off with the board-6 reason (Livrare hrană included:
+# Telița "fără ciclu deschis", D133), so the tab bar key is off too.
+def alerts_none(line, scope, u=''):
+    return (f'<section class="s2-block" aria-labelledby="{u}dv">{A.head("De verificat", f"{scope} · {num(D)}", u + "dv")}'
+            f'<ul class="ip-list ip-list--alerts" aria-labelledby="{u}dv"><li class="ip-list__empty"><span class="ip-lamp ip-lamp--off">nimic de verificat</span>'
+            f'<span>{line}</span></li></ul></section>')
+def stock_only_telita():
+    st = A.stock()
+    for fid in ('ft-breeder2', 'ft-cocosi'):
+        a = st.index(f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="sr-{fid}">'); st = st[:a] + st[st.index('</li>', a) + 5:]
+    a = st.index('<p class="ip-note ip-m0">Zile rămase = '); st = st[:a] + st[st.index('</p>', a) + 4:]  # the 3-day window note is Hîrbovăț's
+    assert st.count('<li>') == 1 and 'Telița' in st and 'Hîrbovăț' not in st
+    return st
+boards.append(('manager-ferma-goala', 'manager · fermă goală (Telița) · nimic de verificat · exemplu de stare (D39)', 'p', pscreen([
+    PH(f'TELIȚA · {D}'),
+    alerts_none(f'Telița e goală din {num(T_END)}; alertele apar cu ciclul nou.', 'Telița'),
+    stock_only_telita(),
+    ek_off(f'Telița e goală din {num(T_END)}. Intrările se deschid cu ciclul nou.', manager=True),
+    A.missing(True, miss=[], scope='Telița', empty=f'Telița e goală din {num(T_END)}. Aici apar doar secțiunile cu păsări.'),
+    A.introdus_empty('Nu ai salvat nimic azi.')], vet=False, key_off='xek-n')))
+
 # ---------- desktop pieces ----------
 sk = s4.sk
 def skreadouts(k, hid):
@@ -141,7 +165,7 @@ boards.append(('manager-desktop--se-incarca', 'manager · desktop · se încarc�
 a_neg = s4.alert('delivery', f'Breeder 2 · stoc <span class="ip-num">{n(NEG)} kg</span> · sub 0',
                  f'{D} · consumul depășește livrările', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
 al = A.alerts()
-first = '<div class="ip-ev ip-ev--alert">'
+first = '<li class="ip-ev ip-ev--alert">'
 assert al.count(first) == 3 and f'{num(3)} alerte' in al
 al = al.replace(f'{num(3)} alerte', f'{num(4)} alerte')
 i3 = al.rindex(first)  # the stock alert (Cocoși) is the last; the Breeder 2 one goes just before it

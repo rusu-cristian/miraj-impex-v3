@@ -231,22 +231,22 @@ PEGG_W = sum(r['avg_egg_weight_g'] * r['total_eggs'] for r in _pw) / sum(r['tota
 PEGG_WK = sorted({r['cycle_week'] for r in _pw if r['total_eggs']})
 assert PEGG_NOW == 9314 and sum(r['total_eggs'] for r in _pw) + PEGG_NOW == PD['meta']['totals']['total_eggs'] == 4606935
 assert (PEGG_WK[0], PEGG_WK[-1]) == (5, s4.PFIN) == (5, 47) and n(PEGG_W, 1) == '62,0' and abs(PEGG_W - 61.9677) < 1e-4
-OLD_EGGW = '<span class="ip-stat__val">69,9<small>g</small></span>'
+OLD_PEAK = f'<span class="ip-stat__val">{n(22739)}<small>ouă/zi</small></span>'  # FIN16: S4's peak-week Stat (was its SAPT 47 egg weight, 69,9 g)
 def stats_past():
     sp = s4.stats_past()
-    old = [d for d in sp.split('\n') if 'Masă medie ou · SAPT' in d]
-    assert len(old) == 1 and OLD_EGGW in old[0], old
+    old = [d for d in sp.split('\n') if 'Vârf · ouă pe zi' in d]  # FIN16: S14 keeps its own egg-mass Stat in that place
+    assert len(old) == 1 and OLD_PEAK in old[0], old
     new = t4.stat('eggs', 'Masă medie ou în ciclu', f'{n(PEGG_W, 1)}<small>g</small>', NOGD,
                   f'medie pe ouă · {num(f"SAPT {PEGG_WK[0]}–{PEGG_WK[-1]}")}', f'fără {num(n(PEGG_NOW))} ouă fără masă')  # two lines: one wrapped line left "fără masă" alone
-    out = sp.replace(old[0], new); assert out.count('Masă medie ou') == 1 and 'SAPT 5: 47,0 g' not in out
-    # S14P fix 2: no word alone on a Stat's last line at 1280 (S4's own stats_past untouched)
-    for a, z in ((f' · {s4.PDAYS} zile</span>', f' · {s4.PDAYS}{NBSP}zile</span>'), (', nu se calculează</span>', f', nu se{NBSP}calculează</span>')):
-        assert out.count(a) == 1, a; out = out.replace(a, z)
+    out = sp.replace(old[0], new); assert out.count('Masă medie ou') == 1 and 'Vârf' not in out
+    # S14P fix 2 (no word alone on a Stat's last line at 1280): since FIN16 S4's own lines fit at 1280 ("300 zile · din
+    # 04.04.2025", "fără efectiv în registru"), so the two no-break patches are gone
+    assert f'>{s4.PDAYS} zile · din ' in out and '>fără efectiv în registru</span>' in out
     return out
-def readout_past():  # S14P fix 2: "după 22.01)" stays together on the Readout's sub line (S4's readout_past untouched)
-    ro = s4.readout_past(); a = f' fără ouă după {s4.ddate(s4.PLAST["H1"])[:5]})</div>'
-    assert ro.count(a) == 1 and a.startswith(' fără ouă după 22.01)'), a
-    return ro.replace(a, a.replace(' după ', f' după{NBSP}'))
+def readout_past():  # S14P fix 2: "pe 22.01)" stays together on the Readout's sub line (S4's readout_past untouched; FIN16 wording)
+    ro = s4.readout_past(); a = f' până pe {s4.ddate(s4.PLAST["H1"])[:5]})</div>'
+    assert ro.count(a) == 1 and a.startswith(' până pe 22.01)'), a
+    return ro.replace(a, a.replace(' pe ', f' pe{NBSP}'))
 def dep_week(h): return (dt.date.fromisoformat(DEP[h]) - dt.date.fromisoformat(s4.c25['start_date'])).days // 7 + 1
 assert {h: dep_week(h) for h in HALLS} == {'H1': 45, 'H3': 46, 'H4': 46}
 def pnote(k, w):

@@ -216,14 +216,19 @@ def header(mode='default'):
 </header>'''
 
 # ---------- cycle selector + farm track ----------
-TW = 800
+# FIN16: the farm track is drawn 1:1 at each width its box can have (additions.css §65 ip-trackbox, one svg per viewBox
+# width): beside the CycleSelector 720 (1440) / 560 (1280), alone in the narrow page beside a SidePanel 720 / 560, and
+# 1160 / 1000 for a page wider than 1440; so its text stays 11px and its blocks 30px tall (was one 800 drawing, scaled
+# to 640 / 560 at 1280: 8.8 / 7.7px text, 24 / 21px blocks).
+TWS = (1160, 1000, 720, 560)
 DOM_LIVE = (dt.date(2025, 3, 1), dt.date(2027, 1, 31), [('2025-04-01', '04.25'), ('2025-07-01', '07.25'), ('2025-10-01', '10.25'), ('2026-01-01', '01.26'),
             ('2026-04-01', '04.26'), ('2026-07-01', '07.26'), ('2026-10-01', '10.26'), ('2027-01-01', '01.27')])
 # empty farm on 30.01.2026: the axis ends near "azi" (01.2025 – 03.2026), no future months after a cycle that doesn't exist yet
 DOM_EMPTY = (dt.date(2025, 1, 1), dt.date(2026, 3, 31), [('2025-01-01', '01.25'), ('2025-04-01', '04.25'), ('2025-07-01', '07.25'), ('2025-10-01', '10.25'),
              ('2026-01-01', '01.26'), ('2026-03-01', '03.26')])
-def track(today_iso, sel='2026', dom=DOM_LIVE):
-    """sel: the cycle shown on the page ('2026', '2025') or None (empty farm: nothing current). Seria 2026 exists only when today ≥ its start."""
+def track(today_iso, sel='2026', dom=DOM_LIVE, TW=TWS[0]):
+    """sel: the cycle shown on the page ('2026', '2025') or None (empty farm: nothing current). Seria 2026 exists only when today ≥ its start.
+    TW: the viewBox width of this drawing (one of TWS)."""
     d0, d1, tks = dom
     ppd = TW / (d1 - d0).days
     def tx(iso): return round(((dt.date.fromisoformat(iso) - d0).days) * ppd, 1)
@@ -255,7 +260,9 @@ def track(today_iso, sel='2026', dom=DOM_LIVE):
     else:  # empty farm: no open cycle, so no readout next to "azi" and no current block
         b26 = ''; ro = ''
         desc = f'Hîrbovăț: Seria 2025 ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, {PREV_WEEKS} săpt., închis; ferma e goală din 28.01.2026, azi {ddate(today_iso)}. Niciun ciclu deschis.'
-    return f'''<svg class="ip-track ip-track--farm" viewBox="0 0 {TW} 60" role="group" aria-label="Ciclurile fermei Hîrbovăț"><desc>{desc}</desc><rect class="lane" x="0" y="14" width="{TW}" height="26"/>{b25}{b26}<line class="today" x1="{xt}" x2="{xt}" y1="12" y2="42"/><text class="todaylbl" x="{xt}" y="9" text-anchor="middle">azi {tl}</text>{ro}{ticks}</svg>'''
+    return f'''<svg class="ip-track ip-track--farm ip-track--{TW}" viewBox="0 0 {TW} 60" role="group" aria-label="Ciclurile fermei Hîrbovăț"><desc>{desc}</desc><rect class="lane" x="0" y="14" width="{TW}" height="26"/>{b25}{b26}<line class="today" x1="{xt}" x2="{xt}" y1="12" y2="42"/><text class="todaylbl" x="{xt}" y="9" text-anchor="middle">azi {tl}</text>{ro}{ticks}</svg>'''
+def trackbox(today_iso, sel='2026', dom=DOM_LIVE):  # FIN16: §65 width box, the widest drawing that fits is shown
+    return '<div class="ip-trackbox">' + ''.join(track(today_iso, sel, dom, w) for w in TWS) + '</div>'
 def legend(xfer=True):  # names only the marks drawn: Seria 2026 starts by transfer; Seria 2025's start is inferred (D54), no sale
     x = '<span><i class="ip-rec ip-rec--transfer"></i>transfer</span>' if xfer else ''
     return f'<div class="ip-tracklegend" aria-hidden="true">{x}<span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span><span><i class="today"></i>azi</span></div>'
@@ -278,14 +285,14 @@ def cycle(mode='default'):
         hint = f'<span class="ip-hint">ultimul ciclu · Seria 2025 · 07.03.2025–{ddate(PREV_END)}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
 <div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{hidden_list(GRP + opt25(False))}</div>{hint}</div>
-<div class="ip-stack s4-tight">{track('2026-01-30', sel=None, dom=DOM_EMPTY)}{legend(xfer=False)}</div>
+<div class="ip-stack s4-tight">{trackbox('2026-01-30', sel=None, dom=DOM_EMPTY)}{legend(xfer=False)}</div>
 </section>'''
     if mode == 'past':  # D51 "ciclu ales": the page rescoped to the closed Seria 2025 cycle
         sel = combo(f'Seria 2025 · {PREV_WEEKS} săpt.', lamp('off', 'închis'))
         hint = f'<span class="ip-hint">început dedus {ddate(c25["start_date"])} · date din {ddate(c25["data_start_date"])}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
 <div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{hidden_list(GRP + opt26(False) + opt25(True))}</div>{hint}</div>
-<div class="ip-stack s4-tight">{track(TODAY, sel='2025')}{LEGEND}</div>
+<div class="ip-stack s4-tight">{trackbox(TODAY, sel='2025')}{LEGEND}</div>
 </section>'''
     opened = mode == 'menu'
     sel = combo('Seria 2026 · din 10.02.2026', lamp('ok', 'deschis'), opened, 'cyc-2026')
@@ -295,7 +302,7 @@ def cycle(mode='default'):
         menu = hidden_list(CYC_ITEMS)
     return f'''<section class="s4-cycle" aria-label="Ciclu">
 <div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{menu}</div><span class="ip-hint">2 cicluri la Hîrbovăț · deschis din 10.02.2026</span></div>
-<div class="ip-stack s4-tight">{track(TODAY)}{LEGEND}</div>
+<div class="ip-stack s4-tight">{trackbox(TODAY)}{LEGEND}</div>
 </section>'''
 
 # ---------- filter bar + tabs ----------
@@ -459,7 +466,7 @@ for r in reversed(h3_days):
 assert h3_since == '2026-11-09', h3_since
 def alert(k, title, meta, status, act=None):
     a = f'<a class="ip-link ip-ev__act" href="{act[1]}">{act[0]}</a>' if act else ''
-    return f'<div class="ip-ev ip-ev--alert">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{a}<span class="ip-ev__status">{status}</span></div>'
+    return f'<li class="ip-ev ip-ev--alert">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{a}<span class="ip-ev__status">{status}</span></li>'  # FIN16: a row of ul.ip-list
 def alerts(ng=False):
     a_h3 = alert('eggs', f'H3 · ouat <span class="ip-num">{pct(h3["lay_pct"])}</span> · ghid <span class="ip-num">{pct(lay_guide)}</span> · <span class="ip-num">{n(h3["diff_pts"],1)} pct</span>',
            f'16.11.2026 · SAPT {WK} · sub ghid din {ddate(h3_since)}', lamp('warn', 'abatere'), ('Vezi producția', '#productie'))
@@ -488,8 +495,8 @@ for _d, _e in ((e['at'][:10], e) for e in S['event_log'] if e['record'] == 'mort
     assert f"♀ {n(-(deaths(_d)['F'] + _c['F']))} · ♂ {n(-(deaths(_d)['M'] + _c['M']))}" in _e['summary'], (_d, _e['summary'])
 D15, D16 = deaths('2026-11-15'), deaths('2026-11-16')
 assert (D15, D16) == ({'F': 7, 'M': 2}, {'F': 8, 'M': 1})
-def ev(k, title, meta, status=''):
-    return f'<a class="ip-ev" href="#inregistrare">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{status}</a>'
+def ev(k, title, meta, status=''):  # FIN16: the row link in its own li (ul.ip-list > li > a.ip-ev, additions.css section 1), as the tabs' lists
+    return f'<li><a class="ip-ev" href="#inregistrare">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{status}</a></li>'
 events = [
  ev('weighing', f'Cântărire · 6 secțiuni · {pair(n(w_f), n(w_m), " g")}', f'16.11.2026, 10:10 · SAPT {WK} · Dr. Ceban'),
  ev('feed', f'Hrană zilnică · 10 din 12 rânduri · <span class="ip-num">3{NB}691 kg</span>', f'16.11.2026, 09:47 · SAPT {WK} · Dr. Ceban', lamp('warn', 'lipsă 2')),
@@ -510,8 +517,8 @@ def panel_default(ng=False, banner=''):
 {banner}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
 <section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">6 secțiuni · 3 hale · 16.11.2026</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
 <div class="s4-split">
-<section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><div class="ip-list">{"".join(al)}</div></section>
-<section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events)}</div></section>
+<section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><ul class="ip-list" aria-labelledby="h-chk">{"".join(al)}</ul></section>
+<section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><ul class="ip-list" aria-labelledby="h-log">{"".join(events)}</ul></section>
 </div>
 </div>'''
 
@@ -557,7 +564,7 @@ BANNER_NG = f'<div class="ip-banner ip-banner--info ip-banner--act" role="note">
 # ---------- 4. no access ----------
 def main_noaccess():
     step = f'<a class="ip-btn ip-btn--secondary" href="#acasa">{icon("home", 16)}Înapoi la Acasă</a>'
-    return f'''<main class="ip-shell__main">
+    return f'''<main class="ip-shell__main s4-main">
 {header('noaccess')}
 {empty_box("fără acces", ["Nu ai acces la această fermă."], step, "Acces")}
 </main>'''
@@ -566,7 +573,7 @@ def main_noaccess():
 def main_empty():
     step = '<a class="ip-link" href="#ciclu-seria-2025">Vezi ultimul ciclu</a>'
     lines = [f'Ferma e goală din {ddate(PREV_END)}. Ultimul ciclu: Seria 2025, {PREV_WEEKS} săpt.', 'Ciclul pornește la prima populare sau transfer.']
-    return f'''<main class="ip-shell__main">
+    return f'''<main class="ip-shell__main s4-main">
 {header('empty')}
 {cycle('empty')}
 {empty_box("goală", lines, step, "Rezumat")}
@@ -592,6 +599,7 @@ assert PDAYS == 300
 fin_halls = [h for h in ('H1', 'H3', 'H4') if (h, PFIN) in phall]
 assert fin_halls == ['H4'] and fin['total_eggs'] == phall[('H4', PFIN)]['total_eggs']
 PGL = 'ghid: – fără date în ghid'
+assert PLAST['H1'] == PLAST['H3'] == '2026-01-22'  # FIN16: the Readout sub-line names one last day for H1 and H3 (one line at 1280)
 # D52/D54: mortality = Σ daily ♀/♂ deaths outside the emptying days (depopulation flag, first 15.01.2026); no flock count, so no %
 PMORT = {sx: sum(r[f'mortality_{sx}'] for r in PD['rows'] if not r['depopulation']) for sx in 'FM'}
 assert PMORT == {'F': 6948, 'M': 1505}, PMORT
@@ -616,7 +624,7 @@ def readout_past():
     return f'''<div class="ip-readout s4-readout">
 <div class="ip-readout__cap"><span>OUĂ / SĂPT. · HÎRBOVĂȚ · SAPT {PFIN}</span><span class="ip-rlamp ip-rlamp--off">FĂRĂ DATE ÎN GHID</span></div>
 <div class="ip-readout__val">{n(fin["total_eggs"])} <small>ouă</small></div>
-<div class="ip-readout__sub">{per} · {fin["days"]} zile · doar H4 (H1, H3 fără ouă după {ddate(PLAST["H1"])[:5]})</div>
+<div class="ip-readout__sub">{per} · {fin["days"]} zile · doar H4 (H1, H3 până pe {ddate(PLAST["H1"])[:5]})</div>
 {chart}
 <span class="ip-sr" id="egg-help">Săgețile stânga și dreapta mută săptămâna; Home și End: prima și ultima săptămână.</span>
 <div class="ip-chart__read" id="egg-read" role="status" aria-live="polite">SAPT {PFIN} · {n(fin["total_eggs"])} ouă · {fin["days"]} zile · ghid – fără date în ghid</div>
@@ -624,16 +632,21 @@ def readout_past():
 {chart_legend([('act', 'ouă totale (Cat. 1–3 + incubabile)')], 'axa: săpt. ciclului, 1–4 fără date')}
 </div>'''
 
+# FIN16: the peak week of the cycle (eggs per day, whole weeks only): the top of the Readout's curve as a figure, in place
+# of "Masă medie ou · SAPT 47", which repeated one row of the weekly table (the final week's egg weight)
+PPEAK = max((r for r in pall.values() if not r['partial']), key=lambda r: r['eggs_per_day'])
+assert (PPEAK['cycle_week'], PPEAK['eggs_per_day'], PPEAK['total_eggs']) == (9, 22739, 159175) and PPEAK['eggs_per_day'] == rnd(PPEAK['total_eggs'] / PPEAK['days'])
+assert PPEAK['total_eggs'] == max(r['total_eggs'] for r in pall.values())  # also the highest point of the weekly chart
 def stats_past():
     inc = PT['hatching_eggs'] / PT['total_eggs'] * 100
     jos = PT['floor_eggs'] / PT['total_eggs'] * 100
-    w5 = pall[PWEEKS[0]]['avg_egg_weight_g']; wf = fin['avg_egg_weight_g']
+    # FIN16 (1280): lines that wrapped in the 206px Stat are shortened (the end date and the reason are in the header)
     return guides(f'''<div class="ip-stats s4-stats">
-<div class="ip-stat">{cap('eggs', 'Ouă în ciclu')}<span class="ip-stat__val">{n(PT['total_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{ddate(c25['data_start_date'])}–{ddate(PREV_END)} · {PDAYS} zile</span></div>
+<div class="ip-stat">{cap('eggs', 'Ouă în ciclu')}<span class="ip-stat__val">{n(PT['total_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{PDAYS} zile · din {ddate(c25['data_start_date'])}</span></div>
 <div class="ip-stat">{cap('eggs', 'Incubabile')}<span class="ip-stat__val">{n(inc,1)}<small>%</small></span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{n(PT['hatching_eggs'])} din {n(PT['total_eggs'])} ouă</span></div>
-<div class="ip-stat">{cap('eggs', f'Masă medie ou · SAPT {PFIN}')}<span class="ip-stat__val">{n(wf,1)}<small>g</small></span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">SAPT {PWEEKS[0]}: {n(w5,1)} g</span></div>
+<div class="ip-stat">{cap('eggs', 'Vârf · ouă pe zi')}<span class="ip-stat__val">{n(PPEAK['eggs_per_day'])}<small>ouă/zi</small></span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">SAPT {PPEAK['cycle_week']} · {ddate(PPEAK['from'])[:5]}–{ddate(PPEAK['to'])}</span></div>
 <div class="ip-stat">{cap('eggs', 'Ouă jos')}<span class="ip-stat__val">{n(PT['floor_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide">nu intră în total · <span class="ip-num">{pct(jos)}</span> din total</span></div>
-<div class="ip-stat">{cap('eggs', 'Ouat')}<span class="ip-stat__val">–</span><span class="ip-stat__guide">{NOFLOCK}, nu se calculează</span><span class="ip-stat__guide">ouă pe găină: – fără efectiv</span></div>
+<div class="ip-stat">{cap('eggs', 'Ouat')}<span class="ip-stat__val">–</span><span class="ip-stat__guide">{NOFLOCK}</span><span class="ip-stat__guide">ouă pe găină: – fără efectiv</span></div>
 <div class="ip-stat">{cap('mortality', 'Mortalitate cumulată')}<span class="ip-stat__val">{pair(n(PMORT['F']), n(PMORT['M']))}</span><span class="ip-stat__guide">% – {NOFLOCK}</span><span class="ip-stat__guide"><span>fără golirea din <span class="ip-num">{ddate(PDEP)}</span></span></span></div>
 </div>''')
 
@@ -655,13 +668,15 @@ def events_past():
     return out
 
 def panel_past():
-    none = f'<div class="ip-list"><div class="ip-empty s4s-none">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></div></div>'
+    # FIN16: the AlertRow empty state (SYS01: off lamp "nimic de verificat" + one sentence) as the list's own empty row
+    # (li.ip-list__empty, as S2's "nimic introdus"), in place of the screen box .s4s-none
+    none = f'<ul class="ip-list" aria-labelledby="h-chk"><li class="ip-list__empty">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></li></ul>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 <section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori, Seria 2025</h2>{readout_past()}{stats_past()}</section>
 <section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
 <div class="s4-split">
 <section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
-<section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><div class="ip-list">{"".join(events_past())}</div><p class="ip-note ip-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
+<section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><ul class="ip-list" aria-labelledby="h-log">{"".join(events_past())}</ul><p class="ip-note ip-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
 </div>
 </div>'''
 
@@ -677,7 +692,7 @@ DLG = f'''<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="aler
 
 def main_page(mode='default', panel=None, ng=False):
     fb = filterbar(mode if mode in ('period', 'past') else 'default')
-    return f'''<main class="ip-shell__main">
+    return f'''<main class="ip-shell__main s4-main">
 {header('past' if mode == 'past' else 'noguide' if ng else 'default')}
 {cycle(mode if mode in ('menu', 'past') else 'default')}
 <div class="s4-tight">{fb}{tabs}</div>
@@ -688,7 +703,8 @@ CSS = '''body{margin:0}
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
-.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-main{container:s4main / inline-size} /* FIN16: the S4 page lays itself out from its own width (beside a SidePanel 720 / 560) */
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 8 + var(--space-8)) minmax(0,1fr);gap:var(--space-6);align-items:start} /* FIN16: 416 + 24 leave the track box a CycleTrack step (additions.css §65): 720 at 1440, 560 at 1280 */
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
@@ -709,7 +725,12 @@ CSS = '''body{margin:0}
 .s4-filterbar{row-gap:var(--space-2)}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
-.s4s-rel > .ip-shell{min-height:inherit}'''
+.s4s-rel > .ip-shell{min-height:inherit}
+@container s4main (max-width: 999.98px){ /* FIN16: the narrow page (720 / 560 beside a SidePanel): one column; the track takes the page width (its 720 / 560 drawings), the field keeps its width */
+.s4-cycle,.s4-top,.s4-halls,.s4-split{grid-template-columns:minmax(0,1fr)}
+.s4-cycle > .ip-field{max-width:calc(var(--space-12) * 8 + var(--space-8))}
+.s4-cycle > .s4-tight{padding-top:0}
+}'''
 # S4 boards only (default, states, tabs): S3 and S11 reuse CSS/CSS_STATES and must stay byte-identical
 # FIN15: CSS_S4 (the S4TP section-head link rule) is now additions.css §56 `.ip-sechead > .ip-link`
 # state boards only
@@ -724,8 +745,7 @@ CSS_STATES = '''.s4s-sktile{gap:var(--space-2)}
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
-.s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
-.s4s-none{padding:var(--space-6) var(--space-4)}'''
+.s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}'''
 
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'

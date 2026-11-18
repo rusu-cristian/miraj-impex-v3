@@ -209,8 +209,8 @@ assert '</li>' not in PG[_li:_i]
 PG = (PG[:_li] + '<li class="ip-ev ip-ev--act is-current">' + PG[_li + len('<li class="ip-ev ip-ev--act">'):_i]
       + KEY.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost" aria-expanded="true" aria-controls="cp" aria-current="true"') + PG[_i + len(KEY.group(0)):])
 SCROLL = HS.get('S16-corecteaza--desktop@scroll', 0)
-assert PG.count('<main class="ip-shell__main">') == 1
-if SCROLL: PG = PG.replace('<main class="ip-shell__main">', f'<main class="ip-shell__main" style="margin-top:calc(-1 * {SCROLL}px)">')
+assert PG.count('<main class="ip-shell__main s4-main">') == 1
+if SCROLL: PG = PG.replace('<main class="ip-shell__main s4-main">', f'<main class="ip-shell__main s4-main" style="margin-top:calc(-1 * {SCROLL}px)">')
 DESK = f'<div class="ip-dockpage s16-vp">{PG}</div>'
 DSAVE = '<button type="button" class="ip-btn ip-btn--primary" disabled aria-describedby="fx">Salvează corecția</button>'
 def panel(focus):  # focus: just opened from the Jurnal key, focus on the first CountInput (S16P); Esc / Închide return it to that key
@@ -232,8 +232,7 @@ PAIR = '''
 SHEET = ''  # FIN15B: the sheet's scrolling form body is additions.css §62 ip-sidepanel__body--form
 CSS_P = '''body{margin:0}
 .s16-screen{height:100%;display:flex}''' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + SC.MODAL + PAIR
-CSS_D = T.CSS + SC.SIDE + SC.M0 + '''
-.ip-dockpage .s4-cycle,.ip-dockpage .s4-top,.s16-vp .s4t-split{grid-template-columns:minmax(0,1fr)} /* beside the panel (S9's rule) + the Jurnal full width, so its keys stay inline (SYS09 >= 480px) */''' + SC.REC + SC.EFFECT + SC.FX + PAIR
+CSS_D = T.CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + PAIR
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S16-corecteaza', 'S16 · Corectează'

@@ -22,7 +22,8 @@ body{margin:0}
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
-.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-main{container:s4main / inline-size} /* FIN16: the S4 page lays itself out from its own width (beside a SidePanel 720 / 560) */
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 8 + var(--space-8)) minmax(0,1fr);gap:var(--space-6);align-items:start} /* FIN16: 416 + 24 leave the track box a CycleTrack step (additions.css §65): 720 at 1440, 560 at 1280 */
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
@@ -44,6 +45,11 @@ body{margin:0}
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
 .s4s-rel > .ip-shell{min-height:inherit}
+@container s4main (max-width: 999.98px){ /* FIN16: the narrow page (720 / 560 beside a SidePanel): one column; the track takes the page width (its 720 / 560 drawings), the field keeps its width */
+.s4-cycle,.s4-top,.s4-halls,.s4-split{grid-template-columns:minmax(0,1fr)}
+.s4-cycle > .ip-field{max-width:calc(var(--space-12) * 8 + var(--space-8))}
+.s4-cycle > .s4-tight{padding-top:0}
+}
 .s4s-sktile{gap:var(--space-2)}
 .s4s-sktotals{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
 .s4s-skrow{gap:var(--space-3);align-items:center}
@@ -56,7 +62,6 @@ body{margin:0}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
-.s4s-none{padding:var(--space-6) var(--space-4)}
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-hen{color:var(--rec-hen)}
@@ -66,6 +71,7 @@ body{margin:0}
 .s4t-state{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s4t-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s4t-lk{display:inline-flex;align-items:center;min-height:var(--space-6);white-space:nowrap;flex:none}
+@container s4main (max-width: 999.98px){.s4t-split{grid-template-columns:minmax(0,1fr)}} /* FIN16: the narrow page (beside a SidePanel): one column, so the Jurnal keys stay inline (SYS09 >= 480px) */
 .s11-farm{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s11-farm .ip-label{margin:0}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}

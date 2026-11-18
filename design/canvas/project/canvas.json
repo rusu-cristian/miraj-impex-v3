@@ -598,7 +598,7 @@
       "title": "S2 · Acasă · vet · eroare la încărcare"
     },
     "S2-acasa--manager-desktop--se-incarca.dc.html": {
-      "x": 7740,
+      "x": 8210,
       "y": 20922,
       "w": 1440,
       "h": 1024,
@@ -606,7 +606,7 @@
       "title": "S2 · Acasă · manager · desktop · se încarcă"
     },
     "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0.dc.html": {
-      "x": 9260,
+      "x": 9730,
       "y": 20922,
       "w": 1440,
       "h": 1024,
@@ -614,7 +614,7 @@
       "title": "S2 · Acasă · manager · desktop · zi trecută lipsă · stoc sub 0 · exemplu de stare (D39)"
     },
     "S2-acasa--proprietar-desktop--se-incarca.dc.html": {
-      "x": 10780,
+      "x": 11250,
       "y": 20922,
       "w": 1440,
       "h": 1024,
@@ -622,7 +622,7 @@
       "title": "S2 · Acasă · proprietar · desktop · se încarcă"
     },
     "S2-acasa--proprietar-desktop--toate-cu-pret.dc.html": {
-      "x": 12300,
+      "x": 12770,
       "y": 20922,
       "w": 1440,
       "h": 1136,
@@ -630,14 +630,14 @@
       "title": "S2 · Acasă · proprietar · desktop · toate livrările au preț · exemplu de stare (D39)"
     },
     "S2-acasa--observator.dc.html": {
-      "x": 13820,
+      "x": 14290,
       "y": 20922,
       "w": 390,
       "h": 2172,
       "title": "S2 · Acasă · observator · telefon"
     },
     "S2-acasa--observator-desktop.dc.html": {
-      "x": 14290,
+      "x": 14760,
       "y": 20922,
       "w": 1440,
       "h": 1116,
@@ -1959,6 +1959,13 @@
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · fără conexiune · ceban: exemplu de stare (D39)"
+    },
+    "S2-acasa--manager-ferma-goala.dc.html": {
+      "x": 7740,
+      "y": 20922,
+      "w": 390,
+      "h": 844,
+      "title": "S2 · Acasă · manager · fermă goală (Telița) · nimic de verificat · exemplu de stare (D39)"
     }
   },
   "order": [
@@ -2217,7 +2224,8 @@
     "S1-autentificare--gresit.dc.html",
     "S1-autentificare--prea-multe-incercari.dc.html",
     "S1-autentificare--cont-dezactivat.dc.html",
-    "S1-autentificare--fara-conexiune.dc.html"
+    "S1-autentificare--fara-conexiune.dc.html",
+    "S2-acasa--manager-ferma-goala.dc.html"
   ],
   "notes": {},
   "designSystems": [

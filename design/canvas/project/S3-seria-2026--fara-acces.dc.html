@@ -16,7 +16,8 @@
 .s4-tight{display:flex;flex-direction:column;gap:var(--space-2)}
 .s4-panel{display:flex;flex-direction:column;gap:var(--space-6)}
 .s4-lamps{display:flex;gap:var(--space-3)}
-.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.s4-main{container:s4main / inline-size} /* FIN16: the S4 page lays itself out from its own width (beside a SidePanel 720 / 560) */
+.s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 8 + var(--space-8)) minmax(0,1fr);gap:var(--space-6);align-items:start} /* FIN16: 416 + 24 leave the track box a CycleTrack step (additions.css §65): 720 at 1440, 560 at 1280 */
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
@@ -38,6 +39,11 @@
 .s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
 .s4s-rel > .ip-shell{min-height:inherit}
+@container s4main (max-width: 999.98px){ /* FIN16: the narrow page (720 / 560 beside a SidePanel): one column; the track takes the page width (its 720 / 560 drawings), the field keeps its width */
+.s4-cycle,.s4-top,.s4-halls,.s4-split{grid-template-columns:minmax(0,1fr)}
+.s4-cycle > .ip-field{max-width:calc(var(--space-12) * 8 + var(--space-8))}
+.s4-cycle > .s4-tight{padding-top:0}
+}
 .s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
 .s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
 .s3-group .s4-ico{margin-right:var(--space-1)} /* group line: icon space-1 + the line's gap, as before FIN14B */
