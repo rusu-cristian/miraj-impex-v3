@@ -68,7 +68,7 @@ IBM Plex Sans + IBM Plex Mono, weights 400/500, loaded by the `@import` of Googl
 **Inputs**
 - TextField: `ip-field` > `ip-label` + `ip-input` (`.suffix`; `is-focus|is-error|is-warn|is-disabled|is-readonly|is-suggested`; `ip-input--touch|--area`) + `ip-hint|ip-err|ip-warnline`
 - CountInput: `ip-input ip-count ip-count--hen|rooster`, `ip-count--md`, empty `.ph`
-- Select / SectionSelect / CycleSelector: `ip-input` + `ip-menu` > `ip-menu__group`, `ip-menu__item` (`is-active|is-disabled`)
+- Select / SectionSelect / CycleSelector: `ip-input` + `ip-menu` > `ip-menu__group`, `ip-menu__item` (`is-active|is-disabled`); options with state = additions.css §53 select-only combobox `ip-select` > `ip-input.ip-select__btn[role=combobox]` (`__val`) + `ip-menu.ip-select__menu[role=listbox]` > `ip-select__opt` (`__chk`, `__txt`, `__top`), popup actions `ip-select__list` + `ip-select__act` (FIN10, D130); plain lists stay a native `<select>` in `ip-input`
 - Checkbox: `ip-check` (`is-checked`) > `ip-check__box`
 - SegmentedControl / DateField: `ip-seg` > `ip-seg__item` (`is-selected`), `ip-seg--touch`
 - FileDrop: `ip-drop`

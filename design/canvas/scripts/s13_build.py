@@ -178,7 +178,6 @@ assert SPG.count('class="s11-tablebox s11-tscroll" role="region" tabindex="0"') 
 DESK = f'<div class="s13-vp">{SPG}</div>'
 assert DH == SC.SIDE_H
 CSS_D = s11.CSS + SC.SIDE + '''
-.ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
 ''' + CSS.split(SC.MAIN, 1)[1]  # desktop split marker: everything after the phone main gap
 
 # ---------- write ----------

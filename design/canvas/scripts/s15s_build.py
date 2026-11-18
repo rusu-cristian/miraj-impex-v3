@@ -142,7 +142,7 @@ fresh()
 def vet_sidebar():
     import re
     sb = s4.sidebar('Medic veterinar')
-    sb, k = re.subn(r'<div class="ip-series">.*?</ul></div>\n', '', sb, count=1, flags=re.S); assert k == 1
+    sb, k = re.subn(r'<div class="ip-select ip-series">.*?</ul></div>\n', '', sb, count=1, flags=re.S); assert k == 1
     for h in ('#serie', '#rapoarte', '#setari'):
         sb, k = re.subn(r'<a class="ip-nav[^"]*" href="' + h + r'"[^>]*>.*?</a>', '', sb, count=1); assert k == 1
     # Înregistrează expands (components.md › Sidebar, screens.md nav map): the vet's 3 entry forms, each with its record icon in

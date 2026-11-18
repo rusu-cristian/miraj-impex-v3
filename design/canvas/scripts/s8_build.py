@@ -93,8 +93,8 @@ def section(c, ro=False):
         return f'<div class="ip-field"><label class="ip-label" for="sec">Secțiune</label><span class="ip-input ip-input--touch is-readonly"><input id="sec" type="text" value="{c["sec"]}" readonly/></span></div>'
     # SectionSelect, phone: a combobox that opens the BottomSheet (S9P §33); closed here
     return (f'<div class="ip-field"><span class="ip-label" id="sec-l">Secțiune</span>'
-            f'<div class="ip-input ip-input--touch" id="sec" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sec-l sec-v">'
-            f'<span class="s8-grow" id="sec-v">{c["sec"]}</span>{icon("chev", 16)}</div></div>')
+            f'<div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="sec" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sec-l sec-v">'
+            f'<span class="ip-select__val" id="sec-v">{c["sec"]}</span>{icon("chev", 16)}</div></div></div>')   # FIN10: the section 53 Select
 
 def sex(c, ro=False):
     sx = c['sx']
@@ -222,7 +222,6 @@ boards.append(('eroare-la-salvare', 'eroare la salvare', screen([ban] + form(C, 
 
 CSS = P.CSS + SC.OPT + '''
 .s8-screen{min-height:inherit}
-.s8-grow{flex:1;min-width:0}
 .s8-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4) var(--space-3)}
 .s8-pair > .ip-fieldmsg{grid-column:1 / -1}
 .s8-main--toast{padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--space-4) + var(--space-8))} /* the last field scrolls clear of the Toast (48 key + 2x12 padding + 16 from the edge) */'''

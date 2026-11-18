@@ -75,6 +75,7 @@ IC = {
  'eggs': '<path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/>',
  'sexerr': '<circle cx="8" cy="12" r="4" stroke="var(--rec-hen)"/><circle cx="16" cy="12" r="4" stroke="var(--rec-rooster)"/>',
  'chev': '<path d="m6 9 6 6 6-6"/>',
+ 'chevup': '<path d="m18 15-6-6-6 6"/>',  # FIN10: an open Select (section 53)
  'cycle': '<path d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/>',
  'download': '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
  'home': '<path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/>',
@@ -157,15 +158,15 @@ assert (PREV_WEEKS, PREV_END) == (47, '2026-01-28')
 # ---------- sidebar ----------
 def sidebar(role='Proprietar', viewer=False, series='2026'):
     s26 = series == '2026'
-    cur = f'<span class="name">Seria 2026</span>{lamp("ok", "deschisă")}' if s26 else f'<span class="name">Seria 2025</span>{lamp("off", "închisă")}'
+    cur = f'<span class="ip-select__val"><b>Seria 2026</b></span>{lamp("ok", "deschisă")}' if s26 else f'<span class="ip-select__val"><b>Seria 2025</b></span>{lamp("off", "închisă")}'
     nav =f'<a class="ip-nav" href="#acasa">{icon("home")}Acasă</a>'
     if not viewer: nav += f'<a class="ip-nav" href="#inregistreaza">{icon("plus")}Înregistrează</a>'
     nav += f'<a class="ip-nav is-current" href="#serie" aria-current="page">{icon("layers")}Serie</a><a class="ip-nav" href="#rapoarte">{icon("chart")}Rapoarte</a>'
     if not viewer: nav += f'<a class="ip-nav" href="#setari">{icon("settings")}Setări</a>'
     return f'''<nav class="ip-sidebar s4-side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
-<div class="ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-series__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl">{cur}{icon('chev', 16)}</div>
-<ul class="ip-menu ip-series__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2026" aria-selected="{'true' if s26 else 'false'}"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2026</b>{lamp('ok', 'deschisă')}</span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-series__opt" role="option" id="ser-2025" aria-selected="{'false' if s26 else 'true'}"><span class="chk"></span><span class="txt"><span class="top"><b>Seria 2025</b>{lamp('off', 'închisă')}</span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
+<div class="ip-select ip-series"><span class="ip-sr" id="ser-lbl">Serie</span><div class="ip-input ip-select__btn" id="ser-combo" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="ser-list" aria-labelledby="ser-lbl">{cur}{icon('chev', 16)}</div>
+<ul class="ip-menu ip-select__menu" role="listbox" id="ser-list" aria-labelledby="ser-lbl" tabindex="-1" hidden="hidden"><li class="ip-menu__group" role="presentation">Serii</li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2026" aria-selected="{'true' if s26 else 'false'}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if s26 else ''}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026</b>{lamp('ok', 'deschisă')}</span><span class="ip-num">din 07.10.2025</span></span></li><li class="ip-menu__item ip-select__opt" role="option" id="ser-2025" aria-selected="{'false' if s26 else 'true'}"><span class="ip-select__chk" aria-hidden="true">{'' if s26 else icon('check', 16)}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025</b>{lamp('off', 'închisă')}</span><span class="ip-num">până la 28.01.2026</span></span></li></ul></div>
 {nav}
 <span class="s4-grow"></span>
 <div class="ip-note s4-account"><b>{role}</b><a class="ip-link" href="#iesi">Ieși</a></div>
@@ -258,40 +259,41 @@ def legend(xfer=True):  # names only the marks drawn: Seria 2026 starts by trans
     x = '<span><i class="ip-rec ip-rec--transfer"></i>transfer</span>' if xfer else ''
     return f'<div class="ip-tracklegend" aria-hidden="true">{x}<span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span><span><i class="today"></i>azi</span></div>'
 LEGEND = legend()
-def opt26(selected):
-    return f'''<li class="ip-menu__item ip-series__opt{" is-active" if selected else ""}" role="option" id="cyc-2026" aria-selected="{"true" if selected else "false"}"><span class="chk">{icon('check', 16) if selected else ""}</span><span class="txt"><span class="top"><b>Seria 2026 · ouat</b>{lamp('ok', 'deschis')}</span><span class="ip-num">din 10.02.2026 · SAPT {WK}</span></span></li>'''
-def opt25(selected):
-    return f'''<li class="ip-menu__item ip-series__opt{" is-active" if selected else ""}" role="option" id="cyc-2025" aria-selected="{"true" if selected else "false"}"><span class="chk">{icon('check', 16) if selected else ""}</span><span class="txt"><span class="top"><b>Seria 2025 · ouat</b>{lamp('off', 'închis')}</span><span class="ip-num">07.03.2025–{ddate(PREV_END)} · {PREV_WEEKS} săpt.</span></span></li>'''
+def opt26(selected, active=False):  # is-active only in an open list (section 53)
+    return f'''<li class="ip-menu__item ip-select__opt{" is-active" if active else ""}" role="option" id="cyc-2026" aria-selected="{"true" if selected else "false"}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if selected else ""}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026 · ouat</b>{lamp('ok', 'deschis')}</span><span class="ip-num">din 10.02.2026 · SAPT {WK}</span></span></li>'''
+def opt25(selected, active=False):
+    return f'''<li class="ip-menu__item ip-select__opt{" is-active" if active else ""}" role="option" id="cyc-2025" aria-selected="{"true" if selected else "false"}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if selected else ""}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025 · ouat</b>{lamp('off', 'închis')}</span><span class="ip-num">07.03.2025–{ddate(PREV_END)} · {PREV_WEEKS} săpt.</span></span></li>'''
 GRP = '<li class="ip-menu__group" role="presentation">Cicluri la Hîrbovăț</li>'
 CYC_ITEMS = GRP + opt26(True) + opt25(False)
+CYC_OPEN = GRP + opt26(True, True) + opt25(False)   # open: the chosen cycle is the active option (aria-activedescendant)
 def hidden_list(items):  # collapsed combobox: its listbox exists (aria-controls) but is hidden, as the sidebar series selector
-    return f'<ul class="ip-menu s4s-cycmenu s4s-list" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl" tabindex="-1" hidden="hidden">{items}</ul>'
+    return f'<ul class="ip-menu ip-select__menu" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl" tabindex="-1" hidden="hidden">{items}</ul>'
 def combo(text, lmp, opened=False, active=''):
     ad = f' aria-activedescendant="{active}"' if opened else ''
-    return f'<div class="ip-input s4-cycsel{" is-focus" if opened else ""}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{"true" if opened else "false"}" aria-controls="cyc-list" aria-labelledby="cyc-lbl"{ad}><span class="s4-grow">{text}</span>{lmp}{icon("chev", 16)}</div>'
+    return f'<div class="ip-input ip-select__btn{" is-focus" if opened else ""}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{"true" if opened else "false"}" aria-controls="cyc-list" aria-labelledby="cyc-lbl"{ad}><span class="ip-select__val">{text}</span>{lmp}{icon("chevup" if opened else "chev", 16)}</div>'
 def cycle(mode='default'):
     if mode == 'empty':  # D51: no open cycle; Seria 2025 only as an option and in the hint; no block current on the track
         sel = combo('Niciun ciclu deschis', lamp('off', 'goală'))
         hint = f'<span class="ip-hint">ultimul ciclu · Seria 2025 · 07.03.2025–{ddate(PREV_END)}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
-<div class="ip-field s4s-anchor"><span class="ip-label" id="cyc-lbl">Ciclu</span>{sel}{hint}{hidden_list(GRP + opt25(False))}</div>
+<div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{hidden_list(GRP + opt25(False))}</div>{hint}</div>
 <div class="ip-stack s4-tight">{track('2026-01-30', sel=None, dom=DOM_EMPTY)}{legend(xfer=False)}</div>
 </section>'''
     if mode == 'past':  # D51 "ciclu ales": the page rescoped to the closed Seria 2025 cycle
         sel = combo(f'Seria 2025 · {PREV_WEEKS} săpt.', lamp('off', 'închis'))
         hint = f'<span class="ip-hint">început dedus {ddate(c25["start_date"])} · date din {ddate(c25["data_start_date"])}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
-<div class="ip-field s4s-anchor"><span class="ip-label" id="cyc-lbl">Ciclu</span>{sel}{hint}{hidden_list(GRP + opt26(False) + opt25(True))}</div>
+<div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{hidden_list(GRP + opt26(False) + opt25(True))}</div>{hint}</div>
 <div class="ip-stack s4-tight">{track(TODAY, sel='2025')}{LEGEND}</div>
 </section>'''
     opened = mode == 'menu'
     sel = combo('Seria 2026 · din 10.02.2026', lamp('ok', 'deschis'), opened, 'cyc-2026')
     if opened:  # CycleSelector open: cycles (open first), then the manager+ actions (S4 is the owner's view)
-        menu = f'''<div class="ip-menu s4s-cycmenu"><ul class="s4s-list" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl">{CYC_ITEMS}</ul><div class="ip-menu__group" id="cyc-act">Ciclu</div><div role="group" aria-labelledby="cyc-act"><button type="button" class="ip-menu__item s4s-mitem">{icon('cycle', 16)}<span class="s4-grow">Începe ciclu nou</span></button><button type="button" class="ip-menu__item s4s-mitem"><span class="s4s-gap" aria-hidden="true"></span><span class="s4-grow">Schimbă ghidul ciclului</span></button></div></div>'''
+        menu = f'''<div class="ip-menu ip-select__menu"><ul class="ip-select__list" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl" tabindex="-1">{CYC_OPEN}</ul><div class="ip-menu__group" id="cyc-act">Ciclu</div><div role="group" aria-labelledby="cyc-act"><button type="button" class="ip-menu__item ip-select__act">{icon('cycle', 16)}<span class="s4-grow">Începe ciclu nou</span></button><button type="button" class="ip-menu__item ip-select__act"><span class="ip-select__chk" aria-hidden="true"></span><span class="s4-grow">Schimbă ghidul ciclului</span></button></div></div>'''
     else:
         menu = hidden_list(CYC_ITEMS)
     return f'''<section class="s4-cycle" aria-label="Ciclu">
-<div class="ip-field s4s-anchor"><span class="ip-label" id="cyc-lbl">Ciclu</span>{sel}<span class="ip-hint">2 cicluri la Hîrbovăț · deschis din 10.02.2026</span>{menu}</div>
+<div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{menu}</div><span class="ip-hint">2 cicluri la Hîrbovăț · deschis din 10.02.2026</span></div>
 <div class="ip-stack s4-tight">{track(TODAY)}{LEGEND}</div>
 </section>'''
 
@@ -665,7 +667,7 @@ DLG = f'''<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="aler
 <h2 id="dlg-t">Începe ciclu nou la Hîrbovăț</h2>
 <p class="ip-dialog__note" id="dlg-note">Ciclul curent (sapt. {WK}) se închide pe 16.11.2026. Săptămâna ghidului pornește de la 1.</p>
 <div class="ip-field"><label class="ip-label" for="nc-date">Data de început</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="nc-date" type="text" inputmode="numeric" value="16.11.2026" placeholder="zz.ll.aaaa" aria-describedby="nc-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data de început din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="nc-date-h">SAPT 1 · ciclu nou din 16.11.2026</span></div>
-<div class="ip-field"><label class="ip-label" for="nc-guide">Ghid</label><span class="ip-input"><select id="nc-guide" aria-describedby="nc-guide-h"><option selected="selected">Ross 308 ouat</option></select>{icon("chev", 16)}</span><span class="ip-hint" id="nc-guide-h">ghidul fermei · ouat</span></div>
+<div class="ip-field"><span class="ip-label" id="nc-guide-l">Ghid</span><div class="ip-select"><div class="ip-input ip-select__btn" id="nc-guide" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="nc-glist" aria-labelledby="nc-guide-l" aria-describedby="nc-guide-h"><span class="ip-select__val">Ross 308 ouat</span>{icon("chev", 16)}</div><ul class="ip-menu ip-select__menu" role="listbox" id="nc-glist" aria-labelledby="nc-guide-l" tabindex="-1" hidden="hidden"><li class="ip-menu__item ip-select__opt" role="option" id="nc-g0" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top">Fără ghid</span></span></li><li class="ip-menu__group" role="presentation">Ghiduri de ouat</li><li class="ip-menu__item ip-select__opt" role="option" id="nc-g1" aria-selected="true"><span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span><span class="ip-select__txt"><span class="ip-select__top">Ross 308 ouat <span class="ip-note">ghidul fermei</span></span></span></li></ul></div><span class="ip-hint" id="nc-guide-h">ghidul fermei · ouat</span></div>
 <div class="ip-field"><label class="ip-label" for="nc-why">Motiv</label><span class="ip-input ip-input--area"><textarea id="nc-why" rows="3" required="required" aria-required="true" aria-describedby="nc-why-h"></textarea></span><span class="ip-hint" id="nc-why-h">Obligatoriu. Apare în jurnalul de modificări.</span></div>
 <div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary">{icon("cycle", 16)}Începe ciclu nou</button></div>
 </div></div>'''
@@ -693,7 +695,6 @@ CSS = '''body{margin:0}
 .s4-meta{gap:var(--space-2) var(--space-3)}
 .s4-cycle{display:grid;grid-template-columns:calc(var(--space-12) * 7) minmax(0,1fr);gap:var(--space-6);align-items:start}
 .s4-cycle > .s4-tight{padding-top:var(--space-2)} /* S4P: the track lane centres on the CycleSelector field */
-.s4-cycsel{cursor:pointer}
 .s4-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
 .s4-readout{justify-content:flex-start}
 .s4-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -735,17 +736,10 @@ CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) soli
 .s4s-chart{width:100%;height:calc(var(--space-12) * 4);border-radius:var(--radius-sm)}
 .s4s-h4{height:var(--space-1)}.s4s-h16{height:var(--space-4)}.s4s-h20{height:var(--space-5)}.s4s-h28{height:calc(var(--space-6) + var(--space-1))}
 .s4s-w15{width:15%}.s4s-w20{width:20%}.s4s-w25{width:25%}.s4s-w30{width:30%}.s4s-w40{width:40%}.s4s-w45{width:45%}.s4s-w50{width:50%}.s4s-w60{width:60%}.s4s-w70{width:70%}.s4s-w80{width:80%}.s4s-w100{width:100%}
-.s4s-anchor{position:relative}
-.s4s-cycmenu{position:absolute;top:calc(var(--space-5) + var(--control-h) + var(--space-1));left:0;right:0;z-index:3;min-width:0}
-.s4s-list{list-style:none;margin:0;padding:0}
-.s4s-mitem{width:100%;border:0;background:transparent;font:inherit;color:var(--ink);text-align:left;cursor:pointer;justify-content:flex-start;gap:var(--space-2)}
-.s4s-gap{width:var(--space-4);flex:none}
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
-.ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
-.s4s-cycmenu[hidden]{display:none}
 .s4s-none{padding:var(--space-6) var(--space-4)}
 .s4s-m0{margin:0}'''
 

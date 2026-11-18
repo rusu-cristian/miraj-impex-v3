@@ -103,9 +103,9 @@ def sidebar_owner(no_series=False):
     sb = sb.replace(par, par + subs, 1)
     assert sb.count('is-current') == 1 and 'href="#ferme" aria-current="page"' in sb
     if no_series:  # D39 first-use board: no farm, so no series either
-        cur = f'<span class="name">Seria 2026</span>{lamp("ok", "deschisă")}'; assert sb.count(cur) == 1
-        sb = sb.replace(cur, '<span class="name">Nicio serie</span>')
-        sb, k = re.subn(r'(<ul class="ip-menu ip-series__menu"[^>]*>).*?(</ul>)', r'\1<li class="ip-menu__group" role="presentation">Serii</li>\2', sb, flags=re.S)
+        cur = f'<span class="ip-select__val"><b>Seria 2026</b></span>{lamp("ok", "deschisă")}'; assert sb.count(cur) == 1
+        sb = sb.replace(cur, '<span class="ip-select__val"><b>Nicio serie</b></span>')
+        sb, k = re.subn(r'(<ul class="ip-menu ip-select__menu" role="listbox" id="ser-list"[^>]*>).*?(</ul>)', r'\1<li class="ip-menu__group" role="presentation">Serii</li>\2', sb, flags=re.S)
         assert k == 1
     return sb
 def editkey(fid, pressed=False):
@@ -161,8 +161,8 @@ def gopts(ftype, sel, active=None):
     for oid, t, grp in rows:
         if grp: out += f'<li class="ip-menu__group" role="presentation">{grp}</li>'
         on = t == sel
-        out += (f'<li class="ip-menu__item{" is-active" if oid == active else ""}" role="option" id="{oid}" aria-selected="{"true" if on else "false"}">'
-                f'<span>{t}</span>{icon("check", 16) if on else ""}</li>')
+        out += (f'<li class="ip-menu__item ip-select__opt{" is-active" if oid == active else ""}" role="option" id="{oid}" aria-selected="{"true" if on else "false"}">'
+                f'<span class="ip-select__chk" aria-hidden="true">{icon("check", 16) if on else ""}</span><span class="ip-select__txt"><span class="ip-select__top">{t}</span></span></li>')
     return out
 def gbox(text, hint, ftype=None, state='', desc='fp-ghid-h', expanded=False, active=None):
     """S19P (D112): the Ghid field is an APG select-only combobox on every board (as S9's Din): span label, div.ip-input
@@ -172,17 +172,17 @@ def gbox(text, hint, ftype=None, state='', desc='fp-ghid-h', expanded=False, act
     lbl = f'<span class="ip-label" id="fp-ghid-l">Ghid {OPT}</span>'
     inv = ' aria-invalid="true"' if state == 'is-error' else ''
     if state == 'is-disabled':
-        combo = (f'<div class="ip-input is-disabled s19-combo" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" '
-                 f'aria-disabled="true" aria-labelledby="fp-ghid-l" aria-describedby="{desc}"><span class="s4-grow">{text}</span>{icon("chev", 16)}</div>')
-        return f'<div class="ip-field">{lbl}<div class="s19-anchor">{combo}</div>{hint}</div>'
+        combo = (f'<div class="ip-input ip-select__btn is-disabled" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" '
+                 f'aria-disabled="true" aria-labelledby="fp-ghid-l" aria-describedby="{desc}"><span class="ip-select__val">{text}</span>{icon("chev", 16)}</div>')
+        return f'<div class="ip-field">{lbl}<div class="ip-select">{combo}</div>{hint}</div>'
     ex = 'true' if expanded else 'false'
     ad = f' aria-activedescendant="{active}"' if active else ''
-    combo = (f'<div class="ip-input{st} s19-combo" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{ex}" '
+    combo = (f'<div class="ip-input ip-select__btn{st}" id="fp-ghid" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{ex}" '
              f'aria-controls="fp-glist"{ad} aria-labelledby="fp-ghid-l" aria-describedby="{desc}"{inv}>'
-             f'<span class="s4-grow">{text}</span>{icon("chevup" if expanded else "chev", 16)}</div>')
-    lst = (f'<ul class="ip-menu s19-pop" role="listbox" id="fp-glist" aria-labelledby="fp-ghid-l" tabindex="-1"{"" if expanded else " hidden"}>'
+             f'<span class="ip-select__val">{text}</span>{icon("chevup" if expanded else "chev", 16)}</div>')
+    lst = (f'<ul class="ip-menu ip-select__menu" role="listbox" id="fp-glist" aria-labelledby="fp-ghid-l" tabindex="-1"{"" if expanded else " hidden"}>'
            f'{gopts(ftype, text, active)}</ul>')
-    return f'<div class="ip-field">{lbl}<div class="s19-anchor">{combo}{lst}</div>{hint}</div>'
+    return f'<div class="ip-field">{lbl}<div class="ip-select">{combo}{lst}</div>{hint}</div>'
 def ghid_field(fid, mode='set'):
     if mode == 'set' and fid == 'hirbovat':   # open cycle: the B1 next-cycle rule, the current cycle changes from its panel (B4)
         h = (f'<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Un ghid nou se aplică de la ciclul următor; pe cel curent '
@@ -283,17 +283,7 @@ CSS19 = '''
 .s19-secs{display:flex;flex-direction:column;gap:0}
 .s19-cyc{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
 .s19-act{text-align:right;white-space:nowrap}
-.s19-anchor{position:relative}
 .s19-seg{align-self:flex-start} /* S19P fix 1: the track fits its two segments (the field is a flex column, it would stretch) */
-.s19-combo{cursor:pointer}
-.s19-combo > .s4-grow{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.s19-combo > .ip-icon{flex:none;color:var(--ink-secondary)}
-.s19-combo[aria-expanded="true"]{border-color:var(--ink)}
-.s19-combo.is-disabled{cursor:not-allowed}
-.s19-combo.is-disabled > .ip-icon{color:inherit}
-.s19-combo.is-disabled:focus-visible{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)} /* aria-disabled keeps focus (the hint says why) */
-.s19-pop{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:4;list-style:none;margin:0}
-.s19-pop[hidden]{display:none}
 .s19-pbody{position:relative}'''
 CSS_DESK = T.CSS_DESK + SC.OPT + CSS19
 CSS_PL = T.CSS_PL + CSS19 + '''

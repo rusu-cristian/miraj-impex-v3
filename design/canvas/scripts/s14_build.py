@@ -313,7 +313,7 @@ def page(mode='default'):
 _t4_base = s4.CSS + '\n' + s4.CSS_S4
 assert t4.CSS.startswith(_t4_base)
 S11_LINES = [l for l in s11.CSS.split('\n') if l.startswith(('.s11-farm', '.s11-select', '.s11-filterbar:has', '.ip-input > select + .ip-icon'))]
-assert len(S11_LINES) == 6, S11_LINES
+assert len(S11_LINES) == 4, S11_LINES   # FIN10 fix 1: the select chevron rule is additions.css only
 CSS = (s4.CSS + '\n' + s4.CSS_STATES + '\n' + s4.CSS_S4 + t4.CSS[len(_t4_base):] + '\n' + '\n'.join(l for l in S11_LINES if not l.startswith('.ip-input > select'))
        + '\n.s14-page{display:flex;flex-direction:column;gap:var(--space-6)}'
        + '\n.s14-nw{white-space:nowrap} /* S14P fix 2: a figure and its lamp stay on one line */')  # S14P: the scroll region's position:relative is now additions.css section 36

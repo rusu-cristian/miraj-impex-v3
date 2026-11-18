@@ -84,8 +84,19 @@ def farm(state='set', u='', touch=True):
     hint = f'<span class="ip-note" id="{u}farm-h">ouat · {num(len(SEC))} secțiuni · în viață{" înainte" if state == "ro" else ""} {pair(*TOT)}</span>'
     if state == 'ro':
         return f'<div class="ip-field"><label class="ip-label" for="{u}farm">Fermă</label><span class="ip-input{t} is-readonly"><input id="{u}farm" type="text" value="Hîrbovăț" readonly aria-describedby="{u}farm-h"/></span>{hint}</div>'
-    return (f'<div class="ip-field"><label class="ip-label" for="{u}farm">Fermă</label><span class="ip-input{t}"><select id="{u}farm" aria-describedby="{u}farm-h">'
-            f'<option selected="selected">Hîrbovăț</option><option disabled="disabled">Telița · goală</option></select>{icon("chev", 16)}</span>{hint}</div>')
+    # FIN10: options carry state (alive ♀ · ♂, Telița disabled "goală"), so Fermă is the section 53 Select: phone opens
+    # the BottomSheet (aria-haspopup dialog, no list in the page), desktop its listbox (hidden while closed)
+    lbl = f'<span class="ip-label" id="{u}farm-l">Fermă</span>'
+    lab = f'aria-labelledby="{u}farm-l" aria-describedby="{u}farm-h"'
+    if touch:
+        return (f'<div class="ip-field">{lbl}<div class="ip-select"><div class="ip-input ip-select__btn{t}" id="{u}farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" {lab}>'
+                f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div></div>{hint}</div>')
+    O = '<span class="ip-select__txt"><span class="ip-select__top">'
+    opts = (f'<li class="ip-menu__item ip-select__opt" role="option" id="{u}farm-o1" aria-selected="true"><span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span>{O}Hîrbovăț {pair(*TOT)}</span></span></li>'
+            f'<li class="ip-menu__item ip-select__opt" role="option" id="{u}farm-o2" aria-selected="false" aria-disabled="true"><span class="ip-select__chk" aria-hidden="true"></span>{O}Telița <span class="ip-note">goală</span></span></span></li>')
+    return (f'<div class="ip-field">{lbl}<div class="ip-select"><div class="ip-input ip-select__btn{t}" id="{u}farm" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="{u}farm-list" {lab}>'
+            f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div>'
+            f'<ul class="ip-menu ip-select__menu" role="listbox" id="{u}farm-list" aria-labelledby="{u}farm-l" tabindex="-1" hidden="hidden">{opts}</ul></div>{hint}</div>')
 
 DATE = B.DATE
 DATE_RO = f'''<div class="ip-field"><label class="ip-label" for="d-val">Data</label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="d-val" type="text" value="{dd(DT)}" readonly aria-describedby="d-wk"/></span><span class="ip-note ip-num" id="d-wk">SAPT {WK} · ciclu din {dd(HSTART)}</span></div>'''
@@ -258,11 +269,8 @@ SELL_PART = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">
 boards.append(('partiala', 'parțială · ciclul continuă · exemplu de stare (D39)', screen([farm(), DATE, rows('part'), buyer(), note(), effect('part')],
               B.savebar(sum1(PSOLD), SUM2_PART, SELL_PART), view=' s7s-view--end'), 'vp'))
 
-# the select chevron rule comes from S4S; the phone Dialog is additions.css section 35 (ip-scrim--phone, FIN04)
-PICK = ('.ip-input > select + .ip-icon{',)
-S4SEL = ''.join('\n' + l for l in s4.CSS_STATES.splitlines() if l.startswith(PICK))
-assert S4SEL.count('\n') == len(PICK)
-CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL + S4SEL
+# the phone Dialog is additions.css section 35 (ip-scrim--phone, FIN04); the select chevron is additions.css (FIN10 fix 1)
+CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.EFFECT + SC.FX + SC.MODAL
 
 # ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 16.11.2026, nothing typed ----------
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data vânzării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {WK} · ciclu din {dd(HSTART)}</span></div>'''

@@ -44,8 +44,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s9-strong{font-weight:500;color:var(--ink)}
 .s9-fxcyc{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--space-2);margin-top:var(--space-1)}
 .s9-fxsub{color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
-.s9-modal{position:relative} /* the BottomSheet scrim fills the phone screen */
-.ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}</style>
+.s9-modal{position:relative} /* the BottomSheet scrim fills the phone screen */</style>
 </helmet>
 <div class="ip-root" style="padding:0; width:390px; height:844px; overflow:hidden"><div class="s7-screen s7s-vp s9-modal">
 <header class="ip-formhead" inert>
@@ -55,7 +54,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 </header>
 <div class="s7s-view s7s-view--end" inert>
 <main class="s7-main s13-main">
-<div class="ip-field"><label class="ip-label" for="farm">Fermă</label><span class="ip-input ip-input--touch"><select id="farm" aria-describedby="farm-h"><option selected="selected">Hîrbovăț</option><option disabled="disabled">Telița · goală</option></select><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span><span class="ip-note" id="farm-h">ouat · <span class="ip-num">6</span> secțiuni · în viață <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>25 252</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>2 685</b></span></span></span></div><div class="ip-field">
+<div class="ip-field"><span class="ip-label" id="farm-l">Fermă</span><div class="ip-select"><div class="ip-input ip-select__btn ip-input--touch" id="farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="farm-l" aria-describedby="farm-h"><span class="ip-select__val">Hîrbovăț</span><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div><span class="ip-note" id="farm-h">ouat · <span class="ip-num">6</span> secțiuni · în viață <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>25 252</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>2 685</b></span></span></span></div><div class="ip-field">
 <span class="ip-label" id="d-lbl">Data</span>
 <div class="s7-date">
 <span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="d-lbl"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span>

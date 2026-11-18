@@ -232,8 +232,8 @@ table.ip-sr{display:block}
 .ip-readout :focus-visible,.ip-readout .ip-focus{outline-color:var(--readout-ok)}
 
 /* ---------- 6. Sidebar series selector ---------- */
-/* An APG select-only combobox under the wordmark: div.ip-input.ip-series__btn[role=combobox][tabindex=0]
- * (aria-expanded, aria-controls, aria-activedescendant) + ul.ip-menu[role=listbox] of [role=option]. Focus stays on the combobox. */
+/* An APG select-only combobox under the wordmark. FIN10: boards draw it as the section 53 Select, div.ip-select.ip-series
+ * (ip-series = its Sidebar slot); the __btn/__menu/__opt rules below stay only for the SeriesSelector preview until it moves. */
 .ip-series{position:relative;margin-bottom:var(--space-2)}
 .ip-series__btn{width:100%;font:inherit;cursor:pointer;text-align:left}
 .ip-series__btn .name{flex:1;font-weight:500;white-space:nowrap}
@@ -709,7 +709,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-sexrows--pick .ip-sexrow__sel{flex-basis:100%}
 .ip-sexrows--pick .ip-sexrow__alive{margin-left:0}
 .ip-sexrows--pick .ip-sexrow:last-child{padding-bottom:0} /* no totals line under the one row */
-/* SectionSelect in a user-added row: an APG select-only combobox (as the SeriesSelector), section code in Sans 500,
+/* FIN10: boards draw this combobox as the section 53 Select (div.ip-select inside .ip-sexrow__sel); the __btn/__menu rules
+ * below stay only for the SexCountRow preview (sys07_build) until it moves.
+ * SectionSelect in a user-added row: an APG select-only combobox (as the SeriesSelector), section code in Sans 500,
  * placeholder "Alege" ink-muted; the listbox (ip-menu) under it. Sections already in the list are aria-disabled with
  * the reason "în listă" (as "sursa"); empty sections say "goală". On phone it opens as a BottomSheet (SectionSelect). */
 .ip-sexrow__sel{position:relative;flex:1;min-width:0}
@@ -1661,3 +1663,52 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-crumbs--touch a{min-height:0;padding:var(--space-4) var(--space-1);margin:calc(-1 * var(--space-4)) calc(-1 * var(--space-1))}
 .ip-crumbs--touch a:is(:focus-visible,.ip-focus)::after{content:none}
 .ip-crumbs--touch a:is(:focus-visible,.ip-focus) > .ip-crumbs__txt{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset);border-radius:var(--radius-xs)}
+
+/* =====================================================================================================
+ * FIN10 · One Select widget, system-wide. Spec: components.md › Select, Additions › FIN10.
+ * ===================================================================================================== */
+
+/* ---------- 53. Select · select-only combobox (FIN10; replaces the SeriesSelector, SexCountRow SectionSelect, S19 Ghid
+ * and S4 CycleSelector copies) ---------- */
+/* Rule: a choice whose options carry state (a Lamp + word, a ♀ · ♂ count, a reason an option is disabled, a dates
+ * line, a mark such as "ghidul fermei") is this combobox; a plain list of names stays a native <select> inside .ip-input
+ * (chevron after it, ink-secondary). Closed, the two look the same.
+ * div.ip-select (anchor) > div.ip-input.ip-select__btn[role=combobox][tabindex=0][aria-haspopup=listbox][aria-expanded]
+ * [aria-controls][aria-labelledby][aria-activedescendant while open] > span.ip-select__val (+ Lamp + word) + Lucide chevron
+ * (chevron-up while open), then ul.ip-menu.ip-select__menu[role=listbox][tabindex=-1] (hidden while closed) of
+ * li.ip-menu__group[role=presentation] captions and li.ip-menu__item.ip-select__opt[role=option][aria-selected]:
+ * span.ip-select__chk (aria-hidden, Lucide check on the chosen option) + span.ip-select__txt > span.ip-select__top (name,
+ * then its state at the end: Lamp + word, SexCount pair or a reason ip-note) + optional ip-num line (dates, week).
+ * A popup that also holds actions (CycleSelector) is div.ip-menu.ip-select__menu > ul.ip-select__list[role=listbox] +
+ * caption + button.ip-menu__item.ip-select__act (leading 16px icon or an empty ip-select__chk, so labels align).
+ * Keys (APG select-only): focus stays on the combobox; ↓/Enter/Space/Alt+↓ open; ↑↓ Home End PgUp PgDn and type-ahead
+ * move the active option (is-active, sunken; aria-activedescendant); Enter/Space/Alt+↑ choose and close; Esc closes
+ * unchanged; Tab chooses and moves on. aria-disabled options (ink-disabled, reason word kept) are never chosen.
+ * Phone (ip-input--touch): the same combobox opens the section 33 BottomSheet: aria-haspopup="dialog", aria-controls
+ * only while open, no hidden listbox left in the page.
+ * Value: 400 like any field value; a value that stands in for the code heading its row or region (Sidebar series,
+ * SexCountRow section) is wrapped in b (500), as its option. Placeholder ("Alege…") is-empty, ink-muted. Open: ink edge.
+ * Disabled: aria-disabled + is-disabled (bundle look), still focusable with the system ring, the hint says why; no list.
+ * Error: is-error + aria-invalid + aria-describedby the field message. Menu: under the field, as wide as it (or wider). */
+.ip-select{position:relative;min-width:0}
+.ip-select__btn{width:100%;cursor:pointer;text-align:left} /* no font reset: ip-input--touch keeps its 17/24 value, as a native select */
+.ip-select__val{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ip-select__val.is-empty{color:var(--ink-muted)}
+.ip-select b{font-weight:500}
+.ip-select__btn > .ip-icon{flex:none;color:var(--ink-secondary)}
+.ip-select__btn[aria-expanded="true"]{border-color:var(--ink)}
+.ip-select__btn:is(.is-disabled,[aria-disabled="true"]){cursor:not-allowed}
+.ip-select__btn:is(.is-disabled,[aria-disabled="true"]) > .ip-icon{color:inherit}
+.ip-select__btn:is(.is-disabled,[aria-disabled="true"]):is(:focus-visible,.ip-focus){outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-select__menu{position:absolute;top:calc(100% + var(--space-1));left:0;min-width:100%;z-index:3;list-style:none;margin:0}
+.ip-select__menu[hidden]{display:none}
+.ip-select__list{list-style:none;margin:0;padding:0}
+.ip-select__opt,.ip-select__act{justify-content:flex-start;gap:var(--space-2);cursor:pointer}
+.ip-select__act{width:100%;border:0;background:transparent;font:inherit;color:var(--ink);text-align:left}
+.ip-select__opt[aria-disabled="true"]{cursor:not-allowed}
+.ip-select__chk{display:inline-flex;flex:none;width:var(--space-4);color:var(--ink)}
+.ip-select__txt{display:flex;flex-direction:column;flex:1;min-width:0}
+.ip-select__top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.ip-select__txt > .ip-num{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-select__opt .ip-note{color:inherit}
+.ip-select__opt:not([aria-disabled="true"]) .ip-note{color:var(--ink-muted)}

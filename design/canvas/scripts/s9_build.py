@@ -103,17 +103,17 @@ def combo(i, label, name, touch=True, expanded=False, menu='', active='', desc='
     """SectionSelect combobox. Desktop: an APG select-only combobox over its listbox menu. Phone: the same combobox opens
     the BottomSheet (SectionSelect spec), so aria-haspopup="dialog" and aria-controls only while it is open (APG)."""
     t = ' ip-input--touch' if touch else ''
-    nm = f'<span class="name">{name}</span>' if name else '<span class="name is-empty">Alege secțiunea</span>'
+    nm = f'<span class="ip-select__val"><b>{name}</b></span>' if name else '<span class="ip-select__val is-empty">Alege secțiunea</span>'
     ad = f' aria-activedescendant="{active}"' if active else ''
     ds = f' aria-describedby="{desc}"' if desc else ''
     ex = "true" if expanded else "false"
     if touch:
         ctl = f' aria-controls="sh-{i}"' if expanded else ''
         return (f'<div class="ip-field ip-sexrow__sel"><span class="ip-label ip-sexrow__lbl" id="sl-{i}">{label}</span>'
-                f'<div class="ip-input ip-sexrow__btn{t}" id="sc-{i}" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="{ex}"{ctl} aria-labelledby="sl-{i}"{ds}>{nm}{icon("chevup" if expanded else "chev", 16)}</div></div>')
+                f'<div class="ip-select"><div class="ip-input ip-select__btn{t}" id="sc-{i}" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="{ex}"{ctl} aria-labelledby="sl-{i}"{ds}>{nm}{icon("chevup" if expanded else "chev", 16)}</div></div></div>')
     return (f'<div class="ip-field ip-sexrow__sel"><span class="ip-label ip-sexrow__lbl" id="sl-{i}">{label}</span>'
-            f'<div class="ip-input ip-sexrow__btn{t}" id="sc-{i}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{ex}" aria-controls="sm-{i}" aria-labelledby="sl-{i}"{ad}{ds}>{nm}{icon("chevup" if expanded else "chev", 16)}</div>'
-            f'<ul class="ip-menu ip-sexrow__menu" role="listbox" id="sm-{i}" aria-labelledby="sl-{i}" tabindex="-1"{"" if expanded else " hidden"}>{menu}</ul></div>')
+            f'<div class="ip-select"><div class="ip-input ip-select__btn{t}{" is-focus" if expanded else ""}" id="sc-{i}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{ex}" aria-controls="sm-{i}" aria-labelledby="sl-{i}"{ad}{ds}>{nm}{icon("chevup" if expanded else "chev", 16)}</div>'
+            f'<ul class="ip-menu ip-select__menu" role="listbox" id="sm-{i}" aria-labelledby="sl-{i}" tabindex="-1"{"" if expanded else " hidden"}>{menu}</ul></div></div>')
 
 def pick(state='toate', touch=True, date=None, mv=M1):
     """SexCountRow --pick: the Din row. state: toate (all alive, read-only counts) · refuz (♀ over alive) · ro (saved) · empty (desktop, menu open)."""
@@ -122,9 +122,9 @@ def pick(state='toate', touch=True, date=None, mv=M1):
     sname = f'{mv.sfarm} {mv.ssec}'  # accessible names put the section first (S6P)
     if state == 'empty':
         menu = '<li class="ip-menu__group" role="presentation">Hîrbovăț · ouat</li>' + ''.join(
-            f'<li class="ip-menu__item{" is-active" if k == 0 else ""}" role="option" id="so-din-{s.replace(".", "-")}" aria-selected="false"><span><span class="ip-sr">Hîrbovăț </span>{s}</span> {pair(f, m)}</li>' for k, (s, f, m) in enumerate(HSEC)) \
+            f'<li class="ip-menu__item ip-select__opt{" is-active" if k == 0 else ""}" role="option" id="so-din-{s.replace(".", "-")}" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><span><span class="ip-sr">Hîrbovăț </span>{s}</span> {pair(f, m)}</span></span></li>' for k, (s, f, m) in enumerate(HSEC)) \
             + '<li class="ip-menu__group" role="presentation">Telița · creștere</li>' + ''.join(
-            f'<li class="ip-menu__item" role="option" id="so-din-t{s}" aria-selected="false" aria-disabled="true"><span><span class="ip-sr">Telița </span>{s}</span> <span class="ip-note">goală</span></li>' for s in TSEC)
+            f'<li class="ip-menu__item ip-select__opt" role="option" id="so-din-t{s}" aria-selected="false" aria-disabled="true"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><span><span class="ip-sr">Telița </span>{s}</span> <span class="ip-note">goală</span></span></span></li>' for s in TSEC)
         sel = combo('din', 'Din', '', touch, True, menu, 'so-din-H1-1')
         alive = '<span class="ip-sexrow__alive" id="a-din"><span class="ip-sexrow__k">în viață</span> <span class="ip-num">–</span> alege secțiunea</span>'
     elif state == 'ro':

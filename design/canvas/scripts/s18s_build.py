@@ -176,7 +176,9 @@ NEWNAME_TXT = 'O serie închisă e doar citire.'; assert NEWNAME_TXT in T.RO_NOT
 
 O25 = f'<b>Seria 2025</b><span class="ip-lamp ip-lamp--off">închisă</span></span><span class="ip-num">până la {dd(cP["end_date"])}</span>'
 O25_OPEN = f'<b>Seria 2025</b><span class="ip-lamp ip-lamp--ok">deschisă</span></span><span class="ip-num">din {dd(cP["start_date"])}</span>'
-O26 = re.compile(r'<li class="ip-menu__item ip-series__opt" role="option" id="ser-2026" aria-selected="true">.*?</li>')
+O26 = re.compile(r'<li class="ip-menu__item ip-select__opt" role="option" id="ser-2026" aria-selected="true">.*?</li>')
+CHK = f'<span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span>'
+
 def sidebar(when='today'):
     """The owner Sidebar; its SeriesSelector follows the board's day: on 07.10.2025 Seria 2025 was still open, and before
     Creează seria only Seria 2025 existed (selected); 'close' = the D39 Seria 2025 not closed yet."""
@@ -186,8 +188,9 @@ def sidebar(when='today'):
     if when == 'close': return sb.replace(O25, O25.replace('ip-lamp--off">închisă', 'ip-lamp--ok">deschisă'))
     sb = sb.replace(O25, O25_OPEN)
     if when == 'before':
-        assert len(O26.findall(sb)) == 1 and sb.count('<span class="name">Seria 2026</span>') == 1
-        sb = O26.sub('', sb).replace('id="ser-2025" aria-selected="false"', 'id="ser-2025" aria-selected="true"').replace('<span class="name">Seria 2026</span>', '<span class="name">Seria 2025</span>')
+        v26, c25 = '<span class="ip-select__val"><b>Seria 2026</b></span>', 'id="ser-2025" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span>'
+        assert len(O26.findall(sb)) == 1 and sb.count(v26) == 1 and sb.count(c25) == 1
+        sb = O26.sub('', sb).replace(c25, 'id="ser-2025" aria-selected="true">' + CHK).replace(v26, '<span class="ip-select__val"><b>Seria 2025</b></span>')
     return sb
 def page(track, table, pressed=False, inert=False, when='today'):
     i = ' inert="inert"' if inert else ''
@@ -246,7 +249,8 @@ def rows_err():
     """Two rows, both H1, no count: the second row's duplicate error (SYS07 words) and the list's 'niciun rând completat'."""
     s = T.prows('d', TODAY, [('H1', None, None), ('H1', None, None)], touch=False)
     a = 'aria-expanded="false" aria-controls="sm-d1" aria-labelledby="sl-d1"'; assert s.count(a) == 1
-    s = s.replace('class="ip-input ip-sexrow__btn" id="sc-d1"', 'class="ip-input ip-sexrow__btn is-error" id="sc-d1"')
+    a2 = 'class="ip-input ip-select__btn" id="sc-d1"'; assert s.count(a2) == 1
+    s = s.replace(a2, 'class="ip-input ip-select__btn is-error" id="sc-d1"')
     s = s.replace(a, a + ' aria-invalid="true" aria-describedby="msg-d1"')
     a = 'aria-label="Elimină H1">'; assert s.count(a) == 2
     s = s.replace(a, 'aria-label="Elimină H1, rândul 1">', 1).replace(a, 'aria-label="Elimină H1, rândul 2">', 1)
@@ -294,18 +298,13 @@ def rows_picking():
     """H1 and H2 typed (the real figures), a third row added and its SectionSelect open (phone: aria-haspopup=dialog,
     aria-controls on the open sheet, no hidden listbox: S9P)."""
     s = T.prows('p', REPLAY, [ROWS[0], ROWS[1], (None, None, None)], touch=True)
-    a = ('<div class="ip-input ip-sexrow__btn ip-input--touch" id="sc-p2" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" '
-         'aria-controls="sm-p2" aria-labelledby="sl-p2"><span class="name is-empty">Alege</span>' + T.CHEV16 + '</div><ul class="ip-menu ip-sexrow__menu" role="listbox" id="sm-p2" aria-labelledby="sl-p2" hidden="hidden"></ul>')
+    a = ('<div class="ip-input ip-select__btn ip-input--touch" id="sc-p2" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" '
+         'aria-labelledby="sl-p2"><span class="ip-select__val is-empty">Alege</span>' + T.CHEV16 + '</div>')
     assert s.count(a) == 1, s
     up = icon('chevup', 16)
-    s = s.replace(a, '<div class="ip-input ip-sexrow__btn ip-input--touch" id="sc-p2" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="true" '
-                     f'aria-controls="sh-p2" aria-labelledby="sl-p2"><span class="name is-empty">Alege</span>{up}</div>')
-    for k in ('p0', 'p1'):   # the other rows' comboboxes open the sheet too (phone)
-        a = f'aria-haspopup="listbox" aria-expanded="false" aria-controls="sm-{k}" aria-labelledby="sl-{k}"'; assert s.count(a) == 1
-        s = s.replace(a, f'aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sl-{k}"')
-        a = f'<ul class="ip-menu ip-sexrow__menu" role="listbox" id="sm-{k}" aria-labelledby="sl-{k}" hidden="hidden"></ul>'; assert s.count(a) == 1
-        s = s.replace(a, '')
-    return s
+    s = s.replace(a, '<div class="ip-input ip-select__btn ip-input--touch" id="sc-p2" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="true" '
+                     f'aria-controls="sh-p2" aria-labelledby="sl-p2"><span class="ip-select__val is-empty">Alege</span>{up}</div>')
+    return s   # the other rows' comboboxes open the sheet too (phone: aria-haspopup=dialog, no listbox; s18_build since FIN10)
 
 # ================================================================= CSS (screen only, tokens only)
 CSS18S = '''

@@ -275,15 +275,28 @@ def tfield(i, label, val='', hint='', touch=True, mono=False, focus=False, numer
     return (f'<div class="ip-field{cls}"><label class="ip-label" for="{i}">{label}</label><span class="ip-input{t}{" ip-num" if mono else ""}{st}">'
             f'<input id="{i}" type="text"{im} autocomplete="off"{v}{d}{af}/></span>{h}</div>')
 def farm_field(day, touch=True, refused=False):
+    """FIN10: the growth farms' options carry state (empty since / sections / birds alive), so Ferma de creștere is the
+    section 53 Select: phone opens the BottomSheet (aria-haspopup dialog, no list in the page), desktop its listbox."""
     t = ' ip-input--touch' if touch else ''
     if refused:
         hint = f'<span class="ip-hint" id="sn-farm-h">Doar fermele de creștere · ghid {GUIDE["g-growth"]}</span>'
-        return (f'<div class="ip-field"><label class="ip-label" for="sn-farm">Ferma de creștere</label><span class="ip-input{t} is-error">'
-                f'<select id="sn-farm" aria-invalid="true" aria-describedby="sn-ref sn-farm-h"><option selected="selected">Telița</option></select>{icon("chev", 16)}</span>{hint}</div>')
-    state = (f' · goală din {num(dd(cT["end_date"]))}' if day > dt.date.fromisoformat(cT['end_date']) else f' · {num(len(TEL_SECS))} secțiuni')
-    hint = f'<span class="ip-hint" id="sn-farm-h">Doar fermele de creștere · ghid {GUIDE["g-growth"]}{state}</span>'
-    return (f'<div class="ip-field"><label class="ip-label" for="sn-farm">Ferma de creștere</label><span class="ip-input{t}">'
-            f'<select id="sn-farm" aria-describedby="sn-farm-h"><option selected="selected">Telița</option></select>{icon("chev", 16)}</span>{hint}</div>')
+        note, st, inv, desc = pair(R39['F'], R39['M']), ' is-error', ' aria-invalid="true"', 'sn-ref sn-farm-h'
+    else:
+        goala = day > dt.date.fromisoformat(cT['end_date'])
+        state = (f' · goală din {num(dd(cT["end_date"]))}' if goala else f' · {num(len(TEL_SECS))} secțiuni')
+        hint = f'<span class="ip-hint" id="sn-farm-h">Doar fermele de creștere · ghid {GUIDE["g-growth"]}{state}</span>'
+        note = (f'<span class="ip-note">goală din {num(dd(cT["end_date"]))}</span>' if goala else f'<span class="ip-note">{num(len(TEL_SECS))} secțiuni</span>')
+        st, inv, desc = '', '', 'sn-farm-h'
+    lbl = '<span class="ip-label" id="sn-farm-l">Ferma de creștere</span>'
+    val = f'<span class="ip-select__val">Telița</span>{icon("chev", 16)}</div>'
+    if touch:
+        return (f'<div class="ip-field">{lbl}<div class="ip-select"><div class="ip-input ip-select__btn{t}{st}" id="sn-farm" role="combobox" tabindex="0" aria-haspopup="dialog" '
+                f'aria-expanded="false" aria-labelledby="sn-farm-l" aria-describedby="{desc}"{inv}>{val}</div>{hint}</div>')
+    opt = (f'<li class="ip-menu__item ip-select__opt" role="option" id="sn-farm-o1" aria-selected="true"><span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span>'
+           f'<span class="ip-select__txt"><span class="ip-select__top">Telița {note}</span></span></li>')
+    return (f'<div class="ip-field">{lbl}<div class="ip-select"><div class="ip-input ip-select__btn{t}{st}" id="sn-farm" role="combobox" tabindex="0" aria-haspopup="listbox" '
+            f'aria-expanded="false" aria-controls="sn-farm-list" aria-labelledby="sn-farm-l" aria-describedby="{desc}"{inv}>{val}'
+            f'<ul class="ip-menu ip-select__menu" role="listbox" id="sn-farm-list" aria-labelledby="sn-farm-l" tabindex="-1" hidden="hidden">{opt}</ul></div>{hint}</div>')
 def date_field(day, touch=True):
     t = ' ip-seg--touch' if touch else ''; ti = ' ip-input--touch' if touch else ''
     return (f'<div class="ip-field"><span class="ip-label" id="d-lbl">Data populării</span><div class="s7-date">'
@@ -298,15 +311,19 @@ def prow(u, i, code, f=None, m=None, touch=True):
     """One user-added placement row, as the SYS07 preview (Serie nouă): SectionSelect combobox, remove key, ♀ / ♂ CountInputs."""
     k = f'{u}{i}'; who = code or f'rândul {i + 1}'
     ti = ' ip-input--touch' if touch else ''; tb = ' ip-iconbtn--touch' if touch else ''; md = '' if touch else ' ip-count--md'
-    name = f'<span class="name">{code}</span>' if code else '<span class="name is-empty">Alege</span>'
+    name = f'<span class="ip-select__val"><b>{code}</b></span>' if code else '<span class="ip-select__val is-empty">Alege</span>'
     def cnt(sx, v):
         c, s, w = ('hen', '♀', 'găini') if sx == 'F' else ('rooster', '♂', 'cocoși'); i_ = f'{"f" if sx == "F" else "m"}-{k}'
         val = f' value="{n(v)}"' if v is not None else ''
         return (f'<div class="ip-field is-{c}"><label class="ip-label ip-sexrow__lbl" for="{i_}"><span class="ip-sr">{who}, </span><span class="ip-sex ip-sex--{c}" aria-hidden="true">{s}</span>'
                 f'<span class="ip-sr">{w}</span></label><span class="ip-input ip-count ip-count--{c}{md}"><input id="{i_}" inputmode="numeric" pattern="[0-9 &#8239;]*" placeholder="–" autocomplete="off"{val}/></span></div>')
+    if touch:   # FIN10 (section 53, S9P): on phone the SectionSelect opens the BottomSheet, no listbox left in the page
+        sel = (f'<div class="ip-select"><div class="ip-input ip-select__btn{ti}" id="sc-{k}" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="sl-{k}">{name}{CHEV16}</div></div>')
+    else:
+        sel = (f'<div class="ip-select"><div class="ip-input ip-select__btn{ti}" id="sc-{k}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="sm-{k}" aria-labelledby="sl-{k}">{name}{CHEV16}</div>'
+               f'<ul class="ip-menu ip-select__menu" role="listbox" id="sm-{k}" aria-labelledby="sl-{k}" tabindex="-1" hidden="hidden"></ul></div>')
     return (f'<li class="ip-sexrow"><div class="ip-sexrow__head"><div class="ip-field ip-sexrow__sel"><span class="ip-label ip-sexrow__lbl" id="sl-{k}">Secțiune</span>'
-            f'<div class="ip-input ip-sexrow__btn{ti}" id="sc-{k}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="sm-{k}" aria-labelledby="sl-{k}">{name}{CHEV16}</div>'
-            f'<ul class="ip-menu ip-sexrow__menu" role="listbox" id="sm-{k}" aria-labelledby="sl-{k}" hidden="hidden"></ul></div>'
+            f'{sel}</div>'
             f'<button type="button" class="ip-iconbtn{tb} ip-sexrow__rm" aria-label="Elimină {who}">{icon("x")}</button></div>{cnt("F", f)}{cnt("M", m)}</li>')
 def prows(u, day, rows, touch=True):
     t = ' ip-btn--touch' if touch else ''
@@ -411,12 +428,14 @@ CSS18 = '''
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-ways .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)}
-.ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
 .s18-vp > .s4-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */'''
-CSS_DESK = X.CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
+X_CSS = '\n'.join(l for l in X.CSS.split('\n') if not l.startswith('.s11-select{'))   # FIN10 fix 1: no native select on S18–S22 desktops
+assert X_CSS != X.CSS
+CSS_DESK = X_CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
 .s4s-m0{margin:0}
 .s18-foot{justify-content:flex-end}'''
-CSS_PL = Z.CSS_PHONE + CSS18 + '''
+Z_CSS = '\n'.join(l for l in Z.CSS_PHONE.split('\n') if '.s11-select' not in l)   # FIN10 fix 1: no native select on S18–S22 phones
+CSS_PL = Z_CSS + CSS18 + '''
 .s4s-m0{margin:0}
 .s18-pkey{display:flex;flex-direction:column}
 .s18-pser{display:flex;flex-direction:column;gap:var(--space-2)}

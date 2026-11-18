@@ -339,7 +339,6 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-farm{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s11-farm .ip-label{margin:0}
 .s11-select{width:calc(var(--space-12) * 4);cursor:pointer}
-.ip-input > select + .ip-icon{color:var(--ink-secondary);flex:none}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s11-tablebox{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);overflow:hidden}
 .s11-tscroll{overflow-x:auto} /* S11X: scrolls inside its box where the content is narrower than the table (role=region, tabindex=0) */
