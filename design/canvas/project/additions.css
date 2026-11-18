@@ -1613,3 +1613,25 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * height, e.g. 1024px) on its root: the scrim still covers the whole board, and the Dialog centres in that first viewport,
  * as at scroll 0. Unset, the Dialog centres in the whole page (one grid row = the padded scrim). */
 .ip-scrim--page{position:absolute;inset:0;z-index:5;border-radius:0;display:grid;grid-template-rows:calc(var(--board-vp-h, 100% + 2 * var(--space-6)) - 2 * var(--space-6));align-content:start;justify-items:center;align-items:center}
+
+/* =====================================================================================================
+ * FIN05 · One current-row mark on every list. Spec: components.md › DataTable, EventRow, Additions › FIN05.
+ * ===================================================================================================== */
+
+/* ---------- 51. EventRow · current row; DataTable and EventRow current-row keys (section 45 amendment, FIN05) ---------- */
+/* The record open beside a list in a non-modal SidePanel is marked the same way in a DataTable (section 45) and in a list
+ * of EventRows: the row carries is-current and its own key or link aria-current="true" (aria-expanded + aria-controls
+ * stay on that key; it is not drawn pressed). Steel only, no lamp: the row on sunken with a hair line-strong frame drawn
+ * inside it (line-strong 3.9:1 against the raised rows next to it); hover stays sunken without a frame, focus stays the
+ * focus ring on the key (4.6:1 on sunken). Text unchanged and ≥4.5:1 on sunken: ink-muted 4.7, ♀ 4.8, ♂ 5.0, link (info)
+ * 5.5, the ok word 4.6. Inside the marked row a neutral Tag keeps its edge on rule (ink-secondary 6.0:1) and ghost keys
+ * and IconButtons step one tone up (hover rule, pressed line), so they still show against the sunken fill.
+ * :has() catches a row whose key alone carries aria-current (S22). A row-header th (raised in ip-table--rowheads) takes the
+ * fill too; in a scroll region the sticky first cell (z-index 1) would cover the row's frame, so it draws its own part
+ * of it (same hair, clipped at its right edge, so the frame runs on unbroken and keeps an opaque fill while scrolling). */
+.ip-list > .ip-ev:is(.is-current,:has([aria-current="true"])){background:var(--sunken);outline:var(--ip-hair) solid var(--line-strong);outline-offset:calc(-1 * var(--ip-hair))}
+.ip-table tr:is(.is-current,:has([aria-current="true"])) > th[scope=row]{background:var(--sunken)}
+.ip-tablescroll > .ip-table tbody > tr:is(.is-current,:has([aria-current="true"])) > :first-child{background:var(--sunken);outline:var(--ip-hair) solid var(--line-strong);outline-offset:calc(-1 * var(--ip-hair));clip-path:inset(0 var(--ip-hair) 0 0)}
+:is(.ip-table tr,.ip-list > .ip-ev):is(.is-current,:has([aria-current="true"])) .ip-tag--neutral{background:var(--rule)}
+:is(.ip-table tr,.ip-list > .ip-ev):is(.is-current,:has([aria-current="true"])) :is(.ip-btn--ghost,.ip-iconbtn):is(:hover,.is-hover):not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--rule)}
+:is(.ip-table tr,.ip-list > .ip-ev):is(.is-current,:has([aria-current="true"])) :is(.ip-btn--ghost,.ip-iconbtn):is(:active,.is-pressed):not(:disabled):not(.is-disabled):not([aria-disabled="true"]){background:var(--line)}

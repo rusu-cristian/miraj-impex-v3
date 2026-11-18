@@ -97,7 +97,9 @@ def sidebar(no_series=False):
     assert sb.count('is-current') == 1
     return sb
 def editkey(r, pressed=False, focus=False):
-    p = ' is-pressed" aria-expanded="true" aria-controls="tp' if pressed else ''
+    # FIN05: the type open in the panel is the current row (additions §45/§51): aria-current on this key, is-current on
+    # the row; the key keeps aria-expanded/-controls but is not drawn pressed (as S16/S19/S22)
+    p = '" aria-expanded="true" aria-controls="tp" aria-current="true' if pressed else ''
     f = ' ip-focus' if focus else ''
     return f'<button type="button" class="ip-btn ip-btn--ghost{f}{p}">Editează<span class="ip-sr"> {r["name"]}</span></button>'
 def state_cell(r): return lamp('ok', 'activ') if r['active'] else lamp('off', 'retras')
@@ -105,7 +107,7 @@ def use_txt(r): return FARM_OF.get(r['id']) or '<span class="ip-note">nefolosit<
 COLS = ('<thead><tr><th scope="col">Tip hrană</th><th scope="col">Pentru</th><th scope="col">Stare</th>'
         '<th scope="col" class="s21-cuse">Folosit la</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
 def trow(r, open_=None, focus=None):
-    return (f'<tr><th scope="row" class="s19-fname"><span class="s21-fn">{r["name"]}</span><span class="s21-fold">{use_txt(r)}</span></th>'
+    return (f'<tr{" class=\"is-current\"" if open_ == r["id"] else ""}><th scope="row" class="s19-fname"><span class="s21-fn">{r["name"]}</span><span class="s21-fold">{use_txt(r)}</span></th>'
             f'<td class="s21-nw">{sexw(r["for_sex"])}</td><td class="s21-nw">{state_cell(r)}</td><td class="s21-cuse">{use_txt(r)}</td>'
             f'<td class="s19-act">{editkey(r, open_ == r["id"], focus == r["id"])}</td></tr>')
 CAPTION = '<caption class="ip-sr">Tipurile de hrană, pentru cine sunt, starea lor și fermele care le folosesc</caption>'

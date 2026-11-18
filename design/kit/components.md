@@ -182,6 +182,7 @@ Compact tables on `raised` with uppercase caption headers on `panel`.
 - **Totals:** a `line-strong` top border.
 - **Inline edit cells** (owner prices) use a medium TextField.
 - **Phone:** horizontal scroll with the first column sticky.
+- **Current row** (S22P §45, FIN05 §51): the record open in a SidePanel beside the list: `tr.is-current` + `aria-current="true"` on the row's key (not drawn pressed); `sunken` with a hair `line-strong` frame inside, steel only, no lamp; distinct from hover (no frame) and focus (ring on the key).
 
 
 ## EventRow
@@ -191,6 +192,7 @@ One record in a log: RecordTile, a title with section and figures (♀/♂ colou
 - **Row:** height ≥ 48px, separated by `rule`; hover `sunken`.
 - **Filtering:** by RecordChips in the FilterBar.
 - **Locked rows** show a "blocat" tag.
+- **Current row** (FIN05 §51): the record open in a SidePanel beside the log: `li.ip-ev.is-current` + `aria-current="true"` on its key (Corectează, not drawn pressed); the DataTable current-row look (`sunken`, hair `line-strong` frame), steel only.
 
 
 ## SectionTile
@@ -730,3 +732,12 @@ CSS in additions.css section 50 (both copies, identical). Used by every desktop 
 - **Replaced screen CSS and markup:** `s4s-scrim`, `s4s-dialog`, `s4s-dlgnote` (→ `ip-dialog__note`), `ip-row s4s-dlgfoot` (→ `ip-dialog__keys`) in s4s_build CSS_STATES (also picked by s10/s16s), `s10-dlgfoot`, `s18s-scrim`, `s19-scrim` (S19–S22). `s9-modal` is the phone BottomSheet anchor (`position:relative`), not a Dialog scrim: unchanged. Component previews (Dialog card, SYS10 SectionTree, SYS12) keep the bare `ip-scrim` card.
 - **Measured** (fallback fonts; 1440, 1280, 390): Dialog centre − scrim centre 0 / 0 on all 14 Dialog boards; scrim = page box, over the SidePanel (hit test in the scrim) on S16, S19, S21 and S22 parola resetată / copiere eșuată; no focusable element outside the scrim that is not inert; every Dialog `alertdialog` + `aria-modal`, autofocus Anulează (S22 password Dialogs as SYS12).
 - **Tokens:** existing only (bundle.css space-6, `scrim`); no new values.
+
+### FIN05 · One current-row mark, 18.11.2026
+CSS in additions.css section 51 (both copies, identical), an amendment of section 45. Used by S16 Corectează (desktop Jurnal, 4 boards), S19 Ferme și secțiuni (12 panel boards), S21 Tipuri de hrană (5); S22 unchanged (its rows match through `:has()`). DataTable and EventRow lines above and READMEs updated. Decided by: Claude (recommended, user to review), D125.
+
+- **EventRow · current row** (section 51): `ul.ip-list > li.ip-ev.is-current`, its own key or link `aria-current="true"` (`:has()` fallback as section 45): `sunken` + hair `line-strong` frame inside (outline, offset −hair). Same look, markup and rule as the DataTable current row: `tr.is-current` + `aria-current` on the row's key.
+- **Key:** the Editează / Corectează key that opened the panel keeps `aria-expanded="true"` + `aria-controls` and takes `aria-current="true"`, but is not drawn pressed (the row carries the mark). The list head's add key stays pressed while its own add panel is open (no row yet).
+- **Inside the marked row** (tables and lists): a neutral Tag on `rule`; ghost keys and IconButtons hover `rule`, pressed `line` (hover `sunken` would vanish on the fill). Row header `th[scope=row]` takes `sunken`; in `ip-tablescroll` the sticky first cell draws its part of the frame (same outline, `clip-path` at its right edge), so the frame is unbroken and the cell stays opaque while scrolling.
+- **Measured:** frame 3.9:1 against neighbouring raised rows; text on `sunken` ink-muted 4.7, ♀ 4.8, ♂ 5.0, link 5.5, ok word 4.6:1; Tag text on `rule` 6.0:1; focus ring 4.6:1. Hover: `sunken`, no frame; focus: the ring on the key.
+- **Tokens:** existing only (`sunken`, `rule`, `line`, `line-strong`, `--ip-hair`); no new values.

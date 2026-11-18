@@ -110,13 +110,15 @@ def sidebar_owner(no_series=False):
     return sb
 def editkey(fid, pressed=False):
     nm = FARM[fid]['name']
-    p = ' is-pressed" aria-expanded="true" aria-controls="fp' if pressed else ''
+    # FIN05: the farm open in the panel is the current row (additions §45/§51): aria-current on this key, is-current on the
+    # row; the key keeps aria-expanded/-controls but is not drawn pressed (one mark per open record, as S16/S22)
+    p = '" aria-expanded="true" aria-controls="fp" aria-current="true' if pressed else ''
     return f'<button type="button" class="ip-btn ip-btn--ghost{p}">Editează<span class="ip-sr"> {nm}</span></button>'
 COLS = ('<thead><tr><th scope="col">Fermă</th><th scope="col" class="s19-ctip">Tip</th><th scope="col">Ghid</th><th scope="col">Secțiuni</th>'
         '<th scope="col" class="s19-ccyc">Ciclu</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
 def frow(fid, open_=None, noguide=()):
     f = FARM[fid]
-    return (f'<tr><th scope="row" class="s19-fname"><span class="s19-fn">{f["name"]}</span>{fold(fid)}</th><td class="s19-ctip">{TYPE_RO[f["type"]]}</td><td>{gtag(fid, fid in noguide)}</td>'
+    return (f'<tr{" class=\"is-current\"" if open_ == fid else ""}><th scope="row" class="s19-fname"><span class="s19-fn">{f["name"]}</span>{fold(fid)}</th><td class="s19-ctip">{TYPE_RO[f["type"]]}</td><td>{gtag(fid, fid in noguide)}</td>'
             f'<td><span class="s19-secs"><span>{sec_count(fid)}</span><span class="ip-note ip-num">{sec_codes(fid)}</span></span></td>'
             f'<td class="s19-ccyc">{cyc_cell(fid)}</td><td class="s19-act">{editkey(fid, open_ == fid)}</td></tr>')
 def flist(open_=None, noguide=()):

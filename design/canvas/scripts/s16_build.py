@@ -202,7 +202,12 @@ T.EVID[0] = 0
 PG = T.page('pasari', T.panel_pasari())
 KEY = re.search(r'<a class="ip-btn ip-btn--ghost" href="#corecteaza-(ev\d+)">Corectează<span class="ip-sr"> Mortalitate H4\.1, 14\.11\.2026</span></a>', PG)
 assert KEY and PG.count(KEY.group(0)) == 1
-PG = PG.replace(KEY.group(0), KEY.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost is-pressed" aria-expanded="true" aria-controls="cp"'))
+# FIN05: the record being corrected is the Jurnal's current row (additions §51): is-current on its EventRow, aria-current on
+# its Corectează key (aria-expanded/-controls kept, not drawn pressed), as the S19/S21/S22 lists mark their open record
+_i = PG.index(KEY.group(0)); _li = PG.rindex('<li class="ip-ev ip-ev--act">', 0, _i)
+assert '</li>' not in PG[_li:_i]
+PG = (PG[:_li] + '<li class="ip-ev ip-ev--act is-current">' + PG[_li + len('<li class="ip-ev ip-ev--act">'):_i]
+      + KEY.group(0).replace('ip-btn--ghost"', 'ip-btn--ghost" aria-expanded="true" aria-controls="cp" aria-current="true"') + PG[_i + len(KEY.group(0)):])
 SCROLL = HS.get('S16-corecteaza--desktop@scroll', 0)
 assert PG.count('<main class="s4-main">') == 1
 if SCROLL: PG = PG.replace('<main class="s4-main">', f'<main class="s4-main" style="margin-top:calc(-1 * {SCROLL}px)">')
