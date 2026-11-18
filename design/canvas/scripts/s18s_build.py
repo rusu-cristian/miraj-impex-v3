@@ -102,27 +102,27 @@ def scene_track(sc):
             f'<div class="s4-tight"><div class="s18-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{sc.get("leg", LEG_NOTR)}</div></div></section>')
 
 B25_OPEN = dict(farm='hirbovat', a=cP['start_date'], b=None, open=True, label=TXT['h25open'], ded=True, href='#/ferme/hirbovat?ciclu=cyc-hirbovat-2025',
-                aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, deschis, azi SAPT {WK_P}. Deschide ferma la acest ciclu.')
+                aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, deschis, azi sapt. {WK_P}. Deschide ferma la acest ciclu.')
 B25_CLOSED = dict(farm='hirbovat', a=cP['start_date'], b=cP['end_date'], open=False, label='h25', ded=True, href='#/ferme/hirbovat?ciclu=cyc-hirbovat-2025',
                   aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {cP["weeks"]} săptămâni, închis. Deschide ferma la acest ciclu.')
 PLACE_TXT = f'găini {n(PLC["F"])}, cocoși {n(PLC["M"])}'
 def b_tel(day, label, left=False):
     return dict(farm='telita', a=cT['start_date'], b=None, open=True, label=label, place=True, left=left, href='#/ferme/telita?ciclu=cyc-telita-2026',
-                aria=f'Telița, Seria 2026, creștere, din {dd(cT["start_date"])}, deschis, azi SAPT {wk(cT["start_date"], day)}. Început prin populare ({PLACE_TXT}). Deschide ferma la acest ciclu.')
+                aria=f'Telița, Seria 2026, creștere, din {dd(cT["start_date"])}, deschis, azi sapt. {wk(cT["start_date"], day)}. Început prin populare ({PLACE_TXT}). Deschide ferma la acest ciclu.')
 D1_REPLAY = dt.date(2026, 1, 1)   # the replay axis runs to the end of 2025 (then on by whole months until the readout fits)
 LEG_BEFORE = re.sub(r'<span><i class="ip-rec ip-rec--placement"></i>populare</span>', '', LEG_NOTR); assert LEG_BEFORE != LEG_NOTR   # S18P: no placement mark yet
 SC_BEFORE = dict(day=REPLAY, d1=D1_REPLAY, no25=True, blocks=[B25_OPEN], ro=[('hirbovat', WK_P)], leg=LEG_BEFORE,
                  sub=f'{num(1)} serie · {num(2)} ferme · {num(1)} ciclu',
                  desc=(f'1 serie, 2 ferme, 1 ciclu. Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, deschis, azi {dd(REPLAY)}, '
-                       f'SAPT {WK_P}; la Telița fără date.'))
+                       f'sapt. {WK_P}; la Telița fără date.'))
 SC_AFTER = dict(SC_BEFORE, leg=LEG_NOTR, blocks=[B25_OPEN, b_tel(REPLAY, TXT['tel0'], left=True)], ro=[('telita', WK_T0), ('hirbovat', WK_P)],
                 sub=f'{num(2)} serii · {num(2)} ferme · {num(2)} cicluri',
-                desc=(f'2 serii, 2 ferme, 2 cicluri. Seria 2026, deschisă: Telița creștere din {dd(REPLAY)}, început prin populare ({PLACE_TXT}), azi SAPT {WK_T0}. '
-                      f'Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, azi SAPT {WK_P}; la Telița fără date.'))
+                desc=(f'2 serii, 2 ferme, 2 cicluri. Seria 2026, deschisă: Telița creștere din {dd(REPLAY)}, început prin populare ({PLACE_TXT}), azi sapt. {WK_T0}. '
+                      f'Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, azi sapt. {WK_P}; la Telița fără date.'))
 SC_D39 = dict(day=TODAY, d1=dt.date(2027, 1, 1), no25=True, blocks=[B25_CLOSED, b_tel(TODAY, TXT['tel39'])], ro=[('telita', WK_T39)],
               sub=f'{num(2)} serii · {num(2)} ferme · {num(2)} cicluri',
               desc=(f'2 serii, 2 ferme, 2 cicluri. Seria 2026, deschisă: Telița creștere din {dd(cT["start_date"])}, '
-                    f'început prin populare ({PLACE_TXT}), deschis, azi {dd(TODAY)}, SAPT {WK_T39}. Seria 2025, închisă: Hîrbovăț ouat, început dedus '
+                    f'început prin populare ({PLACE_TXT}), deschis, azi {dd(TODAY)}, sapt. {WK_T39}. Seria 2025, închisă: Hîrbovăț ouat, început dedus '
                     f'{dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {cP["weeks"]} săpt.; la Telița fără date.'))
 
 # ================================================================= the series table for a scene (s18_build.crow / grow / acts)

@@ -79,15 +79,20 @@ def error_rows():
             r['dup_of'] = first['line']
     return out
 
+def sexg(code, sr=None):
+    """A ♀/♂ in running text and link names (D128): the coloured glyph aria-hidden, the word for screen readers."""
+    g, tone, word = SEX[code]
+    return f'<span class="ip-sex ip-sex--{tone}" aria-hidden="true">{g}</span><span class="ip-sr">{sr or word}</span>'
+
 def reason(r):
     k = r.get('kind')
     if k == 'nan':
-        return (f'SAPT {r["week"]} ♂', 'greutatea „#REF!” nu e număr', 'Greutatea „#REF!” nu e număr. Scrie greutatea în grame.', 'body_weight_g')
+        return (f'SAPT {r["week"]} {sexg("M")}', 'greutatea „#REF!” nu e număr', 'Greutatea „#REF!” nu e număr. Scrie greutatea în grame.', 'body_weight_g')
     if k == 'dup':
-        return (f'SAPT {r["week"]} ♀', f'e deja pe rândul {r["dup_of"]}',
-                f'Rândul {r["dup_of"]} are deja sapt. {r["week"]} ♀. Păstrează un singur rând.', 'week')
+        return (f'SAPT {r["week"]} {sexg("F")}', f'e deja pe rândul {r["dup_of"]}',
+                f'Rândul {r["dup_of"]} are deja sapt. {r["week"]} {sexg("F")}. Păstrează un singur rând.', 'week')
     if k == 'nosex':
-        return (f'SAPT {r["week"]}', 'lipsește sexul', 'Lipsește sexul. Scrie G (♀) sau C (♂).', 'sex')
+        return (f'SAPT {r["week"]}', 'lipsește sexul', f'Lipsește sexul. Scrie G ({sexg("F")}) sau C ({sexg("M")}).', 'sex')
     return None
 
 # ------------------------------------------------------------------ table

@@ -132,7 +132,7 @@ FOOT = ('<p class="ip-note" style="margin:0;max-width:{w}">Din kit: textele din 
         'ion.rusu și parola k7mq4tzw9bhe. „Scrie loginul.”, „Scrie parola.” și „Ai uitat parola? Vorbește cu '
         'administratorul.” sunt texte de interfață propuse (SYS13, de revăzut).</p>')
 
-lc = ('<!-- @dsCard group="App shell" height=2400 subtitle="SYS13" -->\n'
+lc = ('<!-- @dsCard group="App shell" height=3096 subtitle="SYS13" -->\n'
       '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
       + desk + '\n' + grid + '\n' + phones + '\n' + FOOT.format(w=DESK_W) + '\n</div>\n')
 

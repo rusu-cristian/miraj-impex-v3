@@ -1,6 +1,6 @@
 """Build SexCountRow/preview.html (SYS07): python3 sys07_build.py"""
 import pathlib
-OUT = pathlib.Path('/home/claude/miraj-impex-v3/design/system/components/SexCountRow/preview.html')
+OUT = pathlib.Path(__file__).resolve().parent / 'SexCountRow/preview.html'
 NB = ' '
 def fmt(n): return f'{n:,}'.replace(',', NB)
 def num(n): return f'<span class="ip-num">{fmt(n) if isinstance(n,int) else n}</span>'
@@ -14,6 +14,7 @@ X = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
 PLUS = '<path d="M5 12h14"/><path d="M12 5v14"/>'
 DOWN = '<path d="m6 9 6 6 6-6"/>'; UP = '<path d="m18 15-6-6-6 6"/>'
 CHECK = '<path d="M20 6 9 17l-5-5"/>'
+MINUS = '<path d="M5 12h14"/>'
 ERR = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'
 TELITA = ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
 
@@ -32,28 +33,37 @@ def field(uid, s, name, val, touch, ro=False, err=False, desc=''):
             f'<span class="{cls}"><input{attrs}></span></div>')
 
 def select(uid, val, touch, expanded=False, err=False, used=(), active=None, label='Secțiune', opts=None):
-    """opts: (group caption, [(code, note_html), ...]) for a menu other than the Telița placement one."""
+    """The section 53 Select (FIN10/FIN13, D130): div.ip-select > div.ip-input.ip-select__btn[role=combobox] + listbox.
+    Phone (touch) opens the section 33 BottomSheet: aria-haspopup="dialog", no aria-controls and no hidden listbox while
+    closed. opts: (group caption, [(code, note_html), ...]) for a menu other than the Telița placement one."""
     val_code = (val or '').split(' › ')[-1]
     lid, cid, lst = f'sl-{uid}', f'sc-{uid}', f'sm-{uid}'
-    cls = 'ip-input ip-sexrow__btn' + (' ip-input--touch' if touch else '') + (' is-error' if err else '')
-    a = f' aria-activedescendant="so-{uid}-{active}"' if (expanded and active) else ''
+    cls = 'ip-input ip-select__btn' + (' ip-input--touch' if touch else '') + (' is-error' if err else '')
+    oid = lambda c: f'so-{uid}-{c}'.replace('.', '-')
+    a = f' aria-activedescendant="{oid(active)}"' if (expanded and active) else ''
     e = f' aria-invalid="true" aria-describedby="msg-{uid}"' if err else ''
-    name = f'<span class="name">{val}</span>' if val else '<span class="name is-empty">Alege</span>'
-    out = (f'<div class="ip-field ip-sexrow__sel"><span class="ip-label ip-sexrow__lbl" id="{lid}">{label}</span>'
-           f'<div class="{cls}" id="{cid}" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="{"true" if expanded else "false"}" aria-controls="{lst}" aria-labelledby="{lid}"{a}{e}>{name}{ICON(UP if expanded else DOWN, " ip-icon--16")}</div>')
+    name = f'<span class="ip-select__val"><b>{val}</b></span>' if val else '<span class="ip-select__val is-empty">Alege</span>'
+    pop = ' aria-haspopup="dialog"' if touch else f' aria-haspopup="listbox"'
+    ctl = '' if touch else f' aria-controls="{lst}"'
+    out = (f'<div class="ip-field ip-sexrow__sel"><span class="ip-label ip-sexrow__lbl" id="{lid}">{label}</span><div class="ip-select">'
+           f'<div class="{cls}" id="{cid}" role="combobox" tabindex="0"{pop} aria-expanded="{"true" if expanded else "false"}"{ctl} aria-labelledby="{lid}"{a}{e}>{name}{ICON(UP if expanded else DOWN, " ip-icon--16")}</div>')
+    def opt(c, note, dis=False):
+        chosen = c == val_code
+        act = ' is-active' if c == active else ''
+        d = ' aria-disabled="true"' if dis else ''
+        return (f'<li class="ip-menu__item ip-select__opt{act}" role="option" id="{oid(c)}" aria-selected="{"true" if chosen else "false"}"{d}>'
+                f'<span class="ip-select__chk" aria-hidden="true">{ICON(CHECK, " ip-icon--16") if chosen else ""}</span>'
+                f'<span class="ip-select__txt"><span class="ip-select__top">{c} {note}</span></span></li>')
+    ul = f'<ul class="ip-menu ip-select__menu" role="listbox" id="{lst}" aria-labelledby="{lid}" tabindex="-1"'
     if expanded and opts:
         grp, lst_ = opts
-        items = ''.join(f'<li class="ip-menu__item{" is-active" if c == active else ""}" role="option" id="so-{uid}-{c}" aria-selected="{"true" if c == val_code else "false"}">{c} {note}</li>' for c, note in lst_)
-        out += f'<ul class="ip-menu ip-sexrow__menu" role="listbox" id="{lst}" aria-labelledby="{lid}" tabindex="-1"><li class="ip-menu__group" role="presentation">{grp}</li>{items}</ul>'
+        out += f'{ul}><li class="ip-menu__group" role="presentation">{grp}</li>{"".join(opt(c, note) for c, note in lst_)}</ul>'
     elif expanded:
-        items = ''.join(
-            (f'<li class="ip-menu__item" role="option" id="so-{uid}-{c}" aria-selected="false" aria-disabled="true">{c} <span class="ip-note">în listă</span></li>' if c in used else
-             f'<li class="ip-menu__item{" is-active" if c == active else ""}" role="option" id="so-{uid}-{c}" aria-selected="false">{c} <span class="ip-note">goală</span></li>')
-            for c in TELITA)
-        out += f'<ul class="ip-menu ip-sexrow__menu" role="listbox" id="{lst}" aria-labelledby="{lid}" tabindex="-1"><li class="ip-menu__group" role="presentation">Telița · creștere</li>{items}</ul>'
-    else:
-        out += f'<ul class="ip-menu ip-sexrow__menu" role="listbox" id="{lst}" aria-labelledby="{lid}" hidden></ul>'
-    return out + '</div>'
+        items = ''.join(opt(c, '<span class="ip-note">în listă</span>', True) if c in used else opt(c, '<span class="ip-note">goală</span>') for c in TELITA)
+        out += f'{ul}><li class="ip-menu__group" role="presentation">Telița · creștere</li>{items}</ul>'
+    elif not touch:
+        out += f'{ul} hidden="hidden"></ul>'
+    return out + '</div></div>'
 
 def row(uid, touch, code=None, sel=None, alive=None, f=None, m=None, toate=None, rm=None, err=None, msg=None):
     """err: 'f' | 'm' | 'sel'; rm: aria-label text."""
@@ -79,9 +89,13 @@ def row(uid, touch, code=None, sel=None, alive=None, f=None, m=None, toate=None,
               f'<span class="ip-check__box">{ICON(CHECK, " ip-icon--14") if toate else ""}</span>Toate<span class="ip-sr"> din {name}</span></label>')
     return f'<li class="ip-sexrow">{h}</li>'
 
-def panel(uid, title, ctx, rows, total, sub, wide=False, add=False, cols=None, pick=False):
+def panel(uid, title, ctx, rows, total, sub, wide=False, add=False, cols=None, pick=False, allkey=None):
     cls = 'ip-panel ip-sexrows' + (' ip-sexrows--wide' if wide else '') + (' ip-sexrows--add' if add else '') + (' ip-sexrows--pick' if pick else '')
     o = f'<section class="{cls}" aria-labelledby="t-{uid}"><div class="ip-sexrows__head"><h4 class="ip-cap" id="t-{uid}">{title}</h4><span class="ip-note">{ctx}</span></div>'
+    if allkey:  # §34 (S10P, D85): true = every row has Toate on, mixed = some, false = none
+        mark = {'true': ICON(CHECK, ' ip-icon--14'), 'mixed': ICON(MINUS, ' ip-icon--14'), 'false': ''}[allkey]
+        o += (f'<button type="button" class="ip-btn ip-btn--ghost{"" if wide else " ip-btn--touch"} ip-sexrows__allkey" id="allk-{uid}" aria-pressed="{allkey}">'
+              f'<span class="ip-check__box" aria-hidden="true">{mark}</span>Toate secțiunile<span class="ip-sr"> din Hîrbovăț</span></button>')
     if wide and cols:
         o += '<div class="ip-sexrows__cols" aria-hidden="true">' + ''.join(f'<span class="ip-cap">{c}</span>' for c in cols) + '</div>'
     o += f'<ol class="ip-sexrows__list">{"".join(rows)}</ol>'
@@ -109,7 +123,7 @@ def sale(uid, touch, wide, refused=False):
         else: rows.append(row(u, touch, code=c, alive=(F, M), toate=False))
     n = 3 if refused else 2
     return panel(uid, 'Păsări vândute', SALE_CTX, rows, ('Total vânzare', 6280, 929 if refused else 429),
-                 f'<span>{num(n)} din {num(6)} secțiuni</span> · {ALIVE_SUB}', wide, False, SALE_COLS)
+                 f'<span>{num(n)} din {num(6)} secțiuni</span> · {ALIVE_SUB}', wide, False, SALE_COLS, allkey='mixed')  # H1.1 only has Toate on
 
 def place(uid, touch, wide, mode=None):
     rows = [row(f'{uid}0', touch, sel={'val': 'H1'}, f=14080, rm='Elimină H1'),
@@ -145,15 +159,15 @@ def phone(cap, body):
 def desk(cap, body, extra=''):
     return f'<div class="ip-stack" style="max-width:800px;gap:var(--space-2){extra}"><span class="ip-cap">{cap}</span>{body}</div>'
 
-html = '<!-- @dsCard group="Entry" height=5600 subtitle="SYS07" -->\n<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
+html = '<!-- @dsCard group="Entry" height=5640 subtitle="SYS07" -->\n<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
 html += '<div class="ip-row" style="align-items:flex-start;gap:var(--space-8)">'
-html += phone('Vânzare · telefon · Toate pe H1.1, H1.2 parțial', sale('pa', True, False))
+html += phone('Vânzare · telefon · Toate pe H1.1, H1.2 parțial · Toate secțiunile „mixed”', sale('pa', True, False))
 html += phone('Vânzare · telefon · refuzat: peste cei în viață', sale('pb', True, False, True))
 html += phone('Serie nouă · telefon · populare 07.10.2025', place('pc', True, False))
 html += phone('Serie nouă · telefon · secțiune de două ori', place('pd', True, False, 'dup'))
 html += phone('Transfer · telefon · Din H1.1, parțial', transfer('pe', True, False))
 html += '</div>\n<div class="ip-stack" style="gap:var(--space-8)">'
-html += desk('Vânzare · desktop · Toate pe H1.1, H1.2 parțial', sale('da', False, True))
+html += desk('Vânzare · desktop · Toate pe H1.1, H1.2 parțial · Toate secțiunile „mixed”', sale('da', False, True))
 html += desk('Vânzare · desktop · refuzat: peste cei în viață', sale('db', False, True, True))
 html += desk('Serie nouă · desktop · rând nou, alegere secțiune (deschis)', place('dc', False, True, 'menu'), ';padding-bottom:calc(var(--space-12) * 4)')
 html += desk('Serie nouă · desktop · secțiune de două ori', place('dd', False, True, 'dup'))

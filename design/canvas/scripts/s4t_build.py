@@ -162,7 +162,7 @@ tot = s4.tot
 def ro_pasari():
     rows = [[str(w), DASH + ' fără date', DASH + ' fără date', DASH + ' fără date în ghid'] for w in (1, 2)]
     rows += [[str(w), pct(mF[w], 2), pct(mM[w], 2), DASH + ' fără date în ghid'] for w in sorted(mF)]
-    lbl = f'Mortalitate cumulată găini și cocoși, Hîrbovăț Seria 2026, SAPT 3–{WK}; ghidul nu are mortalitate'
+    lbl = f'Mortalitate cumulată găini și cocoși, Hîrbovăț Seria 2026, sapt. 3–{WK}; ghidul nu are mortalitate'
     ch = gchart('mort', lbl, WK, [{'cls': 'act', 'pts': mF}, {'cls': 's2', 'pt': 'pt2', 'pts': mM}], 0, 15, [0, 5, 10, 15], lambda t: f'{t}%')
     return readout('mort', f'MORTALITATE CUMULATĂ · HÎRBOVĂȚ · SAPT {WK}', 'off', rpair(n(mF[WK], 2), n(mM[WK], 2), '%'),
                    f'din sosire ♀ {n(STARTC["F"])} · ♂ {n(STARTC["M"])} · SAPT {WK}: ♀ {n(-wkF)} · ♂ {n(-wkM)}',
@@ -382,7 +382,7 @@ assert cons_tot == rnd(sum(cons.values())) == 1189745
 def ro_hrana():
     rows = [[str(w), DASH + ' fără date', DASH + ' fără date'] for w in (1, 2)] + [[str(w), n(kF[w]) + ' kg', n(kM[w]) + ' kg'] for w in sorted(kF)]
     assert max(kF.values()) < 6000
-    lbl = f'Consum de hrană pe zi, pe tip de hrană, Hîrbovăț Seria 2026, SAPT 3–{WK}: Breeder 2 pentru găini, Cocoși pentru cocoși'
+    lbl = f'Consum de hrană pe zi, pe tip de hrană, Hîrbovăț Seria 2026, sapt. 3–{WK}: Breeder 2 pentru găini, Cocoși pentru cocoși'
     ch = gchart('kgzi', lbl, WK, [{'cls': 'act', 'pts': kF}, {'cls': 's2', 'pt': 'pt2', 'pts': kM}], 0, 6000, [0, 2000, 4000, 6000], lambda t: n(t), x0=44)
     return readout('kgzi', f'HRANĂ KG/ZI · BREEDER 2 ♀ · COCOȘI ♂ · SAPT {WK}', 'ok' if feed_ok else 'warn', rpair(n(kF[WK]), n(kM[WK]), 'kg/zi'),
                    f'față de ghid ♀ {sgn(devF)}% · ♂ {sgn(devM)}% · {ddm(FEED_WK[0])}–{ddate(FEED_WK[-1])} · fără {ddm(TODAY)}',
@@ -459,7 +459,7 @@ def ro_greutate():
     rows = [[str(w), DASH + ' fără cântărire', DASH + ' fără cântărire', DASH + ' fără date în ghid'] for w in (1, 2)]
     rows += [[str(w), n(wF[w]) + ' g', n(wM[w]) + ' g', DASH + ' fără date în ghid'] for w in WKS]
     assert 2000 < min(wF.values()) and max(wM.values()) < 5000
-    lbl = f'Greutate medie găini și cocoși, Hîrbovăț Seria 2026, SAPT 3–{WK}; ghidul de ouat nu are greutate'
+    lbl = f'Greutate medie găini și cocoși, Hîrbovăț Seria 2026, sapt. 3–{WK}; ghidul de ouat nu are greutate'
     ch = gchart('wt', lbl, WK, [{'cls': 'act', 'pts': wF}, {'cls': 's2', 'pt': 'pt2', 'pts': wM}], 2000, 5000, [2000, 3000, 4000, 5000], lambda t: n(t), x0=44)
     return readout('wt', f'GREUTATE · HÎRBOVĂȚ · SAPT {WK}', 'off', rpair(n(wF[WK]), n(wM[WK]), 'g'),
                    f'cântărit {ddate(TODAY)} · față de SAPT {WK - 1}: ♀{NBSP}{sgn(dF, 0)} · ♂{NBSP}{sgn(dM, 0)}{NBSP}g',  # S4TP fix 1: sign, figure, unit never split
@@ -486,7 +486,7 @@ def spark(sec, sx):
     def X(w): return round(4 + (w - 1) * 152 / (WK - 1), 1)
     def Y(v): return round(44 - (v - SPL) / (SPH - SPL) * 40, 1)
     cls = 'ip-spark--hen' if sx == 'F' else 'ip-spark--rooster'
-    lbl = f'Greutate {sec} {"găini" if sx == "F" else "cocoși"}, SAPT 3–{WK}: de la {n(pts[3])} g la {n(pts[WK])} g; fără ghid'
+    lbl = f'Greutate {sec} {"găini" if sx == "F" else "cocoși"}, sapt. 3–{WK}: de la {n(pts[3])} g la {n(pts[WK])} g; fără ghid'
     return (f'<svg class="ip-spark {cls}" viewBox="0 0 160 48" role="img" aria-label="{lbl}"><polyline class="act" points="'
             + ' '.join(f'{X(w)},{Y(v)}' for w, v in sorted(pts.items())) + f'"/><circle class="pt" cx="{X(WK)}" cy="{Y(pts[WK])}" r="2"/></svg>')
 def tb_greutate():
@@ -528,7 +528,7 @@ hall_alive = {h: sum(s4.alive[(s, 'F')] for s in SECTIONS if s.startswith(h + '.
 def ro_productie():
     aw = sorted(w for w in lay_all if w <= WK); a40 = lay_all[WK]['lay_pct']; dev = rnd(a40 - gv[WK], 1)
     band = ({w: gv[w] - 3 for w in gv}, {w: min(gv[w] + 3, 100) for w in gv})
-    lbl = f'Ouat Hîrbovăț față de ghid, pe săptămânile ciclului, SAPT 3–{WK}; ghid SAPT 7–45'
+    lbl = f'Ouat Hîrbovăț față de ghid, pe săptămânile ciclului, sapt. 3–{WK}; ghid sapt. 7–45'
     ch = gchart('lay', lbl, 45, [{'cls': 'act', 'pts': {w: lay_all[w]['lay_pct'] for w in aw}}], 0, 100, [0, 50, 100], lambda t: f'{t}%',
                 guide=gv, band=band, xticks=(1, 10, 20, 30, 40, 45))
     rows = [[str(w), pct(lay_all[w]['lay_pct']), pct(gv[w]) if w in gv else DASH + ' fără date în ghid'] for w in aw]

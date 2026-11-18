@@ -78,7 +78,7 @@ IBM Plex Sans + IBM Plex Mono, weights 400/500, loaded by the `@import` of Googl
 - EventRow: `ip-list` > `ip-ev` (`is-hover`) > `ip-ev__main` > `ip-ev__meta`
 - SectionTile: `ip-tiles` > `ip-stile` (`is-hover|is-missing`) > `ip-stile__head`, `ip-stile__code`, `ip-stile__kv`, `ip-bar`
 **Moment:** Readout `ip-readout` > `ip-readout__cap|__val|__sub`; GuideChart `svg.ip-chart` (`.grid .axis .ax .band .guide .act .s2 .pt .today`)
-**Signature:** CycleTrack `svg.ip-track` (`.lane .lanelbl .cyc[.open] .cyctxt .link .linkdot .place .sale .today .todaylbl .ro .rotxt .month .tick`)
+**Signature:** CycleTrack `svg.ip-track` (`.lane .lanelbl .cyc[.open] .cyctxt .link .linkdot .place .sale .today .todaylbl .ro .rotxt .month .tick`); track text 11px for every variant (additions §55, FIN13)
 **Entry:** EntryCard `ip-panel` (+ `ip-panel__head`); AllocationRow `ip-alloc` > `ip-alloc__who`, `ip-alloc__kg`; EffectPreview `ip-effect`
 **Feedback:** Banner `ip-banner ip-banner--info|warn|fault|ok`; Toast `ip-toast`; EmptyState `ip-empty`; Skeleton `ip-skel` (`--w1|w2|w3`, `--ch1…4`, `--key`, `--end`, `--tile`; rows `ip-ev--skel`, `tr.ip-table__skel`; loaded-geometry skeletons `ip-readout--skel`, `ip-trackskel` (`--compact`), `ip-field--skel`, `ip-skel-line`, table shares `th[style=--ip-colw]`; additions §23, §42, §54)
 **Containers:** Dialog `ip-scrim` > `ip-dialog`; SidePanel `ip-sidepanel` > `__head|__body|__foot`; BottomSheet `ip-sheet` > `ip-sheet__handle`

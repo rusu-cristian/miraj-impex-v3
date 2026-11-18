@@ -19,10 +19,10 @@ def readout(id_, cap, lamp, word, val, unit, kv, sub=None, off=False, sr=''):
 def stock_row(sfx):
     return ('<ul class="ip-readouts" aria-label="Stoc pe fermă și tip de hrană">'
         + readout(f'sr-b2-{sfx}', 'Hîrbovăț · Breeder\u00a02', 'ok', 'în normă', g('28 252'), 'kg',
-                  [('zile rămase', '7,1<small> zile</small>'), ('medie/zi 13–15.11', g('3 976') + '<small> kg</small>'), ('se termină', '23.11.2026')],
+                  [('zile rămase', '7,1<small> zile</small>'), ('medie/zi 13.11–15.11', g('3 976') + '<small> kg</small>'), ('se termină', '23.11.2026')],
                   sr=', pentru găini')
         + readout(f'sr-co-{sfx}', 'Hîrbovăț · Cocoși', 'warn', 'abatere', g('1 650'), 'kg',
-                  [('zile rămase', '3,9<small> zile</small>'), ('medie/zi 13–15.11', '419<small> kg</small>'), ('se termină', '19.11.2026')],
+                  [('zile rămase', '3,9<small> zile</small>'), ('medie/zi 13.11–15.11', '419<small> kg</small>'), ('se termină', '19.11.2026')],
                   sub=['sub pragul de 5 zile'], sr=', pentru cocoși')
         + readout(f'sr-te-{sfx}', 'Telița', 'off', 'oprit', '–', '', [],
                   sub=['fără ciclu deschis', 'ultimul ciclu: Seria 2026, închis pe <span class="ip-num" style="white-space:nowrap">28.02.2026</span>'], off=True)
@@ -31,15 +31,15 @@ def stock_row(sfx):
 def state_row(sfx):
     return ('<ul class="ip-readouts" aria-label="Exemple de stare">'
         + readout(f'sr-neg-{sfx}', 'Hîrbovăț · Breeder\u00a02', 'warn', 'abatere', M + g('1 240'), 'kg',
-                  [('zile rămase', '0,0<small> zile</small>'), ('medie/zi 13–15.11', g('3 976') + '<small> kg</small>'), ('epuizat pe', '16.11.2026')],
+                  [('zile rămase', '0,0<small> zile</small>'), ('medie/zi 13.11–15.11', g('3 976') + '<small> kg</small>'), ('epuizat pe', '16.11.2026')],
                   sub=['stoc sub 0 · verifică livrările', 'consumul depășește livrările'], sr=', pentru găini')
         + readout(f'sr-idle-{sfx}', 'Fermă exemplu · Starter', 'off', 'oprit', g('8 000'), 'kg',
-                  [('zile rămase', '–'), ('medie/zi 13–15.11', '0<small> kg</small>'), ('se termină', '–')],
+                  [('zile rămase', '–'), ('medie/zi 13.11–15.11', '0<small> kg</small>'), ('se termină', '–')],
                   sub=['– fără consum în ultimele 3 zile'])
         + '</ul>')
 
 FOOT = ('<p class="ip-note" style="margin:0">Stoc la <span class="ip-num">16.11.2026</span> = livrări − consum (rânduri confirmate). '
-        'Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate (<span class="ip-num">13–15.11.2026</span>); '
+        'Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate (<span class="ip-num">13.11–15.11.2026</span>); '
         'sub 5 zile = abatere.</p>')
 
 def cost_block(sfx, extra=False, wide=True):
@@ -69,7 +69,7 @@ def cost_block(sfx, extra=False, wide=True):
         '<p class="ip-note ip-cost__foot">Lei = suma livrărilor cu preț; kg fără preț nu intră în cost. '
         'Lei/pasăre: la păsările de la începutul ciclului (Telița: populare <span class="ip-num">07.10.2025</span>, '
         f'<span class="ip-sex ip-sex--hen">♀ {g("28 080")}</span> · <span class="ip-sex ip-sex--rooster">♂ {g("3 510")}</span>; '
-        f'Hîrbovăț: sosite <span class="ip-num">22–28.02.2026</span>, <span class="ip-sex ip-sex--hen">♀ {g("26 765")}</span> · '
+        f'Hîrbovăț: sosite <span class="ip-num">22.02–28.02.2026</span>, <span class="ip-sex ip-sex--hen">♀ {g("26 765")}</span> · '
         f'<span class="ip-sex ip-sex--rooster">♂ {g("3 060")}</span>; seria: populare). '
         f'Lei/ou: ouă totale (Cat. 1–3 + Incubabile) până pe <span class="ip-num">16.11.2026</span>: <span class="ip-num">{g("5 301 053")}</span>.</p>')
     return (f'<section class="ip-cost{" ip-cost--wide" if wide else ""}" aria-labelledby="cost-{sfx}"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-{sfx}">{title}</h3>'

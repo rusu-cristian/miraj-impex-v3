@@ -59,7 +59,7 @@ icon, lamp, num, NB = M.icon, M.lamp, M.num, M.NB
 SRC = (ROOT / 'design/system/scripts/sys12_build.py').read_text(encoding='utf-8')
 CUT = '# ------------------------------------------------------------------ blocks'
 assert SRC.count(CUT) == 1
-U = {'__name__': 'sys12_parts'}
+U = {'__name__': 'sys12_parts', '__file__': str(ROOT / 'design/system/scripts/sys12_build.py')}  # sys12 finds the repo from its own path
 exec(compile(SRC.split(CUT)[0], 'sys12_build.py', 'exec'), U)
 # the loading rows and the empty row are SYS12 preview blocks (below the cut): read the same markup from its source
 BLK = SRC.split(CUT)[1]

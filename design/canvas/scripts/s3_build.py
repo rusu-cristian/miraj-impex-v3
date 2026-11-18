@@ -187,7 +187,7 @@ def track_svg(mode, TW):
             g += block('telita', cT['start_date'], cT['end_date'], f'Seria 2026 · creștere · {cT["weeks"]} săpt.', aria, '#/ferme/telita?ciclu=cyc-telita-2026', marks=place)
         src = (f' Păsări sosite prin transfer de la Telița {ddate(X0D)[:5]}–{ddate(X1D)} (găini {n(ARR["F"])}, cocoși {n(ARR["M"])}).'
                if 'telita' in farms else '')
-        aria = f'Hîrbovăț, Seria 2026, ouat, din {ddate(cH["start_date"])}, deschis, azi SAPT {WK}.{src} Deschide ferma la acest ciclu.'
+        aria = f'Hîrbovăț, Seria 2026, ouat, din {ddate(cH["start_date"])}, deschis, azi sapt. {WK}.{src} Deschide ferma la acest ciclu.'
         g += block('hirbovat', cH['start_date'], TODAY, f'Seria 2026 · ouat · din {ddate(cH["start_date"])}', aria, '#/ferme/hirbovat?ciclu=cyc-hirbovat-2026', open_=True)
         if 'telita' in farms:  # transfer link: the real movement days 22–28.02.2026 (D25), from Telița's block to Hîrbovăț's
             yt, yb = ly['telita'] + 23, ly['hirbovat'] + 3; ym = (yt + yb) / 2
@@ -199,11 +199,11 @@ def track_svg(mode, TW):
         g += (f'<line class="today" x1="{xt}" x2="{xt}" y1="{top}" y2="{H + 4}"/><text class="todaylbl" x="{xt}" y="{top - 3}" text-anchor="middle">azi {ddate(TODAY)[:5]}</text>'
               f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{RO_W}" height="16" rx="2"/><text class="rotxt" x="{round(xt + 4 + RO_W / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {WK}</text>')
         if mode == 'viewer':
-            desc = f'Seria 2026, doar fermele la care ai acces. Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, SAPT {WK}.'
+            desc = f'Seria 2026, doar fermele la care ai acces. Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, sapt. {WK}.'
         else:
             desc = (f'Seria 2026, 2 ferme. Telița: creștere {ddate(cT["start_date"])}–{ddate(cT["end_date"])}, {cT["weeks"]} săpt., închis, început prin populare. '
                     f'Transfer Telița → Hîrbovăț {ddate(X0D)[:5]}–{ddate(X1D)}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}. '
-                    f'Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, SAPT {WK}.')
+                    f'Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, sapt. {WK}.')
     tk = ''
     for d, lbl in months(d0, d1):
         x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
@@ -409,7 +409,6 @@ CSS = s4.CSS + '''
 .s3-trackbox{container-type:inline-size}
 .s3-track--1000{display:none}
 @container (max-width: 1159.98px){.s3-track--1160{display:none}.s3-track--1000{display:block}}
-.s3-track .month,.s3-track .todaylbl,.s3-track .rotxt{font-size:var(--ip-fs-caption)} /* S3P: track text >= 11px (bundle draws these at 10) */
 .s3-skmeta{display:flex;gap:var(--space-3);align-items:center;min-height:var(--space-5)}
 .s3-skmeta .ip-skel{display:block}
 .s3-sklane{display:grid;grid-template-columns:calc(var(--space-12) + var(--space-8) + var(--space-2)) minmax(0,1fr);align-items:center}

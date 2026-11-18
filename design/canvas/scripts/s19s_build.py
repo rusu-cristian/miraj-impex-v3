@@ -107,8 +107,7 @@ def edit(level, label, value, e=None, focus=True, is_last=True):
     if e:   # the error row keeps the focus in its field (Enter = Salvează ran the check)
         a = 'class="ip-input ip-stree__in is-error"'; assert r.count(a) == 1
         r = r.replace(a, 'class="ip-input ip-stree__in is-error is-focus"')
-        a = f'<p class="ip-err" id="st-e-err">{e}</p>'; assert r.count(a) == 1   # S19P: alert icon, as the panel field errors
-        r = r.replace(a, err('st-e-err', e))
+        assert r.count(err('st-e-err', e)) == 1   # S19P: alert icon, as the panel field errors (SYS10 draws it since FIN13)
     return r
 TREE_BANNER = (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert">{icon("alert", 16)}<div class="s4-grow">'
                '<p class="s4s-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'

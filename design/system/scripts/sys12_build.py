@@ -3,7 +3,7 @@ Names from the kit: Ion Rusu, Dr. Ceban (craft.md §7, illustrative) and petrea 
 State examples (D39): the owner row "Proprietar exemplu", the viewer "Observator exemplu", every login except petrea,
 every last sign-in time, Petrea's deactivated state and both passwords. Farm names are real (farms-sections.json)."""
 import pathlib
-REPO = pathlib.Path('/home/claude/miraj-impex-v3')
+REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
 
 def svg(paths, cls='ip-icon ip-icon--16'):
@@ -187,12 +187,12 @@ SK = ''.join('<tr aria-hidden="true" class="ip-table__skel">' + ''.join(
     + '<td class="ip-users__act"><span class="ip-skel ip-skel--key ip-skel--end"></span></td></tr>' for _ in range(2))
 L.append(('Se încarcă (skeleton, aria-busy)', users('f', SK + '<tr><td colspan="7" class="ip-users__srcell"><span class="ip-sr">Se încarcă utilizatorii</span></td></tr>',
                                                    '<span class="ip-users__wait">Se încarcă.</span>', busy=True)))
-FAIL = ('<div class="ip-banner ip-banner--fault">' + svg(IC['fault']) + '<div class="ip-users__bnrow"><p class="ip-users__bn">'
-        '<b>Utilizatorii nu s-au încărcat.</b> Verifică conexiunea și apasă Reîncearcă.</p>'
-        + btn('Reîncearcă', 'secondary') + '</div></div>')
-# load failed: the status region says it (the Banner has no role, so it is announced once)
-L.append(('Eroare la încărcare (fără tabel)', users('g', '', '– lista nu s-a încărcat', extra=FAIL, table=False,
-                                                     live='Utilizatorii nu s-au încărcat.')))
+# FIN13: the Banner with action (additions.css §49, FIN03): role=alert, the S22 copy in two sentences, the key at the end;
+# the list's status region stays empty (the alert announces it once), as on S22 eroare la încărcare
+FAIL = ('<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">' + svg(IC['fault']) + '<div class="ip-banner__body">'
+        '<p>Utilizatorii nu s-au încărcat.</p><p>Verifică conexiunea la internet, apoi reîncearcă. Poți adăuga un utilizator nou și acum.</p></div>'
+        + btn('Reîncearcă', 'secondary').replace('ip-btn--secondary"', 'ip-btn--secondary ip-banner__key"') + '</div>')
+L.append(('Eroare la încărcare (fără tabel)', users('g', '', '– lista nu s-a încărcat', extra=FAIL, table=False)))
 
 # dialogs (the row menu's actions)
 O.append(('Resetează parola · confirmare (focus pe Anulează)', dialog('h', 'Resetează parola lui Ion Rusu',

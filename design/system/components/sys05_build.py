@@ -1,5 +1,5 @@
 """SYS05: build EntryCardPlus and HallCard preview.html fragments.
-Figures: design/data/extracts/sample-hirbovat-2026.json (16.11.2026 and 09–15.11.2026, sample D27)."""
+Figures: design/data/extracts/sample-hirbovat-2026.json (16.11.2026 and 09.11–15.11.2026, sample D27)."""
 import pathlib
 ROOT = pathlib.Path('/home/claude/miraj-impex-v3/design/system/components')
 N = ' '  # thousands
@@ -25,7 +25,7 @@ def sxl(sex):  # sign in a label: hidden from AT, the word is read instead
     return f'<span class="ip-sex ip-sex--{sex}" aria-hidden="true">{SEXW[sex][0]}</span><span class="ip-sr">{SEXW[sex][1]}</span>'
 def pair(f, m): return f'<span class="ip-pair">{sx("hen", f)}<span class="sep">·</span>{sx("rooster", m)}</span>'
 
-# ---- data (sample 16.11.2026; hints from 15.11 and the 7-day mean 09–15.11) ----
+# ---- data (sample 16.11.2026; hints from 15.11 and the 7-day mean 09.11–15.11) ----
 SEC = {
  'H1.1': dict(alive=(4281, 429), ieri=(3, 1), avg=('1,0', '0,3'), mort=(1, 0), cull=(0, 0)),
  'H1.2': dict(alive=(4275, 437), ieri=(1, 0), avg=('0,6', '0,1'), mort=(1, 0), cull=(0, 0)),
@@ -205,7 +205,7 @@ ec.append(ROW
     + '</div>')
 ec.append(ROW + phone('Fără pierderi azi · bifat', entry('H1.2', 'g', 'nolosses')) + '</div>')
 ec.append('<p class="ip-note" style="margin:0;max-width:1234px">Cifre din eșantionul Hîrbovăț (D27): în viață la începutul zilei <span class="ip-num">16.11.2026</span>, '
-          'ieri = <span class="ip-num">15.11.2026</span>, media 7 zile = <span class="ip-num">09–15.11.2026</span>. Exemple de stare, nu din extras (D39): '
+          'ieri = <span class="ip-num">15.11.2026</span>, media 7 zile = <span class="ip-num">09.11–15.11.2026</span>. Exemple de stare, nu din extras (D39): '
           f'H1.1 {sx("hen")} mortalitate <span class="ip-num">4</span> (abatere), H1.2 {sx("rooster")} <span class="ip-num">{g("4 370")}</span> (refuzat), '
           f'H1.1 {sx("hen")} sacrificare <span class="ip-num">2</span> fără motiv.</p>')
 ec.append(DEMO)

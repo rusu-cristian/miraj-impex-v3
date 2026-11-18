@@ -128,7 +128,7 @@ def key(k, state='', disabled=False, desc=''):
     inner = f'{tile(rec, icon)}<span class="ip-entrykey__txt"><span>{label}</span><span class="ip-note">{hint}</span></span>'
     cls = 'ip-btn ip-btn--secondary ip-entrykey' + (f' {state}' if state else '')
     if disabled:
-        return f'<li><a class="{cls}" role="link" aria-disabled="true"{f' aria-describedby="{desc}"' if desc else ''}>{inner}</a></li>'
+        return f'<li><a class="{cls}" role="link" tabindex="0" aria-disabled="true"{f' aria-describedby="{desc}"' if desc else ''}>{inner}</a></li>'
     return f'<li><a class="{cls}" href="#">{inner}</a></li>'
 
 def keys_block(hid, ks, note='', disabled=False, states=None):

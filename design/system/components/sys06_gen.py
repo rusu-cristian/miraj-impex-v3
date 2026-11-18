@@ -208,13 +208,13 @@ spk = [
     ('<svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--rec-eggs)"><path d="M12 22c4 0 7-3 7-7.5C19 9 16 2 12 2S5 9 5 14.5C5 19 8 22 12 22z"/></svg>Ouat',
      pct(lay[40]), pct(glay[40]), fdec(lay[40] - glay[40], 1, True) + ' puncte',
      spark({w: v for w, v in lay.items() if w >= 3}, glay, '',
-           f'Ouat SAPT 3–40 față de ghid: efectiv {pct(lay[40])} în SAPT 40, maxim {pct(max(lay.values()))}; ghid de la SAPT 7, {pct(glay[40])} în SAPT 40')),
+           f'Ouat sapt. 3–40 față de ghid: efectiv {pct(lay[40])} în sapt. 40, maxim {pct(max(lay.values()))}; ghid de la sapt. 7, {pct(glay[40])} în sapt. 40')),
     ('<svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--rec-feed)"><path d="M12 21V9M12 9c-3 0-4-2-4-5 3 0 4 2 4 5zM12 9c3 0 4-2 4-5-3 0-4 2-4 5zM12 15c-3 0-4-2-4-5 3 0 4 2 4 5zM12 15c3 0 4-2 4-5-3 0-4 2-4 5z"/></svg>Hrană <span class="ip-sex ip-sex--hen">♀</span>',
      f'{fint(fgw["F"][40])} g', f'{gfeed["F"][40]} g', pct((fgw['F'][40] / gfeed['F'][40] - 1) * 100, 1, True),
-     spark(fgw['F'], gfeed['F'], ' ip-spark--hen', f'Hrană găini SAPT {fw}–40 față de ghid, g pe pasăre: {fint(fgw["F"][40])} g în SAPT 40, ghid {gfeed["F"][40]} g')),
+     spark(fgw['F'], gfeed['F'], ' ip-spark--hen', f'Hrană găini sapt. {fw}–40 față de ghid, g pe pasăre: {fint(fgw["F"][40])} g în sapt. 40, ghid {gfeed["F"][40]} g')),
     ('<svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--rec-feed)"><path d="M12 21V9M12 9c-3 0-4-2-4-5 3 0 4 2 4 5zM12 9c3 0 4-2 4-5-3 0-4 2-4 5zM12 15c-3 0-4-2-4-5 3 0 4 2 4 5zM12 15c3 0 4-2 4-5-3 0-4 2-4 5z"/></svg>Hrană <span class="ip-sex ip-sex--rooster">♂</span>',
      f'{fint(fgw["M"][40])} g', f'{gfeed["M"][40]} g', pct((fgw['M'][40] / gfeed['M'][40] - 1) * 100, 1, True),
-     spark(fgw['M'], gfeed['M'], ' ip-spark--rooster', f'Hrană cocoși SAPT {fw}–40 față de ghid, g pe pasăre: {fint(fgw["M"][40])} g în SAPT 40, ghid {gfeed["M"][40]} g')),
+     spark(fgw['M'], gfeed['M'], ' ip-spark--rooster', f'Hrană cocoși sapt. {fw}–40 față de ghid, g pe pasăre: {fint(fgw["M"][40])} g în sapt. 40, ghid {gfeed["M"][40]} g')),
 ]
 v6 = ('<div class="ip-tablescroll" tabindex="0" role="region" aria-label="Curbe mici față de ghid, Hîrbovăț SAPT 40"><table class="ip-table ip-sparktable"><caption class="ip-sr">Hîrbovăț · Seria 2026 față de ghidul Ross 308 ouat, SAPT 40</caption><thead><tr>'
       '<th scope="col">Indicator</th><th scope="col" class="num">SAPT 40</th><th scope="col" class="num">Ghid</th><th scope="col" class="num">Abatere</th><th scope="col">Curba · SAPT 1–40</th></tr></thead><tbody>'

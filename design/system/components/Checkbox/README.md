@@ -1,3 +1,9 @@
 # Checkbox
 
 Binary choice: "Fără pierderi azi", "Toate", farm access. An 18px box; checked = a `control` fill with a white check. 44px hit area.
+
+- **Markup:** `label.ip-check` > `input[type=checkbox].ip-sr` + `span.ip-check__box` (Lucide check, 14px, when ticked; demo `is-checked`) + the label text. The box draws the focus ring (`ip-focus` demo on the box).
+- **Disabled** (additions.css section 44, S21P, D117): only where the box truly can't change, with the reason under it as the hint (`aria-describedby`): `input[disabled]`, or `input[aria-disabled=true]` kept focusable while a script ignores clicks (demo `.is-disabled`). Box `sunken` with a `line` edge, a ticked box keeps its check in `ink-disabled` (no `control` fill), label `ink-disabled`, cursor not-allowed. Preview: the vet's past-day Zilnic ("Pentru zilele trecute cere managerului.", D77).
+- **Error** (section 44): a choice the save refuses, `input[aria-invalid=true][aria-describedby=<error id>]` (demo `.is-error`): the box border turns `fault` at its own hair width; fill, check and focus ring unchanged; the error line under it is the field message (`p.ip-err.ip-fieldmsg`, section 38) naming the fix. A refused box stays live; the save key is `aria-disabled` and described by the same line. A ticked box in error would need an outer fault ring (~1.4:1 on the `control` fill; none drawn yet, D117).
+- **As a form field** (section 44): `div.ip-field > label.ip-check` + hint or error line; the label keeps its 44px hit area but takes `-space-3` above and below, so its text line sits in the form rhythm, hugs its text and paints over the hint. Checkboxes outside an `ip-field` (SexCountRow Toate, EntryCard foot) are unchanged.
+- **Preview:** default, ticked, focus; disabled with its reason; form field with hint (S21 Activ); error (S21 retragere refuzată).

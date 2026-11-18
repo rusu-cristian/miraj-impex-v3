@@ -67,7 +67,7 @@ STATUS = lambda what: f'<p class="ip-sr" role="status">Se încarcă {what} pentr
 
 def ek_off(note_html, u='x'):
     """EntryKeys disabled (SYS08): links without href, aria-disabled, the one reason under the grid."""
-    li = ''.join(f'<li><a class="ip-btn ip-btn--secondary ip-entrykey" role="link" aria-disabled="true" aria-describedby="{u}ek-n">{tile(k)}'
+    li = ''.join(f'<li><a class="ip-btn ip-btn--secondary ip-entrykey" role="link" tabindex="0" aria-disabled="true" aria-describedby="{u}ek-n">{tile(k)}'
                  f'<span class="ip-entrykey__txt"><span>{lb}</span><span class="ip-note">{hint}</span></span></a></li>' for k, lb, hint, _ in A.KEYS[:3])
     return (f'<section class="ip-entrykeys" aria-labelledby="{u}ek"><h2 class="ip-cap" id="{u}ek">Înregistrează</h2><ul class="ip-entrykeys__list">{li}</ul>'
             f'<p class="ip-note" id="{u}ek-n">{note_html}</p></section>')
@@ -195,7 +195,6 @@ VIEWER_D = f'<div class="s4-shell">{v_sidebar()}<main class="s4-main">\n{"".join
 for v in (VIEWER_P, VIEWER_D):
     assert not any(w in v for w in ('Înregistrează', 'Introdus azi', 'preț', 'lei', 'Completează', 'ip-entrykey', 'ip-unpriced', 'Dr. Ceban ·'))
 CSS_V = A.CSS_P + '''
-.s2-track .month,.s2-track .todaylbl,.s2-track .rotxt{font-size:var(--ip-fs-caption)} /* track text >= 11px, as the desktop boards */
 .s2-phone .ip-fsum__name a{display:inline-block;padding:var(--space-3) var(--space-1);margin:calc(-1 * var(--space-3)) calc(-1 * var(--space-1))} /* touch: 48px hit area, line unchanged */
 .s2-phone .ip-fsum__empty .ip-link{display:inline-flex;align-items:center;min-height:var(--control-h-touch)}'''
 

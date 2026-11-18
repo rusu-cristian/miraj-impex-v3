@@ -232,20 +232,9 @@ table.ip-sr{display:block}
 .ip-readout :focus-visible,.ip-readout .ip-focus{outline-color:var(--readout-ok)}
 
 /* ---------- 6. Sidebar series selector ---------- */
-/* An APG select-only combobox under the wordmark. FIN10: boards draw it as the section 53 Select, div.ip-select.ip-series
- * (ip-series = its Sidebar slot); the __btn/__menu/__opt rules below stay only for the SeriesSelector preview until it moves. */
+/* An APG select-only combobox under the wordmark: the section 53 Select, div.ip-select.ip-series (ip-series = its Sidebar
+ * slot). FIN13: the old __btn/__menu/__opt rules are gone (the SeriesSelector preview draws section 53 too). */
 .ip-series{position:relative;margin-bottom:var(--space-2)}
-.ip-series__btn{width:100%;font:inherit;cursor:pointer;text-align:left}
-.ip-series__btn .name{flex:1;font-weight:500;white-space:nowrap}
-.ip-series__btn[aria-expanded="true"]{border-color:var(--ink)}
-.ip-series__menu[hidden]{display:none}
-.ip-series__menu{position:absolute;top:calc(100% + var(--space-1));left:0;right:0;z-index:2;min-width:0}
-.ip-series__opt{cursor:pointer;justify-content:flex-start;gap:var(--space-2)}
-.ip-series__opt .chk{width:var(--space-4);display:inline-flex;flex:none;color:var(--ink)}
-.ip-series__opt .txt{display:flex;flex-direction:column;flex:1;min-width:0}
-.ip-series__opt .txt .top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
-.ip-series__opt .txt b{font-weight:500}
-.ip-series__opt .txt > .ip-num{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
 a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them as spans) */
 
 /* ---------- 7. FilterBar · Interval ---------- */
@@ -709,23 +698,11 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-sexrows--pick .ip-sexrow__sel{flex-basis:100%}
 .ip-sexrows--pick .ip-sexrow__alive{margin-left:0}
 .ip-sexrows--pick .ip-sexrow:last-child{padding-bottom:0} /* no totals line under the one row */
-/* FIN10: boards draw this combobox as the section 53 Select (div.ip-select inside .ip-sexrow__sel); the __btn/__menu rules
- * below stay only for the SexCountRow preview (sys07_build) until it moves.
- * SectionSelect in a user-added row: an APG select-only combobox (as the SeriesSelector), section code in Sans 500,
- * placeholder "Alege" ink-muted; the listbox (ip-menu) under it. Sections already in the list are aria-disabled with
- * the reason "în listă" (as "sursa"); empty sections say "goală". On phone it opens as a BottomSheet (SectionSelect). */
+/* SectionSelect in a user-added row (and the S9 Din row): the section 53 Select (div.ip-select inside .ip-sexrow__sel),
+ * section code in b (500), placeholder "Alege" is-empty. Sections already in the list are aria-disabled with the reason
+ * "în listă" (as "sursa"); empty sections say "goală". On phone it opens as a BottomSheet (section 33). FIN13: the old
+ * __btn/__menu rules are gone (the SexCountRow preview draws section 53 too). */
 .ip-sexrow__sel{position:relative;flex:1;min-width:0}
-.ip-sexrow__btn{width:100%;font:inherit;cursor:pointer;text-align:left}
-.ip-sexrow__btn .name{flex:1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ip-sexrow__btn .name.is-empty{font-weight:400;color:var(--ink-muted)}
-.ip-sexrow__btn > .ip-icon{flex:none;color:var(--ink-secondary)}
-.ip-sexrow__btn[aria-expanded="true"]{border-color:var(--ink)}
-.ip-sexrow__menu{position:absolute;top:calc(100% + var(--space-1));left:0;min-width:100%;z-index:2;list-style:none;margin:0}
-.ip-sexrow__menu[hidden]{display:none}
-.ip-sexrow__menu .ip-menu__item{cursor:pointer}
-.ip-sexrow__menu .ip-menu__item[aria-disabled="true"]{cursor:not-allowed}
-.ip-sexrow__menu .ip-menu__item .ip-note{color:inherit}
-.ip-sexrow__menu .ip-menu__item:not([aria-disabled="true"]) .ip-note{color:var(--ink-muted)}
 /* Labels: the sex sign visible (in its record colour), section + "găini"/"cocoși" for screen readers only. */
 .ip-sexrow__lbl .ip-sex{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-small)}
 /* Message (refusal / duplicate): bundle.css ip-err across the row, under the field it belongs to. */
@@ -1127,7 +1104,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__bn{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
 .ip-gimp__bn > p{margin:0}
 .ip-gimp__bn b{font-weight:500}
-.ip-gimp__bn .ip-sex{line-height:1} /* a coloured ♀/♂ in the text (inline-flex Mono, 18px box) keeps the 13/18 line box (FIN08) */
+.ip-gimp__bn .ip-sex,.ip-gimp__why .ip-sex{line-height:1} /* a coloured ♀/♂ in the text (inline-flex Mono, 18px box) keeps the 13/18 and 12/16 line boxes (FIN08, FIN13) */
 .ip-gimp__errs{margin:0;padding-left:var(--space-4)}
 .ip-gimp__errs .ip-link{font-family:inherit}
 /* Filter bar: caption + SegmentedControl of toggle buttons (aria-pressed). Buttons get the control font back. */
@@ -1210,12 +1187,12 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* Empty (A2): your own row, then an off Lamp "doar tu" + the spec sentence; the head's key is the next step. */
 .ip-users__t tr.ip-users__empty > td{height:auto;padding-block:var(--space-3);white-space:normal;color:var(--ink-secondary)}
 .ip-users__empty .ip-lamp{margin-right:var(--space-3)}
-/* Loading: two section 42 skeleton rows (tr.ip-table__skel, FIN07; aria-busy on the table); a hidden cell names it. Load failed: fault Banner + Reîncearcă. */
+/* Loading: two section 42 skeleton rows (tr.ip-table__skel, FIN07; aria-busy on the table); a hidden cell names it. Load failed: the section 49
+ * Banner with action (FIN13). .ip-users__bn = the sentence of a keyless dialog Banner. */
 .ip-users__t td.ip-users__srcell{height:auto;padding:0;border:0}
 .ip-users__wait{color:var(--ink-muted)}
 .ip-users__bn{margin:0}
 .ip-users__bn b{font-weight:500}
-.ip-users__bnrow{display:flex;flex:1;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-3)}
 /* Dialogs (Resetează parola, Dezactivează, the password): Dialog unchanged; body text and the foot keys, right-aligned. */
 .ip-users__dlg > p{margin:0}
 .ip-users__dfoot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--space-2)}
@@ -1327,9 +1304,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * span.ip-check__box[aria-hidden] (Lucide check when "true", Lucide minus when "mixed") + "Toate secțiunile" + hidden
  * " din Hîrbovăț". aria-pressed "true" = every row has Toate on, "mixed" = some rows, "false" = none; pressing it from
  * "false"/"mixed" turns every row on, from "true" turns every row off (rows get their drafts back). The box is the system
- * Checkbox box, so the key reads as the master of the rows' Toate; the key pulls left by its own padding so the box sits
- * in the rows' Toate column, and a rule splits it from the first row. Phone ip-btn--touch (48), desktop 32. */
-.ip-sexrows__allkey{align-self:flex-start;justify-content:flex-start;padding-inline:var(--space-3);margin:calc(-1 * var(--space-2)) 0 var(--space-2) calc(-1 * var(--space-3))}
+ * Checkbox box, so the key reads as the master of the rows' Toate; the key pulls left by its own padding and its hair
+ * border (FIN13: the box was 1px right of the rows' boxes) so the box sits in the rows' Toate column, and a rule splits it from the first row. Phone ip-btn--touch (48), desktop 32. */
+.ip-sexrows__allkey{align-self:flex-start;justify-content:flex-start;padding-inline:var(--space-3);margin:calc(-1 * var(--space-2)) 0 var(--space-2) calc(-1 * (var(--space-3) + var(--ip-hair)))}
 .ip-sexrows__allkey:is([aria-pressed="true"],[aria-pressed="mixed"]) .ip-check__box{background:var(--control);border-color:var(--control)}
 :where(.ip-sexrows__allkey + .ip-sexrows__list) > .ip-sexrow:first-child{border-top:var(--ip-hair) solid var(--rule);padding-top:var(--space-4)}
 
@@ -1537,14 +1514,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* bundle.css .ip-banner sets its 16px icon at the top of the first 18px text line, 1px high. A hair above and below
  * centres it on that line (replaces the LoginCard-only rule of section 46). Both sides, so a Banner that centres its
  * row (align-items:center, e.g. beside a key) keeps the icon where it was; the 18px margin box never outgrows the line.
- * UserTable load failed (Banner > .ip-users__bnrow: the sentence, then Reîncearcă, wrapping under it when narrow): the
- * sentence takes half the key's spare height above and below (control-h − 1lh), the row aligns to its top, so its first
- * line sits on the key's centre line beside the key and at the top when wrapped; the icon drops by the same amount, so it
- * stays on that first line at any width (was 8px above it). */
+ * (The UserTable load-failed row rules, .ip-users__bnrow, were removed by FIN13: that Banner is section 49's.) */
 .ip-banner > .ip-icon--16{margin-block:var(--ip-hair)}
-.ip-banner > .ip-users__bnrow{align-items:flex-start}
-.ip-banner > .ip-users__bnrow > .ip-users__bn{padding-block:calc((var(--control-h) - 1lh) / 2)}
-.ip-banner:has(> .ip-users__bnrow) > .ip-icon--16{margin-top:calc((var(--control-h) - 1lh) / 2 + var(--ip-hair))}
 
 /* =====================================================================================================
  * FIN02 · Toast placement and the Toast with Anulează, system-wide. Spec: components.md › Additions › FIN02.
@@ -1592,7 +1563,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 /* One-line text beside a key (--1l, fix 1): the body is as tall as the key (control-h) with its line centred, so text,
  * icon and key share one centre line and the Banner keeps the key's height (a Mono figure in the line can make the line box
  * 19-20px; centring, not padding, keeps the Banner at 50). The icon drops by half the key's spare height (control-h − 1lh)
- * plus the hair: section 47's value for the UserTable load-failed row (.ip-users__bnrow, kept for the SYS12 UserRow preview). Only for text that stays one line
+ * plus the hair (the value section 47 once gave the UserTable load-failed row). Only for text that stays one line
  * beside the key at every desktop width; a Banner whose text can wrap or whose key can wrap stays without it. */
 .ip-banner--act.ip-banner--1l > .ip-banner__body{min-height:var(--control-h);justify-content:center}
 .ip-banner--act.ip-banner--1l > .ip-icon--16{margin-top:calc((var(--control-h) - 1lh) / 2 + var(--ip-hair))}
@@ -1780,3 +1751,14 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table__skel .ip-skel--w1{width:min(calc(var(--space-12) * 4), 100%)}
 .ip-table__skel .ip-skel--w2{width:min(calc(var(--space-12) * 3), 100%)}
 .ip-table__skel .ip-skel--w3{width:min(calc(var(--space-12) * 1.5), 100%)}
+
+/* =====================================================================================================
+ * FIN13 · CycleTrack text at the caption size, system-wide. Spec: components.md › CycleTrack, Additions › FIN13.
+ * ===================================================================================================== */
+
+/* ---------- 55. CycleTrack · track text 11px (FIN13) ---------- */
+/* bundle.css draws the azi label, the Readout figure and the month labels of svg.ip-track at 10px, below the craft floor
+ * (caption 11). Every variant (full, compact, phone, farm) draws them at the caption size; S2, S3 and S18 had a screen copy
+ * of this rule (removed). Readout boxes are 56 wide for "SAPT 40" at 11px Mono (52 on phone), so the figure keeps
+ * its sides. Weight, colour and family stay bundle.css's. */
+.ip-track :is(.todaylbl,.rotxt,.month){font-size:var(--ip-fs-caption)}

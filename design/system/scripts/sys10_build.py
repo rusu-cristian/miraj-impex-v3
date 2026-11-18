@@ -52,18 +52,22 @@ def farm_note(fid, retired=0):
 LAMP = {True: '<span class="ip-lamp ip-lamp--ok">cu păsări</span>', False: '<span class="ip-lamp ip-lamp--off">goală</span>'}
 
 def menu_html(mid, code, items, note, open_=False):
-    """items: (label, disabled, sep_before, state). Disabled items point to the note."""
+    """items: (label, disabled, sep_before, state). The note is about Retrage (its effect, or why it is disabled), so only
+    the Retrage item points to it: read once, when Retrage gets focus (FIN13; the menu no longer repeats it). The key's
+    aria-controls names the role=menu element (id = mid), as SYS09."""
     nid = f'{mid}-n'
     out = []
     for label, dis, sep, st in items:
         if sep:
             out.append('<div class="ip-stree__sep" role="separator"></div>')
-        d = f' aria-disabled="true" aria-describedby="{nid}"' if (dis and dis == 'why') else (' aria-disabled="true"' if dis else '')
+        d = ' aria-disabled="true"' if dis else ''
+        if label == 'Retrage':
+            d += f' aria-describedby="{nid}"'
         hp = ' aria-haspopup="dialog"' if label == 'Retrage' else ''  # opens the Retrage Dialog, as SYS09's Șterge
         s = f' {st}' if st and open_ else ''
         out.append(f'<button type="button" class="ip-menu__item{s}" role="menuitem" tabindex="-1"{hp}{d}>{label}</button>')
-    return (f'<div class="ip-menu ip-stree__menu ip-t-body" id="{mid}"{"" if open_ else " hidden"}>'
-            f'<div class="ip-stree__items" role="menu" aria-label="Acțiuni, {code}" aria-describedby="{nid}">{"".join(out)}</div>'
+    return (f'<div class="ip-menu ip-stree__menu ip-t-body"{"" if open_ else " hidden"}>'
+            f'<div class="ip-stree__items" id="{mid}" role="menu" aria-label="Acțiuni, {code}">{"".join(out)}</div>'
             f'<p class="ip-note" id="{nid}">{note}</p></div>')
 
 def act_cell(mid, code, items, note, open_=False, kstate=''):
@@ -123,7 +127,7 @@ def edit_row(p, level, label, value, err=None, focus=False, is_last=True, placeh
     st = ' is-error' if err else (' is-focus' if focus else '')
     inv = f' aria-invalid="true" aria-describedby="{eid}"' if err else ''
     ph = f' placeholder="{placeholder}"' if placeholder else ''
-    e = f'<p class="ip-err" id="{eid}">{err}</p>' if err else ''
+    e = f'<p class="ip-err ip-fieldmsg" id="{eid}">{svg(IC["alert"], "ip-icon ip-icon--14")}<span>{err}</span></p>' if err else ''  # §38 field message with the alert icon (S19P, FIN13)
     return (f'<tr class="ip-stree__edit {lvl}{" is-last" if is_last else ""}"><td colspan="3"><span class="ip-stree__form">'
             f'<label class="ip-label" for="{iid}">{label}</label>'
             f'<span class="ip-input ip-stree__in{st}"><input id="{iid}" type="text" value="{value}" autocomplete="off"{ph}{inv}></span>'

@@ -238,7 +238,7 @@ def track(today_iso, sel='2026', dom=DOM_LIVE):
     act26 = 'Ciclul afișat.' if sel == '2026' else 'Deschide ciclul.'
     assert c25['start_inferred'] and c25['start_date'] == '2025-03-07' and PREV_END == '2026-01-28'  # D54: no start event, ended by emptying (no sale)
     lab25 = f'Seria 2025, ouat, început dedus {ddate(c25["start_date"])} · încheiat prin golire {ddate(PREV_END)}, {PREV_WEEKS} săptămâni, închis. {act25}'
-    lab26 = f'Seria 2026, ouat, din 10.02.2026, deschis, azi SAPT {WK}. Început prin transfer. {act26}'
+    lab26 = f'Seria 2026, ouat, din 10.02.2026, deschis, azi sapt. {WK}. Început prin transfer. {act26}'
     w25 = round(x25b - x25a, 1)
     cur25 = ' aria-current="true"' if sel == '2025' else ''
     sel25 = f'<rect class="sel" x="{x25a}" y="37" width="{w25}" height="2"/>' if sel == '2025' else ''
@@ -249,9 +249,9 @@ def track(today_iso, sel='2026', dom=DOM_LIVE):
         cur26 = ' aria-current="true"' if sel == '2026' else ''
         sel26 = f'<rect class="sel" x="{x26a}" y="37" width="{w26}" height="2"/>' if sel == '2026' else ''
         b26 = f'<a href="#ciclu-seria-2026"{cur26} aria-label="{lab26}"><title>{lab26}</title><rect class="ring" x="{round(x26a-4,1)}" y="12" width="{round(w26+8,1)}" height="30" rx="3"/><rect class="cyc open" x="{x26a}" y="16" width="{w26}" height="18" rx="2"/><text class="cyctxt open" x="{round(x26a+7,1)}" y="29">Seria 2026 · ouat · din 10.02.2026</text><rect class="xfer" x="{round(x26a-1,1)}" y="16" width="3" height="18"/>{sel26}</a>'
-        ro = f'<rect class="ro" x="{round(xt+4,1)}" y="17" width="48" height="16" rx="2"/><text class="rotxt" x="{round(xt+28,1)}" y="28.5" text-anchor="middle">SAPT {WK}</text>'
+        ro = f'<rect class="ro" x="{round(xt+4,1)}" y="17" width="56" height="16" rx="2"/><text class="rotxt" x="{round(xt+32,1)}" y="28.5" text-anchor="middle">SAPT {WK}</text>'  # 56: "SAPT 40" at 11px Mono (FIN13), as S3
         shown = {'2025': ' Afișat: Seria 2025.', '2026': ' Afișat: Seria 2026.'}.get(sel, '')
-        desc = f'Hîrbovăț: Seria 2025 ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, {PREV_WEEKS} săpt., închis; Seria 2026 ouat din 10.02.2026 (transfer), deschis, azi 16.11.2026, SAPT {WK}.{shown}'
+        desc = f'Hîrbovăț: Seria 2025 ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, {PREV_WEEKS} săpt., închis; Seria 2026 ouat din 10.02.2026 (transfer), deschis, azi 16.11.2026, sapt. {WK}.{shown}'
     else:  # empty farm: no open cycle, so no readout next to "azi" and no current block
         b26 = ''; ro = ''
         desc = f'Hîrbovăț: Seria 2025 ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, {PREV_WEEKS} săpt., închis; ferma e goală din 28.01.2026, azi {ddate(today_iso)}. Niciun ciclu deschis.'
@@ -352,7 +352,7 @@ def readout(ng=False):
         grid += f'<line class="{"axis" if p == 0 else "grid"}" x1="{X0}" x2="{X1}" y1="{cy(p)}" y2="{cy(p)}"/><text class="ax" x="{X0-4}" y="{cy(p)+3}" text-anchor="end">{p}%</text>'
     xl = ''.join(f'<text class="ax" x="{cx(w)}" y="{CH-6}" text-anchor="middle">{w}</text>' for w in [1, 10, 20, 30, 40, 45])
     gpart = '' if ng else f'<polygon class="band" points="{band}"/><polyline class="guide" points="{gline}"/>'
-    lbl = f'Ouat Hîrbovăț pe săptămânile ciclului, SAPT 3–{WK}; ciclul nu are ghid' if ng else f'Ouat Hîrbovăț față de ghid, pe săptămânile ciclului, SAPT 3–{WK}; ghid SAPT 7–45'
+    lbl = f'Ouat Hîrbovăț pe săptămânile ciclului, sapt. 3–{WK}; ciclul nu are ghid' if ng else f'Ouat Hîrbovăț față de ghid, pe săptămânile ciclului, sapt. 3–{WK}; ghid sapt. 7–45'  # hidden running text: sapt. (D115, FIN13)
     chart = f'''<svg class="ip-chart" viewBox="0 0 {CW} {CH}" role="group" aria-roledescription="grafic" tabindex="0" aria-label="{lbl}" aria-describedby="lay-help lay-read"><g aria-hidden="true">{grid}{gpart}<polyline class="act" points="{aline}"/><line class="today" x1="{cx(WK)}" x2="{cx(WK)}" y1="{YT-2}" y2="{YB}"/><line class="cur" x1="{cx(WK)}" x2="{cx(WK)}" y1="{YT-2}" y2="{YB}"/><circle class="pt" cx="{cx(WK)}" cy="{cy(a40)}" r="3.5"/>{xl}</g></svg>'''
     if ng:
         rows = [(w, pct(lay_all[w]['lay_pct']), '– fără ghid') for w in aweeks]
@@ -609,7 +609,7 @@ def readout_past():
         grid += f'<line class="{"axis" if v == 0 else "grid"}" x1="{PX0}" x2="{X1}" y1="{py(v)}" y2="{py(v)}"/><text class="ax" x="{PX0-4}" y="{py(v)+3}" text-anchor="end">{n(v)}</text>'
     xl = ''.join(f'<text class="ax" x="{px(w)}" y="{CH-6}" text-anchor="middle">{w}</text>' for w in [1, 10, 20, 30, 40, PFIN])
     aline = ' '.join(f'{px(w)},{py(pall[w]["total_eggs"])}' for w in PWEEKS)
-    lbl = f'Ouă pe săptămână la Hîrbovăț, Seria 2025, SAPT {PWEEKS[0]}–{PFIN}; fără date în ghid pentru ouă pe săptămână'
+    lbl = f'Ouă pe săptămână la Hîrbovăț, Seria 2025, sapt. {PWEEKS[0]}–{PFIN}; fără date în ghid pentru ouă pe săptămână'
     chart = f'<svg class="ip-chart" viewBox="0 0 {CW} {CH}" role="group" aria-roledescription="grafic" tabindex="0" aria-label="{lbl}" aria-describedby="egg-help egg-read"><g aria-hidden="true">{grid}<polyline class="act" points="{aline}"/><line class="cur" x1="{px(PFIN)}" x2="{px(PFIN)}" y1="{YT-2}" y2="{YB}"/><circle class="pt" cx="{px(PFIN)}" cy="{py(fin["total_eggs"])}" r="3.5"/>{xl}</g></svg>'
     rows = [(w, n(pall[w]['total_eggs']), pall[w]['days'], '– fără date în ghid') for w in PWEEKS]
     per = f'{ddate(fin["from"])[:5]}–{ddate(fin["to"])}'

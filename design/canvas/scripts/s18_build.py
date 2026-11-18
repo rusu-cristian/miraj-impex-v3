@@ -151,7 +151,7 @@ def track_svg(TW):
                f'(găini {n(PLC["F"])}, cocoși {n(PLC["M"])}), încheiat prin transfer la Hîrbovăț {dd(X0D)[:5]}–{dd(X1D)}. Deschide ferma la acest ciclu.',
                '#/ferme/telita?ciclu=cyc-telita-2026', marks=place)
     g += block('hirbovat', cH['start_date'], TODAY.isoformat(), t['h26'],
-               f'Hîrbovăț, Seria 2026, ouat, din {dd(cH["start_date"])}, deschis, azi SAPT {WK}. Păsări sosite prin transfer de la Telița '
+               f'Hîrbovăț, Seria 2026, ouat, din {dd(cH["start_date"])}, deschis, azi sapt. {WK}. Păsări sosite prin transfer de la Telița '
                f'{dd(X0D)[:5]}–{dd(X1D)} (găini {n(ARR["F"])}, cocoși {n(ARR["M"])}). Deschide ferma la acest ciclu.',
                '#/ferme/hirbovat?ciclu=cyc-hirbovat-2026', open_=True)
     yt, yb = ly['telita'] + 3 + BH, ly['hirbovat'] + 3; ym = (yt + yb) / 2; xa, xb = tx(X0D), tx(X1D)
@@ -165,7 +165,7 @@ def track_svg(TW):
     desc = (f'2 serii, 2 ferme, 3 cicluri. Seria 2025, închisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, '
             f'{cP["weeks"]} săpt.; la Telița fără date. Seria 2026, deschisă: Telița creștere {dd(cT["start_date"])}–{dd(cT["end_date"])}, {cT["weeks"]} săpt., '
             f'început prin populare; transfer Telița → Hîrbovăț {dd(X0D)[:5]}–{dd(X1D)}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}; '
-            f'Hîrbovăț ouat din {dd(cH["start_date"])}, deschis, azi {dd(TODAY)}, SAPT {WK}.')
+            f'Hîrbovăț ouat din {dd(cH["start_date"])}, deschis, azi {dd(TODAY)}, sapt. {WK}.')
     return (f'<svg class="ip-track s18-track s18-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 LEG = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
@@ -413,7 +413,6 @@ CSS18 = '''
 @container (max-width: 1159.98px){.s18-track--1160{display:none}.s18-track--1000{display:block}}
 @container (max-width: 999.98px){.s18-track--1000{display:none}.s18-track--720{display:block}}
 @container (max-width: 719.98px){.s18-track--720{display:none}.s18-track--560{display:block}} /* fix 1: beside the panel at 1280, drawn 1:1 (text stays 11px, blocks 28px targets) */
-.s18-track .month,.s18-track .todaylbl,.s18-track .rotxt{font-size:var(--ip-fs-caption)} /* track text >= 11px (bundle draws these at 10), as S3P */
 .s18-table{width:100%}
 .s18-table thead th{white-space:nowrap}
 .s18-table td.num,.s18-table td:last-child{white-space:nowrap} /* fix 1: Ghid / Ciclu / Început may wrap, so the table fits 998 px at 1280 */

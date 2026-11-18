@@ -293,7 +293,7 @@ def track_svg(TW, phone=False):
                f'Început prin populare (găini {n(PLC["F"])}, cocoși {n(PLC["M"])}), încheiat prin transfer la Hîrbovăț. Deschide ferma la acest ciclu.',
                '#/ferme/telita?ciclu=cyc-telita-2026', marks=place)
     g += block('hirbovat', cH['start_date'], TODAY.isoformat(), f'{"" if phone else "Seria 2026 · "}ouat · din {dd(dt.date.fromisoformat(cH["start_date"]))}',
-               f'Hîrbovăț, Seria 2026, ouat, din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi SAPT {WK}. Păsări sosite prin transfer de la Telița '
+               f'Hîrbovăț, Seria 2026, ouat, din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi sapt. {WK}. Păsări sosite prin transfer de la Telița '
                f'{dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))} (găini {n(ARR["F"])}, cocoși {n(ARR["M"])}). Deschide ferma la acest ciclu.',
                '#/ferme/hirbovat?ciclu=cyc-hirbovat-2026', open_=True)
     yt, yb = ly['telita'] + 3 + BH, ly['hirbovat'] + 3; ym = (yt + yb) / 2; xa, xb = tx(X0D), tx(X1D)
@@ -309,7 +309,7 @@ def track_svg(TW, phone=False):
         if not phone or ((d.month - 1) % 3 == 0 and d > d0): tk += f'<text class="month" x="{x}" y="{H + 16}" text-anchor="{anc}">{lbl}</text>'
     desc = (f'Seria 2026, 2 ferme. Telița: creștere {dd(dt.date.fromisoformat(cT["start_date"]))}–{dd(dt.date.fromisoformat(cT["end_date"]))}, {cT["weeks"]} săpt., închis, '
             f'început prin populare. Transfer Telița → Hîrbovăț {dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}. '
-            f'Hîrbovăț: ouat din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi {D}, SAPT {WK}.')
+            f'Hîrbovăț: ouat din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi {D}, sapt. {WK}.')
     return (f'<svg class="ip-track s2-track s2-track--{TW}" viewBox="0 0 {TW} {H + 18}" role="group" aria-label="Ciclurile seriei 2026 pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 def track(phone=False):
@@ -385,8 +385,7 @@ CSS_D = s4.CSS + '\n' + s4.CSS_S4 + CSS_SHARED + '''
 .ip-ev--missing .ip-ev__main > .ip-ev__meta{white-space:normal} /* the S4 shell keeps ip-num children of a row on one line; the MissingRow meta wraps in the 5fr column */
 .s2-trackbox{container-type:inline-size}
 .s2-track--1000{display:none}
-@container (max-width: 1159.98px){.s2-track--1160{display:none}.s2-track--1000{display:block}}
-.s2-track .month,.s2-track .todaylbl,.s2-track .rotxt{font-size:var(--ip-fs-caption)} /* track text >= 11px (bundle draws these at 10), as S3P */'''
+@container (max-width: 1159.98px){.s2-track--1160{display:none}.s2-track--1000{display:block}}'''
 
 # ---------- write ----------
 STEM0, TITLE0 = 'S2-acasa', 'S2 · Acasă'
