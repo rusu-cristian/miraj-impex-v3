@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 · Last commit: 1f3ebea
+Updated: 2026-11-18 · Last commit: 8cf3bbb
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 90 / 96 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN11G; all SYS jobs done
+Done 91 / 96 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none; next FIN12; all SYS jobs done
 
 ## Just finished
+- FIN11G skeleton geometry: §54 + scripts/skel.py; loading = loaded geometry at 1440 and 1280 (Readouts, CycleTrack + legend, `ip-stat--skel`, tables share `--ip-colw` share + `--ip-colmin` th::after strut, ≤0.3px; field skeleton S6/S7/S8/S16); S11 se-incarca h 1246, S4 se-incarca 1520 (user OK'd canvas.json edit), S8 911; D132 to review; open: S2 head line 8px, S16 status line, S3 s3-sk*; 1 fix round (1280) (8cf3bbb)
 - FIN11 skeletons: §42 `ip-skel--ch1…4` (replaces ip-gimp__sk*) + `ip-skel--key` (S22 Acțiuni column 40px as loaded); S11 → §35 readouts skeleton (se-incarca h 1241→1207); S18 → ip-trackskel + §42 rows; s16s-sk* kept (D131, to review); geometry mismatches → FIN11G queued; passed first review (1f3ebea)
 - FIN10 Select: §53 `.ip-select` APG select-only combobox (phone → BottomSheet, aria-haspopup=dialog) replaces ip-series__btn, ip-sexrow__btn, s19-combo, s4-cycsel, S8 Secțiune; rule: options with state → combobox, plain name lists → native; S4 Ghid, S18 Ferma de creștere, S10 Fermă now comboboxes; ink-secondary chevron, phone 17px (D130, to review); 180 boards, canvas.json unchanged; 1 fix round (dup CSS, S8, S9 focus) (bcba5b4)
 - FIN09 formats: date+time "16.11.2026, 08:34" everywhere (EventRow meta too); thousands U+202F via n(); ranges en dash unspaced, start drops only a shared year ("10.11–16.11.2026"), current-week day windows and period tables may drop years (D129, to review); 65 boards, S14 telefon h 2725→2709; s17s/s18s must rerun before s17/s18 renders; 1 fix round (stale shots) (0d4458e)
@@ -73,7 +74,7 @@ Done 90 / 96 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN11G → FIN12 → … → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN12 → FIN13 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -136,6 +137,7 @@ Done 90 / 96 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - FIN09: 65 boards (S2, S3, S4/S4S/S4T, S7/S7S, S9, S10, S11, S13, S14/S14S, S16S, S17, S18, S20) + canvas.json (S14 telefon h)
 - FIN10: project/additions.css (§53) + 180 boards (every desktop board via the Sidebar series selector; S8, S9, S10, S16–S19)
 - FIN11: project/additions.css (§29, §35, §42) + 23 boards (S11 ×7, S12 ×5, S13, S18 ×8, S20, S22) + canvas.json (S11 se-incarca h)
+- FIN11G: project/additions.css (§54) + 163 boards + canvas.json (S4 se-incarca 1520, S8 se-incarca 911, S11 se-incarca 1246)
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
