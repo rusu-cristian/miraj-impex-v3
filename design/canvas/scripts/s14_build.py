@@ -1,6 +1,6 @@
 """S14 · Rapoarte · Producție (desktop 1440): spec D3 weekly table per farm › section (hall) by guide week, vs the guide,
 with Export. Owner view on 16.11.2026 (Hîrbovăț · Seria 2026, period "Ciclul curent"), plus state boards.
-python3 -I s14_build.py <repo_root> [heights.json] [--canvas]   (--canvas also writes the S14 board heights into canvas.json)
+python3 -I s14_build.py <repo_root> [heights.json] [--canvas]   (--canvas also writes the S14 board entries into canvas.json)
 Reuses: s11_build (Rapoarte shell: sidebar with Rapoarte current, section heads, Export in the FilterBar end), s4t_build
 (S4 Producție tab: Readout + GuideChart, Stat, framed DataTable region with §32 row headers, table foot, formats .5 up),
 s4s_build (shell, skeletons, empty box, no-guide banner/readout, Seria 2025 readout + stats, write()).
@@ -16,7 +16,9 @@ def _load(name):
 t4 = _load('s4t_build')   # reads sys.argv[1] (repo root)
 s11 = _load('s11_build')  # reads sys.argv[2] as its heights only if given (harmless: it writes nothing on import)
 s4 = t4.s4
-HEIGHTS = json.loads(pathlib.Path(sys.argv[2]).read_text()) if len(sys.argv) > 2 and pathlib.Path(sys.argv[2]).exists() else {}
+sys.path.insert(0, str(HERE)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s14_heights.json')  # heights default: s14_heights.json
+HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 
 n, sgn, pct, num, ddate, ddm, lamp, icon = t4.n, t4.sgn, t4.pct, t4.num, s4.ddate, t4.ddm, s4.lamp, s4.icon
 S, GL, WK, TODAY, HALLS, SECTIONS = t4.S, t4.GL, t4.WK, t4.TODAY, t4.HALLS, t4.SECTIONS
@@ -324,12 +326,10 @@ BOARDS = [
  (STEM + '--fara-ghid', 'S14 · Rapoarte · Producție · fără ghid', lambda: page('noguide')),
  (STEM + '--seria-2025', 'S14 · Rapoarte · Producție · Seria 2025 (ciclu închis)', lambda: page('past')),
 ]
-def canvas_heights():  # --canvas: set the S14 boards' h in the local canvas.json from the heights file (nothing else changes)
-    cp = HERE.parent / 'project' / 'canvas.json'; src = cp.read_text(encoding='utf-8'); cj = json.loads(src)
-    for stem, _, _ in BOARDS: cj['boards'][stem + '.dc.html']['h'] = HEIGHTS.get(stem, 1024)
-    out = json.dumps(cj, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(out) == cj; cp.write_text(out, encoding='utf-8')
+def canvas_heights():  # --canvas: the S14 boards' entries (h from the heights file; x/y kept, canvas_rows.py)
+    c = CR.load(ROOT); CR.place(c, STEM, [(s, 1440, HEIGHTS.get(s, 1024), t) for s, t, _ in BOARDS])
+    CR.save(ROOT, c)
 if __name__ == '__main__':
     for stem, title, fn in BOARDS:
         s4.write(stem, title, fn(), '', H=HEIGHTS.get(stem, 1024), css=CSS)
-    if '--canvas' in sys.argv[3:]: canvas_heights()
+    if CANVAS: canvas_heights()

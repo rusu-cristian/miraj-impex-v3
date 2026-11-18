@@ -1,7 +1,7 @@
 """S15S · Introdus azi · state boards (spec C8, SYS09, D70, D98; design/notes/S15.md state list), built on s15_build.py.
 python3 -I s15s_build.py <repo_root> [--canvas]
-Imports s15_build with s15_heights.json (it rewrites the 3 S15 boards, S2/S7 boards and the S15 canvas.json entries
-byte-identical) and reuses its rows (SYS09 act_row through s2_build), group heads, page head, phone viewport (s2s_build
+Imports s15_build with s15_heights.json (it rewrites the 3 S15 boards and S2/S7 boards byte-identical,
+never canvas.json) and reuses its rows (SYS09 act_row through s2_build), group heads, page head, phone viewport (s2s_build
 pscreen) and CSS. Toast + Anulează from additions.css §48 (FIN02); Banner, Dialog, skeleton rows as S2S.
 Boards (phones 390×844 viewports, D60; the desktop a page at 1440):
 - se-incarca            vet · head known (route + user), two skeleton lists, hidden status line
@@ -15,8 +15,8 @@ Boards (phones 390×844 viewports, D60; the desktop a page at 1440):
                         each group head, as MissingRow; Telița has nothing, closed 28.02.2026)
 - desktop               vet · 16.11 at 1440: the whole page, inline Editează / Șterge keys (list ≥ 480px, SYS09 C)
 Writes design/canvas/project/S15-introdus-azi--<state>.dc.html, /tmp/s15/<stem>.html (phones), /tmp/s4s/<stem>.html
-(desktop), /tmp/s15/states.json; --canvas adds these entries to the S15 row (y 27292) after x 940: phones from x 1410
-step 470, then the desktop."""
+(desktop), /tmp/s15/states.json; --canvas adds these entries to the S15 row after the 3 S15 boards: phones from x 1410
+step 470, then the desktop (canvas_rows.py: on a rerun every entry keeps x/y)."""
 import sys, json, pathlib, importlib
 
 ARGS = sys.argv[1:]
@@ -194,17 +194,9 @@ for slug, state, kind, body in boards:
         out.append({'stem': stem, 'title': ttl, 'h': h, 'w': 1440, 'fixed': False})
 pathlib.Path('/tmp/s15/states.json').write_text(json.dumps(out, ensure_ascii=False))
 
-if CANVAS:  # S15 row y 27292: after the 3 S15 boards (x 0/470/940), phones from x 1410 step 470, then the desktop
-    cp = ROOT / 'design/canvas/project/canvas.json'
-    c = json.loads(cp.read_text(encoding='utf-8'))
-    Y = c['boards'][f'{STEM0}.dc.html']['y']; assert Y == 27292
-    assert c['boards'][f'{STEM0}--sterge-confirmare.dc.html']['x'] == 940
-    x = 1410
-    for b in out:
-        k = f'{b["stem"]}.dc.html'
-        e = {'x': x, 'y': Y, 'w': b['w'], 'h': b['h'], 'title': b['title']}
-        if b['w'] == 1440: e = {'x': x, 'y': Y, 'w': 1440, 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-        c['boards'][k] = e; x += b['w'] + 80
-        if k not in c['order']: c['order'].append(k)
-    cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('canvas S15 states row y', Y, 'ends at x', x - 80)
+if CANVAS:  # S15 row: the 3 S15 boards (x 0/470/940), these phones, then the desktop
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM0, [b['stem'] for b in Q.out] + [(b['stem'], b['w'], b['h'], b['title']) for b in out], 0)
+    CR.save(ROOT, c)
+    print('canvas: S15 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

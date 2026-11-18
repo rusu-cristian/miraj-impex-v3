@@ -11,13 +11,13 @@ Boards (phones, 390):
 - S15-introdus-azi--sterge-confirmare  vet · Dialog over the page, Șterge Mortalitate H4.2 (no reason, D70 A; focus Anulează)
 Reuses s2s_build (imports s2_build, which rewrites S2/S7 boards byte-identical): act_row (SYS09), head, pagehead,
 tabbar, phone shell, pscreen (390×844 viewport), CSS_PS (S2 phone + sstate_css VIEW/BANNER/MODAL + EmptyState box).
-python3 -I s15_build.py <repo_root> [s15_heights.json]
-Writes design/canvas/project/S15-introdus-azi[--<state>].dc.html, /tmp/s15/<stem>.html, /tmp/s15/boards.json, and the
-S15 entries of canvas.json (new row below the lowest row: y = row y + tallest h + 120; purely additive)."""
+python3 -I s15_build.py <repo_root> [s15_heights.json] [--canvas]
+Writes design/canvas/project/S15-introdus-azi[--<state>].dc.html, /tmp/s15/<stem>.html, /tmp/s15/boards.json, and, with
+--canvas only, the S15 entries of canvas.json (canvas_rows.py: entries keep x/y; a new row goes below the lowest)."""
 import sys, json, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1]).resolve()
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s15_heights.json'); ROOT = ROOT.resolve()  # heights default: s15_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 HS = json.loads(HP.read_text()) if HP and HP.exists() else {}
 sys.path.insert(0, str(HERE))
@@ -208,16 +208,8 @@ out = [write(STEM0, f'{TITLE0} · vet', VET, CSS_FULL, HS.get(STEM0, 844), False
        write(f'{STEM0}--sterge-confirmare', f'{TITLE0} · vet · Șterge · confirmare', DLG, CSS_VP, 844, True)]
 pathlib.Path('/tmp/s15/boards.json').write_text(json.dumps(out, ensure_ascii=False))
 
-# canvas.json: new row below the lowest row (S8: y 26059 + tallest 1113 + 120), 80 px gaps, purely additive
-cp = ROOT / 'design/canvas/project/canvas.json'
-c = json.loads(cp.read_text(encoding='utf-8'))
-others = {k: v for k, v in c['boards'].items() if not k.startswith('S15-')}
-ly = max(v['y'] for v in others.values()); Y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-assert Y == 26059 + 1113 + 120 == 27292, Y
-x = 0
-for b in out:
-    k = f'{b["stem"]}.dc.html'
-    c['boards'][k] = {'x': x, 'y': Y, 'w': 390, 'h': b['h'], 'title': b['title']}; x += 390 + 80
-    if k not in c['order']: c['order'].append(k)
-cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-print('canvas S15 row y', Y)
+if CANVAS:  # S15 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM0, [(b['stem'], b['w'], b['h'], b['title']) for b in out])
+    CR.save(ROOT, c)
+    print('canvas: S15 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

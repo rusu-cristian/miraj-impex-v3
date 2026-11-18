@@ -179,18 +179,10 @@ prev = json.loads(pathlib.Path('/tmp/s17/boards.json').read_text())
 assert [b['stem'] for b in prev] == [s for s, _, _ in Y.DESK] + [s for s, _, _ in Y.PHONE]
 pathlib.Path('/tmp/s17/boards.json').write_text(json.dumps(prev + [{'stem': s, 'w': w, 'h': h} for s, _, h, w in out]))
 
-if CANVAS:  # S17 row: new desktops after the 5 S17 desktops, the S17 phone moved after them (x only), the new phone after it
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    B = c['boards']; y = B[f'{STEM}.dc.html']['y']; assert y == 30164
-    desk = [B[f'{s}.dc.html'] for s, _, _ in Y.DESK]; assert [b['x'] for b in desk] == [0, 1520, 3040, 4560, 6080]
-    x = desk[-1]['x'] + 1440 + 80
-    for s, t, h, w in [o for o in out if o[3] == 1440]:
-        B[f'{s}.dc.html'] = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t}; x += w + 80
-    B[f'{STEM}--telefon.dc.html']['x'] = x; x += 390 + 80
-    for s, t, h, w in [o for o in out if o[3] == 390]:
-        B[f'{s}.dc.html'] = {'x': x, 'y': y, 'w': w, 'h': h, 'title': t}; x += w + 80
-    for s, _, _, _ in out:
-        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S17 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S17 row: S17 desktops, these desktops, the S17 phone, these phones
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    new = lambda W: [(s, w, h, t) for s, t, h, w in out if w == W]
+    x = CR.place(c, STEM, [s for s, _, _ in Y.DESK] + new(1440) + [s for s, _, _ in Y.PHONE] + new(390), 0)
+    CR.save(ROOT, c)
+    print('canvas: S17 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

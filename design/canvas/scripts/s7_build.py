@@ -9,7 +9,8 @@ Writes design/canvas/project/S7-hrana-zilnica.dc.html and /tmp/s7/S7-hrana-zilni
 import sys, json, pathlib, datetime as dt
 
 ROOT = pathlib.Path(sys.argv[1])
-H = int(sys.argv[2]) if len(sys.argv) > 2 else 2400
+A = [a for a in sys.argv[1:] if a != '--canvas']  # --canvas: no canvas step (entries kept)
+H = int(A[1]) if len(A) > 1 else 3162  # S7P height (s7s/s6 pass 3162 too)
 EX = ROOT / 'design/data/extracts'
 S = json.load(open(EX / 'sample-hirbovat-2026.json', encoding='utf-8'))
 GL = json.load(open(EX / 'guide-laying.json', encoding='utf-8'))

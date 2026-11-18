@@ -1,5 +1,5 @@
 """Build S3 · Seria 2026 (series scope page, desktop 1440) and its state boards from the extracts.
-python3 -I s3_build.py <repo_root> [heights.json]
+python3 -I s3_build.py <repo_root> [heights.json] [--canvas]
 Reuses the S4 shell (s4s_build.py: sidebar, icons, SexCount/Lamp helpers, number formats, board writer), so the
 sidebar and formats can't drift between scope pages. % without space (D46). Writes
 design/canvas/project/S3-seria-2026[--<state>].dc.html (and plain wrappers in /tmp/s4s/)."""
@@ -9,7 +9,9 @@ spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__
 s4 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
 EX = s4.EX
 n, pct, ddate, icon, lamp, pair, sg, F, M = s4.n, s4.pct, s4.ddate, s4.icon, s4.lamp, s4.pair, s4.sg, s4.F, s4.M
-HEIGHTS = json.loads(pathlib.Path(sys.argv[2]).read_text()) if len(sys.argv) > 2 else {}
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s3_heights.json')  # heights default: s3_heights.json
+HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 
 def J(name): return json.load(open(EX / name, encoding='utf-8'))
 CY, PL, TR, CL, MT, WW, GG, FD = (J('cycles.json'), J('placement-seria2026.json'), J('transfers-seria2026.json'), J('counts-latest.json'),
@@ -438,3 +440,6 @@ BOARDS = [
 if __name__ == '__main__':
     for stem, title, mode in BOARDS:
         s4.write(stem, title, page(mode), H=HEIGHTS.get(stem, 1400), css=CSS)
+    if CANVAS:  # S3 row (was s3_canvas.py): entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+        c = CR.load(ROOT); CR.place(c, B, [(s, 1440, HEIGHTS.get(s, 1400), t) for s, t, _ in BOARDS])
+        CR.save(ROOT, c)

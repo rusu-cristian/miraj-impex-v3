@@ -384,23 +384,11 @@ S18_OUT = json.loads(pathlib.Path('/tmp/s18/boards.json').read_text())
 assert [b['stem'] for b in S18_OUT] == [STEM, STEM + '--serie-noua', STEM + '--telefon', STEM + '--telefon-serie-noua', STEM + '--telefon-refuzat']
 pathlib.Path('/tmp/s18/boards.json').write_text(json.dumps(S18_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 
-if CANVAS:  # same row as S18 (y 32813): S18 desktops, then these desktops, then the S18 phones (x moved), then these phones
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    y = c['boards'][STEM + '.dc.html']['y']; assert y == 32813
-    old = [f'{b["stem"]}.dc.html' for b in S18_OUT]
-    assert [c['boards'][k]['x'] for k in old] in ([0, 1520, 3040, 3510, 3980], [0, 1520, 15200, 15670, 16140])   # after s18_build --canvas, or a rerun
-    seq = old[:2] + [f'{b["stem"]}.dc.html' for b in out if b['w'] == 1440] + old[2:] + [f'{b["stem"]}.dc.html' for b in out if b['w'] == 390]
-    new = {f'{b["stem"]}.dc.html': b for b in out}
-    x = 0
-    for k in seq:
-        if k in new:
-            b = new[k]
-            c['boards'][k] = ({'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']} if b['w'] == 1440
-                              else {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'title': b['title']})
-            if k not in c['order']: c['order'].append(k)
-        else:
-            c['boards'][k]['x'] = x
-        x += c['boards'][k]['w'] + 80
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S18 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S18 row: S18 desktops, these desktops, the S18 phones, these phones
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    old = [b['stem'] for b in S18_OUT]
+    new = lambda w: [(b['stem'], w, b['h'], b['title']) for b in out if b['w'] == w]
+    x = CR.place(c, STEM, old[:2] + new(1440) + old[2:] + new(390), 0)
+    CR.save(ROOT, c)
+    print('canvas: S18 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

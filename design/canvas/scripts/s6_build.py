@@ -8,13 +8,13 @@ Composed from system classes only: FormHeader, DateField (s7_build shell), HallC
 CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). Screen-only CSS beyond S7's: .s6-nobr
 (S6P: keeps "din ♀ 8 475" on one line). Field names = section heading + label via aria-labelledby (S6P).
 One tall phone board (canvas.md: taller h for a long scrolling form), SaveBar sticky at the foot, as S7.
-python3 -I s6_build.py <repo_root> [heights.json]
+python3 -I s6_build.py <repo_root> [heights.json, default s6_heights.json]
 Imports s7_build (it rewrites the S7 default board at 3162, byte-identical). Writes
 design/canvas/project/S6-zilnic.dc.html and /tmp/s6/S6-zilnic.html (plain wrapper for renders)."""
 import sys, json, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1])
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s6_heights.json')  # heights default: s6_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 STEM, TITLE = 'S6-zilnic', 'S6 · Zilnic'
 H = json.loads(HP.read_text())[STEM] if HP and HP.exists() else 3400

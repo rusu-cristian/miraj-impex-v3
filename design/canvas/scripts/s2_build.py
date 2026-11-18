@@ -16,10 +16,8 @@ Writes design/canvas/project/S2-acasa[--<role>].dc.html, /tmp/s2/<stem>.html (ph
 --canvas also sets the S2 boards in design/canvas/project/canvas.json (new row below the lowest one, phones first, D74)."""
 import sys, re, json, pathlib, importlib, datetime as dt
 
-ARGS = sys.argv[1:]
-CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
-ROOT = pathlib.Path(ARGS[0])
-HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s2_heights.json')  # heights default: s2_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
 sys.path.insert(0, str(HERE))
@@ -441,17 +439,8 @@ for stem, title, body in ((STEM0 + '--manager-desktop', f'{TITLE0} · manager ·
 if HP and not HP.exists():
     HP.write_text(json.dumps({s: h for s, _, h, _ in out}, indent=1))
 
-if CANVAS:  # new row below the lowest other row (row y + tallest h + 120), phones first (D74), 80 px gaps
-    cp = ROOT / 'design/canvas/project/canvas.json'
-    c = json.loads(cp.read_text(encoding='utf-8'))
-    mine = {f'{s}.dc.html' for s, _, _, _ in out}
-    others = {k: v for k, v in c['boards'].items() if k not in mine}
-    ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-    x = 0
-    for s, t, h, w in out:
-        b = {'x': x, 'y': y, 'w': w, 'h': h, 'title': t}
-        if w == 1440: b = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t}
-        c['boards'][f'{s}.dc.html'] = b; x += w + 80
-        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
-    cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('canvas row y', y)
+if CANVAS:  # S2 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM0, [(s, w, h, t) for s, t, h, w in out])
+    CR.save(ROOT, c)
+    print('canvas: S2 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

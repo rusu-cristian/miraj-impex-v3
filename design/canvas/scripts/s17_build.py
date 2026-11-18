@@ -229,17 +229,9 @@ for stem, title, fn in PHONE:
 pathlib.Path('/tmp/s17').mkdir(exist_ok=True)
 pathlib.Path('/tmp/s17/boards.json').write_text(json.dumps([{'stem': s, 'w': w, 'h': h} for s, _, h, w in out]))
 
-if CANVAS:  # new row below the lowest other row (row y + tallest h + 120); desktops first (S17 is desktop-led), 80 px gaps
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    mine = {f'{s}.dc.html' for s, _, _, _ in out}
-    others = {k: v for k, v in c['boards'].items() if k not in mine}
-    ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-    assert (ly, y) == (29020, 30164), (ly, y)
-    x = 0
-    for s, t, h, w in out:
-        b = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t} if w == 1440 else {'x': x, 'y': y, 'w': w, 'h': h, 'title': t}
-        c['boards'][f'{s}.dc.html'] = b; x += w + 80
-        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S17 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S17 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM, [(s, w, h, t) for s, t, h, w in out])
+    CR.save(ROOT, c)
+    print('canvas: S17 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

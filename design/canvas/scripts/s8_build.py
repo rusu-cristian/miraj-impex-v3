@@ -14,12 +14,12 @@ Content (real only):
   3 372 g vs ghid SAPT 20 3 040 g (+10,9%, abatere; ±5% D19). Guide week by the D02 formula from placement 07.10.2025. The
   workbook has no sample size, so Mărime probă stays empty there (optional field).
 - D39 state example: uniformitate typed 819 (for 81,9) on the Hîrbovăț weighing → refused, Salvează disabled.
-python3 -I s8_build.py <repo_root> [heights.json]
+python3 -I s8_build.py <repo_root> [heights.json, default s8_heights.json] [--canvas]
 Writes design/canvas/project/S8-cantarire[--<state>].dc.html and /tmp/s8/<stem>.html (plain wrappers for s8_render.py)."""
 import sys, json, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1])
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s8_heights.json')  # heights default: s8_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 HS = json.loads(HP.read_text()) if HP and HP.exists() else {}
 
@@ -265,16 +265,9 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
     pathlib.Path(f'/tmp/s8/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, H, title)
 
-# ---------- canvas.json: one S8 row below the S14 row (phones only, step 470) ----------
-CJ = ROOT / 'design/canvas/project/canvas.json'
-cj = json.loads(CJ.read_text(encoding='utf-8'))
-s14 = [b for k, b in cj['boards'].items() if k.startswith('S14-')]
-Y = max(b['y'] for b in s14) + max(b['h'] for b in s14 if b['y'] == max(x['y'] for x in s14)) + 120
-Y = max(Y, 26043, max(b['y'] + b['h'] + 120 for k, b in cj['boards'].items() if not k.startswith('S8-')))
-for i, (slug, state, _) in enumerate(boards):
-    stem = STEM0 + (f'--{slug}' if slug else ''); f = stem + '.dc.html'
-    title = TITLE0 + (f' · {state}' if state else '')
-    cj['boards'][f] = {'x': i * 470, 'y': Y, 'w': 390, 'h': HS.get(stem, 844), 'title': title}
-    if f not in cj['order']: cj['order'].append(f)
-CJ.write_text(json.dumps(cj, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')  # same format as before (round-trips byte-identical)
-print('row y', Y)
+if CANVAS:  # S8 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    c = CR.load(ROOT)
+    stems = [(STEM0 + (f'--{slug}' if slug else ''), TITLE0 + (f' · {state}' if state else '')) for slug, state, _ in boards]
+    x = CR.place(c, STEM0, [(s, 390, HS.get(s, 844), t) for s, t in stems])
+    CR.save(ROOT, c)
+    print('canvas: S8 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

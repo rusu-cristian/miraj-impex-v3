@@ -14,12 +14,12 @@ example. The desktop board is 16.11.2026 (D23) over the S4 page: the Din menu op
 S9P: two more phone boards on 16.11.2026 (D23), a D39 example from counts-latest (sample, D27): Toate from Hîrbovăț H4.2 into
 Telița (empty since its cycle closed on 28.02.2026): "alege secțiunea" (the phone SectionSelect BottomSheet, additions.css §33)
 and "ciclu nou" (EffectPreview "Ciclu nou la Telița, sapt. 1" with the CycleTrack open mark).
-python3 -I s9_build.py <repo_root> [heights.json]
+python3 -I s9_build.py <repo_root> [heights.json, default s9_heights.json]
 Writes design/canvas/project/S9-transfer[--<state>].dc.html, /tmp/s9/<stem>.html and /tmp/s4s/<stem>.html (renders)."""
 import sys, re, json, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1])
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s9_heights.json')  # heights default: s9_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
 # phone shell: s7s_build imports s7_build (both rewrite their S7 boards, unchanged)

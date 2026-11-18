@@ -18,7 +18,7 @@ Boards (desktops, 1440×1024)
   --reactivat             D39: Petrea active again, no Dialog (D78): Toast + Anulează, focus back on his Acțiuni key
   --editeaza-dezactivat   D39: Petrea's panel while deactivated: fields editable (they apply when he is reactivated), Cont
                           block with the off lamp, Reactivează contul, Resetează parola aria-disabled + reason
-python3 -I s22s_build.py <repo_root> [--canvas]   run after any `s22_build --canvas` (which resets the phone's x).
+python3 -I s22s_build.py <repo_root> [--canvas]   after `s22_build --canvas` (canvas_rows.py)
 Renders: s22_render.py [--w 1280] <stem suffixes> (the boards are appended to /tmp/s22/boards.json: shots S22-17 … S22-25)."""
 import sys, json, pathlib, importlib.util, io, contextlib
 
@@ -141,23 +141,10 @@ desk('--editeaza-dezactivat', f'Petrea, cont dezactivat · panoul utilizatorului
 
 pathlib.Path('/tmp/s22/boards.json').write_text(json.dumps(S22_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 
-if CANVAS:  # same row as S22 (y 39345): the 16 S22 desktops, then these desktops, then the S22 phone (x moved)
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    y = c['boards'][STEM + '.dc.html']['y']; assert y == 39345
-    old = [f'{b["stem"]}.dc.html' for b in S22_OUT]
-    xs = [c['boards'][k]['x'] for k in old]
-    assert xs[:16] == [i * 1520 for i in range(16)] and xs[16] in (24320, 24320 + len(out) * 1520), xs   # after s22_build --canvas, or a rerun
-    seq = old[:16] + [f'{b["stem"]}.dc.html' for b in out] + old[16:]
-    new = {f'{b["stem"]}.dc.html': b for b in out}
-    x = 0
-    for k in seq:
-        if k in new:
-            b = new[k]
-            c['boards'][k] = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-            if k not in c['order']: c['order'].append(k)
-        else:
-            c['boards'][k]['x'] = x
-        x += c['boards'][k]['w'] + 80
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S22 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S22 row: the S22 desktops, these desktops, then the S22 phone
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    old = [b['stem'] for b in S22_OUT]
+    x = CR.place(c, STEM, old[:16] + [(b['stem'], b['w'], b['h'], b['title']) for b in out] + old[16:], 0)
+    CR.save(ROOT, c)
+    print('canvas: S22 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

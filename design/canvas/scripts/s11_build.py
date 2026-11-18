@@ -1,14 +1,16 @@
 """S11 · Rapoarte · Hrană (desktop 1440): Stoc · Livrări · Consum · Cost, owner view on 16.11.2026, plus state boards.
 One long page with section headings in screens.md order (not Tabs). Reuses the S4 shell (s4s_build.py: sidebar, icons,
 Lamp/SexCount helpers, number formats, board writer). Every figure comes from the extracts.
-python3 -I s11_build.py <repo_root> [heights.json]
+python3 -I s11_build.py <repo_root> [heights.json, default s11_heights.json]
 Writes design/canvas/project/S11-rapoarte-hrana[--<state>].dc.html and /tmp/s4s/<stem>.html (plain wrappers)."""
 import sys, re, json, pathlib, importlib.util, datetime as dt
 from collections import defaultdict
 
 spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__).resolve().with_name('s4s_build.py'))
 s4 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
-HEIGHTS = json.loads(pathlib.Path(sys.argv[2]).read_text()) if len(sys.argv) > 2 and pathlib.Path(sys.argv[2]).exists() else {}
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s11_heights.json')  # heights default: s11_heights.json
+HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 
 EX = s4.EX; S = s4.S; GL = s4.GL; CY = s4.CY
 n, ddate, icon, lamp, F, M = s4.n, s4.ddate, s4.icon, s4.lamp, s4.F, s4.M

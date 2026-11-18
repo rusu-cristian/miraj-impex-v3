@@ -7,7 +7,7 @@ tab bar key off, StockReadout and CycleTrack skeletons are system classes (addit
 Phone state boards are 390×844 viewports (D60) with the BottomTabBar at the foot; desktop boards are pages (1440).
 Every figure comes from the extracts; boards whose example is not in the sample say "exemplu de stare (D39)".
 Writes design/canvas/project/S2-acasa--<state>.dc.html, /tmp/s2/<stem>.html (phones), /tmp/s4s/<stem>.html (desktops),
-/tmp/s2/states.json (for s2_render.py); --canvas sets every S2 board in canvas.json: row y 20922, the 4 default boards
+/tmp/s2/states.json (for s2_render.py); --canvas sets every S2 board in canvas.json: the S2 row's y, the 4 default boards
 first, then the state boards, phones before desktops (D87), 80 px gaps, then the 2 Observator boards (S2V, D89).
 S2V · Acasă for the viewer (D89): the owner layout without Livrări fără preț (no prices, spec §1 roles), no EntryKeys, no
 Introdus azi, no Înregistrează: CycleTrack · De verificat (the lipsă rows read-only: their link opens the section page) ·
@@ -256,20 +256,13 @@ V_OUT.append((f'{STEM0}--observator-desktop', f'{TITLE0} · observator · deskto
 pathlib.Path('/tmp/s2/viewer.json').write_text(json.dumps([{'stem': s, 'w': w, 'h': h} for s, _, h, w in V_OUT], ensure_ascii=False))
 pathlib.Path('/tmp/s2/states.json').write_text(json.dumps([{'stem': s, 'w': w, 'h': h} for s, _, h, w in out], ensure_ascii=False))
 
-if CANVAS:  # S2 row: y 20922; 4 default boards (phones first, D74), then states: phones, then desktops (D87); 80 px gaps
-    cp = ROOT / 'design/canvas/project/canvas.json'
-    c = json.loads(cp.read_text(encoding='utf-8'))
-    Y = 20922
+if CANVAS:  # S2 row: 4 default boards (phones first, D74), then states: phones, then desktops (D87), then S2V viewer phone + desktop
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
     defaults = [(STEM0, f'{TITLE0} · vet · telefon', 390), (STEM0 + '--manager', f'{TITLE0} · manager · telefon', 390),
                 (STEM0 + '--manager-desktop', f'{TITLE0} · manager · desktop', 1440), (STEM0 + '--proprietar-desktop', f'{TITLE0} · proprietar · desktop', 1440)]
-    for s, _, _ in defaults: assert c['boards'][f'{s}.dc.html']['y'] == Y
-    seq = [(s, t, HEIGHTS.get(s, 844 if w == 390 else 1024), w) for s, t, w in defaults] + \
-          [b for b in out if b[3] == 390] + [b for b in out if b[3] == 1440] + V_OUT  # S2V: viewer phone, then desktop
-    x = 0
-    for s, t, h, w in seq:
-        b = {'x': x, 'y': Y, 'w': w, 'h': h, 'title': t}
-        if w == 1440: b = {'x': x, 'y': Y, 'w': w, 'h': h, 'expand': 'fill', 'title': t}
-        c['boards'][f'{s}.dc.html'] = b; x += w + 80
-        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
-    cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('canvas S2 row y', Y, 'boards', len(seq), 'ends at x', x - 80)
+    seq = [(s, w, HEIGHTS.get(s, 844 if w == 390 else 1024), t) for s, t, w in defaults] + \
+          [(s, w, h, t) for s, t, h, w in [b for b in out if b[3] == 390] + [b for b in out if b[3] == 1440] + V_OUT]  # S2V: viewer phone, then desktop
+    x = CR.place(c, STEM0, seq, 0)
+    CR.save(ROOT, c)
+    print('canvas: S2 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

@@ -169,16 +169,10 @@ for stem, title, fn in PHONE:
     A.HEIGHTS[stem] = HEIGHTS.get(stem, 844)
     out.append(A.write_phone(stem, title, fn(), css=CSS_SHEET if fn is phone_sheet else CSS_PHONE))
 
-if CANVAS:
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    row = [v for k, v in c['boards'].items() if k.startswith(STEM + '.') or k.startswith(STEM + '--')]
-    base = [c['boards'][f'{s}.dc.html'] for s, _, _ in X.BOARDS]
-    y = base[0]['y']; assert y == 23214 and all(b['y'] == y for b in base)
-    x = max(b['x'] + b['w'] for b in base) + 80
-    for s, t, h, w in out:
-        b = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t} if w == 1440 else {'x': x, 'y': y, 'w': w, 'h': h, 'title': t}
-        c['boards'][f'{s}.dc.html'] = b; x += w + 80
-        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S14 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S14 row: these boards after the 5 S14 boards
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    X0 = max(c['boards'][f'{s}.dc.html']['x'] + c['boards'][f'{s}.dc.html']['w'] for s, _, _ in X.BOARDS) + 80
+    x = CR.place(c, STEM, [(s, w, h, t) for s, t, h, w in out], X0)
+    CR.save(ROOT, c)
+    print('canvas: S14 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

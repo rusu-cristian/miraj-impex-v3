@@ -25,7 +25,7 @@ Boards
 Screen CSS `.s19-*` (Banner action key: FIN, with s7s-banner; the Toast is additions.css §48, FIN02); S19P: the skeleton rows
 are the system `tr.ip-table__skel` (additions.css §42), the Tip error uses §41, the tree error line gets the alert icon. Fix 1: every
 multi-line Banner puts its icon on the first line (s7s-banner); Ghid on Fermă nouă is not required (s19_build).
-python3 -I s19s_build.py <repo_root> [--canvas]   run after any `s19_build --canvas` (which resets the phone's x).
+python3 -I s19s_build.py <repo_root> [--canvas]   after `s19_build --canvas` (canvas_rows.py)
 Renders: s19_render.py <stems> (the new boards are appended to /tmp/s19/boards.json: shots S19-10 … S19-21)."""
 import sys, json, pathlib, importlib.util, io, contextlib
 
@@ -194,23 +194,10 @@ desk('--retrasa-mutata', f'Telița · H5-2 retrasă, apoi H3 mutată în sus · 
 
 pathlib.Path('/tmp/s19/boards.json').write_text(json.dumps(S19_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 
-if CANVAS:  # same row as S19 (y 34557): the S19 desktops, then these desktops, then the S19 phone (x moved)
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    y = c['boards'][STEM + '.dc.html']['y']; assert y == 34557
-    old = [f'{b["stem"]}.dc.html' for b in S19_OUT]
-    xs = [c['boards'][k]['x'] for k in old]
-    assert xs[:9] == [i * 1520 for i in range(9)] and xs[9] in (13680, 13680 + len(out) * 1520), xs   # after s19_build --canvas, or a rerun
-    seq = old[:9] + [f'{b["stem"]}.dc.html' for b in out] + old[9:]
-    new = {f'{b["stem"]}.dc.html': b for b in out}
-    x = 0
-    for k in seq:
-        if k in new:
-            b = new[k]
-            c['boards'][k] = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-            if k not in c['order']: c['order'].append(k)
-        else:
-            c['boards'][k]['x'] = x
-        x += c['boards'][k]['w'] + 80
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S19 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S19 row: the S19 desktops, these desktops, then the S19 phone
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    old = [b['stem'] for b in S19_OUT]
+    x = CR.place(c, STEM, old[:9] + [(b['stem'], b['w'], b['h'], b['title']) for b in out] + old[9:], 0)
+    CR.save(ROOT, c)
+    print('canvas: S19 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

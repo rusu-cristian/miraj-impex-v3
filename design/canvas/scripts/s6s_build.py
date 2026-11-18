@@ -9,8 +9,8 @@ s6s_render.py; line heights are fixed px tokens, so they do not depend on the fo
 Writes design/canvas/project/S6-zilnic--<state>.dc.html and /tmp/s6s/<stem>.html (plain wrappers for renders)."""
 import sys, json, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1]).resolve()
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else pathlib.Path(__file__).resolve().parent / 's6s_heights.json'
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s6s_heights.json'); ROOT = ROOT.resolve()  # --canvas: no canvas step (entries kept)
 HERE = pathlib.Path(__file__).resolve().parent
 SCROLL = json.loads(HP.read_text()).get('scroll', {}) if HP.exists() else {}
 sys.argv = ['s6_build.py', str(ROOT), str(HERE / 's6_heights.json')]

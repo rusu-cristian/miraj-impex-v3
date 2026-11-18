@@ -5,12 +5,12 @@ import (s11_build → s4s_build shell, sidebar, board writer) with the system Si
 Content: the phone boards replay the 10.11.2026 Breeder 2 delivery (sample-hirbovat-2026.json, D27; the spec C5 example):
 24 000 kg, stock 7 450 kg (end of 09.11) → 31 450 kg, entered by Ion Rusu at 11:52 (event log). The desktop board is a new
 delivery on 16.11.2026 with the kg still empty, over the S11 page of that day (stock 28 252 kg, as its Readout).
-python3 -I s13_build.py <repo_root> [heights.json]
+python3 -I s13_build.py <repo_root> [heights.json, default s13_heights.json]
 Writes design/canvas/project/S13-livrare-hrana[--<state>].dc.html, /tmp/s13/<stem>.html and /tmp/s4s/<stem>.html (renders)."""
 import sys, re, json, pathlib, importlib, importlib.util, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1])
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s13_heights.json')  # heights default: s13_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
 # phone shell: s7s_build imports s7_build (both rewrite their S7 boards, unchanged)

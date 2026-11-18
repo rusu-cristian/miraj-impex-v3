@@ -131,18 +131,9 @@ phone('--fara-conexiune', f'fără conexiune · ceban: {D39}',
 pathlib.Path('/tmp/s1/boards.json').write_text(json.dumps([{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 for b in out: print('ok', b['stem'], b['w'], b['h'])
 
-if CANVAS:  # no S1 row was reserved: a new row below the S22 row (row y + tallest h + 120); desktops first, 80 px gaps
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    others = {k: v for k, v in c['boards'].items() if not k.startswith('S1-')}
-    ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-    assert (ly, y) == (39345, 40489), (ly, y)
-    x = 0
-    for b in out:
-        k = f'{b["stem"]}.dc.html'
-        e = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'title': b['title']}
-        if b['w'] == 1440: e = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-        c['boards'][k] = e; x += b['w'] + 80
-        if k not in c['order']: c['order'].append(k)
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S1 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S1 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM, [(b['stem'], b['w'], b['h'], b['title']) for b in out])
+    CR.save(ROOT, c)
+    print('canvas: S1 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

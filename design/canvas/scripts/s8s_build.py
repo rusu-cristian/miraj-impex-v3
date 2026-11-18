@@ -1,6 +1,6 @@
 """S8S · Cântărire state boards (spec C7 + §1 shared rules), appended to the S8 row after its 7 boards (step 470).
 python3 -I s8s_build.py <repo_root> [--canvas]
-Imports s8_build (which rewrites the 7 S8 boards and canvas.json byte-identical, and S7 through s7s_build) and reuses its
+Imports s8_build (which rewrites the 7 S8 boards byte-identical, and S7 through s7s_build; never canvas.json) and reuses its
 FormHeader, DateField, SectionSelect combobox, Sex, Masa medie, Readout (one div.ip-readout__live, additions §38: lamp word + comparison, value and
 caption aria-hidden), values grid, SaveBar summary and screen CSS. Viewport/Banner/skeleton CSS from sstate_css; the phone
 SectionSelect BottomSheet is additions.css §33 (S9P), its scrim anchored as S9 (SC.MODAL). System classes only.
@@ -19,7 +19,7 @@ Content (real only, no D39 example needed):
 - gol · Telița 24.02.2026: the empty form on a growth farm; the comparison waits: lamp "FĂRĂ DATE", "ghid SAPT 21: 2 525 g ·
   scrie masa medie" (s8_build readout() path with no value), Salvează disabled.
 Writes design/canvas/project/S8-cantarire--<state>.dc.html and /tmp/s8/<stem>.html (wrappers for s8_render.py).
---canvas: adds/updates only these S8 entries in canvas.json (boards + order), y = the S8 row, x = 3290 + 470·i."""
+--canvas: adds/updates only these S8 entries in canvas.json (boards + order), y = the S8 row, x = 3290 + 470·i (canvas_rows.py)."""
 import sys, json, pathlib, importlib, io, contextlib, datetime as dt
 
 ROOT = pathlib.Path(sys.argv[1]).resolve()
@@ -29,7 +29,7 @@ HP = HERE / 's8_heights.json'
 sys.argv = ['s8_build.py', str(ROOT), str(HP)]
 sys.path.insert(0, str(HERE))
 with contextlib.redirect_stdout(io.StringIO()):
-    E = importlib.import_module('s8_build')  # rewrites S7 + the 7 S8 boards + canvas.json, byte-identical
+    E = importlib.import_module('s8_build')  # rewrites S7 + the 7 S8 boards, byte-identical
 B, P, SC = E.B, E.P, E.SC
 n, dd, icon, lamp, NB = E.n, E.dd, E.icon, E.lamp, E.NB
 CLS, SIGN = E.CLS, E.SIGN
@@ -201,14 +201,11 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
     pathlib.Path(f'/tmp/s8/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, H, title)
 
-if CANVAS:  # only S8 entries: these boards after the 7 S8 boards on the S8 row, step 470
-    CJ = ROOT / 'design/canvas/project/canvas.json'
-    cj = json.loads(CJ.read_text(encoding='utf-8'))
-    s8 = {k: b for k, b in cj['boards'].items() if k.startswith('S8-')}
-    Y = cj['boards']['S8-cantarire.dc.html']['y']; X0 = max(b['x'] for k, b in s8.items() if k[:-8] not in {f'{STEM0}--{s}' for s, _, _ in boards}) + 470
-    for i, (slug, state, _) in enumerate(boards):
-        stem = f'{STEM0}--{slug}'; f = stem + '.dc.html'
-        cj['boards'][f] = {'x': X0 + i * 470, 'y': Y, 'w': 390, 'h': 844 if slug == 'alege-sectiunea' else HS.get(stem, 844), 'title': f'{TITLE0} · {state}'}
-        if f not in cj['order']: cj['order'].append(f)
-    CJ.write_text(json.dumps(cj, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('canvas: row y', Y, 'x from', X0)
+if CANVAS:  # S8 row: these boards after the other S8 boards, step 470
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    mine = {f'{STEM0}--{s}.dc.html' for s, _, _ in boards}
+    X0 = max(b['x'] for k, b in c['boards'].items() if CR.in_row(k, STEM0) and k not in mine) + 470
+    x = CR.place(c, STEM0, [(f'{STEM0}--{slug}', 390, 844 if slug == 'alege-sectiunea' else HS.get(f'{STEM0}--{slug}', 844), f'{TITLE0} · {state}') for slug, state, _ in boards], X0)
+    CR.save(ROOT, c)
+    print('canvas: S8 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

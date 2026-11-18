@@ -18,14 +18,14 @@ Boards
 - desktop 1440×1024 (16.11.2026, D23, owner): S4 · Păsări (s4t_build) reflowed beside the system SidePanel, scrolled to the
   Jurnal; the H4.1 14.11 row's Corectează key pressed (controls the panel); the record as it is now (♀ 5, "corectat ·
   modificat de Ion Rusu · 15.11.2026, 10:12"), nothing typed, Salvează corecția disabled with its reason.
-python3 -I s16_build.py <repo_root> [s16_heights.json]
-Writes design/canvas/project/S16-corecteaza[--<state>].dc.html, /tmp/s16/<stem>.html (renders) and the S16 entries of
-canvas.json (new row below the lowest row: y = row y + tallest h + 120; purely additive). Imports s4t_build (which loads
+python3 -I s16_build.py <repo_root> [s16_heights.json] [--canvas]
+Writes design/canvas/project/S16-corecteaza[--<state>].dc.html, /tmp/s16/<stem>.html (renders) and, with --canvas only,
+the S16 entries of canvas.json (canvas_rows.py: entries keep x/y; a new row goes below the lowest). Imports s4t_build (which loads
 s4s_build; neither writes on import) and sstate_css (s13-/s9-/s7s- screen pieces shared with S9, S10, S13)."""
 import sys, re, json, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1]).resolve()
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s16_heights.json'); ROOT = ROOT.resolve()  # heights default: s16_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 HS = json.loads(HP.read_text()) if HP and HP.exists() else {}
 sys.path.insert(0, str(HERE))
@@ -279,18 +279,8 @@ out.append(write(STEM0 + '--desktop', f'{TITLE0} · desktop', f'<div class="ip-r
 if HP:
     hs = dict(HS); hs.update({b['stem']: b['h'] for b in out}); HP.write_text(json.dumps(hs, indent=1) + '\n')
 
-# canvas.json: new row below the lowest row (S15: y 27292 + tallest 1608 + 120), phones step 470 from x 0, then the desktop
-cp = ROOT / 'design/canvas/project/canvas.json'
-c = json.loads(cp.read_text(encoding='utf-8'))
-others = {k: v for k, v in c['boards'].items() if not k.startswith('S16-')}
-ly = max(v['y'] for v in others.values()); Y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-assert Y == 27292 + 1608 + 120 == 29020, Y
-x = 0
-for b in out:
-    k = f'{b["stem"]}.dc.html'
-    e = {'x': x, 'y': Y, 'w': b['w'], 'h': b['h'], 'title': b['title']}
-    if b['w'] == 1440: e = {'x': x, 'y': Y, 'w': 1440, 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-    c['boards'][k] = e; x += b['w'] + 80
-    if k not in c['order']: c['order'].append(k)
-cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-print('canvas S16 row y', Y)
+if CANVAS:  # S16 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM0, [(b['stem'], b['w'], b['h'], b['title']) for b in out])
+    CR.save(ROOT, c)
+    print('canvas: S16 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

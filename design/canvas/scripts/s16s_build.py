@@ -1,7 +1,6 @@
 """S16S · Corectează · state boards (spec E1, SYS09, D70/D71, D101; design/notes/S16.md state list), built on s16_build.py.
-python3 -I s16s_build.py <repo_root>
-Imports s16_build with s16_heights.json (it rewrites the 5 S16 boards byte-identical and resets the S16 canvas.json
-entries), reuses its sheet head, record line, CountInputs, Motiv, EffectPreview, Dialog wording, desktop page + panel and
+python3 -I s16s_build.py <repo_root> [--canvas]
+Imports s16_build with s16_heights.json (it rewrites the 5 S16 boards byte-identical, never canvas.json), reuses its sheet head, record line, CountInputs, Motiv, EffectPreview, Dialog wording, desktop page + panel and
 CSS; Toast + Anulează / Banner-with-action CSS from sstate_css (as S9/S10/S15S); desktop scrim = the S4S Dialog rule.
 Boards (phones 390×844, the sheet of additions.css §39; desktops 1440×1024 beside / over S4 · Păsări, 16.11.2026, D23):
 - salvat                     15.11.2026, 10:12: the sheet as the record now is (♀ 5, "corectat · modificat de Ion Rusu ·
@@ -18,12 +17,13 @@ Boards (phones 390×844, the sheet of additions.css §39; desktops 1440×1024 be
 - desktop-sterge-confirmare  Dialog over page + panel (inert), Motiv typed (D39), Șterge enabled, focus on Anulează
 - desktop-dupa-stergere      panel closed, page full width at the Jurnal without the H4.1 14.11 row, Toast + Anulează;
                              focus on the next row's Corectează; page regenerated with the record dropped (s4s DROP)
-Writes design/canvas/project/S16-corecteaza--<state>.dc.html, /tmp/s16/<stem>.html, /tmp/s16/states.json and the canvas.json
+Writes design/canvas/project/S16-corecteaza--<state>.dc.html, /tmp/s16/<stem>.html, /tmp/s16/states.json and (--canvas) the canvas.json
 entries: new phones after x 1410 (x 1880 … 3760), the S16 desktop moved to x 4230 (only its x), new desktops after it
-(step 1520), as S9P/S10P moved their desktop. Run after s16_build.py (which puts the desktop back at x 1880)."""
+(step 1520), as S9P/S10P moved their desktop; only when it adds a board (canvas_rows.py: a rerun keeps every x/y)."""
 import sys, re, json, pathlib, importlib, importlib.util, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1]).resolve()
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, _, CANVAS = CR.args(); ROOT = ROOT.resolve()
 HERE = pathlib.Path(__file__).resolve().parent
 HP = HERE / 's16_heights.json'
 sys.path.insert(0, str(HERE))
@@ -264,20 +264,10 @@ for slug, state, kind, body in boards:
 pathlib.Path('/tmp/s16/states.json').write_text(json.dumps(out, ensure_ascii=False))
 hs = json.loads(HP.read_text()); hs.update({b['stem']: b['h'] for b in out}); HP.write_text(json.dumps(hs, indent=1) + '\n')
 
-# canvas.json: S16 row y 29020 — new phones after x 1410, the S16 desktop moved after them (only its x), new desktops after it
-cp = ROOT / 'design/canvas/project/canvas.json'
-c = json.loads(cp.read_text(encoding='utf-8'))
-D0 = f'{STEM0}--desktop.dc.html'
-Y = c['boards'][D0]['y']; assert Y == 29020 and c['boards'][f'{STEM0}--sterge-confirmare.dc.html']['x'] == 1410
-phones = [b for b in out if b['w'] == 390]; desks = [b for b in out if b['w'] == 1440]
-x = 1880
-for b in phones + [None] + desks:
-    if b is None:
-        c['boards'][D0]['x'] = x; x += 1440 + 80; continue
-    k = f'{b["stem"]}.dc.html'
-    e = {'x': x, 'y': Y, 'w': b['w'], 'h': b['h'], 'title': b['title']}
-    if b['w'] == 1440: e = {'x': x, 'y': Y, 'w': 1440, 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-    c['boards'][k] = e; x += b['w'] + 80
-    if k not in c['order']: c['order'].append(k)
-cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-print('canvas S16 row y', Y, 'desktop x', c['boards'][D0]['x'], 'ends at x', x - 80)
+if CANVAS:  # S16 row: S16 phones, these phones, the S16 desktop, these desktops
+    c = CR.load(ROOT)
+    old = lambda w: [b['stem'] for b in Q.out if b['w'] == w]
+    new = lambda w: [(b['stem'], w, b['h'], b['title']) for b in out if b['w'] == w]
+    x = CR.place(c, STEM0, old(390) + new(390) + old(1440) + new(1440), 0)
+    CR.save(ROOT, c)
+    print('canvas: S16 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)

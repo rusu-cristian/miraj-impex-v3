@@ -5,7 +5,8 @@ the figures and the formats (D46: no space before %) can't drift between them. W
 design/canvas/project/S4-ferma-rezumat.dc.html and /tmp/s4s/S4-ferma-rezumat.html (plain wrapper)."""
 import sys, pathlib, importlib.util
 
-H = int(sys.argv[2]) if len(sys.argv) > 2 else 1874
+A = [a for a in sys.argv[1:] if a != '--canvas']  # --canvas: no canvas step (entries kept)
+H = int(A[1]) if len(A) > 1 else 1874
 spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__).resolve().with_name('s4s_build.py'))
 s4s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4s)  # reads sys.argv[1] (repo root)
 

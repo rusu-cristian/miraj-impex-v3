@@ -398,17 +398,9 @@ h = HEIGHTS.get(STEM + '--telefon', 844)
 out.append(write(STEM + '--telefon', f'{TT} · telefon · doar citire · Petrea: {D39}', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL, 390, h))
 pathlib.Path('/tmp/s22/boards.json').write_text(json.dumps([{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 
-if CANVAS:  # new row below the S21 row (row y + tallest h + 120); desktops first (a Setări page), 80 px gaps
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    others = {k: v for k, v in c['boards'].items() if not k.startswith('S22-')}
-    ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-    assert (ly, y) == (38201, 39345), (ly, y)
-    x = 0
-    for b in out:
-        k = f'{b["stem"]}.dc.html'
-        e = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']} if b['w'] == 1440 else {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'title': b['title']}
-        c['boards'][k] = e; x += b['w'] + 80
-        if k not in c['order']: c['order'].append(k)
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S22 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S22 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM, [(b['stem'], b['w'], b['h'], b['title']) for b in out])
+    CR.save(ROOT, c)
+    print('canvas: S22 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

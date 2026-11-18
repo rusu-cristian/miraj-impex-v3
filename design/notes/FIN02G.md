@@ -1,0 +1,6 @@
+# FIN02G · Generator row safety (18.11.2026)
+- New `design/canvas/scripts/canvas_rows.py` (args/row_y/place/save) used by every build with a canvas step; rules + per-row commands in `design/canvas/scripts/README.md`.
+- canvas.json is written only with `--canvas` (s8/s8s/s15/s16/s16s wrote it on every run); existing entries keep x/y, a row with no entry goes below the lowest; pinned row asserts (y 27292, 29020, (ly, y) pairs, x lists) removed, an overlap check on save replaces them.
+- Heights file defaults to the screen's own `sNN_heights.json` (s3, s6, s8, s9, s10, s11, s12, s13, s14, s15, s16, s2); s7 default height 2400 → 3162; s4/s7 accept `--canvas`; s16s/s3 gained `--canvas`; `s3_canvas.py` removed (wrote canvas.json unconditionally, hard-coded path).
+- Checked in a /tmp clone: every script alone (with/without heights arg, with/without `--canvas`) and every row's order with `--canvas` leave all boards, heights files and canvas.json byte-identical to HEAD; dropping a row's ..s entries and rerunning base + ..s restores HEAD positions. Same full order then run in the repo: git status shows only script changes.
+- No row needed a fallback: S3/S10/S11/S14 rebuild byte-identical with the HEAD scripts (HANDOFF caveat = old script versions).

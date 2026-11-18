@@ -22,7 +22,7 @@ Boards
   --sterge                D39: Ross 308 ouat 2027 saved and used by no cycle (s20_build detail_page(name=, cycles=[])):
                           compact Folosit de line, Șterge ghidul Dialog, focus on Anulează
 No phone detail (D114). Screen CSS `.s20-*` (tokens only): only `.s20-bkey` (the Banner action key, = S19S .s19-bkey, FIN).
-python3 -I s20s_build.py <repo_root> [--canvas]   run after any `s20_build --canvas` (which resets the phone's x).
+python3 -I s20s_build.py <repo_root> [--canvas]   after `s20_build --canvas` (canvas_rows.py)
 Renders: s20_render.py <stems> (the new boards are appended to /tmp/s20/boards.json: shots S20-9 … S20-22)."""
 import sys, json, pathlib, importlib.util, io, contextlib
 
@@ -200,23 +200,10 @@ desk('--sterge', f'Șterge ghidul nefolosit · {D39}: „{NEWN}”, salvat și n
 p = pathlib.Path('/tmp/s20/boards.json')
 p.write_text(json.dumps(S20_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 
-if CANVAS:  # same row as S20 (y 35701): the S20 desktops, then these desktops, then the S20 phone (x moved)
-    cp = ROOT / 'design/canvas/project/canvas.json'; src = cp.read_text(encoding='utf-8'); c = json.loads(src)
-    y = c['boards'][STEM + '.dc.html']['y']; assert y == 35701
-    old = [f'{b["stem"]}.dc.html' for b in S20_OUT]
-    xs = [c['boards'][k]['x'] for k in old]
-    assert xs[:8] == [i * 1520 for i in range(8)] and xs[8] in (12160, 12160 + len(out) * 1520), xs   # after s20_build --canvas, or a rerun
-    seq = old[:8] + [f'{b["stem"]}.dc.html' for b in out] + old[8:]
-    new = {f'{b["stem"]}.dc.html': b for b in out}
-    x = 0
-    for k in seq:
-        if k in new:
-            b = new[k]
-            c['boards'][k] = {'x': x, 'y': y, 'w': b['w'], 'h': b['h'], 'expand': 'fill', 'title': b['title']}
-            if k not in c['order']: c['order'].append(k)
-        else:
-            c['boards'][k]['x'] = x
-        x += c['boards'][k]['w'] + 80
-    txt = json.dumps(c, indent=2, ensure_ascii=False) + ('\n' if src.endswith('\n') else '')
-    assert json.loads(txt) == c; cp.write_text(txt, encoding='utf-8')
-    print('canvas: S20 row y', y, 'ends at x', x - 80)
+if CANVAS:  # S20 row: the S20 desktops, these desktops, then the S20 phone
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+    c = CR.load(ROOT)
+    old = [b['stem'] for b in S20_OUT]
+    x = CR.place(c, STEM, old[:8] + [(b['stem'], b['w'], b['h'], b['title']) for b in out] + old[8:], 0)
+    CR.save(ROOT, c)
+    print('canvas: S20 row y', CR.row_y(c, STEM), 'ends at x', x - 80)

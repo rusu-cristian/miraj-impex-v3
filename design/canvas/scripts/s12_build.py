@@ -4,12 +4,13 @@ Reuses the S4 shell through s11_build.py (sidebar with Rapoarte current, icons, 
 No price is invented: the inputs open empty (D64), so Salvează prețurile is disabled; the error board is the load failure.
 The "în lucru" board (D68) types the last real Breeder 2 price (9,22 lei/kg, 30.10.2026, labelled sample) into the 04.11 row
 with its total derived from kg, and shows the field error on the 06.11 row (0 lei/kg) with focus on it.
-python3 -I s12_build.py <repo_root> [heights.json]
+python3 -I s12_build.py <repo_root> [heights.json, default s12_heights.json]
 Writes design/canvas/project/S12-preturi-hrana[--<state>].dc.html and /tmp/s4s/<stem>.html (plain wrappers)."""
 import sys, json, pathlib, importlib.util
 
-HP = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
-sys.argv = sys.argv[:2]  # s11_build reads argv[2] as its own heights file
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s12_heights.json')  # heights default: s12_heights.json
+sys.argv = sys.argv[:1] + [str(ROOT)]  # s11_build reads argv[2] as its own heights file
 spec = importlib.util.spec_from_file_location('s11_build', pathlib.Path(__file__).resolve().with_name('s11_build.py'))
 s11 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s11)
 HEIGHTS = json.loads(HP.read_text()) if HP and HP.exists() else {}

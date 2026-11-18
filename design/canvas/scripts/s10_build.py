@@ -18,10 +18,8 @@ Writes design/canvas/project/S10-vanzare[--<state>].dc.html, /tmp/s10/<stem>.htm
 --canvas also sets the S10 boards in design/canvas/project/canvas.json (boards + order)."""
 import sys, json, pathlib, importlib, datetime as dt
 
-ARGS = sys.argv[1:]
-CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
-ROOT = pathlib.Path(ARGS[0])
-HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else None
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+ROOT, HP, CANVAS = CR.args('s10_heights.json')  # heights default: s10_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
 # phone shell: s7s_build imports s7_build (both rewrite their S7 boards, unchanged)
@@ -338,20 +336,11 @@ out.append((STEM0 + '--desktop', TITLE0 + ' · desktop', DH, 1440))
 if HP:
     HP.write_text(json.dumps({s: h for s, _, h, _ in out}, indent=1))
 
-if CANVAS:  # new row below the lowest one (row y + tallest h + 120), phones first (D74), 80 px gaps
-    cp = ROOT / 'design/canvas/project/canvas.json'
-    c = json.loads(cp.read_text(encoding='utf-8'))
-    mine = {f'{s}.dc.html' for s, _, _, _ in out}
-    others = {k: v for k, v in c['boards'].items() if k not in mine}
-    ly = max(v['y'] for v in others.values()); y = ly + max(v['h'] for v in others.values() if v['y'] == ly) + 120
-    x = 0
-    for s, t, h, w in out:
-        b = {'x': x, 'y': y, 'w': w, 'h': h, 'title': t}
-        if w == 1440: b = {'x': x, 'y': y, 'w': w, 'h': h, 'expand': 'fill', 'title': t}
-        c['boards'][f'{s}.dc.html'] = b; x += w + 80
-        if f'{s}.dc.html' not in c['order']: c['order'].append(f'{s}.dc.html')
+if CANVAS:  # S10 row, entries keep x/y, a new row goes below the lowest (canvas_rows.py); 80 px gaps
+    c = CR.load(ROOT)
+    x = CR.place(c, STEM0, [(s, w, h, t) for s, t, h, w in out])
     # keep the S10 entries of `order` in board order (S10P inserted the partial board before the desktop one)
-    pos = [i for i, k in enumerate(c['order']) if k in mine]
-    for i, k in zip(pos, [f'{s}.dc.html' for s, _, _, _ in out]): c['order'][i] = k
-    cp.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('canvas row y', y)
+    mine = [f'{s}.dc.html' for s, _, _, _ in out]; pos = [i for i, k in enumerate(c['order']) if k in mine]
+    for i, k in zip(pos, mine): c['order'][i] = k
+    CR.save(ROOT, c)
+    print('canvas: S10 row y', CR.row_y(c, STEM0), 'ends at x', x - 80)
