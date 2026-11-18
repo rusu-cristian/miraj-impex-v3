@@ -258,8 +258,8 @@ def dlg_pw(p, title, ctx_, pw, name):   # OneTimePassword in its Dialog; focus o
     return U['dialog'](p, title, U['otp'](p, ctx_, pw, name, focus='copy'), BTN('Închide', 'primary'))
 FOCUS_NOTE = ('<!-- Focus after {what}: {where}; the Toast (role=status) announces it and keeps Anulează in the tab order. -->')
 def toast(text, what, where):
-    return (FOCUS_NOTE.format(what=what, where=where) + f'<div class="s22-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}'
-            f'<span class="s7s-toast__txt">{text}</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+    return (FOCUS_NOTE.format(what=what, where=where) + f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}'
+            f'<span class="ip-toast__txt">{text}</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 LOADING = f'<div class="s4-block">{users("u", U["SK"] + "<tr><td colspan=\"7\" class=\"ip-users__srcell\"><span class=\"ip-sr\">Se încarcă utilizatorii</span></td></tr>", "<span class=\"ip-users__wait\">Se încarcă.</span>", busy=True)}</div>'
 FAIL = (f'<div class="ip-banner ip-banner--fault">{U["svg"](U["IC"]["fault"])}<div class="ip-users__bnrow"><p class="ip-users__bn">'
         '<b>Utilizatorii nu s-au încărcat.</b> Verifică conexiunea la internet, apoi reîncearcă.</p>'
@@ -310,9 +310,8 @@ CSS22 = '''
 .s22-checks{display:flex;flex-wrap:wrap;gap:0 var(--space-6);margin-block:calc(-1 * var(--space-3))} /* two farm boxes side by side: 44px targets, 20px text line in the form rhythm (as §44) */
 .s22-acct{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s22-state{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--space-3)}
-.s22-keys{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-1)}
-.s22-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, as S18S–S21 (FIN) */'''
-CSS_DESK = M.CSS_DESK + SC.TOAST + SC.BANNER + CSS22
+.s22-keys{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-1)}'''
+CSS_DESK = M.CSS_DESK + SC.BANNER + CSS22
 CSS_PL = M.CSS_PL + CSS22 + '''
 .s22-pn{display:block}
 .s22-pm{display:block;font-weight:400}

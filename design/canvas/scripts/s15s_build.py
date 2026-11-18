@@ -2,7 +2,7 @@
 python3 -I s15s_build.py <repo_root> [--canvas]
 Imports s15_build with s15_heights.json (it rewrites the 3 S15 boards, S2/S7 boards and the S15 canvas.json entries
 byte-identical) and reuses its rows (SYS09 act_row through s2_build), group heads, page head, phone viewport (s2s_build
-pscreen) and CSS. Toast + Anulează CSS from sstate_css.TOAST (as S6S/S7S); Banner, Dialog, skeleton rows as S2S.
+pscreen) and CSS. Toast + Anulează from additions.css §48 (FIN02); Banner, Dialog, skeleton rows as S2S.
 Boards (phones 390×844 viewports, D60; the desktop a page at 1440):
 - se-incarca            vet · head known (route + user), two skeleton lists, hidden status line
 - eroare-la-incarcare   vet · fault Banner naming the day + Reîncearcă (S2S/S12 pattern), no figures
@@ -112,9 +112,9 @@ boards.append(('actiuni-deschis', 'vet · Acțiuni deschis', 'p', Z.pscreen([
 
 # 4 · după ștergere — the H4.2 row is gone, the group head counts without it, Toast with Anulează (graphite, role=status)
 fresh()
-toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{A.icon("check", 16)}'
-         f'<p class="s7s-toast__txt s7-m0">Șters · Mortalitate {DEL} · în viață ♀ {num(n(dF["alive_start"]))}</p>'
-         f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{A.icon("check", 16)}'
+         f'<p class="ip-toast__txt">Șters · Mortalitate {DEL} · în viață ♀ {num(n(dF["alive_start"]))}</p>'
+         f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 boards.append(('dupa-stergere', 'vet · după ștergere', 'p', Z.pscreen([
     Q.pagehead(A.CTX_VET, lead(counts(21))), *groups(skip=DEL), toast], vet=True)))
 
@@ -175,7 +175,7 @@ boards = [(s, t, k, Q.nav_here(b) if k == 'p' else b) for s, t, k, b in boards]
 # ---------- CSS ----------
 CSS_ADD = '''
 .s15s-busy{gap:var(--space-6)} /* the two skeleton lists sit as the groups do (s2-main gap) */'''
-CSS_P = Q.CSS_VP + SC.TOAST + CSS_ADD
+CSS_P = Q.CSS_VP + CSS_ADD
 CSS_D = A.CSS_D + Q.CSS_ADD + SC.REC + '''
 .s4-main > .ip-pagehead h1{margin:0}
 .s15s-desk > *{max-width:calc(var(--space-12) * 20)} /* one reading column: figures and their keys stay within reach (960px) */'''

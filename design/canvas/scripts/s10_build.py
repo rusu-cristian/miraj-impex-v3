@@ -242,8 +242,8 @@ boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (
 ref_save = B.savebar(f'{lamp("fault", "refuzat")}<span>{RS}</span>', f'<span>cel mult {roo(RM)}</span>', SELL_OFF)
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([farm(), DATE, rows('refuz'), buyer(), note(), effect('refuz')], ref_save, view=' s7s-view--end'), 'vp'))
 # 4 · salvat — read-only form scrolled to its end, Toast with Anulează (undo the same day), Vânzare nouă
-toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Vândut · '
-         f'♀ {num(n(TOT[0]))} · ♂ {num(n(TOT[1]))} · Hîrbovăț · ciclul închis</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Vândut · '
+         f'♀ {num(n(TOT[0]))} · ♂ {num(n(TOT[1]))} · Hîrbovăț · ciclul închis</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm('ro'), DATE_RO, rows('ro'), buyer(True), note(True), effect()]
 boards.append(('salvat', 'salvat · exemplu de stare (D39)', screen(saved, B.savebar(sum1(lead='vândut'), f'<span>poți anula până la {num("23:59")}</span>',
               '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Vânzare nouă</button>'), overlay=toast, view=' s7s-view--end'), 'vp'))

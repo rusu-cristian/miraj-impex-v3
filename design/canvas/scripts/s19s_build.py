@@ -22,7 +22,7 @@ Boards
   --redenumeste-cod-gol   D39: Telița, Redenumește H5-2 with the code cleared: error, focus in the field
   --retrasa-mutata        D39: Telița after the Retrage H5-2 Dialog (H5-2 retrasă, listed last, no key) and then Mută în
                           sus on H3 (a 2-a din 5; focus stays on H3's key; live region)
-Screen CSS `.s19-*` (desktop Toast position, Banner action key: FIN, with s7s-toast/s7s-banner); S19P: the skeleton rows
+Screen CSS `.s19-*` (Banner action key: FIN, with s7s-banner; the Toast is additions.css §48, FIN02); S19P: the skeleton rows
 are the system `tr.ip-table__skel` (additions.css §42), the Tip error uses §41, the tree error line gets the alert icon. Fix 1: every
 multi-line Banner puts its icon on the first line (s7s-banner); Ghid on Fermă nouă is not required (s19_build).
 python3 -I s19s_build.py <repo_root> [--canvas]   run after any `s19_build --canvas` (which resets the phone's x).
@@ -119,9 +119,8 @@ MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
 
 # ================================================================= CSS (screen only, tokens only)
 CSS19S = '''
-.s19-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, over the page (as S18S) */
 .s19-bkey{flex:none;align-self:center} /* multi-line Banners: icon on the first line (s7s-banner), the action key stays centred */'''
-CSS_D = M.CSS_DESK + SC.TOAST + CSS19S
+CSS_D = M.CSS_DESK + CSS19S
 
 # ================================================================= write
 out = []
@@ -144,9 +143,9 @@ FOCUS_NOTE = ('<!-- Focus after Salvează ferma: the panel closes and focus retu
 SAVED = shell(M.flist())
 assert SAVED.count(EDK) == 1
 SAVED = SAVED.replace(EDK, FOCUS_NOTE + EDK.replace('class="ip-btn ip-btn--ghost"', 'class="ip-btn ip-btn--ghost ip-focus"'))
-TOAST = (f'<div class="s19-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Telița salvată · '
+TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Telița salvată · '
          f'ghid {GUIDE["g-growth"]} de la următorul ciclu al fermei</span>'
-         '<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+         '<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 desk('--salvat', f'salvat · {D39}: ghidul Teliței ales din „fără ghid”', SAVED + TOAST, hd('--salvat'))
 # 5 · eroare la salvare (D39, the same edit): draft kept, Banner + Reîncearcă (focus) under the fields it covers
 BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),

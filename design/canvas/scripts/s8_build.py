@@ -208,8 +208,8 @@ err = (f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}<
 boards.append(('valoare-refuzata', 'valoare refuzată · exemplu de stare (D39)', screen(form(C, C['w'], dv(C['cv']), str(UNI_BAD), C['size'], uni_err=err),
                B.savebar(rec14() + what(C, C['w']), lamp('fault', 'refuzat') + f'<span>uniformitate <span class="ip-num">{UNI_BAD}%</span></span>', SAVE_OFF))))
 # 5 · salvat: read-only, Toast with Anulează (same day, D07), next step "Cântărire nouă" (as S13 "Livrare nouă", D73)
-toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Salvat · {C["sec"]} '
-         f'{SIGN[C["sx"]]} <span class="ip-num">{n(C["w"])}</span> g</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Salvat · {C["sec"]} '
+         f'{SIGN[C["sx"]]} <span class="ip-num">{n(C["w"])}</span> g</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 boards.append(('salvat', 'salvat', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size'], ro=True),
                B.savebar(rec14() + f'<span>salvat ·</span>{what(C, C["w"])}', '<span>poți modifica până la <span class="ip-num">23:59</span></span>',
                          '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Cântărire nouă</button>'), overlay=toast)))

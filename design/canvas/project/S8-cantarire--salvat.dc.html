@@ -29,11 +29,6 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .s7s-view > .s7-main{flex:none}
 .s7s-view--end{justify-content:flex-end}
-.s7s-toastwrap{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);z-index:3}
-.s7s-toast{display:flex;width:100%;align-items:flex-start}
-.s7s-toast > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s7s-toast__txt{flex:1;min-width:0}
-.s7s-undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
@@ -62,7 +57,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 <dl class="ip-readout__kv"><div><dt>Săpt. trecută · 09.11.2026</dt><dd>4 006<small> g</small></dd></div><div><dt>Diferență</dt><dd>−39<small> g</small></dd></div></dl>
 </section><div class="s8-pair"><div class="ip-field"><label class="ip-label" for="cv">CV <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="cv" type="text" inputmode="decimal" placeholder="–" autocomplete="off" value="7,3" readonly/><span class="suffix">%</span></span></div><div class="ip-field"><label class="ip-label" for="uni">Uniformitate <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="uni" type="text" inputmode="decimal" placeholder="–" autocomplete="off" value="81,9" readonly/><span class="suffix">%</span></span></div><div class="ip-field"><label class="ip-label" for="size">Mărime probă <span class="s13-opt">(opțional)</span></label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="size" type="text" inputmode="numeric" placeholder="–" autocomplete="off" value="78" readonly/><span class="suffix">păsări</span></span></div></div>
 </main>
-<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="s7s-toast__txt">Salvat · H1.1 ♀ <span class="ip-num">3 967</span> g</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>
+<div class="ip-toastwrap"><div class="ip-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="ip-toast__txt">Salvat · H1.1 ♀ <span class="ip-num">3 967</span> g</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>
 </div>
 <div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line"><span class="ip-rec ip-rec--weighing"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span><span>salvat ·</span><span>H1.1 <span class="ip-sex ip-sex--hen">♀ <b>3 967 g</b></span></span></span><span class="ip-ftot-sum__line"><span>poți modifica până la <span class="ip-num">23:59</span></span></span></span><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Cântărire nouă</button></div>
 </div></div>

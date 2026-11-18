@@ -29,11 +29,6 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 .s7s-view{flex:1;min-height:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .s7s-view > .s7-main{flex:none}
 .s7s-view--end{justify-content:flex-end}
-.s7s-toastwrap{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);z-index:3}
-.s7s-toast{display:flex;width:100%;align-items:flex-start}
-.s7s-toast > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s7s-toast__txt{flex:1;min-width:0}
-.s7s-undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}
 .s7s-banner .ip-icon{flex:none;margin-top:var(--ip-hair)}
 .s7s-banner__body{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s7s-banner__body > .ip-btn{margin-top:var(--space-1)}
@@ -69,7 +64,7 @@ html{scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--
 <span class="s9-fxcyc"><span class="ip-cmark ip-cmark--start"><span class="ip-cmark__g" aria-hidden="true"><i class="ip-cmark__blk"></i></span>Ciclul la Hîrbovăț continuă, sapt. 3</span></span>
 </div></div>
 </main>
-<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="s7s-toast__txt">Mutat · ♀ <span class="ip-num">4 383</span> · Telița H2 → Hîrbovăț H4.2 · ciclul Telița închis</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>
+<div class="ip-toastwrap"><div class="ip-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="ip-toast__txt">Mutat · ♀ <span class="ip-num">4 383</span> · Telița H2 → Hîrbovăț H4.2 · ciclul Telița închis</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>
 </div>
 <div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" id="sb-sum"><span class="ip-ftot-sum__line"><span class="ip-rec ip-rec--transfer s13-rec"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span><span>mutat · <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>4 383</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>0</b></span></span></span></span><span class="ip-ftot-sum__line"><span>Ion Rusu ·</span><span>poți anula până la <span class="ip-num">23:59</span></span></span></span><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Transfer nou</button></div>
 </div></div>

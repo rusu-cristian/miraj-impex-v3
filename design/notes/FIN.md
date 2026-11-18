@@ -18,3 +18,9 @@ SectionTree aria-controls (FIN13); EntryCardPlus/HallCard section-first naming; 
 
 ## Decisions for the user to review
 D110–D121 (Claude, recommended); defaults D15–D109 "to review"; flagged D24, D25, D27, D53, D59, D63, D64/D91 (viewer prices vs spec §1), D78/D118 (password departs from spec A2), D95/D02 (guide week formula).
+
+## Generator risk (found in FIN02, fixed by FIN02G)
+- s8_build / s8s_build rewrite canvas.json on every run (even without --canvas, exit 0) and move the S8 row to y 41633; s10 --canvas does the same to S10.
+- s15/s15s/s16/s16s stop on a row assert even without --canvas (pin S15 y 27292, S16 y 29020).
+- s18–s22 base builds fail their row assert with --canvas: run them without it, then the ..s build with --canvas.
+- s8/s9/s10/s12/s13 need their heights file as the 2nd argument (else s10 rewrites S10-vanzare's height).

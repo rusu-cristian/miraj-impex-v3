@@ -145,8 +145,7 @@
 .s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
 .s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */
 .s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */
-.s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}
-.s12-toastwrap{position:absolute;left:calc(var(--sidebar-w) + var(--space-6));bottom:var(--space-6);z-index:4}</style>
+.s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="s4-shell"><nav class="ip-sidebar s4-side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>
@@ -167,7 +166,7 @@
 <div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <div class="s4s-emptybox"><div class="ip-empty"><span class="ip-lamp ip-lamp--off">nimic fără preț</span><p class="s4s-empty-p">Toate livrările au preț.</p><p class="s4s-empty-p">Costul Seria 2026 include toate cele <span class="ip-num">76</span> livrări · <span class="ip-num">1 483 387 kg</span>.</p><a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-cost">Vezi costul hranei</a></div></div>
 </section>
-</main></div><div class="s12-toastwrap"><div class="ip-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Prețuri salvate · <span class="ip-num">4</span> livrări · <span class="ip-num">76 107 kg</span> intră în cost</span></div></div></div>
+</main></div><div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="ip-toast__txt">Prețuri salvate · <span class="ip-num">4</span> livrări · <span class="ip-num">76 107 kg</span> intră în cost</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
 class Component extends DCLogic { renderVals() { return {}; } }

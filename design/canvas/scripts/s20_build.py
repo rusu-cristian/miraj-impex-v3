@@ -371,9 +371,9 @@ FOCUS_NOTE = ('<!-- Focus after Salvează ghidul: the guide detail opens with fo
               '(role=status) announces the save and keeps Anulează in the tab order. -->')
 def saved():
     g = 'g-growth'
-    toast = (f'<div class="s20-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">'
+    toast = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">'
              f'{GUIDE[g]} salvat · {NROWS[g]} de rânduri înlocuite; Telița · Seria 2026 se compară cu ele</span>'
-             '<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+             '<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
     pg = detail_page(g, focus_h1=True)
     a = '<h1 id="g-h1" tabindex="-1">'; assert pg.count(a) == 1
     pg = pg.replace(a, FOCUS_NOTE + '<h1 id="g-h1" tabindex="-1" class="ip-focus">')
@@ -427,9 +427,8 @@ h1[tabindex="-1"]{margin-block:calc((var(--ip-focus-w) + var(--ip-focus-offset))
 .s20-week th[scope=row]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s20-now{margin-left:var(--space-2);font-family:var(--font-sans);white-space:nowrap}
 .s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */
-.s20-clip{height:''' + str(SC.SIDE_H) + '''px;overflow:hidden}
-.s20-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, as S18S/S19S (FIN) */'''
-CSS_DESK = M.CSS_DESK + SC.TOAST + CSS20
+.s20-clip{height:''' + str(SC.SIDE_H) + '''px;overflow:hidden}'''
+CSS_DESK = M.CSS_DESK + CSS20
 CSS_PL = M.CSS_PL + CSS20
 
 # ================================================================= write

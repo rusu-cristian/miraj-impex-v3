@@ -1546,3 +1546,25 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-banner > .ip-users__bnrow{align-items:flex-start}
 .ip-banner > .ip-users__bnrow > .ip-users__bn{padding-block:calc((var(--control-h) - 1lh) / 2)}
 .ip-banner:has(> .ip-users__bnrow) > .ip-icon--16{margin-top:calc((var(--control-h) - 1lh) / 2 + var(--ip-hair))}
+
+/* =====================================================================================================
+ * FIN02 · Toast placement and the Toast with Anulează, system-wide. Spec: components.md › Additions › FIN02.
+ * ===================================================================================================== */
+
+/* ---------- 48. Toast · placement and undo layout (FIN02) ---------- */
+/* div.ip-toastwrap > div.ip-toast[role=status], absolutely placed in the screen's positioned area. Phone (default): inset
+ * space-4 at the foot of the screen's view, which ends above the SaveBar or BottomTabBar, so the Toast never covers them;
+ * in the phone full-screen sheet (section 39) it sits space-4 above the sheet foot (touch keys + space-3 padding + hair edge).
+ * Desktop page (--page): bottom right of the page, space-8 from both edges, over the right column where the SidePanel
+ * opens, at most panel-w wide (longer text wraps); one placement for every desktop Toast. Under a Dialog scrim. */
+.ip-toastwrap{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);z-index:4}
+.ip-toastwrap > .ip-toast{display:flex;width:100%}
+.ip-sidepanel--sheet > .ip-toastwrap{bottom:calc(var(--control-h-touch) + var(--space-3) * 2 + var(--ip-hair) + var(--space-4))}
+.ip-toastwrap--page{left:auto;right:var(--space-8);bottom:var(--space-8);max-width:min(var(--panel-w), 100% - var(--space-8) * 2)}
+/* Toast with Anulează (D-pattern of every save Toast): check icon, the sentence (span or p .ip-toast__txt, wraps), then the
+ * undo key (button.ip-link.ip-toast__undo, on-control). The icon sits on the first line; the key keeps a 48px touch target
+ * (min-height control-h-touch) without growing the Toast (negative block margin back to its 20px line), centred on it. */
+.ip-toast:has(> .ip-toast__txt){align-items:flex-start}
+.ip-toast:has(> .ip-toast__txt) > .ip-icon{flex:none;margin-top:var(--ip-hair)}
+.ip-toast__txt{flex:1;min-width:0;margin:0}
+.ip-toast__undo{background:none;border:0;padding:0 var(--space-2);margin:calc((var(--space-5) - var(--control-h-touch)) / 2) calc(-1 * var(--space-2));min-height:var(--control-h-touch);font:inherit;font-weight:500;flex:none;align-self:center}

@@ -220,9 +220,9 @@ boards = []
 # 1 · telefon — the real 28.02.2026 move typed with Toate, before Mută
 boards.append(('', 'telefon · reluare 28.02.2026', screen(FORM(), B.savebar(sum1(), SUM2, MUTA))))
 # 2 · salvat — read-only form, Toast with Anulează (undo the same day), Transfer nou
-toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Mutat · '
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Mutat · '
          f'♀ <span class="ip-num">{n(QTY)}</span> · Telița H2 → Hîrbovăț H4.2 · ciclul Telița închis</span>'
-         f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+         f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [DATE_RO, pick('ro'), dest('ro'), effect()]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='mutat'), f'<span>{USER} ·</span><span>poți anula până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Transfer nou</button>'), overlay=toast)))
 # 3 · refuzat — ♀ 4 500 typed over the 4 383 alive (D39 state example): row error, preview = fault Banner, Mută disabled;

@@ -124,9 +124,9 @@ boards = []
 # 1 · telefon — the 10.11.2026 delivery typed, before Adaugă
 boards.append(('', 'telefon', screen(FORM(), B.savebar(sum1(), SUM2, ADD))))
 # 2 · salvat — read-only form, C5 Toast (with undo), Livrare nouă
-toast = (f'<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Adăugat · '
+toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Adăugat · '
          f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]} · stoc Hîrbovăț: <span class="ip-num">{n(AFTER)}</span> kg · preț de adăugat de proprietar</span>'
-         f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+         f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm(ro=True), DATE_RO, ftype(ro=True), qty(state='ro'), effect(BEFORE, AFTER, AVG3, DAYS, when='înainte'), note(ro=True), NOPRICE]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='adăugat · '), f'<span>{EV["user"]} ·</span><span><span class="ip-num">{EV["at"][11:]}</span> · fără preț</span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Livrare nouă</button>'), overlay=toast)))
 # 3 · cantitate lipsă — kg left empty (validated on blur): field error naming the fix, Adaugă disabled

@@ -156,7 +156,7 @@ boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([date(TODAY
                hd=head(f'TELIȚA · {dd(TODAY)}'))))
 
 # 8 · salvat — right after Salvează at the foot of the form: Toast (spec C1 copy) + Anulează, read-only, Editează (D60)
-toast = f'''<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀ <span class="ip-num">{MINUS}{r2[0]}</span> · ♂ <span class="ip-num">{MINUS}{r2[1]}</span></span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>'''
+toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀ <span class="ip-num">{MINUS}{r2[0]}</span> · ♂ <span class="ip-num">{MINUS}{r2[1]}</span></span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, h2], SAVED_BAR, 'salvat', view_cls='s7s-view--end', overlay=toast)))
 
 # 9 · motiv lipsă (S6M, D79) — D39 state example: H1.1 ♀ Sacrificare 2 typed, Motiv left on "Alege" (refusal, D53: blocks
@@ -173,11 +173,10 @@ TARGET['motiv-lipsa'] = 't-H11'
 
 CSS = B.CSS + SC.VIEW + SC.BANNER  # S7S's screen CSS (sstate_css), class names kept s7s- as S6 keeps s7-screen/s7-main
 CSS_EXTRA = {
- 'salvat': SC.TOAST,
  'se-incarca': SC.SKEL + '''
 .s7s-skcol > .ip-skel{flex:none}
 .s6s-skcheck{cursor:default}''',
-}  # toast / skeleton rules only on the board that uses them
+}  # skeleton rules only on the board that uses them (the Toast is additions.css §48, FIN02)
 
 STEM0, TITLE0 = 'S6-zilnic', 'S6 · Zilnic'
 SYS = ROOT / 'design/system'

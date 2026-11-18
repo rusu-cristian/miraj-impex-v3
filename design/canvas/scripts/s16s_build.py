@@ -86,9 +86,9 @@ def sheet(head, body, foot, inert=False, busy=False, toast=''):  # toast: inside
             f'{toast}<div class="ip-sidepanel__foot">{foot}</div></aside>')
 FOOT = Q.DELK + Q.SAVE
 def toast(text, desk=False):
-    w = 's16s-toastwrap--desk' if desk else 's7s-toastwrap s16s-toastwrap'
-    return (f'<div class="{w}"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">{text}</span>'
-            f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+    w = 'ip-toastwrap ip-toastwrap--page' if desk else 'ip-toastwrap'  # §48 (FIN02): phone above the sheet foot, desktop bottom right
+    return (f'<div class="{w}"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">{text}</span>'
+            f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 
 boards = []   # (slug, state title, kind 'p' | 'd', root markup)
 # 1 · salvat — 15.11.2026, 10:12: the sheet shows the record as it now is (as the desktop panel), Toast + Anulează
@@ -238,7 +238,6 @@ boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu d
 
 # ---------- CSS (screen only, tokens only) ----------
 CSS_ADD = '''
-.s16s-toastwrap{bottom:calc(var(--control-h-touch) + var(--space-3) * 2 + var(--ip-hair) + var(--space-4))} /* above the sheet foot */
 .s16s-ct{container-type:inline-size}
 .s16s-sk{display:flex;flex-direction:column;gap:var(--space-4)}
 .s16s-skf{display:flex;flex-direction:column;gap:var(--space-2)}
@@ -249,10 +248,9 @@ CSS_ADD = '''
 .s16s-lock{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2);margin:var(--space-1) 0 0}'''
 SCRIM = ''.join('\n' + l for l in s4.CSS_STATES.split('\n') if l.startswith('.s4s-scrim'))
 assert SCRIM.count('\n') == 1
-CSS_P = Q.CSS_P + SC.TOAST + CSS_ADD
-CSS_D = Q.CSS_D + SC.BANNER + SC.TOAST + SCRIM + '''
-.s16s-vp--full{margin-right:0} /* panel closed: the page takes the full width */
-.s16s-toastwrap--desk{position:absolute;right:var(--space-6);bottom:var(--space-6);z-index:4} /* bottom right: over the empty foot of the right column, not the Jurnal links */'''
+CSS_P = Q.CSS_P + CSS_ADD
+CSS_D = Q.CSS_D + SC.BANNER + SCRIM + '''
+.s16s-vp--full{margin-right:0} /* panel closed: the page takes the full width */'''
 
 # ---------- write ----------
 STEM0, TITLE0 = Q.STEM0, Q.TITLE0

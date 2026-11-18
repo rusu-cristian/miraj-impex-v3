@@ -267,9 +267,8 @@ CSS21 = '''
 .s21-use{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s21-delkey{margin-top:var(--space-1)}
 .s21-pfarm{display:block;font-weight:400}
-.s21-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, as S18S–S20 (FIN) */
 .s21-bkey{flex:none;align-self:center} /* multi-line Banner: the action key centred (= .s19-bkey, FIN) */'''
-CSS_DESK = M.CSS_DESK + SC.TOAST + CSS21
+CSS_DESK = M.CSS_DESK + CSS21
 CSS_PL = M.CSS_PL + CSS21
 
 # ================================================================= write
@@ -316,8 +315,8 @@ ROWS3 = order(FT + [NEW])
 FOCUS_NOTE = ('<!-- Focus after Adaugă tipul: the panel closes and focus goes to the new row\'s Editează key; the Toast (role=status) '
               'announces the save and keeps Anulează in the tab order. -->')
 def toast(text, note=FOCUS_NOTE):
-    return (f'{note}<div class="s21-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">'
-            f'{text}</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')
+    return (f'{note}<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">'
+            f'{text}</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 TOAST = toast('Breeder 3 adăugat · pentru găini, apare în Livrare hrană și Hrană zilnică')
 desk('--salvat', f'salvat · {D39}: Breeder 3 adăugat', shell(tlist(ROWS3, focus='ft-new'), header(rows=ROWS3)) + TOAST, PH)
 # 9 · eroare la salvare (D39): the same new type, draft kept, Banner + Reîncearcă (focus) under the fields

@@ -23,7 +23,7 @@ Boards
                                 EffectPreview (S9P), Creează seria enabled
   --telefon-alege-sectiunea     replay 07.10.2025: H1 and H2 filled, a third row's SectionSelect open as the §33 sheet:
                                 H1/H2 "în listă" disabled, H3 … H5-2 "goală" enabled, H3 active (over the inert form)
-No new system class: screen CSS `.s18s-*` (desktop scrim + Toast position, table skeleton cells).
+No new system class: screen CSS `.s18s-*` (desktop scrim, table skeleton cells; the Toast is additions.css §48, FIN02).
 python3 -I s18s_build.py <repo_root> [--canvas]   (heights from s18_heights.json; renders: s18_render.py <stems>)"""
 import sys, re, json, pathlib, importlib.util, datetime as dt
 
@@ -310,11 +310,10 @@ def rows_picking():
 # ================================================================= CSS (screen only, tokens only)
 CSS18S = '''
 .s18s-scrim{position:absolute;inset:0;z-index:5;border-radius:0;align-items:center} /* the Dialog over the whole desktop page (as S16S) */
-.s18s-toastwrap{position:absolute;right:var(--space-8);bottom:var(--space-8);z-index:3;max-width:calc(100% - 2 * var(--space-8))} /* desktop Toast: bottom right, over the page */
 .s18s-skt .ip-skel{display:block;max-width:100%}
 .s18s-skt td,.s18s-skt th{vertical-align:middle}
 .s13-panel > .ip-sidepanel__body{position:relative} /* fix 1: hidden text in the panel body is placed inside it, so the board stays 1024 */'''
-CSS_D = T.CSS_DESK + SC.TOAST + CSS18S
+CSS_D = T.CSS_DESK + CSS18S
 CSS_SH = T.CSS_SH + SC.MODAL
 
 # ================================================================= write
@@ -345,9 +344,9 @@ body = T.form(TODAY, False, T.NEWNAME, T.NEWYEAR, state='refuz')
 desk('--desktop-refuzat', 'Serie nouă · desktop · refuzat: Telița are încă păsări · exemplu de stare (D39): transferul la Hîrbovăț neintrodus',
      vp(scene_track(SC_D39), TBL_D39) + T.panel(body, TODAY, RKEY), SC.SIDE_H)
 # 7 · salvat: replay 07.10.2025, panel closed, the new series in the list, Toast
-TOAST = (f'<div class="s18s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">{NAME26} creată · '
+TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">{NAME26} creată · '
          f'ciclu nou la Telița · sapt. {num(WK_T0)} de la {num(dd(REPLAY))} · ghid {GUIDE["g-growth"]}</span>'
-         f'<button type="button" class="ip-link s7s-undo">Anulează</button></div></div>')   # fix 1: undo until 23:59 (owner), as S9/S10; S18P: B4 words
+         f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')   # fix 1: undo until 23:59 (owner), as S9/S10; S18P: B4 words
 assert WK_T0 == 1 and GUIDE[cT['guide_id']] == GUIDE['g-growth'] == 'Ross 308 creștere'
 NEWKEY = T.newkey(); assert NEWKEY.count('class="ip-btn ip-btn--secondary"') == 1
 FOCUS_NOTE = ('<!-- S18P focus after Creează seria: the panel closes and focus returns to Serie nouă, the key that opened it; '

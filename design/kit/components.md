@@ -304,6 +304,8 @@ An inline message (info, warn, fault, ok): the status tint with a 1px status bor
 
 A save confirmation in `control` (graphite), with an optional undo. Not used for errors.
 
+**Placement (FIN02, additions.css §48):** phone: `div.ip-toastwrap` inset `space-4` at the foot of the screen's view, above the SaveBar or BottomTabBar (in the phone full-screen sheet: above its foot); desktop: `ip-toastwrap--page`, bottom right of the page, `space-8` from both edges, at most `panel-w` wide. A save Toast carries Anulează: `span.ip-toast__txt` + `button.ip-link.ip-toast__undo`.
+
 
 ## EmptyState
 
@@ -697,3 +699,12 @@ CSS in additions.css section 47 (both copies, identical); replaces section 46's 
 - **Measured** (icon centre − first-line centre, 1440 and 390): bare Banner −1 → 0 (21 boards), FeedTotals −1 → 0, UserTable −8 → 0, LoginCard 0 → 0, `s7s-banner` 0 → 0, `s4s-banner` unchanged (0 / 0.5 on one line).
 - **Not moved (FIN):** `s4s-banner` centres the icon on the whole Banner, so where its text wraps (S14, S17, S18 `--eroare-la-incarcare` at 1440: two lines) the icon sits 9px under the first line. Screen CSS (sstate/s4s); move to the first line there if wanted.
 - **Tokens:** existing only (`--ip-hair`, `control-h`); no new values. No board HTML changes.
+
+### FIN02 · Toast placement and undo layout, 18.11.2026
+CSS in additions.css section 48 (both copies, identical). Used by every Toast (18 boards on 14 screens); Toast README line added. Decided by: FIN review (FIN.md), Claude (recommended, user to review), D122.
+
+- **Toast · placement** (section 48, system-wide): `div.ip-toastwrap > div.ip-toast[role=status]`, absolute in the screen's positioned area, `z-index` under a Dialog scrim. Phone (default): `left/right/bottom: space-4` inside the view that ends above the SaveBar or BottomTabBar (unchanged from the `s7s-toastwrap` every phone used); in `.ip-sidepanel--sheet` it sits `space-4` above the sheet foot (touch keys + `space-3` padding × 2 + hair). Desktop: `ip-toastwrap--page`, bottom right of the page at `space-8`, `max-width: min(panel-w, 100% − 2 × space-8)`: the right column where the SidePanel opens; longer text wraps. Was bottom-left at `space-6` beside the Sidebar (S12), right at 24 (S16), right at 32 without a cap (S18–S22).
+- **Toast with Anulează** (section 48): `.ip-toast__txt` (flex 1, wraps, `margin: 0` so a `p` works) and `.ip-toast__undo` (on-control link, weight 500, 48px touch target via `min-height: control-h-touch` with a negative block margin back to the 20px line, centred); a Toast holding `__txt` aligns to its top and its icon drops a hair onto the first line. Same values as the `s7s-toast` / `s7s-undo` screen copies they replace.
+- **S12 "Prețuri salvate"** gets Anulează (owner, same day), as every save Toast (D111/D116/D118).
+- **Replaced screen CSS:** `s7s-toastwrap`, `s7s-toast`, `s7s-toast__txt`, `s7s-undo` (sstate_css.py TOAST, removed), `s12-toastwrap`, `s16s-toastwrap`, `s16s-toastwrap--desk`, `s18s-toastwrap`, `s19-toastwrap`, `s20-toastwrap`, `s21-toastwrap`, `s22-toastwrap`. The "Not moved (FIN)" Toast notes under S19P, S20P and S21P are closed by this entry (the `-bkey` / `s7s-banner` parts stay open).
+- **Tokens:** existing only (`space-4`, `space-8`, `space-3`, `space-2`, `space-5`, `panel-w`, `control-h-touch`, `--ip-hair`); no new values.

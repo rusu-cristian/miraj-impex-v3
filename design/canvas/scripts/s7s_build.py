@@ -191,7 +191,7 @@ ft5, f5 = ftot(b5)
 tot5 = round(sum(b['kg'] for b in b5), 1); br2 = round(f5[0]['after'])
 assert n(tot5, 1) == f'4{NB}398,9' and br2 == 27611 and n(f5[1]['days'], 1) == '3,8'
 sv5, _, _ = savebar(b5, '<span>Dr. Ceban ·</span><span>poți modifica până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Editează</button>', lead='salvat')
-toast = f'''<div class="s7s-toastwrap"><div class="ip-toast s7s-toast" role="status">{icon("check", 16)}<span class="s7s-toast__txt">Salvat · <span class="ip-num">12</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc Breeder 2: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link s7s-undo">Anulează</button></div></div>'''
+toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Salvat · <span class="ip-num">12</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc Breeder 2: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE}</div>', halls(b5), ft5], sv5, overlay=toast)))
 
 # 6 · eroare la salvare — connectivity: fault Banner + Reîncearcă, typed values kept (draft in the browser)
@@ -218,7 +218,7 @@ sk = f'''<p class="ip-sr" role="status">Se încarcă rândurile pentru <span cla
 sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol" aria-hidden="true">{skel("70%", SK16)}{skel("45%", SK16)}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv7)))
 
-CSS = B.CSS + SC.VIEW + SC.TOAST + SC.BANNER
+CSS = B.CSS + SC.VIEW + SC.BANNER
 CSS_EXTRA = {'se-incarca': SC.SKEL}  # skeleton rules only on the board that uses them
 
 STEM0, TITLE0 = 'S7-hrana-zilnica', 'S7 · Hrană zilnică'

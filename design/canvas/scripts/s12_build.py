@@ -117,8 +117,9 @@ def done():
 <div class="s4-head"><div class="s11-headl"><h2 class="ip-t-heading" id="h-unp">Livrări fără preț</h2></div></div>
 <div class="s4s-emptybox"><div class="ip-empty">{lamp("off", "nimic fără preț")}<p class="s4s-empty-p">Toate livrările au preț.</p><p class="s4s-empty-p">Costul Seria 2026 include toate cele <span class="ip-num">{s11.N_ALL}</span> livrări · <span class="ip-num">{n(ALL_KG)} kg</span>.</p><a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-cost">Vezi costul hranei</a></div></div>
 </section>'''
-TOAST = (f'<div class="s12-toastwrap"><div class="ip-toast" role="status">{ico(s4.IC["check"])}<span>Prețuri salvate · <span class="ip-num">{len(UNP)}</span> livrări · '
-         f'<span class="ip-num">{n(UNP_KG)} kg</span> intră în cost</span></div></div>')
+# FIN02 (D122): bottom right like every desktop Toast (additions.css §48), with Anulează (owner, same day) as every save Toast
+TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{ico(s4.IC["check"])}<span class="ip-toast__txt">Prețuri salvate · <span class="ip-num">{len(UNP)}</span> livrări · '
+         f'<span class="ip-num">{n(UNP_KG)} kg</span> intră în cost</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 
 # ---------- state: error (the list did not load; nothing typed yet, so nothing is lost) ----------
 def error():
@@ -145,8 +146,7 @@ CSS = s11.CSS + '''
 .s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
 .s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */
 .s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */
-.s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}
-.s12-toastwrap{position:absolute;left:calc(var(--sidebar-w) + var(--space-6));bottom:var(--space-6);z-index:4}'''
+.s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}'''
 
 STEM = 'S12-preturi-hrana'
 BOARDS = [
