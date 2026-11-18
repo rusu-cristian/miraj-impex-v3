@@ -70,8 +70,8 @@ def row(d, first, mode='default'):
             f'<td class="edit"><span class="ip-input s11-in s11-in--tot{tot_cls}"><input id="tot-{d["id"]}" type="text" inputmode="decimal"{tot_val} aria-label="Total lei, {lab(d)}" aria-describedby="pr-help"/><span class="suffix">lei</span></span></td></tr>{after}')
 
 THS = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
-       f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>'
-       f'<th scope="col" class="num s11-thedit"><span class="ip-rec ip-rec--feed s11-thico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th>')
+       f'<th scope="col"><span class="ip-rec ip-rec--feed ip-table__ico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>'
+       f'<th scope="col" class="num s11-thedit"><span class="ip-rec ip-rec--feed ip-table__ico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th>')
 
 # FIN11G (§54): the four content columns declare their loaded shares (1440) next to the two fixed edit columns, so the
 # loading table (same colgroup) keeps every column where the loaded one has it

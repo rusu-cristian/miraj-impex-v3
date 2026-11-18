@@ -179,9 +179,9 @@ One indicator compared with the guide.
 Compact tables on `raised` with uppercase caption headers on `panel`.
 
 - **Rows:** `row-h`, separated by `rule`. Numbers are right-aligned in Plex Mono.
-- **Record-type columns:** the header carries the record icon in its colour, and ♀/♂ columns are coloured.
+- **Record-type columns:** the header carries the record icon in its colour, and ♀/♂ columns are coloured. Head icon: `span.ip-table__ico` (+ `ip-rec ip-rec--<type>`), 14px on the caption line (additions.css §32, FIN14B).
 - **Groups:** `sunken` rows.
-- **Totals:** a `line-strong` top border.
+- **Totals:** a `line-strong` top border, one edge wherever the row sits (after a body row, in a following tbody or a tfoot: the row above drops its rule; §32, FIN14B).
 - **Inline edit cells** (owner prices) use a medium TextField.
 - **Phone:** horizontal scroll with the first column sticky.
 - **Row headers, wrapping heads, scroll region** (FIN14, additions.css §32/§36): rows named by `th[scope=row]` use `ip-table--rowheads` (tbody and tfoot); figure heads may wrap with `ip-table--wraphead`; a table that can outgrow its box sits in `div.ip-tablescroll` (role=region, tabindex=0, aria-label = caption; `--framed` draws the box). No screen copies (see Additions › FIN14).
@@ -457,9 +457,9 @@ Folder `design/system/components/StockReadout/` (README + preview), CSS in addit
 Folder `design/system/components/CostBlock/` (README + preview), CSS in additions.css section 11. Decided by default (user away), to review.
 
 - **Purpose:** S11 › Cost (spec D4 §4): lei per cycle from priced deliveries, lei per bird, lei per egg, and the "X kg fără preț" not included. A compact DataTable, not a KPI grid.
-- **Anatomy:** `section.ip-cost` > `.ip-cost__head` (`panel`, caption + "din livrările cu preț · până pe dd.mm.yyyy") > `.ip-cost__scroll` > `table.ip-table.ip-cost__table` (hidden `caption.ip-sr` = the head title; Ciclu · Kg · Lei · Lei/pasăre · Lei/ou), one `tbody` per cycle: cycle row (`th[scope=row]` name + sub-line, Mono right-aligned figures) and `tr.ip-cost__unpriced` (hidden `ip-sr` cycle prefix "Hîrbovăț · Seria 2026, ", coins `rec-feed` + info Tag "fără preț", unpriced kg in the Kg column, "n livrări, dates · neincluse în cost"; none unpriced: "Toate livrările au preț.") · totals row `is-total` (`line-strong` edge) "Total Seria 2026" naming the excluded kg · `ip-cost__foot` note naming the bases.
+- **Anatomy:** `section.ip-cost` > `.ip-cost__head` (`panel`, caption + "din livrările cu preț · până pe dd.mm.yyyy") > `.ip-cost__scroll` (`role=region`, `tabindex=0`, `aria-label` = caption, every layout since FIN14B) > `table.ip-table.ip-cost__table` (hidden `caption.ip-sr` = the head title; Ciclu · Kg · Lei · Lei/pasăre · Lei/ou), one `tbody` per cycle: cycle row (`th[scope=row]` name + sub-line, Mono right-aligned figures) and `tr.ip-cost__unpriced` (hidden `ip-sr` cycle prefix "Hîrbovăț · Seria 2026, ", coins `rec-feed` + info Tag "fără preț", unpriced kg in the Kg column, "n livrări, dates · neincluse în cost"; none unpriced: "Toate livrările au preț.") · totals row `is-total` (§32 totals edge, FIN14B) "Total Seria 2026" naming the excluded kg · `ip-cost__foot` note naming the bases.
 - **Bases:** Lei/pasăre per bird at the start of the cycle (placed or arrived by transfer), not alive; Lei/ou = lei ÷ total eggs (D18) to date, laying only (growth "–" "creștere, fără ouă"). Whole lei for totals, 2 decimals for unit costs.
-- **Layouts:** default = phone (DataTable rule: horizontal scroll, sticky 160px first column with a `rule` edge, focusable labelled region; no `overflow:hidden` on the block so the focus ring shows whole, head/foot round their own `radius-md` corners); `ip-cost--wide` for desktop.
+- **Layouts:** default = phone (DataTable rule: horizontal scroll, sticky 160px first column with a `rule` edge, focusable labelled region; no `overflow:hidden` on the block so the focus ring shows whole, head/foot round their own `radius-md` corners); `ip-cost--wide` for desktop (one-line row headers; the same sticky first column with its `rule` edge and the focusable labelled region, FIN14B).
 - **Roles:** owner, manager, viewer: same read-only markup. Vets: the section is not rendered (D06).
 - **Tokens:** existing only; new var `--ip-fs-table/--ip-lh-table` (13/18, bundle.css `.ip-table`). The coins icon is Lucide "coins" (the system names it but ships no path).
 
@@ -833,4 +833,15 @@ CSS in additions.css sections 11, 16, 32, 36 and 42 (both copies, identical). Ge
 - **Skeleton bars in group rows** (§42): `tr.is-group .ip-skel` in `rule`, so they show on `sunken` (S3's screen copy removed; now visible on S14, S18 se încarcă and the SectionTree preview).
 - **Side effects:** collapsed → separate borders on S11/S12 tables: S11 content +0.5px (stored heights kept, inside the foot padding; no --canvas step for S11); S12 totals edge is `rule` + `line-strong` like S4. FIN11G columns: loading vs loaded ≤0.3px at 1440 and 1280 on S11, S12, S14 (as before).
 - **Left:** the S11 Consum horizontal scrollbar still sits at the table's foot below ~1180px wide (needs a height-capped region, D136); S3 table frame (`.s3-table` border/radius) and the 14px head-icon copies (`.s4-ico`, `.s4t-thico`, `.s11-thico`) are still screen CSS; `.ip-cost__unpriced > th` (400, `ink-secondary`) loses to the row-header rule, as before.
+- **Tokens:** existing only; no new values.
+
+### FIN14B · DataTable follow-ups: totals edge, head icon, S3 region, CostBlock region, 18.11.2026
+CSS in additions.css sections 11 and 32 (both copies, identical). Generators s3, s4t (S14, S16, S17 through it), s11 (S13), s12; previews CostBlock (sys04_build), DataTable. To copy into the system's DataTable and CostBlock READMEs with HANDOFF (D32). Decided by: Claude, to review (D137).
+
+- **Totals edge** (§32): one rule for every `tr.is-total` (after a body row, first in a following tbody, in a tfoot): the row above drops its own `rule`, the totals row keeps its `line-strong` top edge. S4 Fermă tabs (Păsări, Hrană, Producție; S17 copy) and S12 lose the 2px rule + line-strong double edge; S12's last row is 1px shorter (content-sized). CostBlock's own totals copy is gone (its cycle separator skips the totals row). The DataTable preview (collapsed borders) now shows line-strong instead of the rule.
+- **Head icon** (§32): `span.ip-table__ico` replaces `.s4t-thico`, `.s11-thico` and `.s3-table th .s4-ico` (same look: inline-flex, top, `space-1`, record colour from `ip-rec--*`); the DataTable preview uses it (its icons move from bundle.css's 2px to `space-1` + 2px, top-aligned). S3's group-line icons keep their spacing through `.s3-group .s4-ico`.
+- **S3 table frame**: the Păsări table sits in `div.ip-tablescroll.ip-tablescroll--framed` (region named by the caption; loading copy plain), replacing `.s3-table` border/radius/overflow and its last-row rule. Look: the sticky first column's `rule` edge, as S4 Păsări; heights unchanged. The 1280 figure padding (container query) stays screen CSS: S3-only density, not a DataTable rule.
+- **CostBlock**: `.ip-cost__scroll` is a region in every layout (`role=region`, `tabindex=0`, `aria-label` = caption); not `--framed`, since the block draws the box with its head and foot. Dead `.ip-cost__unpriced > th` removed (the row header was already 500 `ink`).
+- **CostBlock wide** (fix 1): `ip-cost--wide` no longer turns the sticky first column off; it keeps the `rule` edge as the phone layout and every §36 table. S13 at 1280: the 282px column (cycle names, "Total Seria 2026") stays while 137px scroll; S11 at 1440 and the preview only gain the edge.
+- **Left:** the S11 Consum horizontal scrollbar still sits at the table's foot (D136).
 - **Tokens:** existing only; no new values.

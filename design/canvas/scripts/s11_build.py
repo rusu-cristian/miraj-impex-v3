@@ -199,7 +199,7 @@ def del_row(d, role, mode='default'):
 
 def del_ths(role):
     ths = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
-           f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>')
+           f'<th scope="col"><span class="ip-rec ip-rec--feed ip-table__ico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>')
     if role != 'Observator': ths += '<th scope="col" class="num s11-thedit">Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th><th scope="col">Preț adăugat</th>'
     if role == 'Proprietar': ths += '<th scope="col"><span class="ip-sr">Acțiuni</span></th>'
     if role == 'Proprietar': ths = SKL.widths(ths, W_DEL, M_DEL)  # FIN11G: the loaded column shares, shared with the loading table
@@ -259,7 +259,7 @@ def cons_state(w, key):
     if any(abs(v) > 10 for v in dvs): return lamp('warn', 'abatere')
     return lamp('ok', 'în normă')
 CONS_THS = ('<th scope="col">Secțiune</th>'
-           f'<th scope="col" class="num"><span class="ip-rec ip-rec--feed s11-thico">{icon("feed", 14)}</span>Kg</th>'
+           f'<th scope="col" class="num"><span class="ip-rec ip-rec--feed ip-table__ico">{icon("feed", 14)}</span>Kg</th>'
            f'<th scope="col" class="num">{F} g/pasăre</th><th scope="col" class="num">{F} ghid</th><th scope="col" class="num">{F} față de ghid</th>'
            f'<th scope="col" class="num">{M} g/pasăre</th><th scope="col" class="num">{M} ghid</th><th scope="col" class="num">{M} față de ghid</th><th scope="col">Stare</th>')
 CONS_THS = SKL.widths(CONS_THS, W_CONS, M_CONS)
@@ -298,7 +298,7 @@ def sec_cost():
             f'<span class="ip-sex ip-sex--hen">♀ {n(arr["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(arr["M"])}</span>; seria: populare). Lei/ou: ouă totale (Cat. 1–3 + Incubabile) până pe <span class="ip-num">16.11.2026</span>: <span class="ip-num">{n(eggs)}</span>.</p>')
     return f'''<section class="s4-block" aria-labelledby="h-cost">
 {sec_head("h-cost", "Cost", 'pe ciclu, pe pasăre și pe ou · din livrările cu preț')}
-<section class="ip-cost ip-cost--wide" aria-labelledby="cost-d"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-d">Cost hrană · Seria 2026</h3><span class="ip-note">din livrările cu preț · până pe <span class="ip-num">16.11.2026</span></span></div><div class="ip-cost__scroll"><table class="ip-table ip-table--rowheads ip-cost__table"><caption class="ip-sr">Cost hrană · Seria 2026</caption>{t}</table></div>{foot}</section>
+<section class="ip-cost ip-cost--wide" aria-labelledby="cost-d"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-d">Cost hrană · Seria 2026</h3><span class="ip-note">din livrările cu preț · până pe <span class="ip-num">16.11.2026</span></span></div><div class="ip-cost__scroll" role="region" tabindex="0" aria-label="Cost hrană · Seria 2026"><table class="ip-table ip-table--rowheads ip-cost__table"><caption class="ip-sr">Cost hrană · Seria 2026</caption>{t}</table></div>{foot}</section>
 </section>'''
 
 # ---------- states ----------
@@ -359,7 +359,6 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-tablebox--fit > .ip-table{width:100%}
 .s11-gsub{color:var(--ink-secondary);font-weight:400;font-family:var(--font-mono);font-size:var(--ip-fs-small)}
 .s11-ico{color:var(--c);display:inline-flex;flex:none}
-.s11-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)} /* 14px icon on the 14px caption line (S3P) */
 .s11-type{display:inline-flex;align-items:center;gap:var(--space-2)}
 .s11-hen{color:var(--rec-hen)}
 .s11-rooster{color:var(--rec-rooster)}

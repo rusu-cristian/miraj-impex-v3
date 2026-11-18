@@ -71,6 +71,8 @@ s4.IC.update({'placement': PLACE})
 s4.REC.update({'placement': 'placement'})
 def ico(k): return f'<span class="ip-rec ip-rec--{s4.REC[k]} s4-ico">{icon(k, 14)}</span>'
 def sexerr_ico(): return f'<span class="s4-ico">{icon("sexerr", 14)}</span>'
+def hico(k):  # head icon: additions.css §32 span.ip-table__ico (FIN14B; was s4-ico + an S3 copy of the rule)
+    return f'<span class="ip-table__ico">{icon("sexerr", 14)}</span>' if k == 'sexerr' else f'<span class="ip-rec ip-rec--{s4.REC[k]} ip-table__ico">{icon(k, 14)}</span>'
 def fig(k, key, val, sub, status=''):
     st_ = f'<dd class="ip-fsum__status">{status}</dd>' if status else ''
     return f'<div class="ip-fsum__fig"><dt>{ico(k) if k != "sexerr" else sexerr_ico()}{key}</dt><dd class="ip-fsum__val">{val}</dd><dd class="ip-fsum__sub">{sub}</dd>{st_}</div>'
@@ -298,7 +300,7 @@ COLS = [('', 'Început'), ('mortality', 'Mortalitate'), ('', 'Mort.\u00a0%'), ('
         ('transfer', 'Transfer'), ('sale', 'Vânzare'), ('', 'Diferență registru'), ('', f'În\u00a0viață · {ddate(TODAY)[:5]}')]
 COLS_CLOSED = COLS[:-1] + [('', f'La închidere · <span class="s3-nw">{ddate(cP["end_date"])}</span>')]  # a closed series counts at its end, not today
 def th(k, w):  # S3P: caption in Sans (DataTable: caption headers); may wrap at 1280, the icon stays with the first word
-    i = sexerr_ico() if k == 'sexerr' else (ico(k) if k else '')
+    i = hico(k) if k else ''
     first, _, rest = w.partition(' ')
     return f'<th scope="col" class="num"><span class="s3-nw">{i}{first}</span>{(" " + rest) if rest else ""}</th>'
 def cell(v, sx, sign=False, unit=''):
@@ -355,7 +357,7 @@ def pasari(mode='default'):
         cap = 'Păsări în Seria 2026, pe ferme'
     note = ''.join(f'<p class="ip-note s3-m0">{x}</p>' for x in notes)
     return f'''<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">
-<table class="ip-table ip-table--rowheads ip-table--wraphead s3-table"><caption class="ip-sr">{cap}; mortalitate % din păsările de la începutul ciclului fermei</caption>{head}{body}</table>
+<div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="{cap}; mortalitate % din păsările de la începutul ciclului fermei"><table class="ip-table ip-table--rowheads ip-table--wraphead s3-table"><caption class="ip-sr">{cap}; mortalitate % din păsările de la începutul ciclului fermei</caption>{head}{body}</table></div>
 <div class="s3-notes">{note}</div>
 </div>'''
 def pasari_loading():
@@ -364,7 +366,7 @@ def pasari_loading():
     grp = f'<tr class="is-group"><td colspan="{len(COLS) + 1}">{sk("s3-w14")}</td></tr>'
     return f'''<div class="s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă Seria 2026: ciclurile, fermele și păsările.</p>
-<table class="ip-table ip-table--rowheads ip-table--wraphead s3-table" aria-hidden="true">{head}<tbody>{grp}{row}{row}{grp}{row}{row}</tbody></table>
+<div class="ip-tablescroll ip-tablescroll--framed"><table class="ip-table ip-table--rowheads ip-table--wraphead s3-table" aria-hidden="true">{head}<tbody>{grp}{row}{row}{grp}{row}{row}</tbody></table></div>
 </div>'''
 
 # ---------- page ----------
@@ -389,11 +391,9 @@ CSS = s4.CSS + '''
 .s3-sep{margin-left:var(--space-2);padding-left:var(--space-3);border-left:var(--ip-hair) solid var(--line)}
 .s3-m0{margin:0}
 .s3-panel{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-1)}
-.s3-table{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);border-collapse:separate;border-spacing:0;overflow:hidden}
-.s3-table th .s4-ico{vertical-align:top;margin-right:var(--space-1)} /* 14px icon on the 14px caption line */
+.s3-group .s4-ico{margin-right:var(--space-1)} /* group line: icon space-1 + the line's gap, as before FIN14B */
 .s3-panel{container-type:inline-size}
 @container (max-width: 1159.98px){.s3-table .num{padding-left:var(--space-2);padding-right:var(--space-2)}} /* 1280: 8px sides on figure columns, no sideways scroll */
-.s3-table tbody:last-child tr:last-child > *{border-bottom:0}
 .s3-group > .ip-note{display:inline-flex;align-items:center;gap:var(--space-1);margin-left:var(--space-3);font-weight:400}
 .s3-glink{display:inline-flex;align-items:center;min-height:var(--space-6);color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair))}
 .s3-glink:hover{text-decoration-color:var(--ink)}

@@ -74,7 +74,7 @@ IBM Plex Sans + IBM Plex Mono, weights 400/500, loaded by the `@import` of Googl
 - FileDrop: `ip-drop`
 **Data**
 - Stat: `ip-stats` > `ip-stat` > `ip-cap`, `ip-stat__val` (`small`), `ip-stat__guide`
-- DataTable: `ip-table` (`th`, `td.num`, `td.edit`, `tr.is-hover|is-group|is-total`); row headers `ip-table--rowheads` (`th[scope=row]`, `th.ip-table__child`, tbody and tfoot), wrapping figure heads `ip-table--wraphead`; scroll region `div.ip-tablescroll(.ip-tablescroll--framed)[role=region][tabindex=0][aria-label=caption]` (additions §32, §36; FIN14)
+- DataTable: `ip-table` (`th`, `td.num`, `td.edit`, `tr.is-hover|is-group|is-total`); row headers `ip-table--rowheads` (`th[scope=row]`, `th.ip-table__child`, tbody and tfoot), wrapping figure heads `ip-table--wraphead`; scroll region `div.ip-tablescroll(.ip-tablescroll--framed)[role=region][tabindex=0][aria-label=caption]` (additions §32, §36; FIN14); head icon `span.ip-table__ico` (+ `ip-rec ip-rec--<type>`), one `line-strong` totals edge in tbody or tfoot (§32, FIN14B)
 - EventRow: `ip-list` > `ip-ev` (`is-hover`) > `ip-ev__main` > `ip-ev__meta`
 - SectionTile: `ip-tiles` > `ip-stile` (`is-hover|is-missing`) > `ip-stile__head`, `ip-stile__code`, `ip-stile__kv`, `ip-bar`
 **Moment:** Readout `ip-readout` > `ip-readout__cap|__val|__sub`; GuideChart `svg.ip-chart` (`.grid .axis .ax .band .guide .act .s2 .pt .today`)

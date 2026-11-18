@@ -408,7 +408,10 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 :root{
   --ip-fs-table:13px;--ip-lh-table:18px; /* bundle.css .ip-table body text 13/18, named for the row headers */
 }
-/* No overflow:hidden on .ip-cost: the phone scroll region's focus ring (2px, 2px offset) must show whole. The panel strips
+/* .ip-cost__scroll is the table's scroll region in every layout (FIN14B: the wide table can outgrow its box too, S13 beside
+ * the SidePanel at 1280): role=region, tabindex=0, aria-label = the caption, as section 36; it keeps its own class because
+ * the block (head, foot) draws the box, not the region.
+ * No overflow:hidden on .ip-cost: the scroll region's focus ring (2px, 2px offset) must show whole. The panel strips
  * round their own outer corners instead; with no foot, the scroll region rounds (and clips) its bottom corners. */
 .ip-cost{margin:0;background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
 .ip-cost__head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3);padding:var(--space-2) var(--space-3);background:var(--panel);border-bottom:var(--ip-hair) solid var(--line);border-radius:var(--radius-md) var(--radius-md) 0 0}
@@ -425,22 +428,23 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-cost__table td.num small{display:block}
 .ip-cost__sub{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-muted)}
 .ip-cost__sub .ip-num,.ip-cost__note .ip-num{white-space:nowrap}
-/* Each cycle is a <tbody>; cycles are split by line, rows inside a cycle by rule. */
-.ip-cost__table tbody + tbody > tr:first-child > :is(th,td){border-top:var(--ip-hair) solid var(--line)}
-/* The "fără preț" line: coins (rec-feed) + info Tag in the row header, unpriced kg in the kg column, the rest says what is left out. */
-.ip-cost__unpriced > th{font-weight:400;color:var(--ink-secondary)}
+/* Each cycle is a <tbody>; cycles are split by line, rows inside a cycle by rule. The totals row keeps the section 32
+ * totals edge (FIN14B), so it is not a cycle's first row here. */
+.ip-cost__table tbody + tbody > tr:first-child:not(.is-total) > :is(th,td){border-top:var(--ip-hair) solid var(--line)}
+/* The "fără preț" line: coins (rec-feed) + info Tag in the row header, unpriced kg in the kg column, the rest says what is left out.
+ * Its row header reads as the cycle's (500, ink): FIN14B removed an older 400/ink-secondary rule that never applied. */
 .ip-cost__unpriced > th > span:not(.ip-sr){display:inline-flex;align-items:center;gap:var(--space-2)} /* the .ip-sr cycle prefix names the cycle for screen readers */
 .ip-cost__unpriced .ip-rec{color:var(--c);display:inline-flex}
 .ip-cost__unpriced td.num{color:var(--ink-secondary)}
 .ip-cost__table tbody > tr:last-child > :is(th,td){border-bottom:0}
-/* Totals: bundle.css tr.is-total (line-strong top edge, panel); its row header from section 32. */
-.ip-cost__table tbody + tbody > tr.is-total:first-child > :is(th,td){border-top-color:var(--line-strong)}
+/* Totals: bundle.css tr.is-total (panel) with the section 32 totals edge (one line-strong top edge, FIN14B); its row
+ * header from section 32. */
 /* Default = phone (DataTable rule): the first column stays while the figures scroll; it is 160px wide and its
  * sub-lines wrap (dates are separate Mono spans), a rule edge marks where the figures slide under it. */
 .ip-cost__table thead th:first-child,.ip-cost__table tbody th{position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule)}
 .ip-cost__table tbody th{white-space:normal;min-width:calc(var(--space-12) * 3 + var(--space-4));max-width:calc(var(--space-12) * 3 + var(--space-4))}
-/* .ip-cost--wide (desktop): one line per row header, no sticky edge (nothing scrolls). */
-.ip-cost--wide .ip-cost__table thead th:first-child,.ip-cost--wide .ip-cost__table tbody th{position:static;border-right:0}
+/* .ip-cost--wide (desktop): one line per row header; the first column stays sticky with its rule edge, as the phone
+ * layout and every section 36 table (FIN14B fix 1: the wide table scrolls too, S13 beside the SidePanel at 1280). */
 .ip-cost--wide .ip-cost__table tbody th{white-space:nowrap;min-width:0;max-width:none}
 .ip-cost__foot{margin:0;padding:var(--space-2) var(--space-3);border-top:var(--ip-hair) solid var(--rule);background:var(--panel);border-radius:0 0 var(--radius-md) var(--radius-md)}
 
@@ -1261,18 +1265,29 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * on a rule, and inside .ip-tablescroll the second head row's first cell does not stick (it is not the first column).
  * FIN14: a totals row in tfoot names itself the same way (S12); the CostBlock table, the small-curve table (.ip-sparktable)
  * and the S3, S11 and S12 tables use these rules (their copies are gone).
+ * FIN14B: one totals edge for every table; head icons (span.ip-table__ico); S3's framed table is the framed region below.
  * Opt-in .ip-table--wraphead (FIN14): figure-column caption heads (thead th.num) may wrap between words, so a table fits
  * its box before it scrolls (S3 at 1280, S4 Producție Pe hale at 1280); every head sits at the bottom of the head row.
  * Not for tables whose heads carry measured --ip-colmin struts (section 54): the strut holds the one-line width. */
 .ip-table--rowheads :is(tbody,tfoot) th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;background:var(--raised);padding:var(--space-1) var(--space-3);height:var(--row-h);border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-table--rowheads tr.is-group > th{background:var(--sunken);font-weight:500}
 .ip-table--rowheads tr.is-total > th{font-weight:500;background:var(--panel);border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
+/* Totals edge (FIN14B): a totals row (tr.is-total) has one line-strong top edge wherever it sits: after a body row, first
+ * in a following tbody, or in a tfoot. The row above drops its own rule, so tables with separate borders (scroll regions,
+ * CostBlock) no longer draw rule + line-strong (S4 Fermă tabs, S12 were 2px) and collapsed ones don't resolve the shared
+ * edge to the rule. The edge itself: bundle.css (td) and the rule above (th). CostBlock keeps no copy. */
+.ip-table :is(tr:has(+ tr.is-total),tbody:has(+ :is(tbody,tfoot) > tr.is-total:first-child) > tr:last-child) > :is(th,td){border-bottom:0}
 .ip-table--rowheads th.ip-table__child{padding-left:var(--space-6)}
 .ip-table--rowheads thead th[rowspan]{vertical-align:bottom}
 .ip-table--rowheads thead th[scope=colgroup]{text-align:right;border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-tablescroll > .ip-table--rowheads thead tr + tr > th:first-child{position:static;border-right:0}
 .ip-table--wraphead thead th{vertical-align:bottom}
 .ip-table--wraphead thead th.num{white-space:normal}
+/* Head icon (FIN14B, replaces the S3, S4 Fermă tabs, S11/S12 screen copies): span.ip-table__ico before a caption head's
+ * words holds a 14px icon on the 14px caption line (top-aligned, space-1 before the words; bundle.css keeps its 2px on the
+ * svg). With ip-rec ip-rec--<type> it is the record icon in its colour (DataTable: record-type columns); without, the
+ * icon draws its own strokes (Eroare sexare). */
+.ip-table thead th .ip-table__ico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)}
 /* Framed: div.ip-tablescroll.ip-tablescroll--framed draws the table's box (1px line, radius-md, clipped by the scroll
  * region); the last row drops its rule against the frame. Focus stays the system ring on the region. */
 .ip-tablescroll--framed{border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}

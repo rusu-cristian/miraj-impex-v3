@@ -129,7 +129,7 @@ def tbox(cap, inner, cls=''):  # DataTable in the system scroll region (SYS06 .i
 def foot(note, link=None):
     lk = f'<a class="ip-link s4t-lk" href="{link[1]}">{link[0]}</a>' if link else ''
     return f'<div class="s4t-foot"><span class="ip-note">{note}</span>{lk}</div>'
-def thico(k): return f'<span class="ip-rec ip-rec--{s4.REC.get(k, k)} s4t-thico">{icon(k, 14)}</span>'
+def thico(k): return f'<span class="ip-rec ip-rec--{s4.REC.get(k, k)} ip-table__ico">{icon(k, 14)}</span>'  # §32 head icon (FIN14B)
 def thsex(sx):
     return (f'<span class="ip-sex ip-sex--hen">♀</span><span class="ip-sr"> găini</span>' if sx == 'F'
             else f'<span class="ip-sex ip-sex--rooster">♂</span><span class="ip-sr"> cocoși</span>')
@@ -185,7 +185,7 @@ def st_pasari():
 def tb_pasari():
     grp = [('start', 'La sosire', 'transfer'), ('mortality', 'Mortalitate', 'mortality'), ('culls', 'Sacrificare', 'cull'),
            ('sexing_errors', 'Eroare sexare', 'sexerr'), ('alive', 'În viață', None), ('mortality_pct', 'Mortalitate %', 'mortality')]
-    def ic(k): return '' if k is None else (f'<span class="s4t-thico" aria-hidden="true">{icon("sexerr", 14)}</span>' if k == 'sexerr' else thico(k))
+    def ic(k): return '' if k is None else (f'<span class="ip-table__ico" aria-hidden="true">{icon("sexerr", 14)}</span>' if k == 'sexerr' else thico(k))
     h1 = '<tr><th scope="col" rowspan="2">Secțiune</th>' + ''.join(f'<th scope="colgroup" colspan="2">{ic(k)}{t}</th>' for _, t, k in grp) + '</tr>'
     h2 = '<tr>' + ''.join(f'<th scope="col" class="num">{thsex(sx)}</th>' for _ in grp for sx in 'FM') + '</tr>'
     def cells(get):
@@ -233,7 +233,7 @@ def tb_pweeks():
     W = list(range(WK, WK - 6, -1))
     grp = [('alive', 'În viață', None), ('mortality', 'Mortalitate', 'mortality'), ('culls', 'Sacrificare', 'cull'),
            ('sexing_errors', 'Eroare sexare', 'sexerr'), ('cum', 'Mortalitate cumulată', 'mortality')]
-    def ic(k): return '' if k is None else (f'<span class="s4t-thico" aria-hidden="true">{icon("sexerr", 14)}</span>' if k == 'sexerr' else thico(k))
+    def ic(k): return '' if k is None else (f'<span class="ip-table__ico" aria-hidden="true">{icon("sexerr", 14)}</span>' if k == 'sexerr' else thico(k))
     h1 = '<tr><th scope="col" rowspan="2">Săptămâna</th>' + ''.join(f'<th scope="colgroup" colspan="2">{ic(k)}{t}</th>' for _, t, k in grp) + '</tr>'
     h2 = '<tr>' + ''.join(f'<th scope="col" class="num">{thsex(sx)}</th>' for _ in grp for sx in 'FM') + '</tr>'
     body = '<tbody>'
@@ -595,7 +595,6 @@ def panel_productie():
 CSS = s4.CSS + '\n' + s4.CSS_S4 + '''
 .s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
-.s4t-thico{display:inline-flex;vertical-align:top;margin-right:var(--space-1);color:var(--c)}
 .s4t-hen{color:var(--rec-hen)}
 .s4t-roo{color:var(--rec-rooster)}
 .s4t-muted{color:var(--ink-muted)}
