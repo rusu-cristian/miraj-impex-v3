@@ -1884,9 +1884,13 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * keeps panel-w clear on the right, so nothing sits under the panel; the page clips at the frame's foot (in the app it
  * scrolls). div.ip-sidepanel__body.ip-sidepanel__body--form: an entry form in the SidePanel body, docked or as the
  * phone sheet (section 39): it takes the height between the head and the foot keys and scrolls, fields space-4 apart.
- * Was s13-vp (its 1024px came from the board) and s13-pbody (S9, S10, S13, S16, S18–S22). */
+ * Was s13-vp (its 1024px came from the board) and s13-pbody (S9, S10, S13, S16, S18–S22).
+ * The docked panel's body is positioned (FX01), so hidden text in it (.ip-sr, absolute) is placed inside the body and
+ * clipped with it, not against the page frame below the panel's fold, where it made the board scroll (S10 vânzare:
+ * 1281 in a 1024 frame). Was S18S screen CSS. */
 .ip-dockpage{position:absolute;inset:0 var(--panel-w) 0 0;overflow:hidden}
 .ip-sidepanel__body--form{flex:1;min-height:0;overflow:auto;gap:var(--space-4)}
+.ip-sidepanel--dock > .ip-sidepanel__body{position:relative}
 
 /* ---------- 63. Phone screen fixed to its frame: view, sticky SaveBar (FIN15B) ---------- */
 /* div.ip-screen.ip-screen--fixed: a phone screen exactly as tall as its frame (390×844 on a board: the frame gives the

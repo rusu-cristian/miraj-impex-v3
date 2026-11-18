@@ -308,9 +308,7 @@ def rows_picking():
     return s   # the other rows' comboboxes open the sheet too (phone: aria-haspopup=dialog, no listbox; s18_build since FIN10)
 
 # ================================================================= CSS (screen only, tokens only)
-CSS18S = '''
-.ip-sidepanel--dock > .ip-sidepanel__body{position:relative} /* fix 1: hidden text in the panel body is placed inside it, so the board stays 1024 */'''
-CSS_D = T.CSS_DESK + CSS18S
+CSS_D = T.CSS_DESK   # FX01: the docked panel body's position:relative (was fix 1 here) is additions.css §62
 CSS_SH = T.CSS_SH + SC.MODAL
 
 # ================================================================= write
