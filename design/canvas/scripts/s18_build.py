@@ -36,6 +36,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's18_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import skel as SKL
 def load(name, argv):
     sys.argv = argv
     sp = importlib.util.spec_from_file_location(name, HERE / f'{name}.py'); m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
@@ -206,6 +207,9 @@ def grow(sid, touch=False, keys=True):  # keys=False (phone): the series keys si
     return head + (f'<td colspan="2" class="s18-gact"><span class="s18-acts">{acts(sid, touch)}</span></td></tr>' if keys else '</tr>')
 COLS = ('<thead><tr><th scope="col">Serie · fermă</th><th scope="col">Tip</th><th scope="col">Ghid</th><th scope="col">Ciclu</th>'
         '<th scope="col" class="num">Săpt.</th><th scope="col">Început</th><th scope="col">Stare</th></tr></thead>')
+# FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
+# None = the column that takes the rest
+DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 22.9, 7.8, None, 8.1], [86.36, 52.58, 111.8, 208.88, 54.8, 178.5, 58.56])  # + loaded min-content px (fix 1)   # desktop (the phone tables scroll at content width)
 def acts(sid, touch):
     t = ' ip-btn--touch' if touch else ''
     a = f'<a class="ip-btn ip-btn--ghost{t}" href="#/serii/{sid}">Deschide seria<span class="ip-sr"> {SER[sid]["name"]}</span></a>'
@@ -234,7 +238,7 @@ def table(touch=False):
     return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{num(2)} serii · cele mai noi întâi</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
-            f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{COLS}{body}</table></div>'
+            f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{DCOLS}{body}</table></div>'
             f'<div class="s18-notes">{"".join(notes)}</div></section>')
 
 # ================================================================= page (desktop) + header + sidebar
@@ -428,7 +432,8 @@ CSS18 = '''
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-ways .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)}
-.s18-vp > .s4-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */'''
+.s18-vp > .s4-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
+.s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */'''
 X_CSS = '\n'.join(l for l in X.CSS.split('\n') if not l.startswith('.s11-select{'))   # FIN10 fix 1: no native select on S18–S22 desktops
 assert X_CSS != X.CSS
 CSS_DESK = X_CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''

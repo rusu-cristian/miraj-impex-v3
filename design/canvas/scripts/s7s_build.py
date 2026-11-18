@@ -11,6 +11,7 @@ ROOT = pathlib.Path(sys.argv[1])
 sys.argv = ['s7_build.py', str(ROOT), '3162']
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 B = importlib.import_module('s7_build')
+import skel as SKL
 import sstate_css as SC  # viewport / Toast-undo / Banner-action / skeleton CSS, shared with s6s_build
 n, dd, icon, sexv, pair, lamp = B.n, B.dd, B.icon, B.sexv, B.pair, B.lamp
 NB, MINUS, TODAY, YDAY, WEEK, START = B.NB, B.MINUS, B.TODAY, B.YDAY, B.WEEK, B.START
@@ -208,14 +209,17 @@ def skel(w, h=None): return f'<div class="ip-skel" style="width:{w}{";height:" +
 # kg 20 + guide 16 + lamp 16 (gaps 4); line 2 = label 16 + field 48; hall head = heading line 22; Copiază ieri = key 48 +
 # guide line 16; SaveBar summary = 2 lines of 16 (gap 4).
 SK16, SK20 = 'var(--ip-lh-small)', 'var(--ip-lh-alloc)'
-skrow = f'''<div class="ip-alloc ip-alloc--phone s7s-skrow" aria-hidden="true"><div class="ip-alloc__who s7s-skcol">{skel("40%", SK20)}{skel("60%", SK16)}</div><div class="ip-alloc__kg s7s-skcol s7s-skcol--end">{skel("calc(var(--space-12) * 1.5)", SK20)}{skel("var(--space-12)", SK16)}{skel("calc(var(--space-12) + var(--space-4))", SK16)}</div><div class="ip-alloc__ctl"><div class="s7s-skcol">{skel("40%", SK16)}{skel("100%", "var(--control-h-touch)")}</div><div class="s7s-skcol">{skel("60%", SK16)}{skel("100%", "var(--control-h-touch)")}</div></div></div>'''
+# FIN11G: the row's own boxes hold the bars (§54 ip-skel-line text lines, ip-field--skel fields), no s7s-skcol footprints
+skrow = (f'<div class="ip-alloc ip-alloc--phone s7s-skrow" aria-hidden="true"><div class="ip-alloc__who"><div>{SKL.line("ip-skel--w3", cls="ip-t-body-strong")}'
+         f'{SKL.line("ip-skel--w2", cls="ip-note")}</div></div><div class="ip-alloc__kg">{SKL.line("ip-skel--w3")}<small>{SKL.line("ip-skel--w3")}</small>'
+         f'{SKL.line("ip-skel--w3", cls="ip-hint")}</div><div class="ip-alloc__ctl">{SKL.field()}{SKL.field()}</div></div>')
 skhall = f'''<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("30%", "var(--ip-lh-heading)")}</div><div class="ip-hall__sections">{skrow * 4}</div></section>'''
 sk = f'''<p class="ip-sr" role="status">Se încarcă rândurile pentru <span class="ip-num">{dd(TODAY)}</span>…</p>
 <div class="s7s-skblock" aria-busy="true">
 <div class="s7-copy" aria-hidden="true">{skel("45%", "var(--control-h-touch)")}{skel("55%", SK16)}</div>
 <div class="ip-halls">{skhall * 2}</div>
 </div>'''
-sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol" aria-hidden="true">{skel("70%", SK16)}{skel("45%", SK16)}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv7 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv7)))
 
 CSS = B.CSS + SC.VIEW + SC.BANNER

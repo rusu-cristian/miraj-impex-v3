@@ -53,15 +53,12 @@
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-skreadout{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
-.s4s-skstat{gap:var(--space-2)}
 .s4s-sktile{gap:var(--space-2)}
 .s4s-sktotals{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
 .s4s-skrow{gap:var(--space-3);align-items:center}
 .s4s-skmain{display:flex;flex-direction:column;gap:var(--space-2);flex:1}
 .ip-skel{display:block}
 .s4s-sq{width:var(--record-tile);height:var(--record-tile);flex:none;border-radius:var(--radius-sm)}
-.s4s-chart{width:100%;height:calc(var(--space-12) * 4);border-radius:var(--radius-sm)}
 .s4s-h4{height:var(--space-1)}.s4s-h16{height:var(--space-4)}.s4s-h20{height:var(--space-5)}.s4s-h28{height:calc(var(--space-6) + var(--space-1))}
 .s4s-w15{width:15%}.s4s-w20{width:20%}.s4s-w25{width:25%}.s4s-w30{width:30%}.s4s-w40{width:40%}.s4s-w45{width:45%}.s4s-w50{width:50%}.s4s-w60{width:60%}.s4s-w70{width:70%}.s4s-w80{width:80%}.s4s-w100{width:100%}
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
@@ -134,6 +131,7 @@
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-ways .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s18-vp > .s4-shell{min-height:100%} /* the clipped page beside the panel keeps its sidebar full height */
+.s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */
 .s4s-m0{margin:0}
 .s18-foot{justify-content:flex-end}
 .s13-opt{font-weight:400;color:var(--ink-muted)}
@@ -147,6 +145,7 @@
 /* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip and
  * Ciclu fold under the farm name and Editează stays in view; the list alone (998px+ at 1280) keeps all six columns. */
 @container s19-ferme (max-width: 759.98px){
+  .s19-table th{width:auto} .s19-table th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
   .s19-table .s19-ctip,.s19-table .s19-ccyc{display:none}
   .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:normal}
   .s19-fn{display:block;color:var(--ink)}
@@ -173,7 +172,7 @@
 </div>
 <div class="ip-row"><button type="button" class="ip-btn ip-btn--secondary"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Adaugă fermă</button></div>
 </header>
-<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghidul și secțiunile lor.</p><section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div><div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table"><thead><tr><th scope="col">Fermă</th><th scope="col" class="s19-ctip">Tip</th><th scope="col">Ghid</th><th scope="col">Secțiuni</th><th scope="col" class="s19-ccyc">Ciclu</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead><tbody><tr class="ip-table__skel"><th scope="row"><span class="ip-skel ip-skel--w3"></span></th><td><span class="ip-skel ip-skel--w3"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr><tr class="ip-table__skel"><th scope="row"><span class="ip-skel ip-skel--w3"></span></th><td><span class="ip-skel ip-skel--w3"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr></tbody></table></div></section>
+<p class="ip-sr" role="status">Se încarcă fermele, cu tipul, ghidul și secțiunile lor.</p><section class="s4-block" aria-labelledby="h-fer" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-fer">Ferme</h2></div><div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s19-table"><thead><tr><th scope="col" style="--ip-colw:8.2%;--ip-colmin:calc(var(--space-1) * 13.05)">Fermă</th><th scope="col" class="s19-ctip" style="--ip-colw:8.2%;--ip-colmin:calc(var(--space-1) * 13.14)">Tip</th><th scope="col" style="--ip-colw:15%;--ip-colmin:calc(var(--space-1) * 29.09)">Ghid</th><th scope="col" style="--ip-colmin:calc(var(--space-1) * 26.09)">Secțiuni</th><th scope="col" class="s19-ccyc" style="--ip-colw:28.3%;--ip-colmin:calc(var(--space-1) * 25.29)">Ciclu</th><th scope="col" style="--ip-colw:12.3%;--ip-colmin:calc(var(--space-1) * 22.84)"><span class="ip-sr">Acțiuni</span></th></tr></thead><tbody><tr class="ip-table__skel"><th scope="row"><span class="ip-skel ip-skel--w3"></span></th><td><span class="ip-skel ip-skel--w3"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr><tr class="ip-table__skel"><th scope="row"><span class="ip-skel ip-skel--w3"></span></th><td><span class="ip-skel ip-skel--w3"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td><span class="ip-skel ip-skel--w2"></span></td><td class="s19-act"><span class="ip-skel ip-skel--w3 ip-skel--end"></span></td></tr></tbody></table></div></section>
 </main></div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>

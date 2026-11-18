@@ -46,6 +46,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's22_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import skel as SKL
 sys.argv = ['s19_build.py', str(ROOT)]
 sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
 M = importlib.util.module_from_spec(sp)
@@ -128,6 +129,9 @@ def row(p, u, focus=False, cur=False):
 HEAD = U['HEAD']
 for h in ('Login', 'Ferme', 'Ultima intrare'):
     HEAD = sub(HEAD, f'<th scope="col">{h}</th>', f'<th scope="col" class="s22-cx">{h}</th>')
+# FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
+# None = the column that takes the rest
+HEAD = SKL.widths(HEAD, [None, 15.4, 12.8, 17.6, 23.6, 9.9, 3.5], [89.8, 78.28, 61.08, 92.48, 133.06, 41.75, 32])  # + loaded min-content px (fix 1)
 def users(p, body, sumline, note='', **kw):
     """SYS12 users() as an S19–S21 list block (FIN07): section.s4-block with the s4-head (h2 "Utilizatori" under the h1, the
     count on the right; none while loading or failed), the key moved to the page head; the list box is the fold container."""
@@ -319,6 +323,7 @@ CSS22 = '''
 /* S19P rule: beside the panel the list is under 760px (558 at 1280, 718 at 1440), so Login, Ferme and Ultima intrare fold
  * under the name and Rol, Stare and the Acțiuni key stay in view; the list alone keeps all seven columns. */
 @container s22-users (max-width: 759.98px){
+  .ip-users__t th{width:auto} .ip-users__t th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
   .s22-cx{display:none}
   .s22-fold{display:block;color:var(--ink-secondary)}
 }

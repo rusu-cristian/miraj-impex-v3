@@ -73,7 +73,10 @@ THS = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
        f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>'
        f'<th scope="col" class="num s11-thedit"><span class="ip-rec ip-rec--feed s11-thico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th>')
 
-COLS = '<colgroup><col/><col/><col/><col/><col class="s12-col-pk"/><col class="s12-col-tot"/></colgroup>'
+# FIN11G (§54): the four content columns declare their loaded shares (1440) next to the two fixed edit columns, so the
+# loading table (same colgroup) keeps every column where the loaded one has it
+COLS = ('<colgroup><col style="width:16.7%"/><col style="width:12.4%"/><col style="width:20.7%"/><col style="width:11.6%"/>'
+        '<col class="s12-col-pk"/><col class="s12-col-tot"/></colgroup>')
 
 def form(mode='default'):
     work = mode == 'work'

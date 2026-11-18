@@ -1,5 +1,5 @@
 """Screen CSS shared by the phone state boards (S7S, S6S; S13 gets it through s7s_build.CSS): the 390×844 viewport, the
-keyless Banner body (s7s-banner; a Banner with an action key is additions.css §49 since FIN03), and the skeleton columns (the Toast with Anulează and its placement moved to additions.css §48, FIN02:
+keyless Banner body (s7s-banner; a Banner with an action key is additions.css §49 since FIN03), and the skeleton block (s7s-skblock/skrow; the field and text-line skeletons are additions.css §54 since FIN11G) (the Toast with Anulează and its placement moved to additions.css §48, FIN02:
 .ip-toastwrap[--page], .ip-toast__txt, .ip-toast__undo). Class names stay `s7s-` (as S6 uses s7-screen,
 s7-main, s7-savebar). Strings are concatenated in this order by s7s_build (its boards are byte-identical to before).
 MAIN: the phone form main gap (space-5; s7-main is space-6). SIDE / M0 / REC / EFFECT: the desktop entry form in a non-modal SidePanel beside the page (D73) and the form's record icon
@@ -19,9 +19,7 @@ BANNER = '''
 
 SKEL = '''
 .s7s-skblock{display:flex;flex-direction:column;gap:var(--space-6)}
-.s7s-skrow{align-items:start}
-.s7s-skcol{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);flex:1;min-width:0}
-.s7s-skcol--end{align-items:flex-end}'''
+.s7s-skrow{align-items:start}'''
 
 
 # the page reflows beside the panel (margin = panel width, nothing under it); board height 1024 (desktop board h)

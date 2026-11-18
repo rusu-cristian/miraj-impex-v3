@@ -39,6 +39,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's21_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import skel as SKL
 sys.argv = ['s19_build.py', str(ROOT)]
 sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
 M = importlib.util.module_from_spec(sp)
@@ -106,6 +107,9 @@ def state_cell(r): return lamp('ok', 'activ') if r['active'] else lamp('off', 'r
 def use_txt(r): return FARM_OF.get(r['id']) or '<span class="ip-note">nefolosit</span>'
 COLS = ('<thead><tr><th scope="col">Tip hrană</th><th scope="col">Pentru</th><th scope="col">Stare</th>'
         '<th scope="col" class="s21-cuse">Folosit la</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
+# FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
+# None = the column that takes the rest
+COLS = SKL.widths(COLS, [None, 21.4, 15.1, 19.9, 24.5], [65.36, 48.42, 47.42, 70.09, 91.34])  # + loaded min-content px (fix 1)
 def trow(r, open_=None, focus=None):
     return (f'<tr{" class=\"is-current\"" if open_ == r["id"] else ""}><th scope="row" class="s19-fname"><span class="s21-fn">{r["name"]}</span><span class="s21-fold">{use_txt(r)}</span></th>'
             f'<td class="s21-nw">{sexw(r["for_sex"])}</td><td class="s21-nw">{state_cell(r)}</td><td class="s21-cuse">{use_txt(r)}</td>'
@@ -262,6 +266,7 @@ CSS21 = '''
 /* S19P rule: beside the panel the region is under 760px (558 at 1280, 718 at 1440), so "Folosit la" folds under the type
  * name and Editează stays in view; the list alone keeps all five columns. */
 @container s21-tipuri (max-width: 759.98px){
+  .s21-table th{width:auto} .s21-table th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
   .s21-table .s21-cuse{display:none}
   .s21-fn{display:block}
   .s21-fold{display:block;font-weight:400;color:var(--ink-secondary)}

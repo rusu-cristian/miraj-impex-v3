@@ -34,6 +34,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's19_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import skel as SKL
 sys.argv = ['s18_build.py', str(ROOT)]
 sp = importlib.util.spec_from_file_location('s18_build', HERE / 's18_build.py')
 T = importlib.util.module_from_spec(sp)
@@ -116,6 +117,9 @@ def editkey(fid, pressed=False):
     return f'<button type="button" class="ip-btn ip-btn--ghost{p}">Editează<span class="ip-sr"> {nm}</span></button>'
 COLS = ('<thead><tr><th scope="col">Fermă</th><th scope="col" class="s19-ctip">Tip</th><th scope="col">Ghid</th><th scope="col">Secțiuni</th>'
         '<th scope="col" class="s19-ccyc">Ciclu</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
+# FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
+# None = the column that takes the rest
+COLS = SKL.widths(COLS, [8.2, 8.2, 15.0, None, 28.3, 12.3], [52.2, 52.58, 116.34, 104.34, 101.16, 91.34])  # + loaded min-content px (fix 1)
 def frow(fid, open_=None, noguide=()):
     f = FARM[fid]
     return (f'<tr{" class=\"is-current\"" if open_ == fid else ""}><th scope="row" class="s19-fname"><span class="s19-fn">{f["name"]}</span>{fold(fid)}</th><td class="s19-ctip">{TYPE_RO[f["type"]]}</td><td>{gtag(fid, fid in noguide)}</td>'
@@ -276,6 +280,7 @@ CSS19 = '''
 /* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip and
  * Ciclu fold under the farm name and Editează stays in view; the list alone (998px+ at 1280) keeps all six columns. */
 @container s19-ferme (max-width: 759.98px){
+  .s19-table th{width:auto} .s19-table th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
   .s19-table .s19-ctip,.s19-table .s19-ccyc{display:none}
   .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:normal}
   .s19-fn{display:block;color:var(--ink)}

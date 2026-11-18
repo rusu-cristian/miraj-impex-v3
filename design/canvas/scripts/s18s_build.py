@@ -3,7 +3,7 @@ the S17/S14S/S2/S7 boards, byte-identical) and draws the S18 states on the same 
 page, as S17): the new desktops follow the two S18 desktops; the S18 phones move right (x only, as S16S/S17S); the new
 phones follow them. Today = 16.11.2026 (D23/D24) unless the board is a replay of the real creation (07.10.2025, D73/D83).
 Boards
-  --se-incarca                  header kept, CycleTrack skeleton (S2P ip-trackskel) + framed table skeleton, hidden status
+  --se-incarca                  header kept, CycleTrack skeleton (§54 ip-trackskel, track height) + framed table skeleton, hidden status
   --eroare-la-incarcare         header kept (Adaugă serie stays), fault Banner + Reîncearcă in place of track and table
   --fara-acces                  Observator Sidebar, title only, EmptyState "Nu ai acces la Serii." + "Înapoi la Acasă"
                                 (a manager or a vet: the same picture with their own nav and role sentence; not drawn, one board)
@@ -23,7 +23,7 @@ Boards
                                 EffectPreview (S9P), Creează seria enabled
   --telefon-alege-sectiunea     replay 07.10.2025: H1 and H2 filled, a third row's SectionSelect open as the §33 sheet:
                                 H1/H2 "în listă" disabled, H3 … H5-2 "goală" enabled, H3 active (over the inert form)
-No new system class: the skeletons are additions.css §35 `ip-trackskel` and §42 `tr.ip-table__skel` (FIN11; were `.s18s-trackskel`/`.s18s-skt`); screen CSS: one panel-body rule (the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
+No new system class: the skeletons are additions.css §54 `ip-trackskel` (full, 120 as the drawn track; FIN11G) and §42 `tr.ip-table__skel` under the §54 column shares (FIN11; were `.s18s-trackskel`/`.s18s-skt`); screen CSS: one panel-body rule (the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
 python3 -I s18s_build.py <repo_root> [--canvas]   (heights from s18_heights.json; renders: s18_render.py <stems>)"""
 import sys, re, json, pathlib, importlib.util, datetime as dt
 
@@ -31,6 +31,7 @@ ARGS = sys.argv[1:]
 CANVAS = '--canvas' in ARGS; ARGS = [a for a in ARGS if a != '--canvas']
 ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import skel as SKL
 sys.argv = ['s18_build.py', str(ROOT)]
 sp = importlib.util.spec_from_file_location('s18_build', HERE / 's18_build.py')
 T = importlib.util.module_from_spec(sp); sp.loader.exec_module(T)   # rewrites the 5 S18 boards byte-identical
@@ -155,7 +156,7 @@ def stable(groups, notes, count):
     return (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{count}</span></div>'
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
-            f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{T.COLS}{body}</table></div>'
+            f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{T.DCOLS}{body}</table></div>'
             f'<div class="s18-notes">{"".join(notes)}</div></section>')
 NOTE25_OPEN = f'an {num(2025)} · început dedus {num(dd(cP["start_date"]))} la Hîrbovăț'
 G25_OPEN = (gro('seria-2025', lamp('ok', 'deschisă'), NOTE25_OPEN, acts('seria-2025', 'off'))
@@ -203,9 +204,9 @@ SK_G = f'<tr class="is-group ip-table__skel"><th scope="rowgroup" colspan="5">{s
 SK_R = '<tr class="ip-table__skel">' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', 'w2', 'w3')) + '</tr>'
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă seriile și ciclurile lor pe ferme.</p>'
            f'<section class="s4-block" aria-labelledby="h-track" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
-           f'<div class="ip-trackskel" aria-hidden="true"><span class="ip-skel"></span><span class="ip-skel"></span><span class="ip-skel"></span></div></section>\n'
+           f'<div class="s4-tight">{SKL.track()}{SKL.legend()}</div></section>\n'  # fix 1: + the legend line, as loaded
            f'<section class="s4-block" aria-labelledby="h-ser" aria-busy="true"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s18-table">{T.COLS}'
+           f'<div class="ip-tablescroll ip-tablescroll--framed" aria-hidden="true"><table class="ip-table ip-table--rowheads s18-table">{T.DCOLS}'
            f'<tbody>{SK_G}{SK_R}{SK_R}</tbody><tbody>{SK_G}{SK_R}{SK_R}</tbody></table></div></section>')
 FAULT = f'<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true">{Q.Z.FAULT}</svg>'
 LOADERR = (f'<section class="s4-block" aria-labelledby="h-ser"><div class="s4-head"><h2 class="ip-t-heading" id="h-ser">Serii</h2></div>'

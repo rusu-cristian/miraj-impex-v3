@@ -9,6 +9,7 @@ from collections import defaultdict
 spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__).resolve().with_name('s4s_build.py'))
 s4 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import skel as SKL
 ROOT, HP, CANVAS = CR.args('s11_heights.json')  # heights default: s11_heights.json
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 
@@ -200,7 +201,18 @@ def del_ths(role):
            f'<th scope="col"><span class="ip-rec ip-rec--feed s11-thico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>')
     if role != 'Observator': ths += '<th scope="col" class="num s11-thedit">Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th><th scope="col">Preț adăugat</th>'
     if role == 'Proprietar': ths += '<th scope="col"><span class="ip-sr">Acțiuni</span></th>'
+    if role == 'Proprietar': ths = SKL.widths(ths, W_DEL, M_DEL)  # FIN11G: the loaded column shares, shared with the loading table
     return ths
+# FIN11G (§54): column shares of the owner's tables at 1440 (as content-sized before), declared on the head the loading
+# skeleton reuses, so its columns sit where the loaded ones do
+W_DEL = [11.0, 8.2, 13.7, 7.7, 14.7, 17.3, None, 8.6]   # None: the column that takes the rest
+W_CONS = [None, 6.4, 8.5, 5.8, 10.5, 8.5, 5.8, 10.5, 19.6]
+W_COST = [None, 13.6, 14.7, 13.4, 17.9]
+# FIN11G fix 1: each column's loaded min-content (px, without padding; measured with the table at its narrowest), so at
+# 1280, where the content outgrows the shares, the loading columns grow as the loaded ones do
+M_DEL = [78.28, 52.2, 103.25, 46.97, 116, 140, 150.08, 75.33]
+M_CONS = [246.11, 46.97, 71.06, 40.91, 93.03, 71.06, 40.91, 93.03, 193.7]
+M_COST = [256.53, 70.45, 78.28, 69.09, 100.11]
 
 def sec_deliveries(role, mode='default'):
     owner = role == 'Proprietar'; viewer = role == 'Observator'
@@ -249,6 +261,7 @@ CONS_THS = ('<th scope="col">Secțiune</th>'
            f'<th scope="col" class="num"><span class="ip-rec ip-rec--feed s11-thico">{icon("feed", 14)}</span>Kg</th>'
            f'<th scope="col" class="num">{F} g/pasăre</th><th scope="col" class="num">{F} ghid</th><th scope="col" class="num">{F} față de ghid</th>'
            f'<th scope="col" class="num">{M} g/pasăre</th><th scope="col" class="num">{M} ghid</th><th scope="col" class="num">{M} față de ghid</th><th scope="col">Stare</th>')
+CONS_THS = SKL.widths(CONS_THS, W_CONS, M_CONS)
 def sec_consum():
     rows = ''
     for w in WEEKS:
@@ -272,7 +285,7 @@ def sec_consum():
 def unp_row(cyc, kg, note, tag=True):
     lbl = '<span class="ip-tag ip-tag--info">fără preț</span>' if tag else '<span>fără preț</span>'
     return f'<tr class="ip-cost__unpriced"><th scope="row"><span class="ip-sr">{cyc}, </span><span>{COIN16}{lbl}</span></th><td class="num">{n(kg)}</td><td class="ip-cost__note" colspan="3">{note}</td></tr>'
-COST_THS = '<th scope="col">Ciclu</th><th scope="col" class="num">Kg</th><th scope="col" class="num">Lei</th><th scope="col" class="num">Lei/pasăre</th><th scope="col" class="num">Lei/ou</th>'
+COST_THS = SKL.widths('<th scope="col">Ciclu</th><th scope="col" class="num">Kg</th><th scope="col" class="num">Lei</th><th scope="col" class="num">Lei/pasăre</th><th scope="col" class="num">Lei/ou</th>', W_COST, M_COST)
 def sec_cost():
     d0, d1 = min(d['date'] for d in unpriced), max(d['date'] for d in unpriced)
     t = f'''<thead><tr>{COST_THS}</tr></thead>
@@ -290,9 +303,10 @@ def sec_cost():
 # ---------- states ----------
 def sk(c=''): return s4.sk(c)
 def sec_loading():
-    ro = f'<li><div class="ip-readouts__skel">{sk() * 5}</div></li>'  # §35 StockReadout skeleton, as S2/S8 (FIN11; was s11-skro)
-    def tbl(ths, rows, cost=''):  # the real thead; skeleton cells keep each column's alignment
-        cols = re.findall(r'<th scope="col"(?: class="([^"]*)")?>', ths)  # num → td.num; s11-thedit → td.s11-pc (same right edge)
+    ro = f'<li>{SKL.readout()}</li>'  # §54 StockReadout skeleton, as tall as the loaded row, as S2 (FIN11G; FIN11 §35 box, was s11-skro)
+    def tbl(ths, rows, cost=''):
+        assert ths.count('<th scope="col"') == len(re.findall(r'<th scope="col"(?: class="[^"]*")?(?: style="[^"]*")?>', ths)), 'unmatched head cell'  # the real thead; skeleton cells keep each column's alignment
+        cols = re.findall(r'<th scope="col"(?: class="([^"]*)")?(?: style="[^"]*")?>', ths)  # FIN11G: heads carry the §54 style  # num → td.num; s11-thedit → td.s11-pc (same right edge)
         cl = lambda c: (' class="' + ' '.join(['num'] * ('num' in c.split()) + ['s11-pc'] * ('s11-thedit' in c.split())) + '"') if 'num' in c.split() else ''
         tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}</td>' for c in cols) + '</tr>' for _ in range(rows))
         if cost: return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'

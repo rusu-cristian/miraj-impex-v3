@@ -1367,18 +1367,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-dialog__keys{display:flex;justify-content:flex-end;gap:var(--space-2)}
 .ip-dialog__keys--stack{flex-direction:column}
 .ip-dialog__keys--stack > .ip-btn{width:100%}
-/* Skeletons (static sunken bars, no shimmer). StockReadout: ul.ip-readouts > li > div.ip-readouts__skel[aria-hidden]
- * holding 5 ip-skel bars (caption, value, two key-value lines, the shorter third), a light panel box in the readout's
- * column. CycleTrack: div.ip-trackskel[aria-hidden], one ip-skel bar per lane then the month axis bar (last).
- * Every StockReadout and CycleTrack skeleton uses these: S2, S8 and, since FIN11, S11 (was .s11-skro) and S18. */
-.ip-readouts__skel{flex:1;width:100%;min-width:0;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4);background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md)}
-.ip-readouts__skel > .ip-skel{display:block;width:100%}
-.ip-readouts__skel > .ip-skel:first-child{width:40%}
-.ip-readouts__skel > .ip-skel:nth-child(2){width:50%;height:calc(var(--space-6) + var(--space-1))}
-.ip-readouts__skel > .ip-skel:last-child{width:80%}
-.ip-trackskel{display:flex;flex-direction:column;gap:var(--space-2)}
-.ip-trackskel > .ip-skel{display:block;width:100%;height:var(--space-5)}
-.ip-trackskel > .ip-skel:last-child{width:30%;height:var(--space-3)}
+/* Skeletons: the StockReadout and CycleTrack skeletons moved to section 54 (FIN11G), where they keep the loaded geometry. */
 
 /* =====================================================================================================
  * S14P · DataTable scroll region contains its hidden text; Button busy keeps its look. Spec: components.md › Additions › S14P.
@@ -1719,3 +1708,75 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-select__txt > .ip-num{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
 .ip-select__opt .ip-note{color:inherit}
 .ip-select__opt:not([aria-disabled="true"]) .ip-note{color:var(--ink-muted)}
+
+/* =====================================================================================================
+ * FIN11G · Skeletons keep the loaded geometry. Spec: components.md › Skeleton, Additions › FIN11G.
+ * ===================================================================================================== */
+
+/* ---------- 54. Skeletons: Readout, CycleTrack, field and table columns as tall and wide as the loaded block (FIN11G) ---------- */
+/* Craft (S6P): the "se încarcă" skeleton is the loaded geometry. Every skeleton below takes the loaded block's own boxes,
+ * so data arriving moves nothing; bars stay static sunken ip-skel, no shimmer; the block keeps aria-busy, the skeleton is
+ * aria-hidden and a hidden role=status line says what loads.
+ * Readout (replaces section 35's .ip-readouts__skel, 158 tall against a 197 StockReadout row):
+ * div.ip-readout.ip-readout--skel[aria-hidden] (+ the loaded variant, e.g. --stock) holding the loaded Readout's own line
+ * elements, each with one bar: __cap > span > bar; __val > bar + small > bar; dl.__kv > div > dt > bar + dd > bar (one
+ * per loaded row); p.__sub > bar (the longest loaded shape: a StockReadout row stretches to its tallest readout, which
+ * has the sub line). The lines keep their font and line height, so the box is the loaded box in any font: light panel
+ * fill, hair line edge drawn inside (outline, no layout), the kv rule hidden. Bars sit inline in their line.
+ * A Readout holding a GuideChart (S4, S14) adds the chart's own svg.ip-chart, empty, with the loaded viewBox (as tall
+ * as the drawn chart at any width; sunken), then its read line and legend line (div > span|div > bar). Replaces the S4/S14
+ * screen box .s4s-skreadout. Stat (the Stats beside it, fix 1): div.ip-stat.ip-stat--skel with the Stat's own cap,
+ * value and guide lines; each guide item is two touching bars (wbr between) as wide as the loaded item, so a guide line
+ * wraps at the same width as the loaded text (S14 at 1280) and the Readout row keeps the loaded height. */
+.ip-readout--skel{background:var(--panel);outline:var(--ip-hair) solid var(--line);outline-offset:calc(-1 * var(--ip-hair))}
+.ip-readout--skel .ip-skel{display:inline-block;vertical-align:middle;max-width:100%}
+.ip-readout--skel .ip-readout__val > .ip-skel{height:var(--space-6)}
+.ip-readout--skel .ip-readout__val small > .ip-skel{width:var(--space-6)}
+.ip-readout--skel .ip-readout__kv{border-top-color:transparent}
+.ip-readout--skel .ip-readout__kv dd > .ip-skel{width:calc(var(--space-12) + var(--space-4))}
+.ip-readout--skel .ip-chart{background:var(--sunken);border-radius:var(--radius-sm)}
+.ip-readout--skel :is(.ip-chart__read,.ip-chart__legend) .ip-skel{display:inline-block;vertical-align:middle}
+.ip-stat--skel .ip-skel{display:inline-block;vertical-align:middle;max-width:100%}
+.ip-stat--skel .ip-stat__val > .ip-skel{height:var(--space-5)}
+/* CycleTrack (section 35 class, now per variant): div.ip-trackskel[aria-hidden], three bars: one per lane (where the
+ * loaded cycle blocks sit), then the month axis bar. Height = the drawn CycleTrack's (its viewBox height), so the legend
+ * and the blocks below stay put: full (series page, lanes 26) 120; --compact (Acasă, farm header, lanes 22) 90. Under it
+ * the legend line as loaded (div.ip-tracklegend > div.ip-skel-line > bar, fix 1). */
+.ip-trackskel{display:flex;flex-direction:column;height:calc(var(--space-12) * 2 + var(--space-6));padding:var(--space-6) 0 var(--space-1)}
+.ip-trackskel > .ip-skel{display:block;flex:none;width:100%;height:var(--space-5)}
+.ip-trackskel > .ip-skel:nth-child(2){margin-top:calc(var(--space-6) + var(--space-1))}
+.ip-trackskel > .ip-skel:last-child{width:30%;height:var(--space-3);margin-top:auto}
+.ip-trackskel--compact{height:calc(var(--space-12) * 2 - var(--space-1) * 1.5);padding-top:var(--space-5)}
+.ip-trackskel--compact > .ip-skel{height:var(--space-4)}
+.ip-trackskel--compact > .ip-skel:nth-child(2){margin-top:var(--space-4)}
+.ip-trackskel--compact > .ip-skel:last-child{height:var(--space-3)}
+/* Field (replaces the screen footprints s16s-sk* and s7s-skcol): div.ip-field.ip-field--skel[aria-hidden] > span.ip-label
+ * > bar, then the loaded field's own box, empty (span.ip-input + its size class: --touch 48, ip-count 56, --area), then
+ * the loaded field's hint (span.ip-hint > span.ip-skel-line > bar, one line each). Label, gap, box and hint keep the loaded sizes, so
+ * the field and everything under it sit where the loaded form puts them. The box is sunken with no edge (as read-only),
+ * no record edge, no hover; an area box holds one empty line per loaded row (span > span.ip-skel-line > bar, unseen on
+ * sunken) so it keeps the textarea's height. Any other text line of a loaded block (a SaveBar summary line, an
+ * EffectPreview line, a card head): span.ip-skel-line > bar(s), a block line in the inherited font and line height. */
+.ip-field--skel{pointer-events:none}
+.ip-field--skel .ip-label{display:block}
+.ip-field--skel .ip-label > .ip-skel,.ip-skel-line > .ip-skel{display:inline-block;vertical-align:middle;max-width:100%}
+.ip-field--skel .ip-label > .ip-skel{width:calc(var(--space-12) * 2)}
+.ip-field--skel .ip-hint .ip-skel{width:calc(var(--space-12) * 3)}
+.ip-field--skel .ip-input{background:var(--sunken);border-color:transparent;box-shadow:none}
+.ip-skel-line{display:block}
+/* DataTable columns: a table that loads declares its column shares once, on the head both tables use: each leaf
+ * th[style="--ip-colw:n%"] (or a colgroup's col, S12), taken from the loaded table's columns at 1440, so the columns keep
+ * their x when data arrives (content-sized columns jumped up to 240px on S11, S18–S22). One column (the widest text
+ * column) declares none and takes the rest. The width rule has zero specificity: where a screen folds columns beside a
+ * SidePanel (S19, S21, S22 container queries; S18 .s18-vp) it sets th{width:auto} and th::after{content:none} there, so
+ * that layout stays content-sized. A loading
+ * bar never widens its column: in skeleton rows the --w1…w3 widths are capped at the cell (min(…, 100%), which also
+ * keeps them out of the column's min-content width). Fix 1: where the loaded content is wider than a share (1280, or a
+ * table that scrolls), the loaded column grows to its min-content and the skeleton's would not, so each head cell also
+ * carries the loaded column's min-content width, --ip-colmin (measured, space-1 units, without the cell padding), drawn
+ * as a zero-height ::after strut: the loading column's min-content is then the loaded one's, at any width. */
+:where(.ip-table th[style*="--ip-colw"]){width:var(--ip-colw)}
+:where(.ip-table th[style*="--ip-colmin"])::after{content:"";display:block;width:var(--ip-colmin);height:0}
+.ip-table__skel .ip-skel--w1{width:min(calc(var(--space-12) * 4), 100%)}
+.ip-table__skel .ip-skel--w2{width:min(calc(var(--space-12) * 3), 100%)}
+.ip-table__skel .ip-skel--w3{width:min(calc(var(--space-12) * 1.5), 100%)}

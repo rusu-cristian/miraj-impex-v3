@@ -3,7 +3,7 @@ python3 -I s2s_build.py <repo_root> [--canvas]
 Imports s2_build (it rewrites the 4 S2 default boards and, through s7s_build, the S7 boards byte-identical) and reuses
 its blocks (missing, entrykeys, introdus, alerts, stock, unpriced, track, farms_block), shells (phone tab bar, Sidebar)
 and CSS; phone viewport / Banner / modal anchor CSS from sstate_css.py; empty-box classes from s4s_build. S2P: phone Dialog,
-tab bar key off, StockReadout and CycleTrack skeletons are system classes (additions.css section 35).
+tab bar key off are system classes (additions.css section 35); the StockReadout and CycleTrack skeletons are section 54 (skel.py, FIN11G).
 Phone state boards are 390×844 viewports (D60) with the BottomTabBar at the foot; desktop boards are pages (1440).
 Every figure comes from the extracts; boards whose example is not in the sample say "exemplu de stare (D39)".
 Writes design/canvas/project/S2-acasa--<state>.dc.html, /tmp/s2/<stem>.html (phones), /tmp/s4s/<stem>.html (desktops),
@@ -24,6 +24,7 @@ sys.path.insert(0, str(HERE))
 sys.argv = ['s2_build.py', str(ROOT), str(HP)]
 A = importlib.import_module('s2_build')        # writes the S2 default boards (and S7, unchanged)
 import sstate_css as SC
+import skel as SKL
 s4, B = A.s4, A.B
 n, dd, num, lamp, icon, tile, NB, D = A.n, A.dd, A.num, A.lamp, A.icon, A.tile, A.NB, A.D
 TODAY, S, WK = A.TODAY, A.S, A.WK
@@ -126,7 +127,7 @@ boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscre
 # ---------- desktop pieces ----------
 sk = s4.sk
 def skreadouts(k, hid):
-    ro = f'<li><div class="ip-readouts__skel" aria-hidden="true">{sk() * 5}</div></li>'
+    ro = f'<li>{SKL.readout()}</li>'  # §54 Readout skeleton: the StockReadout's own lines, as tall as the loaded row (FIN11G)
     return f'<ul class="ip-readouts" aria-labelledby="{hid}">{ro * k}</ul>'
 
 # 9 · manager · desktop · se încarcă
@@ -159,7 +160,7 @@ boards.append(('manager-desktop--zi-trecuta-stoc-sub-0', 'manager · desktop · 
     A.entrykeys(True), A.introdus_empty(A.INTRO_MGR)])))
 
 # 11 · proprietar · desktop · se încarcă — track, alerts, UnpricedCount (its own skeleton), stock, farm summaries
-sktrack = f'<div class="ip-trackskel" aria-hidden="true">{sk() * 3}</div>'  # 2 lanes + the month axis
+sktrack = SKL.track(compact=True) + SKL.legend()  # 2 lanes + the month axis, as tall as the compact CycleTrack (§54, FIN11G)
 skup = (f'<section class="ip-unpriced" aria-labelledby="up" aria-busy="true"><div class="ip-unpriced__head">{tile("price")}<h2 class="ip-cap" id="up">Livrări fără preț</h2></div>'
         f'<div aria-hidden="true" class="ip-unpriced__skel"><span class="ip-skel ip-skel--val"></span><span class="ip-skel ip-skel--w1"></span><span class="ip-skel ip-skel--w2"></span></div></section>')
 skfs = f'<article class="ip-fsum ip-fsum--compact" aria-hidden="true">{sk("s4s-w40 s4s-h20")}{sk("s4s-w50")}{sk("s4s-w30 s4s-h20")}{sk("s4s-w100")}{sk("s4s-w80")}</article>'

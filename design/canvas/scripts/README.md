@@ -52,3 +52,4 @@ S4/S7/S11/S12/S13/S6/S9 entries were placed by hand: they never change unless ed
 - s1, s19, s20, s22 also exec the top of design/system/scripts/sys13/sys10/sys11/sys12_build.py.
 - sstate_css.py ← s2s, s6s, s7s, s8, s9, s10, s13, s14s, s15s, s16, s18 (s15 and later get it through these too).
 - canvas_rows.py: args/row_y/place/save for every build above.
+- skel.py (FIN11G, additions.css §54): skeleton markup and table column shares (readout, track, field, line, widths) ← s2s, s6s, s7s, s8s, s11 (S12/S13/S14 through it), s14, s16s, s18 (+ s18s), s19 (+ s19s, s21, s22), s20 (+ s20s), s21, s22. A change re-runs those rows.

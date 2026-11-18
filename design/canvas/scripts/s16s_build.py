@@ -27,6 +27,7 @@ ROOT, _, CANVAS = CR.args(); ROOT = ROOT.resolve()
 HERE = pathlib.Path(__file__).resolve().parent
 HP = HERE / 's16_heights.json'
 sys.path.insert(0, str(HERE))
+import skel as SKL
 sys.argv = ['s16_build.py', str(ROOT), str(HP)]
 Q = importlib.import_module('s16_build')        # writes the 5 S16 boards (unchanged) and the S16 canvas entries
 T, s4, SC = Q.T, Q.s4, Q.SC
@@ -106,11 +107,14 @@ boards.append(('eroare-la-salvare', 'eroare la salvare', 'p', Q.screen(
     sheet(Q.head(True), [Q.BY, Q.counts(n(NEW), '0', OLD, 0, True), Q.motiv(Q.REASON), BAN, Q.effect()], FOOT))))
 
 # 3 · se încarcă — the head comes from the row that opened the sheet; the record is unknown: static skeletons, keys off
-def skf(box): return f'<div class="s16s-skf"><span class="ip-skel ip-skel--w3"></span><span class="ip-skel {box}"></span></div>'
+# FIN11G: §54 field skeletons (label line, the loaded box, its hint lines) and the EffectPreview's own lines, so the
+# fields and the effect keep the loaded sizes (were the s16s-sk* footprints, 20px short per field)
+FX = Q.effect(); REC = re.search(r'<span class="ip-rec [^"]*s13-rec">.*?</svg></span>', FX).group(0)  # record type: known from the row
+SKFX = (f'<div class="ip-effect s13-effect" aria-hidden="true">{REC}<div class="s9-fxbody">{SKL.line("ip-skel--w3", cls="ip-cap")}'
+        f'{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2", cls="s9-fxsub")}</div></div>')
 # S16P: the status line is visible (in place of the "Introdus de …" line) and gives the disabled keys their reason
 SKEL = (f'<p class="ip-note s13-m0" role="status" id="ld">Se încarcă rândul din {num(dd(RDAY))} · Șterge și Salvează corecția se activează după încărcare.</p>'
-        f'<div class="s16s-sk" aria-hidden="true">'
-        f'<div class="s16-pair">{skf("s16s-skbox")}{skf("s16s-skbox")}</div>{skf("s16s-skarea")}<span class="ip-skel s16s-skfx"></span></div>')
+        f'<div class="s16-pair" aria-hidden="true">{SKL.field("count", 1)}{SKL.field("count", 1)}</div>{SKL.field("area", 2)}{SKFX}')
 KEYS_OFF = ('<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch" disabled aria-describedby="ld">Șterge</button>'
             '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled aria-describedby="ld">Salvează corecția</button>')
 LHEAD = Q.head(True).replace('<button type="button" class="ip-iconbtn ip-iconbtn--touch"', '<button type="button" class="ip-iconbtn ip-iconbtn--touch ip-focus" autofocus="autofocus"', 1)
@@ -239,12 +243,6 @@ boards.append(('desktop-dupa-stergere', 'desktop · după ștergere · exemplu d
 # ---------- CSS (screen only, tokens only) ----------
 CSS_ADD = '''
 .s16s-ct{container-type:inline-size}
-.s16s-sk{display:flex;flex-direction:column;gap:var(--space-4)}
-.s16s-skf{display:flex;flex-direction:column;gap:var(--space-2)}
-.s16s-sk .ip-skel{display:block}
-.s16s-skbox{width:100%;height:var(--count-input-h)}
-.s16s-skarea{width:100%;height:calc(var(--space-12) * 2)}
-.s16s-skfx{width:100%;height:calc(var(--space-12) * 3)}
 .s16s-lock{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2);margin:var(--space-1) 0 0}'''
 CSS_P = Q.CSS_P + CSS_ADD
 CSS_D = Q.CSS_D + SC.BANNER + '''

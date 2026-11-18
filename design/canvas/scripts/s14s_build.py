@@ -96,7 +96,7 @@ def phone_page(sheet=False):
     if sheet:  # the key that opened the sheet: expanded, controls it
         k = 'aria-haspopup="dialog" aria-expanded="false"'; assert pf.count(k) == 1
         pf = pf.replace(k, 'aria-haspopup="dialog" aria-expanded="true" aria-controls="pf-sheet"')
-    body = A.phone([p_header(), pf, f'<div class="s14-page">{top}{X.tb_weeks()}</div>'])
+    body = A.phone([p_header(), pf, f'<div class="s14-page">{top}{X.tb_weeks(phone=True)}</div>'])
     body = body.replace('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"', 1)
     body = body.replace('class="ip-tabbar__item" href="#rapoarte"', 'class="ip-tabbar__item is-current" href="#rapoarte" aria-current="page"', 1)
     assert body.count('is-current') == 1 and 'href="#rapoarte" aria-current="page"' in body

@@ -29,7 +29,7 @@
       "x": 1520,
       "y": 800,
       "w": 1440,
-      "h": 1496,
+      "h": 1520,
       "expand": "fill",
       "title": "S4 · Fermă · Rezumat · se încarcă"
     },
@@ -221,7 +221,7 @@
       "x": 1520,
       "y": 8109,
       "w": 1440,
-      "h": 1207,
+      "h": 1246,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · se încarcă"
     },
@@ -775,7 +775,7 @@
       "x": 3290,
       "y": 26059,
       "w": 390,
-      "h": 908,
+      "h": 911,
       "title": "S8 · Cântărire · se încarcă"
     },
     "S8-cantarire--alege-sectiunea.dc.html": {

@@ -6,7 +6,7 @@ caption aria-hidden), values grid, SaveBar summary and screen CSS. Viewport/Bann
 SectionSelect BottomSheet is additions.css §33 (S9P), its scrim anchored as S9 (SC.MODAL). System classes only.
 Content (real only, no D39 example needed):
 - se încarcă: Hîrbovăț 16.11.2026 (farm, day and week come from the route); Secțiune, Sex, Masa medie, Readout and the values
-  load: static sunken skeletons (Readout slot = the §35 StockReadout skeleton box), SaveBar skeleton + Salvează disabled.
+  load: static sunken skeletons (fields = §54 field skeletons, the Readout slot = the §54 skeleton of the comparison Readout), SaveBar skeleton + Salvează disabled.
 - alege secțiunea: the gol form with the Secțiune BottomSheet open (390x844, sheet fixed to the screen): Hîrbovăț sections with
   ♀ · ♂ alive on 16.11.2026 (counts-latest, sample D27), H1.1 chosen and active; Telița sections "goală" and disabled (cycle
   closed 28.02.2026, real) — an empty section can't be weighed.
@@ -28,6 +28,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 HP = HERE / 's8_heights.json'
 sys.argv = ['s8_build.py', str(ROOT), str(HP)]
 sys.path.insert(0, str(HERE))
+import skel as SKL
 with contextlib.redirect_stdout(io.StringIO()):
     E = importlib.import_module('s8_build')  # rewrites S7 + the 7 S8 boards, byte-identical
 B, P, SC = E.B, E.P, E.SC
@@ -85,13 +86,13 @@ boards = []  # (slug, state, body)
 # 1 · se încarcă — header and date from the route; the rest static sunken skeletons (no shimmer), SaveBar summary skeleton
 def skel(w, h): return f'<div class="ip-skel" style="width:{w};height:{h}"></div>'
 SK16 = 'var(--ip-lh-small)'
-def skfield(w, h): return f'<div class="s7s-skcol" aria-hidden="true">{skel(w, SK16)}{skel("100%", h)}</div>'
-TOUCH, COUNT = 'var(--control-h-touch)', 'var(--count-input-h)'
-RO_SKEL = '<div class="ip-readouts__skel" aria-hidden="true">' + '<div class="ip-skel"></div>' * 5 + '</div>'  # §35 readout skeleton
+def skfield(w, box): return SKL.field(box)  # §54 field skeleton (FIN11G; was s7s-skcol): label line + the loaded box
+TOUCH, COUNT = 'touch', 'count'
+RO_SKEL = SKL.readout(None, kv=2, live=True)  # §54 Readout skeleton: the comparison Readout's own lines (FIN11G)
 sk = (f'<p class="ip-sr" role="status">Se încarcă secțiunile și ghidul pentru <span class="ip-num">{dd(HB["day"])}</span>…</p>'
       f'<div class="s7s-skblock" aria-busy="true">{skfield("30%", TOUCH)}{skfield("15%", TOUCH)}{skfield("40%", COUNT)}{RO_SKEL}'
       f'<div class="s8-pair">{skfield("50%", TOUCH)}{skfield("70%", TOUCH)}{skfield("80%", TOUCH)}</div></div>')
-sv1 = (f'<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol" aria-hidden="true">{skel("70%", SK16)}{skel("45%", SK16)}</span>'
+sv1 = (f'<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span>'
        f'<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>')
 boards.append(('se-incarca', 'se încarcă', screen([E.date(HB), sk], sv1)))
 
@@ -162,7 +163,7 @@ p6 = E.form(OK, None, None, None, None)
 assert 'scrie masa medie' in p6[4] and 'FĂRĂ DATE<' in p6[4]
 boards.append(('gol-telita', f'gol · Telița {dd(OK["day"])}', screen(p6, B.savebar(E.rec14() + E.what(OK, None), '<span>de completat · Masa medie</span>', SAVE_OFF), c=OK)))
 
-CSS = E.CSS + SC.SKEL + '\n.s7s-skcol > .ip-skel{flex:none}' + SC.MODAL
+CSS = E.CSS + SC.SKEL + SC.MODAL
 STEM0, TITLE0 = 'S8-cantarire', 'S8 · Cântărire'
 SYS = ROOT / 'design/system'
 pathlib.Path('/tmp/s8').mkdir(exist_ok=True)

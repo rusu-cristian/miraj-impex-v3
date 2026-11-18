@@ -17,6 +17,7 @@ t4 = _load('s4t_build')   # reads sys.argv[1] (repo root)
 s11 = _load('s11_build')  # reads sys.argv[2] as its heights only if given (harmless: it writes nothing on import)
 s4 = t4.s4
 sys.path.insert(0, str(HERE)); import canvas_rows as CR
+import skel as SKL
 ROOT, HP, CANVAS = CR.args('s14_heights.json')  # heights default: s14_heights.json
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 
@@ -145,7 +146,11 @@ def top(mode='default'):
     return t4.top('h-key', 'Producție față de ghid, ciclul curent', t4.ro_productie(), stats_cur())
 
 # ================================================================= the weekly table (spec D3), Seria 2026
-def th_head(ng=False):
+# FIN11G (§54): the desktop weekly table's 14 column shares at 1440 (as content-sized before), declared on the head the
+# loading skeleton reuses (desktop only: the phone table scrolls at its content width)
+M_WEEKS = [137.75, 46.97, 54.8, 50.42, 39.14, 82.13, 64.19, 54.8, 39.14, 56.8, 39.5, 39.5, 69.36, 43.81]  # fix 1: loaded min-content (px)
+W_WEEKS = [None, 6.1, 6.8, 6.4, 5.5, 9.2, 7.6, 6.8, 5.5, 7.0, 5.5, 5.5, 8.1, 5.9]  # None: Săptămâna · hala takes the rest
+def th_head(ng=False, desk=False):
     eg, mo, fe = t4.thico('eggs'), t4.thico('mortality'), t4.thico('feed')
     sx = lambda s: f'<th scope="col" class="num">{t4.thsex(s)}</th>'
     if ng:
@@ -159,7 +164,7 @@ def th_head(ng=False):
               f'<th scope="colgroup" colspan="2">{mo}Mortalitate</th><th scope="colgroup" colspan="2">{fe}Hrană {t4.thsex("F")} g/pasăre</th></tr>')
         h2 = ('<tr><th scope="col" class="num">Efectiv</th><th scope="col" class="num">Ghid</th><th scope="col" class="num">Față de ghid</th><th scope="col">Stare</th>'
               f'<th scope="col" class="num">Ouă</th><th scope="col" class="num">%</th>{sx("F")}{sx("M")}<th scope="col" class="num">Efectiv</th><th scope="col" class="num">Ghid</th></tr>')
-    return f'<thead>{h1}{h2}</thead>'
+    return SKL.widths(f'<thead>{h1}{h2}</thead>', W_WEEKS, M_WEEKS) if desk and not ng else f'<thead>{h1}{h2}</thead>'
 
 def span(d0, d1):  # "10.11–16.11", "27.10–02.11" (year in the section note; FIN09 range form)
     return f'{ddm(d0)}–{ddm(d1)}'
@@ -175,7 +180,7 @@ def cells(k, w, ng=False):
     if not ng: o += f'<td class="num s4t-muted">{GF[(w, "F")]}</td>'
     return o
 
-def tb_weeks(ng=False):
+def tb_weeks(ng=False, phone=False):
     body = ''
     for w in SHOW:
         a = EW[('all', w)]
@@ -185,7 +190,7 @@ def tb_weeks(ng=False):
             body += f'<tr><th scope="row" class="ip-table__child">{h}<span class="ip-sr">, SAPT {w}</span></th>{cells(h, w, ng)}</tr>'
         body += '</tbody>'
     cap = f'Producție Hîrbovăț pe săptămâni și hale, SAPT {SHOW[-1]}–{WK}' + ('' if ng else ', față de ghid')
-    t = t4.tbox(cap, th_head(ng) + body)
+    t = t4.tbox(cap, th_head(ng, desk=not phone) + body)
     note = (f'Hîrbovăț · {num(f"SAPT {SHOW[-1]}–{WK}")} ({num(ddm(EW[("all", SHOW[-1])]["from"]) + "–" + ddate(TODAY))}) din {num(f"SAPT {WEEKS_ALL[0]}–{WK}")} · cele mai noi întâi · '
             + ('ciclul nu are ghid, nu se compară' if ng else f'ghid Ross 308 ouat · toleranță ouat {num("±3 pct")}'))
     fnote = (f'Rândul săptămânii = ferma; halele dedesubt (ouăle se înregistrează pe hală). {num(f"Sapt. {WK}")} include azi, {num(ddate(TODAY))}. Găini = în viață la sfârșitul săptămânii. '
@@ -276,8 +281,9 @@ def tb_past():
 # ================================================================= states
 sk = s4.sk
 def page_loading():
-    stat = '<div class="ip-stat s4s-skstat">' + sk('s4s-w30') + sk('s4s-w60 s4s-h20') + sk('s4s-w80') + sk('s4s-w50') + '</div>'
-    head = th_head()
+    # FIN11G fix 1: §54 Stat skeletons with the six loaded Stats' guide-line items (one-line px at 1440), so they wrap at 1280 as loaded
+    stat = ''.join(SKL.stat(g) for g in [[[243.36], [182.34]], [[146.7], [229.89]], [[132.89], [178.56]], [[132.89], [152.13]], [[132.89], [197.59]], [[117.8, 64.19], [234.22]]])
+    head = th_head(desk=True)
     ncols = 14
     numcols = [True] * ncols; numcols[0] = False; numcols[6] = False  # Săptămâna · hala, Stare
     tr = lambda cls: f'<tr{cls}>' + ''.join(f'<td{" class=\"num\"" if numcols[i] else ""}>{sk("s4s-w70")}</td>' for i in range(ncols)) + '</tr>'
@@ -285,7 +291,7 @@ def page_loading():
     tbl = f'<div class="ip-tablescroll ip-tablescroll--framed"><table class="ip-table ip-table--rowheads">{head}{rows}</table></div>'
     return f'''<div class="s14-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Producție pentru Hîrbovăț, ciclul curent.</p>
-<section class="s4-top" aria-hidden="true"><div class="s4s-skreadout">{sk("s4s-w40")}{sk("s4s-w25 s4s-h28")}{sk("s4s-w50")}{sk("s4s-chart")}{sk("s4s-w60")}</div><div class="ip-stats s4-stats">{stat * 6}</div></section>
+<section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {s4.CW} {s4.CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
 <section class="s4-block" aria-hidden="true"><div class="s4-head"><h2 class="ip-t-heading">Pe săptămâni și hale</h2></div>{tbl}</section>
 </div>'''
 

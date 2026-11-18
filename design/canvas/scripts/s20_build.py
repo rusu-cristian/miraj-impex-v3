@@ -30,6 +30,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's20_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import skel as SKL
 sys.argv = ['s19_build.py', str(ROOT)]
 sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
 M = importlib.util.module_from_spec(sp)
@@ -158,6 +159,9 @@ def list_key(pressed=False):
     return f'<a class="ip-btn ip-btn--secondary{p}" href="#importa-ghid">{icon("upload", 16)}Importă ghid</a>'
 LCOLS = ('<thead><tr><th scope="col">Ghid</th><th scope="col">Tip</th><th scope="col">Săptămâni</th><th scope="col">Coloane</th>'
          '<th scope="col">Folosit de</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
+# FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
+# None = the column that takes the rest
+LCOLS = SKL.widths(LCOLS, [11.8, 6.6, 15.4, None, 24.4, 10.4], [111.8, 52.58, 86.7, 64.59, 258.38, 96.78])  # + loaded min-content px (fix 1)
 ORDER = ['g-growth', 'g-laying']   # by name
 assert ORDER == sorted(GUIDE, key=lambda g: GUIDE[g])
 def lrow(g):

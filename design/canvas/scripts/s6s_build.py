@@ -17,6 +17,7 @@ sys.argv = ['s6_build.py', str(ROOT), str(HERE / 's6_heights.json')]
 sys.path.insert(0, str(HERE))
 B = importlib.import_module('s6_build')
 S7 = B.B
+import skel as SKL
 import sstate_css as SC  # viewport / Toast-undo / Banner-action / skeleton CSS, shared with s7s_build
 n, dd, sexv, lamp, icon, NB, MINUS = B.n, B.dd, B.sexv, B.lamp, B.icon, B.NB, B.MINUS
 TODAY, YDAY, START, S, FS = B.TODAY, B.YDAY, B.START, B.S, B.FS
@@ -90,15 +91,17 @@ boards, TARGET = [], {}
 # key 48; foot = the Checkbox row itself (an aria-hidden `ip-check` box holding the bar, so it takes the system row height).
 def skel(w, h): return f'<div class="ip-skel" style="width:{w};height:{h}"></div>'
 SK16, SK20, SK22 = 'var(--ip-lh-small)', 'var(--ip-lh-figure)', 'var(--ip-lh-heading)'
-def skfield(hint=True): return f'<div class="s7s-skcol">{skel("70%", SK16)}{skel("100%", "var(--count-input-h)")}{skel("80%", SK16) if hint else ""}</div>'
-skcard = (f'<section class="ip-panel ip-entry" aria-hidden="true"><div class="s7s-skcol">{skel("20%", SK22)}{skel("55%", SK20)}</div>'
+# FIN11G: fields are the §54 field skeleton (label line, CountInput box, hint line), the head the card head's own lines
+def skfield(hint=True): return SKL.field('count', 1 if hint else 0)
+skcard = (f'<section class="ip-panel ip-entry" aria-hidden="true"><div class="ip-entry__head">{SKL.line("ip-skel--w3", cls="ip-entry__code")}'
+          f'<span class="ip-entry__alive">{SKL.line("ip-skel--w2", cls="ip-pair")}</span></div>'
           f'<div class="ip-entry__grid">{skfield()}{skfield()}{skfield(False)}{skfield(False)}</div>'
-          f'<div class="s7s-skcol">{skel("50%", "var(--control-h-touch)")}</div>'
+          f'{skel("50%", "var(--control-h-touch)")}'
           f'<div class="ip-entry__foot"><span class="ip-check s6s-skcheck">{skel("calc(var(--space-12) * 3)", SK20)}</span></div></section>')
 skhall = f'<section class="ip-hall" aria-hidden="true"><div class="ip-hall__head">{skel("40%", SK22)}</div><div class="ip-hall__sections">{skcard * 2}</div></section>'
 sk = f'''<p class="ip-sr" role="status">Se încarcă secțiunile pentru <span class="ip-num">{dd(TODAY)}</span>…</p>
 <div class="s7s-skblock" aria-busy="true"><div class="ip-halls">{skhall}</div></div>'''
-sv1 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum s7s-skcol" aria-hidden="true">{skel("70%", SK16)}{skel("45%", SK16)}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
+sv1 = f'''<div class="ip-savebar s7-savebar"><span class="ip-savebar__sum ip-ftot-sum" aria-hidden="true">{SKL.line("ip-skel--w1")}{SKL.line("ip-skel--w2")}</span><button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled>Salvează</button></div>'''
 boards.append(('se-incarca', 'se încarcă', screen([B.DATE, sk], sv1, 'se-incarca')))
 
 # 2 · deja introdus — 16.11 opened again after the 08:34 save: read-only cards, Tag "salvat", one form-level Editează (D60)
@@ -174,7 +177,6 @@ TARGET['motiv-lipsa'] = 't-H11'
 CSS = B.CSS + SC.VIEW + SC.BANNER  # S7S's screen CSS (sstate_css), class names kept s7s- as S6 keeps s7-screen/s7-main
 CSS_EXTRA = {
  'se-incarca': SC.SKEL + '''
-.s7s-skcol > .ip-skel{flex:none}
 .s6s-skcheck{cursor:default}''',
 }  # skeleton rules only on the board that uses them (the Toast is additions.css §48, FIN02)
 

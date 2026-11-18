@@ -4,6 +4,7 @@ so the shell is identical on all 9 boards; the inferred-start mark and the split
 python3 -I s4s_build.py <repo_root>
 Writes design/canvas/project/S4-ferma-rezumat--<state>.dc.html and /tmp/s4s/<state>.html (plain wrappers)."""
 import sys, json, pathlib, datetime as dt
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import skel as SKL  # FIN11G: §54 skeleton markup
 
 ROOT = pathlib.Path(sys.argv[1])
 EX = ROOT / 'design/data/extracts'
@@ -517,14 +518,16 @@ def panel_default(ng=False, banner=''):
 # ---------- 1. loading: static skeletons (no shimmer) where data arrives ----------
 def sk(cls=''):
     return f'<span class="ip-skel{(" " + cls) if cls else ""}"></span>'
+# FIN11G fix 1: the six loaded Stats' guide-line items, one-line widths in px (measured at 1440, fallback fonts)
+STAT_SKEL = [[[86.7], [167.91]], [[132.89], [197.59]], [[132.89], [195.08]], [[109.41, 64.19], [168.94]], [[130.05, 57.64], [210.44]], [[114.83, 64.19], [137.28]]]
 def panel_loading():
-    stat = '<div class="ip-stat s4s-skstat">' + sk('s4s-w30') + sk('s4s-w60 s4s-h20') + sk('s4s-w80') + sk('s4s-w50') + '</div>'
+    stat = ''.join(SKL.stat(g) for g in STAT_SKEL)  # FIN11G fix 1: §54 Stat skeletons, guide lines as wide as the loaded ones
     tile_ = '<div class="ip-stile s4s-sktile">' + '<div class="ip-stile__head">' + sk('s4s-w20 s4s-h16') + sk('s4s-w20') + '</div>' + sk('s4s-w50 s4s-h16') + sk('s4s-w100 s4s-h4') + ''.join('<div class="ip-stile__kv">' + sk('s4s-w40') + sk('s4s-w20') + '</div>' for _ in range(4)) + '</div>'
     hall = f'<div class="s4-hall"><div class="s4-hallhead">{sk("s4s-w20")}{sk("s4s-w30")}</div><div class="ip-tiles">{tile_}{tile_}</div></div>'
     row = f'<div class="ip-ev s4s-skrow">{sk("s4s-sq")}<div class="ip-ev__main s4s-skmain">{sk("s4s-w70")}{sk("s4s-w45")}</div>{sk("s4s-w15")}</div>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă rezumatul Hîrbovăț pentru ciclul curent.</p>
-<section class="s4-top" aria-hidden="true"><div class="s4s-skreadout">{sk("s4s-w40")}{sk("s4s-w25 s4s-h28")}{sk("s4s-w50")}{sk("s4s-chart")}{sk("s4s-w60")}</div><div class="ip-stats s4-stats">{stat * 6}</div></section>
+<section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {CW} {CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
 <section class="s4-block" aria-hidden="true"><div class="s4-head"><h2 class="ip-t-heading">Secțiuni</h2></div><div class="s4-halls">{hall * 3}</div><div class="s4s-sktotals">{sk("s4s-w100 s4s-h16")}{sk("s4s-w70")}{sk("s4s-w50")}</div></section>
 <div class="s4-split" aria-hidden="true">
 <section class="s4-block"><div class="s4-head"><h2 class="ip-t-heading">De verificat</h2></div><div class="ip-list">{row * 4}</div></section>
@@ -725,15 +728,12 @@ CSS_STATES = '''.s4s-emptybox{background:var(--panel);border:var(--ip-hair) soli
 .s4s-empty-p{margin:0;color:var(--ink)}
 .s4s-empty-p + .s4s-empty-p{color:var(--ink-secondary)}
 .ip-empty > .ip-btn,.ip-empty > .ip-link{margin-top:var(--space-2)}
-.s4s-skreadout{background:var(--panel);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
-.s4s-skstat{gap:var(--space-2)}
 .s4s-sktile{gap:var(--space-2)}
 .s4s-sktotals{background:var(--panel);border:var(--ip-hair) solid var(--line);border-top-color:var(--line-strong);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
 .s4s-skrow{gap:var(--space-3);align-items:center}
 .s4s-skmain{display:flex;flex-direction:column;gap:var(--space-2);flex:1}
 .ip-skel{display:block}
 .s4s-sq{width:var(--record-tile);height:var(--record-tile);flex:none;border-radius:var(--radius-sm)}
-.s4s-chart{width:100%;height:calc(var(--space-12) * 4);border-radius:var(--radius-sm)}
 .s4s-h4{height:var(--space-1)}.s4s-h16{height:var(--space-4)}.s4s-h20{height:var(--space-5)}.s4s-h28{height:calc(var(--space-6) + var(--space-1))}
 .s4s-w15{width:15%}.s4s-w20{width:20%}.s4s-w25{width:25%}.s4s-w30{width:30%}.s4s-w40{width:40%}.s4s-w45{width:45%}.s4s-w50{width:50%}.s4s-w60{width:60%}.s4s-w70{width:70%}.s4s-w80{width:80%}.s4s-w100{width:100%}
 .s4s-daterow{gap:var(--space-2);flex-wrap:nowrap}
