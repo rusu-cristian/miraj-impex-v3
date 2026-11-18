@@ -1,5 +1,5 @@
 """S19S · Ferme și secțiuni · state boards (spec B1; D110, D75, D111). Imports s19_build (which rewrites the 10 S19 boards,
-and through s18_build the S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S19 states on the same row (y 34400).
+and through s18_build the S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S19 states on the same row (y 34408).
 Desktops first (a Setări page, as S17S/S18S): the new desktops follow the nine S19 desktops; the S19 phone moves right
 (x only). Today = 16.11.2026 (D23/D24). Real: farms, types, codes, halls, Hîrbovăț open SAPT 40, Telița empty from
 28.02.2026; guide names illustrative (D22). Every edit not in the extracts is a D39 example, said in the board title.
@@ -93,9 +93,10 @@ def tip_err():
     f = f.replace(a, 'aria-required="true" aria-invalid="true" aria-describedby="fp-tip-e">')
     return f[:-6] + err('fp-tip-e', 'Alege tipul fermei: Creștere sau Ouat. Lista de ghiduri depinde de el.') + '</div>'
 NEW_GHID_OUAT = M.gbox(GUIDE['g-laying'], '<span class="ip-hint" id="fp-ghid-h">Doar ghiduri de ouat. Se aplică de la primul ciclu al fermei.</span>', 'laying')
-def save_banner(text):
+def save_banner(*paras):   # D147: the lead, then the retry line + what is kept
+    body = ''.join(f'<p class="ip-m0">{t}</p>' for t in paras)
     return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="fp-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="ip-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
+            f'{body}</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ---- tree states (SYS10 helpers; one edit row open at a time)
 def tree_x(fid, noguide=False, note=None, banner='', live='', **kw):
@@ -148,7 +149,7 @@ TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" ro
 desk('--salvat', f'salvat · {D39}: ghidul Teliței ales din „fără ghid”', SAVED + TOAST, hd('--salvat'))
 # 5 · eroare la salvare (D39, the same edit): draft kept, Banner + Reîncearcă (focus) under the fields it covers
 BODY = [M.name_field('Telița'), TEL_TIP, M.ghid_field('telita'),
-        save_banner(f'Telița nu s-a salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou.'),
+        save_banner('Telița nu s-a salvat: conexiunea s-a întrerupt.', f'Verifică conexiunea la internet, apoi apasă Reîncearcă. Ghidul ales, {GUIDE["g-growth"]}, rămâne în panou.'),
         M.tree_farm('telita', noguide=True)]
 desk('--eroare-la-salvare', f'eroare la salvare · {D39}: ghidul Teliței ales din „fără ghid”',
      M.vp('telita', noguide=('telita',)) + M.panel('Telița', M.ctx('telita'), BODY, M.SAVE), PH)

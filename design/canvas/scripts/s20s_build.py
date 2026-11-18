@@ -1,5 +1,5 @@
 """S20S · Ghiduri · state boards (spec B2; D76, D113, D114). Imports s20_build (which rewrites the 9 S20 boards, and through
-s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S20 states on the same row (y 35544).
+s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S20 states on the same row (y 35552).
 Desktops first (a Setări page, as S17S–S19S): the new desktops follow the eight S20 desktops; the S20 phone moves right
 (x only). Today = 16.11.2026 (D23/D24). Real: the guide figures (guide-growth.json, guide-laying.json), which cycles use
 each guide; guide names illustrative (D22). Every file, name or edit not in the extracts is a D39 example, said in the
@@ -146,7 +146,7 @@ def new_read(extra=''):
                 + G['foot'](P, True, f'Se salvează {NL} de rânduri în ghidul nou {NEWN}.')
                 + G['live'](f'Fișier citit: {NL} de rânduri, toate valide.'))
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="gi-save-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="ip-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. '
+            f'<p class="ip-m0">{NEWN} nu s-a salvat: conexiunea s-a întrerupt.</p><p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. '
             f'Numele, tipul și cele {NL} de rânduri citite rămân aici.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 SAVE_FOCUS = ('<!-- Focus after a failed Salvează ghidul: Reîncearcă in the fault Banner (role=alert) above the keys; the name, '

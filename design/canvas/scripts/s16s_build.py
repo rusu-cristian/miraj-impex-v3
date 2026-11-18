@@ -100,8 +100,8 @@ boards.append(('salvat', f'salvat · {dd(Q.AT_D)}, {Q.AT_T}', 'p', Q.screen(
 # 2 · eroare la salvare — online only (spec §1): the draft stays (D60), fault Banner + Reîncearcă right above the preview
 #   (S9P), Salvează corecția stays enabled; the whole body fits above the foot (no scroll)
 BAN = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body">'
-       f'<p class="ip-m0">Corecția nu s-a salvat: {SEC} · {num(dd(RDAY))} · {hen(f"{OLD}{NBS}→{NBS}{NEW}")}. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
-       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div>'
+       f'<p class="ip-m0">Corecția nu s-a salvat: {SEC} · {num(dd(RDAY))} · {hen(f"{OLD}{NBS}→{NBS}{NEW}")}.</p>'
+       f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div>'
        f'<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')  # S16P: focus after a failed save
 boards.append(('eroare-la-salvare', 'eroare la salvare', 'p', Q.screen(
     sheet(Q.head(True), [Q.BY, Q.counts(n(NEW), '0', OLD, 0, True), Q.motiv(Q.REASON), BAN, Q.effect()], FOOT))))

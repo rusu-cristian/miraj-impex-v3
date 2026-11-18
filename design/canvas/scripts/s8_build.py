@@ -216,8 +216,8 @@ boards.append(('salvat', 'salvat', screen(form(C, C['w'], dv(C['cv']), dv(C['uni
 # 6 · eroare la salvare (Connectivity: online only, draft kept, retry): the Banner ends the form, right above the SaveBar (D141),
 #   Reîncearcă focused (S16P)
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Cântărirea nu s-a salvat: '
-       f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}</span> <span class="ip-num">{n(C["w"])}</span> g, <span class="ip-num">{dd(C["day"])}</span>. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
-       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
+       f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}</span> <span class="ip-num">{n(C["w"])}</span> g, <span class="ip-num">{dd(C["day"])}</span>.</p>'
+       f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size']) + [ban],
                B.savebar(rec14() + what(C, C['w']), status(C, C['w']), SAVE_KEY))))
 

@@ -7,7 +7,7 @@ added (or after Resetează parola); the add form has no password field. D118: th
 People: Proprietar (you, the owner; no name in the kit, D96/D104), Ion Rusu (manager), Dr. Ceban (vet) as on the earlier
 boards (craft §7, illustrative); Petrea (spec A2's dialog sample) and Observator exemplu are D39 state examples (SYS12),
 named in the board titles, as are every sign-in time and both passwords. Farms real (farms-sections.json).
-Boards (row below S21: y 38044 + 1024 + 120 = 39188; x step w + 80; desktops first, then the phone):
+Boards (row below S21: y 38052 + 1024 + 120 = 39196; x step w + 80; desktops first, then the phone):
   S22-utilizatori          list: PageHeader (Setări › Utilizatori, "Adaugă utilizator"), UserRow list under an h2 + count
   --ion-rusu               list beside the non-modal user SidePanel: Nume (focus), Login read-only, Rol Select + what the
                            role does, Ferme checkboxes, Cont block (Resetează parola, Dezactivează contul)
@@ -255,9 +255,10 @@ def upanel(u, farms_on=None, focus=False, extra='', inert=False, pressed=None, t
     return panel(title or u['name'] + (' (tu)' if u.get('me') else ''), ctx(u),
                  [name_field(u['name'], focus), login_field(u['login'], ro=True), role_field(u['role']), farms_field(fo), extra, acct(u, pressed)],
                  inert=inert)
-def save_banner(text):
+def save_banner(*paras):   # D147: the lead, then the retry line + what is kept
+    body = ''.join(f'<p class="ip-m0">{t}</p>' for t in paras)
     return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="up-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="ip-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
+            f'{body}</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= dialogs (SYS12), Toast, states
 def scrim(dlg): return f'<div class="ip-scrim ip-scrim--page">{dlg}</div>'
@@ -383,7 +384,8 @@ desk('--salvat', f'Dr. Ceban salvat · {D39}: Telița adăugată',
      shell(ulist(WITH_C2, focus='ceban')) + toast('Dr. Ceban salvat · Veterinar la Telița și Hîrbovăț', 'Salvează utilizatorul',
                                                    "the panel closes and focus goes back to Dr. Ceban's Acțiuni key"))
 # 8 · eroare la salvare (D39): the same change, draft kept, Banner + Reîncearcă (focus) under the fields
-SAVE_ERR = save_banner('Modificările lui Dr. Ceban nu s-au salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. '
+SAVE_ERR = save_banner('Modificările lui Dr. Ceban nu s-au salvat: conexiunea s-a întrerupt.',
+                       'Verifică conexiunea la internet, apoi apasă Reîncearcă. '
                        'Ce ai bifat rămâne în panou.')
 desk('--eroare-la-salvare', f'Dr. Ceban · eroare la salvare · {D39}: Telița bifată',
      vp(ulist(cur='ceban')) + upanel(CEBAN, farms_on=('Telița', 'Hîrbovăț'), extra=SAVE_ERR), PH)

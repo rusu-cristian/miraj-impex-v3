@@ -117,7 +117,12 @@ def list_rows(p, open_key=None, active_item=None, focus_key=None, data=ALL, up=F
 
 # ------------------------------------------------------------------ dialogs
 def banner(kind, body, id_=None):
+    """A keyless Banner. body: one sentence group (str), or a list of paragraphs (D147 failure Banner: the lead, then the
+    retry line), stacked in the section 49 body (p space-2 apart) beside the icon."""
     i = f' id="{id_}"' if id_ else ''
+    if isinstance(body, (list, tuple)):
+        ps = ''.join(f'<p class="ip-users__bn">{t}</p>' for t in body)
+        return f'<div class="ip-banner ip-banner--{kind}"{i}>{svg(IC[kind])}<div class="ip-banner__body">{ps}</div></div>'
     return f'<div class="ip-banner ip-banner--{kind}"{i}>{svg(IC[kind])}<p class="ip-users__bn">{body}</p></div>'
 
 def dialog(p, title, body, foot, desc=None):
@@ -210,8 +215,8 @@ O.append(('Parola temporară · cont nou, după Copiază: lampă „copiată”'
 O.append(('Copierea nu a mers (focus pe parolă, selectată)', dialog('k', 'Parola nouă pentru Ion Rusu',
     otp('k', CTX_RESET, PW_RESET, 'Ion Rusu', failed=True, focus='pw'), btn('Închide', 'primary'))))
 O.append(('Resetarea nu a mers (focus pe Reîncearcă, Esc = Anulează)', dialog('l', 'Resetează parola lui Ion Rusu',
-    banner('fault', '<b>Parola lui Ion Rusu nu s-a resetat;</b> cea veche merge în continuare. '
-                    'Verifică conexiunea la internet, apoi apasă Reîncearcă.',
+    banner('fault', ['<b>Parola lui Ion Rusu nu s-a resetat;</b> cea veche merge în continuare.',
+                     'Verifică conexiunea la internet, apoi apasă Reîncearcă.'],
            'l-why'),
     btn('Anulează') + btn('Reîncearcă', 'primary', focus=True, extra=' aria-describedby="l-why"'), desc='l-why')))
 O.append(('Dezactivează · confirmare (A2), focus pe Anulează; apoi Toast', dialog('m', 'Dezactivează contul lui Petrea',

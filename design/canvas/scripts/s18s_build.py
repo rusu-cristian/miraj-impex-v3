@@ -268,7 +268,7 @@ def rows_err():
 def form_errors():
     return [name_err(), year_err(YEAR26), T.farm_field(TODAY, False), date_err(TODAY + dt.timedelta(days=1)), rows_err(), T.effect('empty', TODAY)]
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="sn-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="ip-m0">{NAME26} nu s-a creat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne aici.</p>'
+            f'<p class="ip-m0">{NAME26} nu s-a creat: conexiunea s-a întrerupt.</p><p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne aici.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus">Reîncearcă</button></div>')
 def with_banner(parts, banner):
     """S9P: the fault Banner sits right above the EffectPreview (the last part)."""

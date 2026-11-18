@@ -149,8 +149,8 @@ boards.append(('cantitate-lipsa', 'cantitate lipsă', screen(FORM('error', None)
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă (focus, S16P), typed values kept as a draft; the Banner
 #   ends the form, scrolled to its end, right above the SaveBar (D141, as S9/S10)
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Livrarea nu s-a salvat: '
-       f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]}, Hîrbovăț, <span class="ip-num">{dd(EDAY)}</span>. Verifică conexiunea la internet, apoi apasă Reîncearcă.</p>'
-       f'<p class="ip-m0">Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
+       f'<span class="ip-num">{n(KG)}</span> kg {FTN[FT]}, Hîrbovăț, <span class="ip-num">{dd(EDAY)}</span>.</p>'
+       f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen(FORM() + [ban], B.savebar(sum1(), SUM2, ADD), view=' ip-screen__view--end')))
 
 CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''

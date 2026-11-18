@@ -5,7 +5,7 @@ for both sexes, retired, Telița; names illustrative, D30); "in use" from feed-d
 deliveries) and the extracts README (Hîrbovăț deliveries and stock are sample: Breeder 2 28 252 kg, Cocoși 1 650 kg).
 D116: a used type can be retired but never deleted; retiring is refused while a farm still has it in stock (the vets feed
 it daily); "Pentru" is fixed once a type is used; names unique ignoring case and diacritics (as D111/D114).
-Boards (row below S20: y 35544 + 2380 + 120 = 38044; x step w + 80; desktops first, then the phone):
+Boards (row below S20: y 35552 + 2380 + 120 = 38052; x step w + 80; desktops first, then the phone):
   S21-tipuri-hrana          list: PageHeader (Setări › Tipuri de hrană, "Adaugă tip"), DataTable (Tip hrană, Pentru, Stare
                             lamp, Folosit la, Editează)
   --breeder-2               list beside the non-modal SidePanel: Nume (focus), Pentru read-only (used), Activ ticked with the
@@ -213,9 +213,10 @@ def tpanel(r, act, key=SAVE, focus_name=False, inert=False, pressed_del=False, s
     used = r['id'] in FARM_OF
     return panel(r['name'], ctx(r), [name_field(r['name'], focus_name, used=used), for_ro(r) if used else for_seg(r['for_sex']), act,
                                      use_block(r, 'used' if used else 'free', pressed_del, stock)], key, inert)
-def save_banner(text):
+def save_banner(*paras):   # D147: the lead, then the retry line + what is kept
+    body = ''.join(f'<p class="ip-m0">{t}</p>' for t in paras)
     return (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="tp-err">{icon("alert", 16)}<div class="ip-banner__body">'
-            f'<p class="ip-m0">{text}</p></div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
+            f'{body}</div><button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')
 
 # ================================================================= states (list side)
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
@@ -327,7 +328,8 @@ desk('--salvat', f'salvat · {D39}: Breeder 3 adăugat', shell(tlist(ROWS3, focu
 # 9 · eroare la salvare (D39): the same new type, draft kept, Banner + Reîncearcă (focus) under the fields
 desk('--eroare-la-salvare', f'Tip nou · eroare la salvare · {D39}: Breeder 3',
      NEWVP + panel('Tip nou', '', [name_field('Breeder 3'), for_seg('F'), act_field(True, ACT_ON + ' Îl poți retrage oricând.'),
-                                   save_banner('Breeder 3 nu s-a salvat: conexiunea s-a întrerupt. Verifică conexiunea la internet, apoi apasă Reîncearcă. '
+                                   save_banner('Breeder 3 nu s-a salvat: conexiunea s-a întrerupt.',
+                                               'Verifică conexiunea la internet, apoi apasă Reîncearcă. '
                                                'Ce ai scris rămâne în panou.'), NEWUSE], ADD), PH)
 # 10 · Șterge (D39): Breeder 3 unused → its Dialog over the inert page and panel, focus on Anulează
 DLG = ('<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
