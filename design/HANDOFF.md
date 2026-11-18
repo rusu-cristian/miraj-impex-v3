@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-18 12:20 · Last commit: 8f36451
+Updated: 2026-11-18 13:30 · Last commit: 3ad8ea6
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
 
 ## Progress
-Done 80 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN02G (generator row safety); all SYS jobs done
+Done 81 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: FIN03; all SYS jobs done
 
 ## Just finished
+- FIN02G generators: shared `canvas_rows.py`; rows keep their canvas.json x/y on rerun, canvas.json written only with --canvas, heights default to the screen's own file, overlap check on save; s3_canvas.py removed (use s3_build.py --canvas); rebuild orders in design/canvas/scripts/README.md; every row reruns byte-identical; passed first review (3ad8ea6)
 - FIN02 Toast: §48 `.ip-toastwrap` (+`--page` desktop bottom-right space-8, ≤ panel-w), `.ip-toast__txt/__undo`; screen copies removed (sstate_css + 14 generators, 143 boards, mostly CSS-only); S12 Prețuri salvate Toast + Anulează; D122; passed first review; generators now fragile on rerun → FIN02G queued (see notes/FIN.md) (8f36451)
 - FIN01 Banner icon: §47 `.ip-banner > .ip-icon--16{margin-block:var(--ip-hair)}` + UserTable load-failed alignment; §46 LoginCard rule removed; no board HTML changed; 16 Banner boards got new shots (30 files); passed first review (c0ab838)
 - FIN cross-screen review: 16 jobs queued (must FIN01–05: Banner icon, Toast placement, Banner with action, Dialog scrim, current row; should FIN06–12; nice FIN13–16); generator chain + closed backlog items in design/notes/FIN.md
@@ -63,7 +64,7 @@ Done 80 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- FIN02G → FIN03 → … → FIN16 (in order; FIN02–FIN05 share generators)
+- FIN03 → FIN04 → … → FIN16 (in order; FIN02–FIN05 share generators)
 
 ## Waiting on the user
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
@@ -120,6 +121,7 @@ Done 80 / 95 (all screens done; FIN01–FIN16 consistency jobs queued) · Screen
 - Add every later board and each additions.css / canvas.json change here.
 
 ## Things to remember
+- Rebuilding boards: follow design/canvas/scripts/README.md (per-row order, "never run" list, import chain). Since FIN02G every generator is safe to rerun.
 - 17–18.11.2026 session: S15–S18 each ran screen → ..S states → ..P polish; builders/reviewers resumed via SendMessage for fix rounds (same helper keeps context). Setări screens (S17, S18) are desktop-led: desktops first, phones after; ..S jobs move the phones right (x only). Generators that own a row: run the base build --canvas then the ..s build --canvas.
 - Regenerating S3/S10/S11/S14 boards via s4s/s4t imports with HEAD scripts gives different output from the repo (they were later rewritten by their own polish scripts): rebuild those rows only with their latest ..P/..S scripts.
 - 17.11.2026 session pattern: every screen gets a ..S states job when the builder lists leftover states (S2S, S14S, S8S added); polish jobs move screen CSS that is really a system state into a new additions.css § (now §38). Reviewers recompute figures and measure a11y in Chrome AX tree; shots must be taken at board heights, not the 844 heights viewport.
