@@ -1,4 +1,4 @@
-"""S2 · Acasă (spec D2): the role's start page on 16.11.2026 (D23), Seria 2026.
+"""S2 · Acasă (spec D2): the role's start page on today = 18.11.2026 (D152), Seria 2026 (RF06: realdata only).
 - vet · telefon: header (farm, today, SAPT) · Lipsesc date (MissingRow, C9) · Înregistrează (EntryKeys, 3) · Introdus azi
   (EventRow actions, C8, one row per record type saved today).
 - manager · telefon / desktop: header · De verificat (AlertRow) · zile de hrană (StockReadout per farm × type) ·
@@ -9,8 +9,9 @@ Shells are reused by import: the phone page uses the S7 phone screen/main classe
 lines) with the system BottomTabBar; the desktop uses the S4 shell (s4s_build: Sidebar with Acasă current, PageHeader
 type, AlertRows from s4s_build.alerts(), board writer). Blocks are the SYS08 components (MissingRow, EntryKeys,
 UnpricedCount), SYS01 AlertRow, SYS03 FarmSummary compact, SYS04 StockReadout, SYS09 EventRow actions.
-Every figure comes from the extracts (Hîrbovăț after 28.02.2026 is sample, D27); the vet is Dr. Ceban, the manager
-Ion Rusu (illustrative). The page is drawn after 12:00 (MissingRow lists today's rows only from 12:00, C9).
+Every figure comes from realdata.py (the workbook to 18.11.2026; event times/authors from the illustrative log): the vet is
+Dr. Ceban, the manager Ion Rusu (illustrative). The page is drawn after 12:00 (MissingRow lists today's rows only from
+12:00, C9) and after the manager's 13:16 sale (Introdus azi).
 python3 -I s2_build.py <repo_root> [heights.json] [--canvas]
 Writes design/canvas/project/S2-acasa[--<role>].dc.html, /tmp/s2/<stem>.html (phones) and /tmp/s4s/<stem>.html (desktops);
 --canvas also sets the S2 boards in design/canvas/project/canvas.json (new row below the lowest one, phones first, D74)."""
@@ -45,54 +46,56 @@ def ico(k): return f'<span class="ip-rec ip-rec--{REC[k]}">{icon(k, 14)}</span>'
 def num(v): return f'<span class="ip-num">{v}</span>'
 def nw(v): return f'<span class="ip-nowrap">{v}</span>'  # S2P: a meta group that never splits (lines break at the · separators)
 
-# ---------- data ----------
-EX = ROOT / 'design/data/extracts'
-def J(name): return json.load(open(EX / name, encoding='utf-8'))
-S, CL, CY, FT, FS = s4.S, s4.CL, J('cycles.json'), J('feed-types.json'), J('farms-sections.json')
-TODAY = dt.date(2026, 11, 16); YDAY = TODAY - dt.timedelta(days=1); D = dd(TODAY)
-cyc = {c['id']: c for c in CY['cycles']}
-cT, cH = cyc['cyc-telita-2026'], cyc['cyc-hirbovat-2026']
-WK = (TODAY - dt.date.fromisoformat(cH['start_date'])).days // 7 + 1
-assert WK == 40 == cH['week_today'] and cT['status'] == 'closed' and cT['end_date'] == '2026-02-28' and cT['weeks'] == 21
-farms = {f['farm_id']: f for f in CL['farms']}
-HB, TL = farms['hirbovat'], farms['telita']
-ALIVE = HB['totals']; assert (ALIVE['F'], ALIVE['M'], ALIVE['all']) == (25252, 2685, 27937) and TL['totals']['all'] == 0
-alive = {(x['section'], sx): x[sx] for x in HB['sections'] for sx in 'FM'}
-FTN = {r['id']: r['name'] for r in FT['rows']}
-GUIDES = {g['id']: g['name'] for g in FS['guides']}
-TR = J('transfers-seria2026.json'); PL = J('placement-seria2026.json')
+# ---------- data (realdata only, RF06; today 18.11.2026, D152) ----------
+import realdata as R
+dd = R.dd
+TODAY = R.TODAY; YDAY = TODAY - dt.timedelta(days=1); D = dd(TODAY)
+cT, cH = R.CTEL, R.C26                                   # Telița 07.10.2025–28.02.2026 (closed) · Hîrbovăț from 22.02.2026 (open)
+WK = R.WK                                                # bird age week (D151)
+assert WK == R.sapt(TODAY) == cH['sapt_today'] and cT['status'] == 'closed' and (cT['sapt_start'], cT['sapt_end']) == (1, 21)
+TL = R.COUNTS_TELITA
+ALIVE = {sx: R.alive_farm(sx) for sx in 'FM'}; ALIVE['all'] = ALIVE['F'] + ALIVE['M']
+assert (ALIVE['F'], ALIVE['M']) == (R.COUNTS['totals']['F'], R.COUNTS['totals']['M']) and TL['totals']['all'] == 0
+alive = {(s, sx): R.alive(s, sx) for s in R.HSECS for sx in 'FM'}
+FTN = {k: v['name'] for k, v in R.FEED_TYPES.items()}
+GUIDES = {k: v['name'] for k, v in R.GUIDES.items()}
+TR = R.TR; PL = R.PLACEMENT_ROWS
 XD = sorted({a['date'] for a in TR['arrivals']} | {o['date'] for o in TR['transfers_out']})
-X0D, X1D = XD[0], XD[-1]; assert (X0D, X1D) == ('2026-02-22', '2026-02-28')
+X0D, X1D = XD[0], XD[-1]; assert X0D == cH['start_date'] and X1D == cT['end_date']
 
-# C9 · Lipsesc date: sections with birds and no Hrană zilnică / Zilnic row, today (from 12:00) and the 7 days before
-alloc = {(a['section'], a['sex']): a for a in S['allocations_today']}
-MISS = [(r['date'], r['section'], r['sex']) for r in S['daily']
-        if (TODAY - dt.timedelta(days=7)).isoformat() <= r['date'] <= TODAY.isoformat() and r['g_per_bird'] is None]
-assert MISS == [('2026-11-16', 'H3.2', 'M'), ('2026-11-16', 'H4.2', 'F')], MISS
-z_days = {e['at'][:10] for e in S['event_log'] if e['record'] == 'mortality' and e['action'] == 'create'}
-assert {(TODAY - dt.timedelta(days=k)).isoformat() for k in range(7)} <= z_days  # Zilnic saved on 10–16.11 (the log starts 10.11)
-assert all(r['mortality'] is not None for r in S['daily'] if r['date'] >= '2026-11-09')
+# C9 · Lipsesc date: compartments with birds and no Hrană zilnică / Zilnic row, today (from 12:00) and the 7 days before.
+# A day "has birds" when the compartment holds birds at the start and at the end of it: the sale day that empties it is no
+# lipsă (as S11 Consum, RF03). The workbook has no kg for H7 ♀ on 13.11 (H7.1, H7.2): two past-day rows (D65: the vet sees
+# them locked, the manager opens the form). Zilnic: every day has its mortality and egg row in the workbook.
+W7 = [TODAY - dt.timedelta(days=k) for k in range(7, -1, -1)]
+def fed(d, sec, sx): r = R.sd(d, sec, sx); return bool(r and r['kg'])
+MISS = [(d.isoformat(), s, sx) for d in reversed(W7) for s in R.HSECS for sx in 'FM'
+        if R.alive_start(s, sx, d) and R.alive(s, sx, d) and not fed(d, s, sx)]
+assert [(R.ddm(d), s, sx) for d, s, sx in MISS] == [('13.11', 'H7.1', 'F'), ('13.11', 'H7.2', 'F')], MISS
+assert all(R.day(d) and R.day(d)['eggs'] is not None for d in W7)          # Zilnic in for every day of the window
 
-# C8 · Introdus azi (Dr. Ceban, 16.11.2026): one row per record type saved today
-LOG = {e['record']: e for e in S['event_log'] if e['at'].startswith(TODAY.isoformat()) and e['user'] == 'Dr. Ceban'}
-assert sorted(LOG) == ['eggs', 'feed', 'mortality', 'weighing']
-D16 = {sx: sum(r['mortality'] for r in S['daily'] if r['date'] == TODAY.isoformat() and r['sex'] == sx) for sx in 'FM'}
-C16 = [c for c in S['culls'] if c['date'] == TODAY.isoformat()]
-assert D16 == {'F': 8, 'M': 1} and not C16 and f'♀ −{D16["F"]} · ♂ −{D16["M"]}' in LOG['mortality']['summary']
-EGGS16 = [r for r in S['eggs_daily'] if r['date'] == TODAY.isoformat()]
-EGG_T = sum(r['total_eggs'] for r in EGGS16); assert EGG_T == 18688 and n(EGG_T) in LOG['eggs']['summary']
-FEED_ROWS = [a for a in S['allocations_today'] if a['today_g'] is not None]
-FEED_KG = round(sum(round(a['today_g'] * a['alive'] / 1000, 1) for a in FEED_ROWS), 1)
-assert (len(FEED_ROWS), n(FEED_KG, 1)) == (10, f'3{NB}691,3')
+# C8 · Introdus azi (Dr. Ceban, today): one row per record type saved today (illustrative event log on the real figures)
+LOG = {e['record']: e for e in R.EVENTS if e['at'][:10] == TODAY.isoformat() and e['user'] == 'Dr. Ceban'}
+assert sorted(LOG) == ['eggs', 'feed', 'mortality']                         # no weighing at Hîrbovăț today (S8, RF07)
+DTH = {sx: R.deaths(TODAY, sx=sx) for sx in 'FM'}                            # real deaths (D155); the sale is a Vânzare record
+ZSEC = [s for s in R.HSECS if R.sd(TODAY, s, 'F') or R.sd(TODAY, s, 'M')]    # compartments in today's Zilnic
+CULLS = [c for c in R.ILL['culls'] if c['date'] == TODAY.isoformat()]
+assert f'{len(ZSEC)} secțiuni · mortalitate ♀ {DTH["F"]} · ♂ {DTH["M"]}' in LOG['mortality']['summary'] and not CULLS
+EGG_HALLS = [h for h in R.HHALLS if R.eggs(TODAY, h)]
+EGG_T = R.eggs(); assert LOG['eggs']['summary'].startswith(f'Ouă · {EGG_T} total') and LOG['eggs']['scope'].endswith(', '.join(EGG_HALLS))
+DUE = [(s, sx) for s in R.HSECS for sx in 'FM' if R.alive_start(s, sx)]
+FEED_ROWS = [(s, sx) for s, sx in DUE if fed(TODAY, s, sx)]
+FEED_KGS = {sx: R.feed_kg(TODAY, sx) for sx in 'FM'}; FEED_KG = round(FEED_KGS['F'] + FEED_KGS['M'], 1)
+assert LOG['feed']['summary'] == f'Hrană · ♀ {FEED_KGS["F"]:g} kg · ♂ {FEED_KGS["M"]:g} kg'
 
-# stock (SYS04) and unpriced deliveries (SYS08)
-STK = {s['feed_type_id']: s for s in S['stock_today']}
-B2, CO = STK['ft-breeder2'], STK['ft-cocosi']
-assert (B2['stock_kg'], B2['days_left'], CO['stock_kg'], CO['days_left']) == (28252, 7.1, 1650, 3.9)
-UNP = [d for d in S['deliveries'] if not d['priced']]
-UNP_KG = sum(d['qty_kg'] for d in UNP); assert (len(UNP), UNP_KG) == (4, 76107) == (S['summary_today']['unpriced_deliveries_all_farms'], S['summary_today']['unpriced_kg'])
-LAY, LAYG = s4.lay_today, s4.lay_guide; MH = S['summary_today']['cumulative_mortality_pct']
-assert (LAY, LAYG, MH['F'], MH['M']) == (74.0, 74.1, 5.54, 11.93)
+# stock (SYS04: days left on the mean of the last 3 days, realdata.stock_days) and unpriced deliveries (SYS08)
+W3 = (TODAY - dt.timedelta(days=2), TODAY)
+B2, CO = s4.stocks['ft-breeder2'], s4.stocks['ft-cocosi']
+assert all(abs(st['days_left'] - R.stock_days(sx)[0]) < 1e-9 for st, sx in ((B2, 'F'), (CO, 'M')))
+UNP = R.UNPRICED
+UNP_KG = sum(d['qty_kg'] for d in UNP); assert (len(UNP), UNP_KG) == (len(s4.unpriced), s4.unpriced_kg)
+LAY, LAYG = s4.lay_today, s4.lay_guide; MH = s4.cum['mortality_pct']; MORT_G = s4.MORT_G   # D156 lay · D155 deaths · D161 guide ♀
+assert abs(LAY - R.lay_day()) < 1e-9 and LAYG == R.guide_lay(WK)
 
 # ---------- blocks ----------
 def head(cap, note, hid):
@@ -112,22 +115,18 @@ def desk_heads(html):
     assert re.findall(r'<h2 class="ip-cap"[^>]*>', html) in ([], ['<h2 class="ip-cap" id="up">']), 'only the UnpricedCount panel keeps a caption'
     return html
 
-def day_row(day, sec, sx):  # one section × sex × day of S['daily'] (alive at the end of that day, grams of the day before)
-    r = {(x['date'], x['section'], x['sex']): x for x in S['daily']}
-    prev = (dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat()
-    return r[(day, sec, sx)], r[(prev, sec, sx)]
-def missing(manager=False, u='', miss=None, past=(), locked=False, when=None, empty=None, scope=None):
+def missing(manager=False, u='', miss=None, past=(), locked=None, when=None, empty=None, scope=None):
     """MissingRow (SYS08): one row per section × entry × day, newest first; manager rows name the farm first.
-    S2S: past = extra past-day rows (D39 state examples), locked = a vet's past day (D07: Tag "blocat", no link),
-    when = the scope note's time part (before 12:00: the clock time), empty = the sentence of the empty state."""
+    locked: a past day is a locked row for the vet (D07/D65: Tag "blocat", no link); default = not manager.
+    S2S: past = extra past-day rows, when = the scope note's time part (before 12:00: the clock time; today's rows are
+    not listed yet, C9), empty = the sentence of the empty state."""
+    locked = (not manager) if locked is None else locked
     rows = []
-    for day, sec, sx in sorted(list(MISS if miss is None else miss) + list(past), key=lambda m: (dt.date.fromisoformat(m[0]).toordinal() * -1, m[1])):
+    src = [m for m in list(MISS if miss is None else miss) + list(past) if not (when and m[0] == TODAY.isoformat())]
+    for day, sec, sx in sorted(src, key=lambda m: (dt.date.fromisoformat(m[0]).toordinal() * -1, m[1])):
         c, sign, word = ('hen', '♀', 'găini') if sx == 'F' else ('rooster', '♂', 'cocoși')
-        d0 = dt.date.fromisoformat(day); wk = (d0 - dt.date.fromisoformat(cH['start_date'])).days // 7 + 1
-        if day == TODAY.isoformat():
-            alv, gy = alive[(sec, sx)], alloc[(sec, sx)]['yesterday_g']
-        else:
-            rd, ry = day_row(day, sec, sx); alv, gy = rd['alive_end'], ry['g_per_bird']
+        d0 = dt.date.fromisoformat(day); wk = R.sapt(d0)
+        alv, gy = R.alive(sec, sx, d0), R.feed_g(d0 - dt.timedelta(days=1), sx, sec)   # alive at the end of that day, grams of the day before
         farm = 'Hîrbovăț · ' if manager else ''
         sexl = f'<span class="ip-sex ip-sex--{c}">{sign} <b>{n(alv)}</b></span>'
         tl = f'<span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>'
@@ -178,29 +177,41 @@ def act_row(k, i, title, meta, name, menu='closed', off=False, edited=None):
             f'{ed_i}Editează</a><button type="button" class="ip-menu__item" role="menuitem" tabindex="-1"{dis}>Șterge</button></div>'
             f'<p class="ip-note" id="{mid}-n">{note}</p></div></span></li>')
 def t_of(e): return e['at'][11:16]
-INTRO = ['mortality', 'eggs', 'feed', 'weighing']  # the vet's four saves of 16.11.2026, in time order
-def introdus(menu=None, off=False, edited=None):
-    """menu / edited: {record: 'open' | 'hh:mm'} for one row (S2S); off: the 23:59 window closed (every row)."""
+INTRO = [k for k in ('mortality', 'eggs', 'feed', 'weighing') if k in LOG]  # the vet's saves of today, in time order
+assert [LOG[k]['at'] for k in INTRO] == sorted(LOG[k]['at'] for k in INTRO)
+def kgp(f, m): return pair(n(f, 1), n(m, 1), NB + 'kg')
+def intro_spec(e):
+    """(title, meta, accessible name) of one of today's records (C8), figures from realdata."""
+    k, who = e['record'], e['user']
+    if k == 'mortality':
+        why = 'Zilnic, fără sacrificări' if not CULLS else f'Zilnic, {num(len(CULLS))} sacrificări'
+        return (f'Mortalitate · {num(len(ZSEC))} secțiuni · {hen(n(-DTH["F"]))} · {roo(n(-DTH["M"]))}', f'{num(t_of(e))} · {who} · {why}', 'Mortalitate de azi')
+    if k == 'eggs':
+        return (f'Ouă · {", ".join(EGG_HALLS)} · {num(n(EGG_T))} ouă', f'{num(t_of(e))} · {who} · ouat {num(s4.pct(LAY))}', 'Ouă de azi')
+    if k == 'feed':
+        lack = [f'{(F if sx == "F" else M)} {s}' for s, sx in DUE if (s, sx) not in FEED_ROWS]
+        return (f'Hrană zilnică · {num(len(FEED_ROWS))} din {num(len(DUE))} rânduri · {num(n(FEED_KG, 1) + NB + "kg")}',
+                f'{num(t_of(e))} · {who} · ' + (f'fără {", ".join(lack)}' if lack else kgp(FEED_KGS['F'], FEED_KGS['M'])), 'Hrană zilnică de azi')
+    if k == 'sale':  # DATA04 (D168): one sale form = one record; the farm's birds after it
+        return (f'Vânzare · {R.sale_codes(e)} · {s4.sexpair(e["F"], e["M"])}', f'{num(t_of(e))} · {who} · în viață {pair(n(ALIVE["F"]), n(ALIVE["M"]))}', 'Vânzarea de azi')
+    raise ValueError(e)
+def introdus(menu=None, off=False, edited=None, recs=None):
+    """menu / edited: {record: 'open' | 'hh:mm'} for one row (S2S); off: the 23:59 window closed (every row);
+    recs: the records listed (default: the vet's of today)."""
     menu, edited = menu or {}, edited or {}
-    spec = {
-        'mortality': (f'Mortalitate · {num(6)} secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}',
-                      f'{num(t_of(LOG["mortality"]))} · Dr. Ceban · Zilnic, fără sacrificări', 'Mortalitate de azi'),
-        'eggs': (f'Ouă · H1, H3, H4 · {num(n(EGG_T))} ouă', f'{num(t_of(LOG["eggs"]))} · Dr. Ceban · ouat {num(s4.pct(LAY))}', 'Ouă de azi'),
-        'feed': (f'Hrană zilnică · {num(len(FEED_ROWS))} din {num(12)} rânduri · {num(n(FEED_KG, 1) + NB + "kg")}',
-                 f'{num(t_of(LOG["feed"]))} · Dr. Ceban · fără {M} H3.2, {F} H4.2', 'Hrană zilnică de azi'),
-        'weighing': (f'Cântărire · {num(6)} secțiuni · {pair(n(s4.w_f), n(s4.w_m), NB + "g")}',
-                     f'{num(t_of(LOG["weighing"]))} · Dr. Ceban · medii pe fermă', 'Cântărire de azi'),
-    }
-    rows = [act_row(k, i, *spec[k], menu=menu.get(k, 'closed'), off=off, edited=edited.get(k)) for i, k in enumerate(INTRO, 1)]
+    recs = recs if recs is not None else [LOG[k] for k in INTRO]
+    rows = [act_row(e['record'], i, *intro_spec(e), menu=menu.get(e['record'], 'closed'), off=off, edited=edited.get(e['record']))
+            for i, e in enumerate(recs, 1)]
     note = (f"{num(D)} · timpul de modificare s-a încheiat la {num('23:59')}" if off else f"{num(D)} · poți modifica sau șterge până la {num('23:59')}")
     return (f'<section class="s2-block" aria-labelledby="ia">{head("Introdus azi", note, "ia")}'
             f'<ul class="ip-list ip-list--act" aria-labelledby="ia">{"".join(rows)}</ul>'
             f'<a class="ip-link s2-more" href="#introdus-azi">Vezi pe secțiuni</a></section>')
 
-# C8 · Introdus azi for the manager (D87): Ion Rusu's records of 16.11.2026. The sample has none (his last saves are the
-# 14.11 delivery and the 15.11 correction), so the block shows its empty state; nothing is invented.
-MGR_LOG = [e for e in S['event_log'] if e['at'].startswith(TODAY.isoformat()) and e['user'] == 'Ion Rusu']
-assert not MGR_LOG and any(e['user'] == 'Ion Rusu' for e in S['event_log'])
+# C8 · Introdus azi for the manager (D87): Ion Rusu's records of today. On 18.11 he saved the sale of H6.1 + H6.2 at 13:16
+# (one form = one record, D168; real figures, illustrative time), so the block lists it (the page is drawn after it).
+MGR_LOG = sorted((e for e in R.EVENTS if e['at'][:10] == TODAY.isoformat() and e['user'] == 'Ion Rusu'), key=lambda e: e['at'])
+assert [e['record'] for e in MGR_LOG] == ['sale'] and (MGR_LOG[0]['F'], MGR_LOG[0]['M']) == (R.sold(TODAY, sx='F'), R.sold(TODAY, sx='M'))
+def introdus_mgr(**kw): return introdus(recs=MGR_LOG, **kw)
 def introdus_empty(line, u=''):
     """Introdus azi with nothing saved today: the list frame keeps its place, off Lamp + word + one sentence (SYS09 li.ip-list__empty)."""
     return (f'<section class="s2-block" aria-labelledby="{u}ia">{head("Introdus azi", num(D), u + "ia")}'
@@ -209,50 +220,60 @@ def introdus_empty(line, u=''):
 INTRO_MGR = f'Nu ai salvat nimic azi. Ce salvezi azi apare aici, pe tipuri; poți modifica sau șterge până la {num("23:59")}.'  # S15P: the S15 gol sentence (D98)
 
 FARM_P = '<div class="ip-ev__main">Hîrbovăț · '
-def alerts(owner=False, u=''):
-    a_h3, a_h12, a_32, a_42, a_st, a_pr = s4.alerts()
-    # the missing rows have their own block (Lipsesc date) for the manager; the owner has none, so they stay alerts.
-    # "fără preț" has its own block for the owner (UnpricedCount); the manager can't add prices (D05), so it is not his alert.
-    items = [a_h3, a_h12, a_32, a_42, a_st] if owner else [a_h3, a_h12, a_st]
+LIPSA = lamp('warn', 'lipsă')
+def miss_alert(day, sec, sx):  # the owner/viewer have no Lipsesc date block: its rows are their alerts (s4s alert, any day of the window)
+    d0 = dt.date.fromisoformat(day); azi = ' azi' if d0 == TODAY else ''
+    return s4.alert('feed', f'{sec} · hrană {s4.sg(sx)}{azi} – lipsă', f'{dd(d0)} · SAPT {R.sapt(d0)}', LIPSA, ('Deschide secțiunea', f'#sectiune-{sec}'))
+def alerts(owner=False, u='', extra=()):
+    """De verificat = the S4 Rezumat alerts (s4s_build.alerts: lay ±3 pct, feed ±10 %, stock < 5 zile, fără preț).
+    The missing rows have their own block (Lipsesc date) for the manager; the owner has none, so they are alerts (every day of
+    the C9 window, newest first). "fără preț" has its own block for the owner (UnpricedCount); the manager can't add prices
+    (D05), so it is not his alert. extra: alerts appended (S2S state examples)."""
+    al = s4.alerts()
+    up = [a for a in al if 'livrări fără preț' in a]; assert len(up) == 1 and al[-1] == up[0]
+    base = [a for a in al[:-1] if LIPSA not in a]                               # guide and stock alerts
+    stk = [a for a in base if 'Deschide stocul' in a]; gd = [a for a in base if a not in stk]
+    items = (gd + [miss_alert(*m) for m in MISS] + stk if owner else gd + stk) + list(extra)
     items = [a.replace('<div class="ip-ev__main">', FARM_P, 1) for a in items]
     LIM = 'limită <span class="ip-num">5 zile</span>'
     items = [a.replace(' · ' + LIM, ' · ' + nw(LIM), 1) for a in items]
-    assert sum(LIM in a for a in items) == 1
+    assert sum(LIM in a for a in items) == len(stk)
     # the meta breaks only at its · separators (each group stays whole, as the MissingRow meta)
     items = [re.sub(r'(<div class="ip-ev__meta ip-num">)(.*?)(</div>)', lambda m: m[1] + ' · '.join(nw(g) for g in m[2].split(' · ')) + m[3], a, count=1) for a in items]
     assert all(a.count(FARM_P) == 1 for a in items)
-    note = f'{num(len(items))} alerte · {"toate fermele" if owner else "fermele tale"} · {num(D)}'
+    note = f'{num(len(items))} {"alertă" if len(items) == 1 else "alerte"} · {"toate fermele" if owner else "fermele tale"} · {num(D)}'
     return f'<section class="s2-block" aria-labelledby="{u}dv">{head("De verificat", note, u + "dv")}<ul class="ip-list ip-list--alerts" aria-labelledby="{u}dv">{"".join(items)}</ul></section>'  # FIN16: ul/li, as the S4 Rezumat
+N_AL = {o: alerts(o).count('<li class="ip-ev ip-ev--alert">') for o in (False, True)}   # manager 2 (lay H5, H6) · owner 4 (+ 13.11 H7 ♀ lipsă)
 
 def stock(u='', cap='Zile de hrană'):
     def ro(fid, s, sign, word):
         st = 'ok' if s['days_left'] >= 5 else 'warn'
-        w0, w1 = s['avg_window']
+        w0, w1 = W3
         sub = '' if st == 'ok' else '<p class="ip-readout__sub ip-m0">sub pragul de 5 zile</p>'
         rid = f'{u}sr-{fid}'
         return (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="{rid}"><div class="ip-readout__cap"><span id="{rid}">Hîrbovăț · {FTN[fid]}'
                 f'<span class="ip-sr">, pentru {word}</span></span><span class="ip-rlamp ip-rlamp--{st}">{"în normă" if st == "ok" else "abatere"}</span></div>'
                 f'<div class="ip-readout__val">{n(s["stock_kg"])}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(s["days_left"], 1)}<small> zile</small></dd></div>'
-                f'<div><dt>medie/zi {dd(dt.date.fromisoformat(w0))[:5]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(s["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
-                f'<div><dt>se termină</dt><dd>{dd(dt.date.fromisoformat(s["run_out_date"]))}</dd></div></dl>{sub}</div></li>')
+                f'<div><dt>medie/zi {R.drange(w0, w1, False)}</dt><dd>{n(s["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
+                f'<div><dt>se termină</dt><dd>{dd(s["run_out_date"])}</dd></div></dl>{sub}</div></li>')
     tel = (f'<li><div class="ip-readout ip-readout--stock ip-readout--off" role="group" aria-labelledby="{u}sr-te"><div class="ip-readout__cap"><span id="{u}sr-te">Telița</span>'
            f'<span class="ip-rlamp ip-rlamp--off">oprit</span></div><div class="ip-readout__val">–</div><p class="ip-readout__sub ip-m0">fără ciclu deschis</p>'
-           f'<p class="ip-readout__sub ip-m0">ultimul ciclu: Seria 2026, închis pe <span class="ip-num ip-nowrap">{dd(dt.date.fromisoformat(cT["end_date"]))}</span></p></div></li>')
-    w0, w1 = B2['avg_window']
+           f'<p class="ip-readout__sub ip-m0">ultimul ciclu: Seria 2026, închis pe <span class="ip-num ip-nowrap">{dd(cT["end_date"])}</span></p></div></li>')
+    w0, w1 = W3
     return (f'<section class="s2-block" aria-labelledby="{u}st">{head(cap, f"stoc și zile rămase · {num(D)}", u + "st")}'
             f'<ul class="ip-readouts" aria-labelledby="{u}st">{ro("ft-breeder2", B2, "♀", "găini")}{ro("ft-cocosi", CO, "♂", "cocoși")}{tel}</ul>'
-            f'<p class="ip-note ip-m0">Zile rămase = stoc ÷ consumul mediu din ultimele 3 zile încheiate ({num(dd(dt.date.fromisoformat(w0))[:5] + "–" + dd(dt.date.fromisoformat(w1)))}); sub 5 zile = abatere.</p></section>')
+            f'<p class="ip-note ip-m0">Zile rămase = stoc ÷ consumul mediu din ultimele {num(3)} zile ({num(R.drange(w0, w1))}); sub 5 zile = abatere.</p></section>')
 
 def unpriced():
     by = {}
     for d in UNP: by.setdefault(d['feed_type_id'], []).append(d)
     li = ''.join(f'<li><span>Hîrbovăț · {FTN[t].replace(" ", "&nbsp;")}</span><span>{num(len(ds))} {"livrare" if len(ds) == 1 else "livrări"} · {num(n(sum(d["qty_kg"] for d in ds)) + " kg")}</span></li>'
                  for t, ds in by.items())
-    assert [(t, sum(d['qty_kg'] for d in ds)) for t, ds in by.items()] == [('ft-breeder2', 72068), ('ft-cocosi', 4039)]
+    assert list(by) == ['ft-breeder2', 'ft-cocosi'] and sum(d['qty_kg'] for ds in by.values() for d in ds) == UNP_KG  # ♀ 11 000 · ♂ 7 160 kg
     old = min(d['date'] for d in UNP)
     return (f'<section class="ip-unpriced" aria-labelledby="up"><div class="ip-unpriced__head">{tile("price")}<h2 class="ip-cap" id="up">Livrări fără preț</h2></div>'
             f'<p class="ip-unpriced__fig"><span class="ip-unpriced__val">{len(UNP)}<small> livrări</small></span><span class="ip-unpriced__kg">{n(UNP_KG)} kg</span></p>'
-            f'<ul class="ip-unpriced__list">{li}</ul><p class="ip-note">Cea mai veche din {num(dd(dt.date.fromisoformat(old)))}. Kg fără preț nu intră în cost.</p>'
+            f'<ul class="ip-unpriced__list">{li}</ul><p class="ip-note">Cea mai veche din {num(dd(old))}. Kg fără preț nu intră în cost.</p>'
             f'<a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-livrari-fara-pret">Adaugă prețurile</a></section>')
 
 def farms_block(phone=False):  # FY03: phone = ip-fsum--touch (48px links, additions.css §9)
@@ -261,21 +282,24 @@ def farms_block(phone=False):  # FY03: phone = ip-fsum--touch (48px links, addit
     hir = (f'<article class="ip-fsum ip-fsum--compact{T_}" aria-labelledby="fs-hir" aria-describedby="fs-hir-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
            f'<h3 class="ip-fsum__name" id="fs-hir"><a href="#/ferme/hirbovat?ciclu=cyc-hirbovat-2026">Hîrbovăț</a></h3><span class="ip-tag ip-tag--neutral">Ouat</span>'
            f'<span class="ip-tag ip-tag--neutral">{GUIDES["g-laying"]}</span></div>{lamp("ok", "deschis")}</div>'
-           f'<p class="ip-fsum__cycle" id="fs-hir-c">ciclu din {dd(dt.date.fromisoformat(cH["start_date"]))} · SAPT {WK}</p>'
+           f'<p class="ip-fsum__cycle" id="fs-hir-c">ciclu din {dd(cH["start_date"])} · SAPT {WK}</p>'
            f'<p class="ip-fsum__alive"><span class="ip-cap">În viață</span>{pair(n(ALIVE["F"]), n(ALIVE["M"]))}</p><dl class="ip-fsum__figs">'
            f'<div class="ip-fsum__fig"><dt>{ico("eggs")}Ouat azi</dt><dd class="ip-fsum__val">{n(LAY, 1)}{P_}</dd><dd class="ip-fsum__sub"><span class="ip-num">ghid {s4.pct(LAYG)} · SAPT {WK}</span></dd>'
            f'<dd class="ip-fsum__status">{lamp("ok" if lay_ok else "warn", "în normă" if lay_ok else "abatere")}</dd></div>'
            f'<div class="ip-fsum__fig"><dt>{ico("mortality")}Mort. cumulată</dt><dd class="ip-fsum__val">{pair(n(MH["F"], 2), n(MH["M"], 2))}{P_}</dd>'
-           f'<dd class="ip-fsum__sub">ghid: – fără date în ghid</dd></div></dl></article>')
+           f'<dd class="ip-fsum__sub"><span class="ip-num">ghid {hen(s4.pct(MORT_G, 2))}</span></dd>'   # D161: ♀ vs the guide's cumulative %, deaths only (D155)
+           f'<dd class="ip-fsum__status">{lamp("ok", "în normă") if MH["F"] <= MORT_G else lamp("warn", "abatere")}</dd></div></dl></article>')
     tel = (f'<article class="ip-fsum ip-fsum--compact{T_}" aria-labelledby="fs-tel" aria-describedby="fs-tel-c"><div class="ip-fsum__head"><div class="ip-fsum__id">'
            f'<h3 class="ip-fsum__name" id="fs-tel"><a href="#/ferme/telita">Telița</a></h3><span class="ip-tag ip-tag--neutral">Creștere</span>'
            f'<span class="ip-tag ip-tag--neutral">{GUIDES["g-growth"]}</span></div>{lamp("off", "goală")}</div>'
-           f'<div class="ip-fsum__empty" id="fs-tel-c"><p class="ip-m0">Ferma e goală din {num(dd(dt.date.fromisoformat(cT["end_date"])))}. Ultimul ciclu: Seria 2026, {num(cT["weeks"])} săpt.</p>'
+           f'<div class="ip-fsum__empty" id="fs-tel-c"><p class="ip-m0">Ferma e goală din {num(dd(cT["end_date"]))}. Ultimul ciclu: Seria 2026, {num(cT["weeks"])} săpt.</p>'
            f'<a class="ip-link" href="#/ferme/telita?ciclu=cyc-telita-2026">Vezi ultimul ciclu</a></div></article>')
     return (f'<section class="s2-block" aria-labelledby="fm">{head("Ferme", f"{num(2)} ferme · {num(D)}", "fm")}'
             f'<div class="ip-fsums s2-fsums">{hir}{tel}</div></section>')
 
 # ---------- compact CycleTrack (owner): Seria 2026, one lane per farm ----------
+DOM0 = R.PLACEMENT.replace(day=1)                     # axis from the series' placement month (10.2025) …
+DOM1 = dt.date(TODAY.year + 1, 1, 1); DOM1_P = dt.date(TODAY.year + 1, 3, 1)   # … to the end of this year (phone: + 2 months, S2V)
 LX, RO_W, TWS = 72, 56, (1160, 1000)  # drawn 1:1 for the 1160 px content box at 1440 and the 1000 px one at 1280 (as S3P)
 def months(d0, d1):
     out = []; y, m = d0.year, d0.month
@@ -286,7 +310,7 @@ def track_svg(TW, phone=False):
     """phone (S2V, 358 px content box): full lanes 26 / blocks 20 spaced 48 apart, each block link with a 44 px hit rect
     (touch target), short block labels, the axis to 03.2027 so the SAPT readout fits right of the azi line (52 px),
     month labels on quarter starts after the first month (ticks every month)."""
-    d0, d1 = dt.date(2025, 10, 1), (dt.date(2027, 3, 1) if phone else dt.date(2027, 1, 1))
+    d0, d1 = DOM0, (DOM1_P if phone else DOM1)
     ppd = (TW - LX) / (d1 - d0).days
     def tx(iso): return round(LX + (dt.date.fromisoformat(iso) - d0).days * ppd, 1)
     LH, BH = (26, 20) if phone else (22, 16)          # compact: lane 22, block 16 (full: 26 / 20); with the focus ring the link is 24 px (D46)
@@ -303,11 +327,11 @@ def track_svg(TW, phone=False):
     xa = tx(cT['start_date'])
     place = f'<rect class="place" x="{round(xa - 1, 1)}" y="{ly["telita"] + 3}" width="3" height="{BH}"/>'
     g += block('telita', cT['start_date'], cT['end_date'], 'creștere' if phone else f'Seria 2026 · creștere · {cT["weeks"]} săpt.',
-               f'Telița, Seria 2026, creștere, {dd(dt.date.fromisoformat(cT["start_date"]))}–{dd(dt.date.fromisoformat(cT["end_date"]))}, {cT["weeks"]} săptămâni, închis. '
+               f'Telița, Seria 2026, creștere, {R.drange(cT["start_date"], cT["end_date"])}, {cT["weeks"]} săptămâni, închis. '
                f'Început prin populare (găini {n(PLC["F"])}, cocoși {n(PLC["M"])}), încheiat prin transfer la Hîrbovăț. Deschide ferma la acest ciclu.',
                '#/ferme/telita?ciclu=cyc-telita-2026', marks=place)
-    g += block('hirbovat', cH['start_date'], TODAY.isoformat(), f'{"" if phone else "Seria 2026 · "}ouat · din {dd(dt.date.fromisoformat(cH["start_date"]))}',
-               f'Hîrbovăț, Seria 2026, ouat, din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi sapt. {WK}. Păsări sosite prin transfer de la Telița '
+    g += block('hirbovat', cH['start_date'], TODAY.isoformat(), f'{"" if phone else "Seria 2026 · "}ouat · din {dd(cH["start_date"])}',
+               f'Hîrbovăț, Seria 2026, ouat, din {dd(cH["start_date"])}, deschis, vânzări din {dd(R.EMPTYING_SINCE)}, azi sapt. {WK}. Păsări sosite prin transfer de la Telița '
                f'{dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))} (găini {n(ARR["F"])}, cocoși {n(ARR["M"])}). Deschide ferma la acest ciclu.',
                '#/ferme/hirbovat?ciclu=cyc-hirbovat-2026', open_=True)
     yt, yb = ly['telita'] + 3 + BH, ly['hirbovat'] + 3; ym = (yt + yb) / 2; xa, xb = tx(X0D), tx(X1D)
@@ -321,9 +345,9 @@ def track_svg(TW, phone=False):
         x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
         tk += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 4}"/>'
         if not phone or ((d.month - 1) % 3 == 0 and d > d0): tk += f'<text class="month" x="{x}" y="{H + 16}" text-anchor="{anc}">{lbl}</text>'
-    desc = (f'Seria 2026, 2 ferme. Telița: creștere {dd(dt.date.fromisoformat(cT["start_date"]))}–{dd(dt.date.fromisoformat(cT["end_date"]))}, {cT["weeks"]} săpt., închis, '
+    desc = (f'Seria 2026, 2 ferme. Telița: creștere {R.drange(cT["start_date"], cT["end_date"])}, {cT["weeks"]} săpt., închis, '
             f'început prin populare. Transfer Telița → Hîrbovăț {dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}. '
-            f'Hîrbovăț: ouat din {dd(dt.date.fromisoformat(cH["start_date"]))}, deschis, azi {D}, sapt. {WK}.')
+            f'Hîrbovăț: ouat din {dd(cH["start_date"])}, deschis, vânzări din {dd(R.EMPTYING_SINCE)}, azi {D}, sapt. {WK}.')
     return (f'<svg class="ip-track s2-track {"ip" if TW in (1160, 1000, 720, 560) else "s2"}-track--{TW}" viewBox="0 0 {TW} {H + 18}" role="group" aria-label="Ciclurile seriei 2026 pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 def track(phone=False):
@@ -331,7 +355,7 @@ def track(phone=False):
     leg = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
            f'<span class="ip-num">{dd(dt.date.fromisoformat(X0D))[:5]}–{dd(dt.date.fromisoformat(X1D))}</span></span><span><i class="today"></i>azi</span>')
     lnk = '<a class="ip-link s2-lnk" href="#/serii/seria-2026">Deschide seria</a>'
-    note = f'{num("10.2025–12.2026")} · {num(2)} ferme · {num(2)} cicluri' + ('' if phone else f' · {lnk}')
+    note = f'{num(f"{DOM0:%m.%Y}–{DOM1 - dt.timedelta(days=1):%m.%Y}")} · {num(2)} ferme · {num(2)} cicluri' + ('' if phone else f' · {lnk}')
     svgs = track_svg(358, phone=True) if phone else "".join(track_svg(tw) for tw in TWS)
     more = lnk.replace('s2-lnk', 's2-more') if phone else ''
     return (f'<section class="s2-block" aria-labelledby="tk">{head("Seria 2026 · cicluri pe ferme", note, "tk")}'
@@ -374,8 +398,8 @@ def desktop(role, parts):
     return f'<div class="ip-shell">{sidebar(role)}<main class="ip-shell__main">\n{desk_heads("".join(parts))}\n</main></div>'
 
 VET = phone([pagehead(CTX_VET, True), missing(), entrykeys(), introdus()], vet=True)
-MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True), introdus_empty(INTRO_MGR)])  # D87: Introdus azi last
-MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}{missing(True)}</div>', stock(), entrykeys(True), introdus_empty(INTRO_MGR)])
+MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True), introdus_mgr()])  # D87: Introdus azi last
+MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}{missing(True)}</div>', stock(), entrykeys(True), introdus_mgr()])
 OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols">{alerts(True)}{unpriced()}</div>', stock(cap='Stoc hrană'), farms_block()])
 
 # ---------- CSS ----------
@@ -429,9 +453,10 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 '''
     (ROOT / f'design/canvas/project/{stem}.dc.html').write_text(dc, encoding='utf-8')
     SYS = ROOT / 'design/system'
+    wroot = root if fixed else root.replace(f'min-height:{h}px', 'min-height:844px', 1)  # RF06: the render keeps only the 844 floor, so s2_render measures the natural height
     wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{title}</title>
 <link rel="stylesheet" href="file://{SYS}/tokens.css"><link rel="stylesheet" href="file://{SYS}/components/bundle.css"><link rel="stylesheet" href="file://{SYS}/components/additions.css">
-{B.FONTS}<style>{CSS_P_}</style></head><body>{root}</body></html>'''
+{B.FONTS}<style>{CSS_P_}</style></head><body>{wroot}</body></html>'''
     pathlib.Path('/tmp/s2').mkdir(exist_ok=True)
     pathlib.Path(f'/tmp/s2/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, title, h)

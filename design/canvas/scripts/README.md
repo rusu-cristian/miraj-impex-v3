@@ -26,7 +26,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S6  | `s6_build.py --canvas`, `s6s_build.py --canvas` (h/title refreshed in place, RF04) |
 | S9  | `s9_build.py --canvas` (h/title refreshed in place, RF05) |
 | S10 | `s10_build.py --canvas` (h/title in place; tall default re-measured by `s10_render.py --heights`, RF05) |
-| S2  | `s2_build.py --canvas`, `s2s_build.py --canvas` |
+| S2  | `s2_build.py --canvas`, `s2s_build.py --canvas` (h/title in place; heights from `s2_render.py --heights --states` and `--heights --viewer`, render wrappers keep only the 844/1024 floor, RF06) |
 | S14 | `s14_build.py --canvas`, `s14s_build.py --canvas` |
 | S8  | `s8_build.py --canvas`, `s8s_build.py --canvas` (h/title in place; heights from `s8_render.py s8_heights.json`, min-height released, RF07) |
 | S15 | `s15_build.py --canvas`, `s15s_build.py --canvas` |

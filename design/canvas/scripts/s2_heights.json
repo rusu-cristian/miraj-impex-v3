@@ -1,11 +1,10 @@
 {
- "S2-acasa": 900,
- "S2-acasa--manager": 1856,
+ "S2-acasa": 876,
+ "S2-acasa--manager": 1740,
  "S2-acasa--manager-desktop": 1024,
- "S2-acasa--proprietar-desktop": 1176,
+ "S2-acasa--proprietar-desktop": 1128,
  "S2-acasa--se-incarca": 844,
  "S2-acasa--inainte-de-12": 844,
- "S2-acasa--zi-trecuta-blocat": 844,
  "S2-acasa--sterge-confirmare": 844,
  "S2-acasa--dupa-2359": 844,
  "S2-acasa--ferma-goala": 844,
@@ -14,7 +13,8 @@
  "S2-acasa--manager-desktop--se-incarca": 1024,
  "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0": 1024,
  "S2-acasa--proprietar-desktop--se-incarca": 1024,
- "S2-acasa--proprietar-desktop--toate-cu-pret": 1176,
- "S2-acasa--observator": 2140,
- "S2-acasa--observator-desktop": 1156
+ "S2-acasa--proprietar-desktop--toate-cu-pret": 1084,
+ "S2-acasa--observator": 1920,
+ "S2-acasa--observator-desktop": 1084,
+ "S2-acasa--manager-ferma-goala": 844
 }

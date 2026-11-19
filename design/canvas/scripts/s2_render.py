@@ -7,7 +7,7 @@ desktops 1440 from /tmp/s4s) to design/shots/S2-<state>.png; --only-states skips
 --viewer (S2V) renders only the Observator phone (390, full page) and desktop (1440) to design/shots/S2-observator.png and
 S2-observator-desktop.png at their board heights.
 --heights writes each board's natural height (max of 844 / 1024 and the content, rounded up to 4) to s2_heights.json
-(then rebuild with s2_build.py)."""
+(then rebuild with s2_build.py); the /tmp render wrappers keep only that floor (RF06), so a board can also get shorter."""
 import asyncio, json, pathlib, sys
 from playwright.async_api import async_playwright
 R = pathlib.Path(__file__).resolve().parents[3]
@@ -47,6 +47,8 @@ async def main():
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome')
         new = {}
         for st, w, h, d, shot in ORDER:
+            base = 844 if w == 390 else 1024                 # RF06: the floor, never the stored h (states.json/viewer.json carry it)
+            if '--heights' in sys.argv: h = base
             vh = h if '--heights' in sys.argv else hs.get(st, h)
             pg = await b.new_page(viewport={'width': w, 'height': vh})
             await pg.goto(f'file:///tmp/{d}/{st}.html'); await pg.wait_for_timeout(800)

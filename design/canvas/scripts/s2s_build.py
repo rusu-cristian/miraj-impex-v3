@@ -5,7 +5,8 @@ its blocks (missing, entrykeys, introdus, alerts, stock, unpriced, track, farms_
 and CSS; phone viewport / Banner / modal anchor CSS from sstate_css.py; empty-box classes from s4s_build. S2P: phone Dialog,
 tab bar key off are system classes (additions.css section 35); the StockReadout and CycleTrack skeletons are section 54 (skel.py, FIN11G).
 Phone state boards are 390×844 viewports (D60) with the BottomTabBar at the foot; desktop boards are pages (1440).
-Every figure comes from the extracts; boards whose example is not in the sample say "exemplu de stare (D39)".
+Every figure comes from realdata.py (RF06, today 18.11.2026); boards whose example can't happen on the real data say
+"exemplu de stare (D39)" (canvas.json title + page <title> only).
 Writes design/canvas/project/S2-acasa--<state>.dc.html, /tmp/s2/<stem>.html (phones), /tmp/s4s/<stem>.html (desktops),
 /tmp/s2/states.json (for s2_render.py); --canvas sets every S2 board in canvas.json: the S2 row's y, the 4 default boards
 first, then the state boards, phones before desktops (D87), 80 px gaps, then the 2 Observator boards (S2V, D89).
@@ -27,23 +28,20 @@ import sstate_css as SC
 import skel as SKL
 s4, B = A.s4, A.B
 n, dd, num, lamp, icon, tile, NB, D = A.n, A.dd, A.num, A.lamp, A.icon, A.tile, A.NB, A.D
-TODAY, S, WK = A.TODAY, A.S, A.WK
+TODAY, WK, R = A.TODAY, A.WK, A.R
 A.IC.update({'fault': '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'})  # Banner fault (system preview)
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 VH = 844
 
 # ---------- checks on the data the states rest on ----------
-D7 = [(TODAY - dt.timedelta(days=k)) for k in range(7, 0, -1)]            # 09.11 – 15.11
-DAYS = {r['date'] for r in S['daily']}
-assert all(d.isoformat() in DAYS for d in D7)
-assert all(r['g_per_bird'] is not None and r['mortality'] is not None for r in S['daily'] if D7[0].isoformat() <= r['date'] < TODAY.isoformat())
-AM = '10:40'  # before 12:00: every save of the vet's day is in (last at 10:10), today's missing rows are not listed yet (C9)
+D7 = A.W7[:-1]                                                            # the 7 days before today (C9)
+assert all(R.day(d) for d in D7)
+AM = '10:40'  # before 12:00: every save of the vet's day is in, today's missing rows are not listed yet (C9)
 assert max(e['at'][11:16] for e in A.LOG.values()) < AM < '12:00'
-PAST = ('2026-11-15', 'H4.2', 'F')  # D39: a past day missing (the sample has 09.11–15.11 complete); real counts of that day
-pr, py = A.day_row(*PAST); assert (pr['alive_end'], py['g_per_bird']) == (4110, 156) and pr['g_per_bird'] is not None
-TL = A.TL; T_END = dd(dt.date.fromisoformat(A.cT['end_date'])); assert TL['totals']['all'] == 0 and T_END == '28.02.2026'
+assert A.MISS and all(m[0] < TODAY.isoformat() for m in A.MISS)          # the real lipsă rows are past days (13.11 H7 ♀): locked for the vet
+TL = A.TL; T_END = dd(A.cT['end_date']); assert TL['totals']['all'] == 0 and A.cT['status'] == 'closed'
 B2 = A.B2; NEG = -1240  # D39 / D40: the kit's C2 "stoc sub 0" figure (spec example), drawn on Breeder 2 as the SYS04 preview
-assert B2['avg_daily_kg_last3'] == 3976
+assert B2['stock_kg'] > 0 and B2['days_left'] >= s4.STOCK_LIMIT          # real stock is in norm: stoc sub 0 stays D39
 
 # ---------- phone pieces ----------
 def pscreen(parts, vet=True, overlay='', modal=False, end=False, key_off=None):
@@ -60,7 +58,7 @@ def skrow(): return ('<div class="ip-ev ip-ev--skel" aria-hidden="true"><span cl
 def sklist(k): return f'<div class="ip-list">{skrow() * k}</div>'
 def skmissing(scope):
     return (f'<section class="ip-missing" aria-labelledby="ms" aria-busy="true"><div class="ip-missing__head"><h2 class="ip-cap" id="ms">Lipsesc date</h2>'
-            f'<p class="ip-note">{scope} · azi de la {num("12:00")} · ultimele {num(7)} zile</p></div>{sklist(2)}</section>')
+            f'<p class="ip-note">{scope} · azi de la {num("12:00")} · ultimele {num(7)} zile</p></div>{sklist(len(A.MISS))}</section>')
 def skblock(cap, note, hid, body):
     return f'<section class="s2-block" aria-labelledby="{hid}" aria-busy="true">{A.head(cap, note, hid)}{body}</section>'
 STATUS = lambda what: f'<p class="ip-sr" role="status">Se încarcă {what} pentru <span class="ip-num">{D}</span>…</p>'
@@ -77,31 +75,28 @@ boards = []  # (slug, state title, body, kind) kind: 'p' phone / 'm' manager des
 # 1 · vet · se încarcă — header and keys are known from the route; the blocks are static skeleton rows (no shimmer)
 boards.append(('se-incarca', 'vet · se încarcă', 'p', pscreen([
     PH(A.CTX_VET), STATUS('Acasă'), skmissing('Hîrbovăț'), A.entrykeys(),
-    skblock('Introdus azi', f'{num(D)} · poți modifica sau șterge până la {num("23:59")}', 'ia', sklist(3))])))
+    skblock('Introdus azi', f'{num(D)} · poți modifica sau șterge până la {num("23:59")}', 'ia', sklist(len(A.INTRO)))])))
 
-# 2 · vet · înainte de 12:00 (10:40, real sample): Lipsesc date empty, before-12:00 sentence; Acțiuni menu open on the
-# Hrană zilnică row (the first step to Șterge, board 4)
-E_AM = (f'Zilele <span class="ip-num">{dd(D7[0])[:5]}–{dd(D7[-1])}</span> sunt complete. Lipsurile de azi apar de la {num("12:00")}.')
+# 2 · vet · înainte de 12:00 (10:40, real): the vet's 3 saves are in (08:15–08:44); Lipsesc date lists only the past days
+# (today's rows come from 12:00, C9): the real 13.11 H7 ♀ rows, locked (D65). Acțiuni menu open (D88) on the Mortalitate
+# row: with the two lipsă rows above, a menu on the last row (Hrană zilnică) would run under the tab bar
 boards.append(('inainte-de-12', 'vet · înainte de 12:00 · Acțiuni deschis', 'p', pscreen([
-    PH(A.CTX_VET), A.missing(when=AM, empty=E_AM), A.entrykeys(), A.introdus(menu={'feed': 'open'})])))
+    PH(A.CTX_VET), A.missing(when=AM), A.entrykeys(), A.introdus(menu={'mortality': 'open'})])))
 
-# 3 · vet · zi trecută lipsă, blocat (D07) — before 12:00, past-day rows only (D39: 15.11 H4.2 ♀ missing)
-boards.append(('zi-trecuta-blocat', 'vet · zi trecută lipsă · blocat · exemplu de stare (D39)', 'p', pscreen([
-    PH(A.CTX_VET), A.missing(miss=[], past=[PAST], locked=True, when=AM), A.entrykeys(), A.introdus()])))
-
-# 4 · vet · Șterge · confirmare — Dialog over the default page (after 12:00); no reason for the author's same-day delete
-# (D70 A); the whole save goes (D86); focus starts on Anulează
+# 3 · vet · Șterge · confirmare — Dialog over the default page (after 12:00), on the Mortalitate save (the row whose Acțiuni
+# menu board 2 opens, D169); no reason for the author's same-day delete (D70 A); the whole save goes (D86); focus on Anulează.
+# (The "zi trecută lipsă · blocat" board is dropped, D169: on real data it equals the default vet board.)
 dlg = (f'<div class="ip-scrim ip-scrim--phone"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
-       f'<h2 id="dlg-t">Șterge Hrană zilnică din <span class="ip-num">{D}</span></h2>'
-       f'<p class="ip-dialog__note" id="dlg-n">Se șterg toate cele {num(len(A.FEED_ROWS))} rânduri salvate la {num(A.t_of(A.LOG["feed"]))} '
-       f'({num(n(A.FEED_KG, 1) + NB + "kg")}). Secțiunile lor apar din nou în Lipsesc date. Ștergerea rămâne în Istoric modificări.</p>'
+       f'<h2 id="dlg-t">Șterge Mortalitate din <span class="ip-num">{D}</span></h2>'
+       f'<p class="ip-dialog__note" id="dlg-n">Se șterg rândurile salvate la {num(A.t_of(A.LOG["mortality"]))} pentru {num(len(A.ZSEC))} secțiuni '
+       f'({A.hen(n(-A.DTH["F"]))} · {A.roo(n(-A.DTH["M"]))}). Secțiunile lor apar din nou în Lipsesc date. Ștergerea rămâne în Istoric modificări.</p>'
        f'<div class="ip-dialog__keys ip-dialog__keys--stack"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-focus" autofocus="autofocus">Anulează</button>'
        f'<button type="button" class="ip-btn ip-btn--destructive ip-btn--touch">Șterge</button></div></div></div>')
 boards.append(('sterge-confirmare', 'vet · Șterge · confirmare', 'p', pscreen(
     [PH(A.CTX_VET), A.missing(), A.entrykeys(), A.introdus()], overlay=dlg, modal=True)))
 
-# 5 · vet · după 23:59 — the page of 16.11 still open at 00:05: keys aria-disabled, menu open with the reason;
-# the Mortalitate row edited by its author the same day (D39: no edit in the sample) shows "modificat la 09:52";
+# 4 · vet · după 23:59 — the page of today still open at 00:05: keys aria-disabled, menu open with the reason;
+# the Mortalitate row edited by its author the same day (D39: no same-day edit in the event log) shows "modificat la 09:52";
 # the menu opens on the Ouă row (it covers neither that mark nor the tab bar), the view scrolled to the foot of the page
 boards.append(('dupa-2359', 'vet · după 23:59 · modificat la · exemplu de stare (D39)', 'p', pscreen([
     PH(A.CTX_VET), A.missing(), A.entrykeys(), A.introdus(menu={'eggs': 'open'}, off=True, edited={'mortality': '09:52'})], end=True)))
@@ -157,31 +152,28 @@ def skreadouts(k, hid):
 # 9 · manager · desktop · se încarcă
 boards.append(('manager-desktop--se-incarca', 'manager · desktop · se încarcă', 'm', A.desktop('Manager', [
     A.pagehead(A.CTX_MGR), STATUS('Acasă'),
-    f'<div class="s2-cols">{skblock("De verificat", f"fermele tale · {num(D)}", "dv", sklist(3))}{skmissing("fermele tale")}</div>',
+    f'<div class="s2-cols">{skblock("De verificat", f"fermele tale · {num(D)}", "dv", sklist(A.N_AL[False]))}{skmissing("fermele tale")}</div>',
     skblock('Zile de hrană', f'stoc și zile rămase · {num(D)}', 'st', skreadouts(3, 'st')),
-    A.entrykeys(True), skblock('Introdus azi', num(D), 'ia', sklist(2))])))
+    A.entrykeys(True), skblock('Introdus azi', num(D), 'ia', sklist(len(A.MGR_LOG)))])))
 
-# 10 · manager · desktop · zi trecută lipsă (link, D07: managers enter past days) + stoc sub 0 (D50) — D39 both
+# 10 · manager · desktop · zi trecută lipsă (link, D07: managers enter past days; real: 13.11 H7 ♀, as the default) + stoc sub 0
+# (D50; D39: the real stock is 13 zile) with its Breeder 2 alert after the real ones
 a_neg = s4.alert('delivery', f'Breeder 2 · stoc <span class="ip-num">{n(NEG)} kg</span> · sub 0',
                  f'{D} · consumul depășește livrările', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
-al = A.alerts()
-first = '<li class="ip-ev ip-ev--alert">'
-assert al.count(first) == 3 and f'{num(3)} alerte' in al
-al = al.replace(f'{num(3)} alerte', f'{num(4)} alerte')
-i3 = al.rindex(first)  # the stock alert (Cocoși) is the last; the Breeder 2 one goes just before it
-al = al[:i3] + a_neg.replace('<div class="ip-ev__main">', A.FARM_P, 1) + al[i3:]
+al = A.alerts(extra=[a_neg])
+assert al.count('<li class="ip-ev ip-ev--alert">') == A.N_AL[False] + 1
 st = A.stock()
 ro_b2 = st[st.index('<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="sr-ft-breeder2">'):st.index('</li>') + 5]
-w0, w1 = B2['avg_window']
+w0, w1 = A.W3
 ro_neg = (f'<li><div class="ip-readout ip-readout--stock" role="group" aria-labelledby="sr-ft-breeder2"><div class="ip-readout__cap"><span id="sr-ft-breeder2">Hîrbovăț · Breeder 2'
           f'<span class="ip-sr">, pentru găini</span></span><span class="ip-rlamp ip-rlamp--warn">abatere</span></div>'
           f'<div class="ip-readout__val">{n(NEG)}<small> kg</small></div><dl class="ip-readout__kv"><div><dt>zile rămase</dt><dd>{n(0, 1)}<small> zile</small></dd></div>'
-          f'<div><dt>medie/zi {dd(dt.date.fromisoformat(w0))[:5]}–{dd(dt.date.fromisoformat(w1))[:5]}</dt><dd>{n(B2["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
+          f'<div><dt>medie/zi {R.drange(w0, w1, False)}</dt><dd>{n(B2["avg_daily_kg_last3"])}<small> kg</small></dd></div>'
           f'<div><dt>epuizat pe</dt><dd>{D}</dd></div></dl><p class="ip-readout__sub ip-m0">stoc sub 0 · verifică livrările</p></div></li>')
 assert st.count(ro_b2) == 1
 boards.append(('manager-desktop--zi-trecuta-stoc-sub-0', 'manager · desktop · zi trecută lipsă · stoc sub 0 · exemplu de stare (D39)', 'm', A.desktop('Manager', [
-    A.pagehead(A.CTX_MGR), f'<div class="s2-cols">{al}{A.missing(True, past=[PAST])}</div>', st.replace(ro_b2, ro_neg),
-    A.entrykeys(True), A.introdus_empty(A.INTRO_MGR)])))
+    A.pagehead(A.CTX_MGR), f'<div class="s2-cols">{al}{A.missing(True)}</div>', st.replace(ro_b2, ro_neg),
+    A.entrykeys(True), A.introdus_mgr()])))
 
 # 11 · proprietar · desktop · se încarcă — track, alerts, UnpricedCount (its own skeleton), stock, farm summaries
 sktrack = SKL.track(compact=True) + SKL.legend()  # 2 lanes + the month axis, as tall as the compact CycleTrack (§54, FIN11G)
@@ -191,11 +183,11 @@ skfs = f'<article class="ip-fsum ip-fsum--compact" aria-hidden="true">{sk("s4s-w
 boards.append(('proprietar-desktop--se-incarca', 'proprietar · desktop · se încarcă', 'o', A.desktop('Proprietar', [
     A.pagehead(A.CTX_OWN), STATUS('Acasă'),
     skblock('Seria 2026 · cicluri pe ferme', f'{num(2)} ferme', 'tk', sktrack),
-    f'<div class="s2-cols">{skblock("De verificat", f"toate fermele · {num(D)}", "dv", sklist(4))}{skup}</div>',
+    f'<div class="s2-cols">{skblock("De verificat", f"toate fermele · {num(D)}", "dv", sklist(A.N_AL[True]))}{skup}</div>',
     skblock('Stoc hrană', f'stoc și zile rămase · {num(D)}', 'st', skreadouts(3, 'st')),
     skblock('Ferme', f'{num(2)} ferme · {num(D)}', 'fm', f'<div class="ip-fsums s2-fsums">{skfs * 2}</div>')])))
 
-# 12 · proprietar · desktop · toate livrările au preț (UnpricedCount "none", D39: the sample has 4 unpriced)
+# 12 · proprietar · desktop · toate livrările au preț (UnpricedCount "none", D39: the register has 4 unpriced)
 up0 = (f'<section class="ip-unpriced" aria-labelledby="up"><div class="ip-unpriced__head">{tile("price")}<h2 class="ip-cap" id="up">Livrări fără preț</h2></div>'
        f'<p class="ip-unpriced__fig"><span class="ip-unpriced__val">0<small> livrări</small></span></p><p class="ip-note">Toate livrările au preț.</p>'
        f'<a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-livrari">Vezi livrările</a></section>')
@@ -204,7 +196,7 @@ boards.append(('proprietar-desktop--toate-cu-pret', 'proprietar · desktop · to
 
 # ---------- S2V · Observator (D89) ----------
 def v_alerts(u=''):
-    al = A.alerts(True, u)  # the owner's 5 alerts: the lipsă rows link to the section page (Deschide secțiunea), never to a form
+    al = A.alerts(True, u)  # the owner's 4 alerts: the lipsă rows link to the section page (Deschide secțiunea), never to a form
     assert al.count('toate fermele') == 1 and 'Completează' not in al and 'preț' not in al and al.count('lipsă</span>') == 2
     return al.replace('toate fermele', 'fermele tale')  # the viewer sees his assigned farms (spec §1); here both
 def v_sidebar():
