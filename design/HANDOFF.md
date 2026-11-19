@@ -1,6 +1,6 @@
 # Handoff
 Updated: 2026-11-19 · Round 2 complete
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b) · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795092506-1769; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
 Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, weeks by bird age (D151), table-first PeriodTables with daily rows, group rules + tag-colour tints, ♀/♂ icons (D151–D181). 267 boards; literal_scan + sex_scan clean.
