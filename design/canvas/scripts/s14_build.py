@@ -94,7 +94,14 @@ def groups(h=None, guide=True, tag=None):
         lv = {lab: (lab, c, fn) for lab, c, fn in ou['leaves']}
         st = P.stacked({'name': ou['name'], 'leaves': [lv['% ouat']]}, {'leaves': [lv['ghid']]}, 'ghid') if guide else {'name': ou['name'], 'leaves': [lv['% ouat']]}
         return [out[0], {'name': st['name'], 'leaves': [lv['ouă']] + st['leaves']}]
+    if tag == TAG_INC:   # D186/D188: Cat. 1–3 are egg characteristics like Incubabile, so this tag shows both; Găini stays and the
+        # table scrolls sideways under the sticky first column (395 px in the 356 region, §36: the ~30–40 px D188 measured); % incub.
+        # rides under the count as the cell's second line (the phone's companion rate, sys14 stacked), Cat. heads wrap on the phone
+        inc = out[2]; cats = [(lab.replace('\u00a0', ' '), c, fn) for lab, c, fn in ou['leaves'] if lab in P.CAT_HEAD.values()]
+        st = P.stacked({'name': inc['name'].replace('Incubabile', TAG_INC), 'leaves': inc['leaves'][:1]}, {'leaves': inc['leaves'][1:]}, '% incub.')
+        return [out[0], {'name': st['name'], 'leaves': st['leaves'] + cats}]
     return [out[0], P.group(out[2:], tag)]
+TAG_INC = 'Incubabile · Cat.'   # D188 (Claude, to review): the phone tag that shows Incubabile and % Cat. 1–3
 GOALA_H = f'goală din {R.dd(H7_EMPTY)} · {", ".join(R.HALL_SECS["H7"])}'
 def hall_rows(guide=True, tag=None):
     return [{'label': h, 'sr': '', 'sections': [('', '', groups(h, guide, tag))],
@@ -222,9 +229,18 @@ def p_egg(h=None):
         rs = [r for r in s4._prows(kind, key, h) if r['total_eggs'] and r['avg_egg_weight_g']]
         return n(sum(r['avg_egg_weight_g'] * r['total_eggs'] for r in rs) / sum(r['total_eggs'] for r in rs), 1)
     return f
+def p_cat(c, h=None):   # D187 (S4C2): Cat. c as % of the eggs, from the previous flock's daily form counts (D18: total = Cat. 1–3 + incubabile)
+    def f(kind, key):
+        rs = s4._prows(kind, key, h); e = sum(r['total_eggs'] for r in rs)
+        return R.pct(sum(r[f'cat{c}'] for r in rs) / e * 100) if e else (DASH, 'fără ouă')
+    return f
+for _k in PW4:   # built-in check: the farm and hall week cells = the weekly extract's Cat. counts ÷ its eggs (as the current cycle's _cat_check)
+    for _h in (None, *HALLS):
+        _w = s4.pall[_k] if _h is None else s4.phall.get((_h, _k))
+        if _w: assert all(p_cat(c, _h)('w', _k) == R.pct(_w[f'cat{c}'] / _w['total_eggs'] * 100) for c in (1, 2, 3)), (_k, _h)
 def past_groups(h=None):
     E = P.ico('eggs')
-    return [{'name': f'{E}Ouă', 'single': True, 'sr': ', total', 'leaves': [('', '', s4.p_sum('total_eggs', h))]},
+    return [{'name': f'{E}Ouă', 'leaves': [('ouă', '', s4.p_sum('total_eggs', h))] + [(P.CAT_HEAD[c], '', p_cat(c, h)) for c in (1, 2, 3)]},   # D187: % Cat. 1–3 beside Incubabile (D186)
             {'name': f'{E}Incubabile', 'leaves': [('ouă', '', s4.p_sum('hatching_eggs', h)), ('%', '', s4.p_share('hatching_eggs', h))]},
             {'name': f'{E}Jos', 'leaves': [('ouă', '', s4.p_sum('floor_eggs', h)), ('%', '', s4.p_share('floor_eggs', h))]},
             {'name': f'{E}Masă ou', 'single': True, 'sr': ', grame', 'leaves': [('g', '', p_egg(h))]},
@@ -239,7 +255,7 @@ def tb_past():
     assert t.count('aria-expanded="true"') == 4
     after = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid}">Arată toate săptămânile</button>'
              f'<p class="ip-note">apoi SAPT {PFIN} → {PWEEKS[0]} (registrul are date din {ddate(c25["data_start_date"])}).</p></div>'
-             + s4.ptnote('Seria 2025 nu are efectiv în registru (nicio populare sau transfer): fără Găini și % ouat; grame de hrană nu există pentru acest ciclu.',
+             + s4.ptnote('Seria 2025 nu are efectiv în registru (nicio populare sau transfer): fără Găini și % ouat; grame de hrană nu există pentru acest ciclu.' + NOTE_CAT,
                          f'Mortalitatea nu include golirea halelor (H5 din {num(R.ddm(DEP["H5"]))}, H6 din {num(R.ddm(DEP["H6"]))}, H7 din {num(R.ddm(DEP["H7"]))}): '
                          f'în zilele de golire registrul trece la morți și păsările scoase, deci o zi sau o săptămână numai cu golire are {DASH}. Jos nu intră în ouă.'))
     return (f'<section aria-labelledby="pr-h"><h2 class="ip-sr" id="pr-h">Producție pe săptămâni, zile și hale, Seria 2025</h2>'

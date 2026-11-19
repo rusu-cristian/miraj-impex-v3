@@ -77,8 +77,9 @@ SLIDERS = ('<path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d=
            '<path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/>')  # Lucide sliders-horizontal
 SUM = f'4 săpt. · Zi · Hîrbovăț · {X.PHONE_TAG}'
 # D176: the phone's single-choice group tags (as the Fermă phone's record tags, D160/D171): one column group at a time, Găini stays
-P_TAGS = [('Ouat', 'eggs'), ('Incubabile', 'eggs'), ('Masă ou', 'eggs'), ('Mortalitate', 'mortality'), ('Hrană · g/pasăre', 'feed'), ('Vânzare', 'sale')]
-assert [P.group(X.groups(), w)['name'].rsplit('</span>', 1)[-1] for w, _ in P_TAGS] == [w for w, _ in P_TAGS]
+P_TAGS = [('Ouat', 'eggs'), (X.TAG_INC, 'eggs'), ('Masă ou', 'eggs'), ('Mortalitate', 'mortality'), ('Hrană · g/pasăre', 'feed'), ('Vânzare', 'sale')]   # D188: "Incubabile · Cat."
+assert [P.group(X.groups(), w)['name'].rsplit('</span>', 1)[-1] for w, _ in P_TAGS if w != X.TAG_INC] == [w for w, _ in P_TAGS if w != X.TAG_INC]
+assert '</span>' + X.TAG_INC + '<span class="ip-ptable__note">' in X.groups(tag=X.TAG_INC)[1]['name'] and len(X.groups(tag=X.TAG_INC)[1]['leaves']) == 4   # Incubabile ouă (/ %) + % Cat. 1–3
 def radio_chips():
     out = ''
     for w, k in P_TAGS:

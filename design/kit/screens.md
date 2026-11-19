@@ -161,7 +161,7 @@ Farm, date, feed type, kg, note, the stock-after line, Adaugă.
 
 ### S14 · Producție report
 A weekly table by the birds' age week (SAPT), per section, vs the guide. Export.
-Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (newest week first, last 4 weeks by default, D159): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total perioadă"; 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen. Columns add % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs, D183) on farm week and day rows and hall week rows; ghid = Productivitate col I (D184).
+Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (newest week first, last 4 weeks by default, D159): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total perioadă"; 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen. Columns add % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs, D183) on farm week and day rows and hall week rows; the Seria 2025 board has them too (from its extract, D187); the phone tag "Incubabile · Cat." shows Găini · incub. ouă with % incub. on a second line · % Cat. 1–3 and scrolls ~39 px under the sticky column (D186, D188); ghid = Productivitate col I (D184).
 
 ### S15 · Introdus azi
 Today's entries grouped by record type; edit or delete.

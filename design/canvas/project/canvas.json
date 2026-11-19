@@ -672,13 +672,13 @@
     "S14-rapoarte-productie--seria-2025.dc.html": {
       "x": 8224,
       "y": 26601,
-      "w": 1440,
+      "w": 1560,
       "h": 2227,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · Seria 2025 (ciclu închis)"
     },
     "S14-rapoarte-productie--observator-se-exporta.dc.html": {
-      "x": 9744,
+      "x": 9864,
       "y": 26601,
       "w": 2240,
       "h": 2139,
@@ -686,7 +686,7 @@
       "title": "S14 · Rapoarte · Producție · observator · se exportă"
     },
     "S14-rapoarte-productie--eroare-la-incarcare.dc.html": {
-      "x": 12064,
+      "x": 12184,
       "y": 26601,
       "w": 1440,
       "h": 1024,
@@ -694,7 +694,7 @@
       "title": "S14 · Rapoarte · Producție · eroare la încărcare"
     },
     "S14-rapoarte-productie--fara-ferma-de-ouat.dc.html": {
-      "x": 13584,
+      "x": 13704,
       "y": 26601,
       "w": 1440,
       "h": 1024,
@@ -702,14 +702,14 @@
       "title": "S14 · Rapoarte · Producție · fără fermă de ouat · exemplu de stare (D39)"
     },
     "S14-rapoarte-productie--telefon.dc.html": {
-      "x": 15104,
+      "x": 15224,
       "y": 26601,
       "w": 390,
       "h": 3511,
       "title": "S14 · Rapoarte · Producție · telefon"
     },
     "S14-rapoarte-productie--telefon-filtre.dc.html": {
-      "x": 15574,
+      "x": 15694,
       "y": 26601,
       "w": 390,
       "h": 844,
