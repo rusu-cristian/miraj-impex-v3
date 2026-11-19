@@ -1,6 +1,12 @@
-# Design canvas: Impex Line Panel · Ecrane
+# Design canvas: Impex Line Panel · Ecrane · runda 2
 
-- Slug `e5d5275e-4850-45ce-afa4-d035b0a5bd2b` · URL https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi (created 19.11.2026 by a design-loop session and filled from `design/canvas/project/`; version after the full publish `1795075243-a466`).
+- **Current canvas** (created 19.11.2026 (round 2) from the FV03 coordinator session; old canvas e5d5275e… is stale, do not use):
+  slug `c70b5e5e-ac76-40a2-ac41-f308b82af36b` · URL https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre · title "Impex Line Panel · Ecrane · runda 2".
+  Made with `create_from_type` (Design type), filled from `design/canvas/project/` (271 files, 2 publish_files batches, patch) +
+  `project/ds/impexlinepanel/tokens.json` by `copy_file` from the system artifact `95f22f4a-b2df-421d-b638-4d5e9d0656e2` (v `1794843774-ade9`)
+  → 272 own files. Version after publish `1795123576-0152` (always re-fetch: `get_artifact`). canvas.json title now "… · runda 2".
+  Only the session that made it can publish to it (`network_off_limit` elsewhere): later sessions hand files to whoever can.
+- STALE (do not use) — previous canvas: slug `e5d5275e-4850-45ce-afa4-d035b0a5bd2b` · URL https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi (created 19.11.2026 by a design-loop session and filled from `design/canvas/project/`; version after the full publish `1795075243-a466`).
 - FV03 (19.11.2026): live version `1795092797-ff63`; FV03's patch (245 changed + 12 added files, remove `project/S2-acasa--zi-trecuta-blocat.dc.html`, `project/S15-introdus-azi--manager-10-11.dc.html`) is NOT published: the helper session got `network_off_limit` (it did not create the artifact), so the coordinator publishes it (2 batches ≤ 256, mode "patch").
 - Old canvas (16–17.11.2026, stale since 16.11, read-only from later sessions): slug `e44dd7fb-2990-41f9-a791-2841f1b1dcd1`, https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv. Do not publish there.
 - Type: Design (canvas), `bcd2878f-a88d-4094-a616-8e39d8a5fd8a`. Version at setup: `1794844216-3062` (always re-fetch: `get_artifact`).
@@ -71,7 +77,7 @@ States on artboards: real `:hover`/`:active`/`:disabled` come from additions.css
    Optionally update Main.dc.html's list.
 3. publish_files:
 ```json
-{"slug":"e5d5275e-4850-45ce-afa4-d035b0a5bd2b","base_version":"<live version>","mode":"patch",
+{"slug":"c70b5e5e-ac76-40a2-ac41-f308b82af36b","base_version":"<live version>","mode":"patch",
  "files":[{"as":"project/S4-ferma-rezumat.dc.html","path":"/home/claude/miraj-impex-v3/design/canvas/project/S4-ferma-rezumat.dc.html"},
           {"as":"project/canvas.json","path":"/home/claude/miraj-impex-v3/design/canvas/project/canvas.json"}]}
 ```

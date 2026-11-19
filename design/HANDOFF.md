@@ -1,24 +1,24 @@
 # Handoff
-Updated: 2026-11-19 · Last commit: 3143d94
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795092506-1769; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
+Updated: 2026-11-19 · Round 2 complete
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b) · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795092506-1769; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
 
 ## Progress
-Round 2 (19.11.2026): new workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, table-first (D151–D170). Done: DATA03, DATA04, KIT02, RF00, SYS14, RF01–RF07, S4N, S4NF, S4NG (user approved the Fermă screens after 3 gate rounds). Building: S4NS (Fermă states + phone), RF08 (S15+S16). Then S3N, S14N, RF09, RF10, S18N, S20N, RF11–RF13, SX01, FINAL4 (+ publish the canvas).
+Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, weeks by bird age (D151), table-first PeriodTables with daily rows, group rules + tag-colour tints, ♀/♂ icons (D151–D181). 267 boards; literal_scan + sex_scan clean.
+Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
-- S4NG Fermă gate round 2 (D167, D170): În viață first / Vânzare last in every PeriodTable, Rezumat incub. + % jos, every week open everywhere, wide tables drawn in full on wider boards (board_widths.json), ♀/♂ as venus/mars icons (additions §72, CSS), Seria 2025 table (b730c94)
-- RF06 S2 Acasă (18 boards, D169), RF07 S8 Cântărire (D157), DATA04 one sale = one record (D168), RF05 S9/S10, RF04 S6 (D164), RF03 S11–S13 (D163), RF02 S7, RF01 realdata.py/literal_scan.py
-- S4N/S4NF: Fermă table-first; user: all weeks open (D166)
+- FV03 publish: new canvas with all 271 project files + tokens.json; Main index board lists the rows
+- FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- S3N Serie table-first (after S4NS), S14N Rapoarte daily rows (after S3N), RF09 S17
+- Nothing queued.
 
 ## Waiting on the user
-- To review (non-blocking): D154 (Rezumat first tab), D158, D161–D163, D165, D168–D170 (Claude calls).
-- Canvas not yet republished with round 2 — FINAL4 publishes.
+- To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181.
+- Open points (D153): incubation batches, Cat 1–3 egg categories, feed type names at Hîrbovăț (open-questions.md 8–13).
 
 ## Unpublished on the canvas
-- None: the new canvas (19.11.2026) holds every file in design/canvas/project/. Later changes: publish per design/kit/canvas.md to slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b and list them here until published.
+- None (round-2 canvas c70b5e5e holds every file in design/canvas/project/).
 
 ## Things to remember
 - 17–18.11.2026 session (S19 → FIN08): each job = fresh builder → fresh reviewer → fix round via SendMessage to the same builder (then a short re-review via SendMessage to the same reviewer when the fix touches system CSS). FIN jobs: builders diff every changed board with a normalising script (strip <style>, map old→new classes) and rebuild per design/canvas/scripts/README.md.
