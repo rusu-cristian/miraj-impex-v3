@@ -2155,9 +2155,12 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  *   --ip-ptable-max-h (from its own sizes: viewport less its sticky header). Unset (boards, D42) the region is uncapped.
  * - Density ip-ptable--dense: figure cells one spacing step narrower (S3 at 1280); same row height.
  * - Phone ip-ptable--phone (the page renders the phone markup: spine folded into the first column, "Ma 17.11 · 406",
- *   one column group): every body and foot row control-h-touch (48), the key 44; a partial week's "2 din 7 zile" sits on
- *   a second line under "SAPT 59 · 17.11–18.11" (span.ip-ptable__sub, small, ink-secondary), so the sticky column stays
- *   as wide as a whole week's label.
+ *   one column group): every body and foot row control-h-touch (48), the key 44; the week's dates sit on a second line
+ *   under "SAPT 58" (span.ip-ptable__sub, small, ink-secondary: "10.11–16.11"; a partial week's line is its day count
+ *   "2 din 7 zile", its dates are its open day rows), cells are tighter (figures space-1 | space-2, row heads and head
+ *   cells space-2 at the side, head words wrap), so one tag's group fits
+ *   358 px beside the sticky column with no sideways scroll (D171). A group's companion rate rides in its cells as a second
+ *   small Mono line (span.ip-ptable__pct, ink-secondary: Păsări Mortalitate "10" / "5,7%" cumulat; group head note "cu % cumulat").
  * - Loading: the same table, tr.ip-table__skel rows (section 42), the week rows' bars in rule on panel; both copies
  *   declare the loaded column shares on their leaf heads (section 54, --ip-colw), so the columns do not move.
  * - Below the region: div.ip-ptable__after (the S3 "Arată toate săptămânile" key, the foot note of a partial guide).
@@ -2183,7 +2186,7 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable__key:active,.ip-ptable__key.is-pressed{background:var(--rule)}
 .ip-ptable th:has(> .ip-ptable__key:is(:focus-visible,.ip-focus)){z-index:4}
 .ip-ptable__dates{color:var(--ink-secondary);font-weight:400}
-.ip-ptable__sub{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-secondary)} /* phone: the partial week's day count on a second line inside the 48 row */
+.ip-ptable__sub{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-secondary)} /* phone: the week's dates (a partial week: its day count) on a second line inside the 48 row (D162, D171) */
 /* daily rows */
 .ip-ptable tr.ip-ptable__day > th{padding-left:var(--space-8)}
 .ip-ptable tr.ip-ptable__none > td{padding-left:var(--space-8);text-align:left;color:var(--ink-muted)}
@@ -2197,6 +2200,11 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable--dense :is(tbody,tfoot) td.num{padding-inline:var(--space-2)}
 .ip-ptable--phone :is(tbody,tfoot) > tr > :is(th,td){height:var(--control-h-touch)}
 .ip-ptable--phone .ip-ptable__key{height:calc(var(--control-h-touch) - var(--space-1))}
+.ip-ptable--phone :is(tbody,tfoot) td.num{padding-inline:var(--space-1) var(--space-2)} /* D171: figure cells tighter than dense (figures right-aligned, so the left side only spaces columns), so one tag's group fits 358 beside the sticky column */
+.ip-ptable--phone :is(tbody,tfoot) th,.ip-ptable--phone tr.ip-ptable__wk > th{padding-right:var(--space-2)}
+.ip-ptable--phone thead th{padding-inline:var(--space-2)}
+.ip-ptable--phone thead th{white-space:normal} /* phone: head words wrap (Data · Vârstă (zile), group notes) so the head never sets a column wider than its figures */
+.ip-ptable__pct{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);color:var(--ink-secondary)} /* phone: a companion rate under the count in the same cell (Mortalitate "10" / "5,7%"), the row stays 48 */
 
 /* ---------- 72. Sex signs as icons (S4NG, D167, D170) ---------- */
 /* No font in the stack has ♀/♂ (U+2640/2642): the browser's fallback drew them about 5px tall. Every ♀/♂ of the ip-sex

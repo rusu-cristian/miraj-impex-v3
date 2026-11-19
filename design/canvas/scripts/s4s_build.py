@@ -692,13 +692,55 @@ def main_noaccess():
 {empty_box("fără acces", ["Nu ai acces la această fermă."], step, "Acces")}
 </main>'''
 
-# ---------- 5. empty farm (30.01.2026, after the halls were emptied on 28.01.2026) ----------
+# ---------- 5. empty farm between cycles: Telița on 18.11.2026 (spec D1 round 2, S4NS), real cycles.json / counts ----------
+# Telița's only cycle: Seria 2026, creștere, 07.10.2025–28.02.2026 (placement, then transfers out 22–28.02 to Hîrbovăț), SAPT 1–21,
+# closed at 0 per D25; Seria 2025 has no Telița data (S3). Today the farm holds no birds and no cycle is open (D48: no filter bar,
+# tabs or table). The Hîrbovăț 30.01.2026 drawing (header/cycle 'empty', DOM_EMPTY) is kept for importers, unused here.
+CT = R.CTEL
+assert (CT['status'], CT['start_date'], CT['end_date'], CT['sapt_start'], CT['sapt_end']) == ('closed', '2025-10-07', '2026-02-28', 1, 21)
+assert R.COUNTS_TELITA['totals']['all'] == 0 and R.FARMS['telita']['type'] == 'growth'
+TEL_XFER = sorted({o['date'] for o in TR['transfers_out']} | {a['date'] for a in TR['arrivals']})   # transfer days Telița → Hîrbovăț (as S2/S3)
+assert (TEL_XFER[0], TEL_XFER[-1]) == ('2026-02-22', '2026-02-28')
+TEL_SPAN = f'SAPT {CT["sapt_start"]}–{CT["sapt_end"]}'
+TEL_GUIDE = R.GUIDES[R.FARMS['telita']['guide_id']]['name']           # Ross 308 creștere
+DOM_TEL = (dt.date(2025, 8, 1), dt.date(2026, 12, 31), [('2025-10-01', '10.25'), ('2026-01-01', '01.26'), ('2026-04-01', '04.26'),
+           ('2026-07-01', '07.26'), ('2026-10-01', '10.26')])
+def track_telita(TW):
+    d0, d1, tks = DOM_TEL; ppd = TW / (d1 - d0).days
+    def tx(iso): return round(((dt.date.fromisoformat(iso) - d0).days) * ppd, 1)
+    xa, xb, xt = tx(CT['start_date']), tx(CT['end_date']), tx(TODAY); w = round(xb - xa, 1)
+    xo = tx(TEL_XFER[0]); wo = round(xb - xo, 1)        # transfers out 22–28.02 (the cycle's end)
+    ticks = ''.join(f'<line class="tick" x1="{tx(i)}" x2="{tx(i)}" y1="40" y2="45"/><text class="month" x="{tx(i)}" y="56" text-anchor="middle">{l}</text>' for i, l in tks)
+    lab = (f'Seria 2026, creștere, {ddate(CT["start_date"])}–{ddate(CT["end_date"])}, {TEL_SPAN.lower().replace("sapt", "sapt.")}, închis; '
+           f'început prin populare, încheiat prin transfer la Hîrbovăț {R.ddm(TEL_XFER[0])}–{ddate(TEL_XFER[-1])}. Deschide ciclul.')
+    blk = (f'<a href="#ciclu-telita-seria-2026" aria-label="{lab}"><title>{lab}</title><rect class="ring" x="{round(xa-4,1)}" y="12" width="{round(w+8,1)}" height="30" rx="3"/>'
+           f'<rect class="cyc" x="{xa}" y="16" width="{w}" height="18" rx="2"/><text class="cyctxt" x="{round(xa+7,1)}" y="29">Seria 2026 · creștere · {TEL_SPAN}</text>'
+           f'<rect class="xfer" x="{xo}" y="16" width="{wo}" height="18"/></a>')
+    desc = (f'Telița: Seria 2026 creștere {ddate(CT["start_date"])}–{ddate(CT["end_date"])}, {TEL_SPAN}, închis (transfer la Hîrbovăț '
+            f'{R.ddm(TEL_XFER[0])}–{ddate(TEL_XFER[-1])}); ferma e goală din {ddate(CT["end_date"])}, azi {ddate(TODAY)}. Niciun ciclu deschis.')
+    return (f'<svg class="ip-track ip-track--farm ip-track--{TW}" viewBox="0 0 {TW} 60" role="group" aria-label="Ciclurile fermei Telița"><desc>{desc}</desc>'
+            f'<rect class="lane" x="0" y="14" width="{TW}" height="26"/>{blk}<line class="today" x1="{xt}" x2="{xt}" y1="12" y2="42"/>'
+            f'<text class="todaylbl" x="{xt}" y="9" text-anchor="middle">azi {ddate(TODAY)[:5]}</text>{ticks}</svg>')
 def main_empty():
-    step = '<a class="ip-link" href="#ciclu-seria-2025">Vezi ultimul ciclu</a>'
-    lines = [f'Ferma e goală din {ddate(PREV_END)}. Ultimul ciclu: Seria 2025, {P25}.', 'Ciclul pornește la prima populare sau transfer.']
+    crumbs_t = '<nav class="ip-crumbs" aria-label="Cale"><a href="#seria-2026">Seria 2026</a><span aria-hidden="true">›</span><span aria-current="page">Telița</span></nav>'
+    meta = (f'<span class="ip-tag ip-tag--neutral">Creștere</span><span class="ip-tag ip-tag--neutral">{TEL_GUIDE}</span>{lamp("off", "goală")}'
+            f'<span class="ip-note ip-num">din {ddate(CT["end_date"])} · niciun ciclu deschis</span>')
+    head = (f'<header class="ip-pagehead">\n<div>\n{crumbs_t}\n<h1>Telița</h1>\n<div class="ip-row ip-pagehead__meta">{meta}</div>\n</div>\n'
+            f'<div class="ip-row">\n<button type="button" class="ip-btn ip-btn--secondary">{icon("transfer", 16)}Mută păsări</button>\n</div>\n</header>')
+    opt = (f'<li class="ip-menu__item ip-select__opt" role="option" id="cyc-tel-2026" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span>'
+           f'<span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026 · creștere</b>{lamp("off", "închis")}</span>'
+           f'<span class="ip-num">{R.drange(CT["start_date"], CT["end_date"])} · {TEL_SPAN}</span></span></li>')
+    sel = combo('Niciun ciclu deschis', lamp('off', 'goală'))
+    hint = f'<span class="ip-hint">ultimul ciclu · Seria 2026 · {R.drange(CT["start_date"], CT["end_date"])}</span>'
+    leg = '<div class="ip-tracklegend" aria-hidden="true"><span><i class="ip-rec ip-rec--transfer"></i>transfer</span><span><i class="today"></i>azi</span></div>'
+    cyc = (f'<section class="s4-cycle" aria-label="Ciclu">\n<div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}'
+           f'{hidden_list(GRP.replace("Hîrbovăț", "Telița") + opt)}</div>{hint}</div>\n'
+           f'<div class="ip-stack s4-tight"><div class="ip-trackbox">{"".join(track_telita(w) for w in TWS)}</div>{leg}</div>\n</section>')
+    step = '<a class="ip-link" href="#ciclu-telita-seria-2026">Vezi ultimul ciclu</a>'
+    lines = [f'Ferma e goală din {ddate(CT["end_date"])}. Ultimul ciclu: Seria 2026, {TEL_SPAN}.', 'Ciclul pornește la prima populare sau transfer.']
     return f'''<main class="ip-shell__main s4-main">
-{header('empty')}
-{cycle('empty')}
+{head}
+{cyc}
 {empty_box("goală", lines, step, "Rezumat")}
 </main>'''
 
@@ -824,8 +866,10 @@ def tb_past():
     cap = f'Rezumat · Hîrbovăț · Seria 2025 · SAPT {PW4[-1]}–{PW4[0]}, ultimele 4 din SAPT {PWEEKS[0]}–{PFIN}'
     t, tid = P.ptable('rz', cap, [('Total fermă', '', groups)], weeks=PW4, cal=PCAL)
     after = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid}">Arată toate săptămânile</button>'
-             f'<p class="ip-note">apoi SAPT {PFIN} → {PWEEKS[0]} (înregistrări din {ddate(c25["data_start_date"])}). Fără efectiv în registru: fără În viață și % ouat; '
-             f'golirea din {ddate(PDEP)} nu apare ca mortalitate.</p></div>')
+             f'<p class="ip-note">apoi SAPT {PFIN} → {PWEEKS[0]}. Tabelul începe la SAPT {PWEEKS[0]}, banda ciclurilor la SAPT {c25["sapt_start"]}: '
+             f'începutul ciclului e dedus ({ddate(c25["start_date"])}), registrul are date din {ddate(c25["data_start_date"])}. '
+             f'Fără efectiv în registru: fără În viață și % ouat; golirea din {ddate(PDEP)} nu apare ca mortalitate.</p></div>')
+    assert PWEEKS[0] == c25['data_start_sapt'] == 23 and c25['sapt_start'] == 19   # S4NS: why the table span differs from the CycleTrack
     return (f'<section aria-labelledby="rz-h"><h2 class="ip-sr" id="rz-h">Rezumat: tabel pe săptămâni și zile</h2>'
             + P.block('rz', cap, t, bar=False, after=after) + '</section>')
 

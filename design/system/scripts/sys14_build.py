@@ -84,6 +84,20 @@ def cum(s, h=None):
     return f
 CUM_GROUP = lambda h=None: {'name': f'{ico("mortality")}% cumulat', 'leaves': [(sx('F'), 'is-hen', cum('F', h)), (sx('M'), 'is-rooster', cum('M', h))]}
 
+def stacked(main, sub, sub_word='% cumulat'):
+    """Phone variant (S4NS fix 2, Claude, to review): a group whose companion rate rides in the same cell, as a second small Mono
+    line under the count (Mortalitate ♀ "10" / "5,7%"), so the tag keeps 2 figure columns and the row stays 48. Group head:
+    name + note line naming the second figure; hidden text names both values."""
+    def wrap(fa, fb):
+        def f(kind, key):
+            a, b = fa(kind, key), fb(kind, key)
+            if isinstance(a, tuple): return a
+            bb = f'{DASH}<span class="ip-sr"> {b[1]}</span>' if isinstance(b, tuple) else b
+            return f'{a}<span class="ip-ptable__pct"><span class="ip-sr">, {sub_word} </span>{bb}</span>'
+        return f
+    return {'name': f'{main["name"]}<span class="ip-ptable__note">cu {sub_word.replace(" ", chr(160))}</span>',
+            'leaves': [(lab, c, wrap(fa, fb)) for (lab, c, fa), (_, _, fb) in zip(main['leaves'], sub['leaves'])]}
+
 def farm_pasari():
     def mort(s): return lambda kind, key: R.n(R.week(key)[f'mort_{s}'] if kind == 'w' else R.day(key)[f'mort_{s}'] if kind == 'd' else R.deaths(P_FROM, P_TO, sx=s))
     def sold(s): return lambda kind, key: R.n(R.week(key)[f'sold_{s}'] if kind == 'w' else R.day(key)[f'sold_{s}'] if kind == 'd' else R.sold(P_FROM, P_TO, sx=s))
@@ -329,8 +343,11 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
         dr = R.ddm(a) + DASH + R.ddm(b)
         no_w = weighings and not ds
         if no_w: ids = [f'{uid}-w{k}-none']   # D167: the week still opens, to one muted row "fără cântărire în această săptămână"
-        if spine == 'phone':
-            vis = f'SAPT {num(k)} <span class="ip-ptable__dates">· {num(dr)}</span>' + (f'<span class="ip-ptable__sub">{n} din 7 zile</span>' if n < 7 else '')
+        if spine == 'phone':   # D171: the dates on a second small line (as the partial week's day count, D162), so one tag's group fits 358
+            # a partial week's second line is its day count alone (D162 words; its dates are its open day rows and its hidden name):
+            # "17–18.11 · 2 din 7 zile" would set the sticky column 30 px wider than a whole week's "10.11–16.11" (S4NS fix 1)
+            sub = num(dr) if n == 7 else f'{n} din 7 zile'
+            vis = f'SAPT {num(k)}<span class="ip-ptable__sub">{sub}</span>'
         else:
             vis = (f'SAPT {num(k)} <span class="ip-ptable__dates">· {num(dr)}' + (f' · {n} din 7 zile' if n < 7 else '') + '</span>')
         name = f'SAPT {k}, {dr}.{b.year}, ' + (f'{n} din 7 zile' if n < 7 else '7 zile')
@@ -458,10 +475,10 @@ html += demo('Fără ghid · coloanele ghid și față de ghid lipsesc (D92); an
 # 8 Phone 390
 c9 = f'Păsări · {SER} · Mortalitate'
 pa = farm_pasari()
-t9, _ = ptable('pi', c9, [('Total fermă', '', [group(pa, 'În viață'), group(pa, 'Mortalitate')])], spine='phone')
+t9, _ = ptable('pi', c9, [('Total fermă', '', [group(pa, 'În viață'), stacked(group(pa, 'Mortalitate'), group(pa, '% cumulat'))])], spine='phone')
 phone = (f'<div class="ip-phone" style="width:390px"><div style="padding:var(--space-4)">'
          + block('pi', c9, t9, touch=True) + '</div></div>')
-html += demo('Telefon 390 · o grupă de coloane (eticheta Mortalitate; În viață rămâne) · rânduri 48 · prima coloană lipită „Ma 17.11 · 406”', phone, '390px')
+html += demo('Telefon 390 · o grupă de coloane (eticheta Mortalitate; În viață rămâne; % cumulat pe al doilea rând al celulei) · rânduri 48 · prima coloană lipită „Ma 17.11 · 406”, datele săptămânii sub SAPT', phone, '390px')
 
 html += (f'<p class="ip-note" style="margin:0">Cifre reale Hîrbovăț, Seria 2026, până la {R.dd(R.TODAY)} (extrase DATA03): '
          f'SAPT 59 = {R.drange(*wk_label(59)[:2])} (2 din 7 zile). Mortalitate = morți reali, golirea din 12.11 e Vânzare (D155). '

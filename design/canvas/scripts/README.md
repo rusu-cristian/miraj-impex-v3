@@ -23,7 +23,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 ## Rebuild per row (in this order; whole canvas: run the rows top to bottom)
 | Row | Commands (each `python3 -I <script> $R …`) |
 |---|---|
-| S4  | `s4s_build.py --canvas`, `s4_build.py --canvas` (Rezumat: h/title refreshed in place), `s4t_build.py --canvas` (the 4 tabs: h/title in place, S4N) |
+| S4  | `s4s_build.py --canvas`, `s4_build.py --canvas` (Rezumat: h/title refreshed in place), `s4t_build.py --canvas` (the 4 tabs: h/title in place, S4N), `s4ns_build.py --canvas` (S4NS: 2 desktop + 3 phone state boards after the row; heights `s4ns_render.py --heights` → s4ns_heights.json) |
 | S7  | `s7_build.py --canvas`, `s7s_build.py --canvas` (h/title refreshed in place, RF02) |
 | S3  | `s3_build.py --canvas` |
 | S11 | `s11_build.py --canvas` (h/title refreshed in place, RF03) |
@@ -63,6 +63,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
 - realdata (RF01) ← s4s_build (and every row through it). s4s_build (desktop shell) ← s4, s4t, s3, s11, s2, s9, s10. s7_build ← s7s, s6; s7s ← s2, s8, s9, s10, s13; s6 ← s6s.
 - S4N: s4t_build ← s4s_build + design/system/scripts/sys14_build.py (PeriodTable builders, imported; it writes its preview only when run itself); s4_build ← s4t_build (Rezumat table).
+- S4NS: s4ns_build ← s4t_build (→ s4s_build, sys14) + s2_build (phone screen/tab bar/write_phone; rewrites the S2/S7 default boards byte-identical). Phone boards whose table is wider than 390 are drawn wider too (board_widths.json, page 390, `.s4ns-wide`, D167).
 - S4NG: s4s_build loads sys14_build itself and draws the Rezumat PeriodTable (period, record types, FilterBar `filterbar4`, `ptable`, `rezumat_groups`, `tb_rezumat`, loading table) in `panel_default` / `main_page`, so the S4 state boards and the S9/S10 desktop backdrops show the same table; s4t_build re-exports these names (`P = s4.P`).
 - s12 ← s11; s13 ← s7s + s11 (rewrites the S7 boards); s14 ← s4t + s11; s16 ← s4t.
 - s2s ← s2; s14s ← s14 + s2; s15 ← s2s; s15s ← s15; s16s ← s16; s8s ← s8.

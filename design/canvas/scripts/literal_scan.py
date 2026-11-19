@@ -49,12 +49,14 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     # S4N: real figures that equal old sample ones: Hrană ♀ 3 691,7 kg on 02.11.2026 (day row), Hala 6 ♀ 8 475 alive on a SAPT 57 day (Păsări pe hale)
     ('S4-ferma', 'sample-figure', r'is-hen">3\u202f691,7<'),
     ('S4-ferma--pasari', 'sample-figure', r'is-hen(?: ip-ptable__sec)?">8\u202f475<'),   # S4NG: În viață is a section's first column (D167)
+    # RF08: the S16 desktops show S4 · Păsări (table-first page) beside / under the panel: 16.11.2026 is a past day of SAPT 58 there
+    ('S16-corecteaza--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026|16\.11\.2026, \d\d:\d\d · SAPT 58|(?:Mortalitate|Vânzare H\d\.\d), 16\.11\.2026'),
     # RF07: Telița's real weighing of 10.02.2026 (H2 ♀, SAPT 19) is last week's on the S8 zi trecută replay (17.02.2026)
     ('S8-cantarire--zi-trecuta', 'start-10.02', r'Săpt\. trecută · 10\.02\.2026'),
 ]
 # README order. (id, board stem prefixes, generator scripts)
 ROWS = [
-    ('S4R', ['S4-ferma-rezumat'], ['realdata.py', 's4s_build.py', 's4_build.py', 's4s_render.py', 'canvas_rows.py']),
+    ('S4R', ['S4-ferma-rezumat'], ['realdata.py', 's4s_build.py', 's4_build.py', 's4s_render.py', 'canvas_rows.py', 's4ns_build.py', 's4ns_render.py']),  # S4NS: its boards are S4-ferma-rezumat--* and S4-ferma--pasari--telefon*
     ('S4T', ['S4-ferma--'], ['s4t_build.py', 's4t_render.py']),
     ('S7', ['S7-'], ['s7_build.py', 's7s_build.py']),
     ('S3', ['S3-'], ['s3_build.py', 's3_render.py']),
@@ -78,7 +80,7 @@ ROWS = [
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
