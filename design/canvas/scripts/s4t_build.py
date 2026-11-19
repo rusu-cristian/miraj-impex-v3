@@ -17,8 +17,7 @@ DROP = globals().get('DROP')   # S16P fix 1: a deleted Mortalitate record (S16 a
 if DROP: s4.DROP = DROP
 _spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
 R = s4.R
-_spec14 = importlib.util.spec_from_file_location('sys14_build', s4.ROOT / 'design/system/scripts/sys14_build.py')
-P = importlib.util.module_from_spec(_spec14); _spec14.loader.exec_module(P)   # PeriodTable builders (no file written on import)
+P = s4.P   # PeriodTable builders (design/system/scripts/sys14_build.py, loaded once by s4s_build; no file written on import)
 assert P.R is R
 def __getattr__(name):  # PEP 562: `S` = s4s's lazy legacy alias (the superseded sample) for rows not yet ported (s14, s16); S4 boards never read it
     if name == 'S': return s4.S
@@ -38,20 +37,9 @@ HERE = pathlib.Path(__file__).resolve().parent
 HEIGHTS = json.loads((HERE / 's4t_heights.json').read_text()) if (HERE / 's4t_heights.json').exists() else {}
 
 # ---------------------------------------------------------------- period (D159: the last 4 age weeks, newest first)
-WEEKS, P_FROM, P_TO, SER = P.WEEKS, P.P_FROM, P.P_TO, P.SER
-assert WEEKS == [WK, WK - 1, WK - 2, WK - 3] and P_FROM == R.week_dates(WK - 3)[0] and P_TO == R.TODAY
-def inp(d): return P_FROM <= R.D(d) <= P_TO
-PCULLS = [c for c in R.ILL['culls'] if inp(c['date'])]                 # illustrative (D152): 11.11 H5.2 ♂ 1
-PSEXERR = [e for e in R.ILL['sexing_errors'] if inp(e['date'])]       # none in SAPT 56–59
-PMOVES = [m for m in R.TR['internal_moves_hirbovat'] if inp(m['date'])] + [a for a in R.TR['arrivals'] if inp(a['date'])]
-PSALES = R.sales(P_FROM, P_TO)
-PWEIGH = [w for w in R.WEIGHINGS_HIR if inp(w['date'])]
-assert [(c['date'], c['section'], c['sex'], c['qty']) for c in PCULLS] == [('2026-11-11', 'H5.2', 'M', 1)]
-assert not PSEXERR and not PMOVES and PSALES and PWEIGH  # Eroare sexare / Transfer / Populare: no records → no chip, no columns (D45)
-# D45: the FilterBar lists the record types with records in the period (Populare: Hîrbovăț is populated by transfer, never placed)
-PTYPES = [k for k, has in (('mortality', R.deaths(P_FROM, P_TO) > 0), ('cull', PCULLS), ('sexerr', PSEXERR), ('transfer', PMOVES),
-                           ('sale', PSALES), ('feed', R.feed_kg(P_TO, 'F') > 0), ('weighing', PWEIGH), ('eggs', R.eggs() > 0)) if has]
-assert PTYPES == ['mortality', 'cull', 'sale', 'feed', 'weighing', 'eggs']
+# S4NG: the period, its record types and the Rezumat table live in s4s_build (the shared Rezumat page draws its table)
+WEEKS, P_FROM, P_TO, SER = s4.PWEEKS4, s4.P_FROM, s4.P_TO, s4.SER
+inp, PCULLS, PSEXERR, PMOVES, PSALES, PWEIGH, PTYPES = s4.inp, s4.PCULLS, s4.PSEXERR, s4.PMOVES, s4.PSALES, s4.PWEIGH, s4.PTYPES
 
 # ---------------------------------------------------------------- shell: tabs + filter bar
 TABS = [('rezumat', 'Rezumat'), ('pasari', 'Păsări'), ('hrana', 'Hrană'), ('greutate', 'Greutate'), ('productie', 'Producție')]
@@ -60,23 +48,8 @@ def tabs(sel):  # same markup as S4 (roving tabindex, one tabpanel #tp-ferma tha
         f'<a class="ip-tab{" is-selected" if k == sel else ""}" role="tab" id="tab-{k}" aria-controls="tp-ferma" aria-selected="{"true" if k == sel else "false"}" tabindex="{0 if k == sel else -1}" href="#{k}">{t}</a>'
         for k, t in TABS) + '</div>'
 BIRD = {'mortality', 'cull', 'sexerr', 'transfer', 'sale'}
-CHIPW = {'mortality': 'Mortalitate', 'cull': 'Sacrificare', 'sexerr': 'Eroare sexare', 'transfer': 'Transfer', 'sale': 'Vânzare',
-         'feed': 'Hrană', 'weighing': 'Cântărire', 'eggs': 'Ouă'}
-def chips(on):
-    out = ''
-    for k in PTYPES:
-        if k == 'sexerr':
-            out += (f'<button type="button" class="ip-chip ip-rec ip-chip--split{"" if k in on else " ip-chip--off"}" role="checkbox" aria-checked="{"true" if k in on else "false"}">'
-                    f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>')
-        else:
-            out += s4.chip(k, CHIPW[k], k in on)
-    return f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{out}</div>'
-def filterbar(tab):
-    """D159: period "4 săpt." (SAPT 56–59); grain Zi (D166: every week open, each key can close its week; Săpt. = week rows
-    only); chips = types of the period (D45). D165: the tag state is shared
-    across tabs, all on by default (a tab shows the groups of the tags it has)."""
-    on = set(PTYPES)
-    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", s4.PERIODS, 1)}{s4.seg("Pas", ["Zi", "Săpt."], 0)}{s4.EXPORT}{chips(on)}</div>'
+CHIPW, chips = s4.CHIPW, s4.chips4
+def filterbar(tab): return s4.filterbar4()   # D159/D166/D165: one FilterBar for every tab (shared tag state)
 def main(tab, panel):
     return f'''<main class="ip-shell__main s4-main">
 {s4.header('default')}
@@ -88,27 +61,8 @@ def page(tab, panel):
     return s4.shell(main(tab, f'<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-{tab}">\n{panel}\n</div>'))
 
 # ---------------------------------------------------------------- PeriodTable blocks (SYS14)
-def note(*lines):  # below the region (ip-ptable__after): what a column means or leaves out
-    return '<div class="ip-ptable__after">' + ''.join(f'<p class="ip-note">{l}</p>' for l in lines) + '</div>'
-W0, W1 = R.week_dates(WK)[0], R.TODAY
-PART = (f'<span class="ip-num">{R.ddm(W0)}–{R.ddm(W1)}</span> · {(W1 - W0).days + 1} din 7 zile',      # SYS14 label
-        f'<span class="ip-num">{W0.day:02d}–{R.ddm(W1)}</span> · {(W1 - W0).days + 1} din 7 zile')    # D165: "17–18.11"
-assert W0.month == W1.month
-FIT = {'rz': (True, True), 'hr': (False, True), 'gr': (True, True), 'pr': (True, True)}  # uid → (dense, wrap), measured at 1440 (S4N fix 1)
-def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None, weighings=False, after='', dense=False, wrap=False):
-    """D165: a Fermă table fits the 1440 page; density and wrapping heads only where a table needs them to fit:
-    dense = ip-ptable--dense (SYS14: figure cells one spacing step narrower, same row height), wrap = FIN14 .ip-table--wraphead
-    (figure heads may wrap between words). Hale / Compartimente and every table at 1280 may scroll under the sticky column.
-    open_weeks None = every week of the period open (D166, SYS14 default)."""
-    cap = f'{tab} · {SER}' + (f' · {scope}' if scope else '')
-    dense, wrap = FIT.get(uid, (dense, wrap))
-    t, _ = P.ptable(uid, cap, sections, open_weeks=open_weeks, weighings=weighings)
-    assert t.count(PART[0]) == 1; t = t.replace(PART[0], PART[1])   # the partial week's visible dates; its hidden name keeps the full range
-    cls = ' '.join(c for c, on in (('ip-table--wraphead', wrap),) if on)
-    if cls or dense:
-        t = t.replace('class="ip-table ip-table--rowheads ip-ptable"', 'class="ip-table ip-table--rowheads' + (f' {cls}' if cls else '') + ' ip-ptable' + (' ip-ptable--dense' if dense else '') + '"', 1)
-    return (f'<section aria-labelledby="{uid}-h"><h2 class="ip-sr" id="{uid}-h">{tab}: tabel pe săptămâni și zile</h2>'
-            + P.block(uid, cap, t, bar=bar, sel=sel, after=after) + '</section>')
+note, PART, FIT, ptable = s4.ptnote, s4.PART, s4.FIT, s4.ptable   # S4NG: moved to s4s_build (the shared Rezumat page)
+W0, W1 = s4.PW0, s4.PW1
 def thico(k): return f'<span class="ip-rec ip-rec--{s4.REC.get(k, k)} ip-table__ico">{icon(k, 14)}</span>'  # §32 head icon (FIN14B)
 def span(kind, key):
     if kind == 'w': a, b = R.week_dates(key); return a, min(b, R.TODAY)
@@ -123,9 +77,10 @@ def carved(kind, key, s, h):
 
 def pasari(h=None):
     """Păsări groups of one scope (farm or hall), chips Mortalitate · Sacrificare · Vânzare on (D45 types of the period):
-    Mortalitate (deaths less the carved culls) · % cumulat (D162: real deaths since arrival, culls included) · Sacrificare ·
-    Vânzare (D155) · În viață (end of day / week)."""
-    base = P.farm_pasari() if h is None else P.hall_pasari(h)   # [Mortalitate, % cumulat, Vânzare, În viață]
+    În viață (end of day / week; first, D167) · Mortalitate (deaths less the carved culls) · % cumulat (D162: real deaths
+    since arrival, culls included) · Sacrificare · Vânzare (D155; always the last group, D167)."""
+    base = P.farm_pasari() if h is None else P.hall_pasari(h)   # [În viață, Mortalitate, % cumulat, Vânzare] (D167)
+    bm, bc, bs, bv = (P.group(base, w) for w in ('Mortalitate', '% cumulat', 'Vânzare', 'În viață'))
     def mort(s, fn):
         def f(kind, key):
             v = fn(kind, key); c = carved(kind, key, s, h)
@@ -139,28 +94,12 @@ def pasari(h=None):
             a, b = span(kind, key)
             return R.n(sum(c['qty'] for c in PCULLS if c['sex'] == s and in_scope(c, h) and a <= R.D(c['date']) <= b))
         return f
-    m = {'name': base[0]['name'], 'leaves': [(lab, c, mort(s, fn)) for (lab, c, fn), s in zip(base[0]['leaves'], 'FM')]}
-    cu = {'name': f'{thico("cull")}Sacrificare', 'leaves': [(P.sx(s), c, cull(s, fn)) for (_, c, fn), s in zip(base[2]['leaves'], 'FM')]}
-    return [m, base[1], cu, base[2], base[3]]
+    m = {'name': bm['name'], 'leaves': [(lab, c, mort(s, fn)) for (lab, c, fn), s in zip(bm['leaves'], 'FM')]}
+    cu = {'name': f'{thico("cull")}Sacrificare', 'leaves': [(P.sx(s), c, cull(s, fn)) for (_, c, fn), s in zip(bs['leaves'], 'FM')]}
+    return [bv, m, bc, cu, bs]   # D167: În viață first, Vânzare last
 assert R.week(WK - 1)['mort_F'] == R.deaths(*R.week_dates(WK - 1), sx='F') == 36 and R.week(WK - 1)['mort_M'] == 8  # spec D1 sample
 
-def kg0(s):  # Rezumat: feed in whole kg (the Hrană tab keeps 0,1 kg), so the Total fermă table fits the 1440 page (D165)
-    def f(kind, key):
-        if kind == 'w': return R.n(R.week(key)[f'kg_{s}'])
-        return R.n(R.feed_kg(key, s) if kind == 'd' else sum(R.week(k)[f'kg_{s}'] for k in WEEKS))
-    return f
-def rezumat_groups():
-    """spec D1 › Rezumat (D165): Total fermă only, no Detaliu, groups by record type: Morți ♀ · ♂ (the register's deaths,
-    culls included; Păsări splits them off) · Vânzare (only when the period has sales) · În viață · Ouat (ouă, % ouat, ghid,
-    % incubabile, jos; no "stare": the Readout carries it) · Hrană kg ♀ · ♂."""
-    pa, pr, hr = P.farm_pasari(), P.productie(), P.hrana()
-    lv = {lab: (lab, c, fn) for lab, c, fn in pr[1]['leaves']}
-    out = [{'name': f'{P.ico("mortality")}Morți', 'leaves': pa[0]['leaves']}]
-    if PSALES: out.append(pa[2])
-    inc = '<span aria-hidden="true">% incub.</span><span class="ip-sr">% incubabile</span>'   # short head: the table fits 1440 (D165)
-    out += [pa[3], {'name': pr[1]['name'], 'leaves': [lv['ouă'], lv['% ouat'], lv['ghid'], (inc, '', pr[2]['leaves'][1][2]),
-                                                     ('jos', '', pr[3]['leaves'][0][2])]}, {'name': f'{P.ico("feed")}Hrană', 'leaves': [(P.sx(s, 'kg'), c, kg0(s)) for (_, c, _), s in zip(hr[1]['leaves'], 'FM')]}]
-    return out
+kg0, rezumat_groups = s4.kg0, s4.rezumat_groups
 
 W = R.week
 UNP_P = [u for u in R.UNPRICED if inp(u['date'])]
@@ -197,9 +136,7 @@ def hrana_farm():
         {'name': f'{thico("price")}Lei', 'single': True, 'sr': ', livrări', 'leaves': [('', '', lei)]},
         {'name': f'{thico("delivery")}Stoc kg', 'leaves': [(P.sx('F'), 'is-hen', stock('F')), (P.sx('M'), 'is-rooster', stock('M'))]}]
 
-def tb_rezumat():
-    return ptable('rz', 'Rezumat', [('Total fermă', '', rezumat_groups())], bar=False,
-                  after=note('Morți = morții din registru, sacrificările incluse (Păsări le arată separat). % ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină.'))
+tb_rezumat = s4.tb_rezumat
 def tb_pasari(hale=False):
     """D165: the default board shows Detaliu Fermă (fits at 1440); Detaliu Hale is its own state board (scrolls sideways)."""
     secs = [('Total fermă', '', pasari())] + ([(f'Hala {h[1:]}', P.GOALA if h == 'H7' else '', pasari(h)) for h in HALLS] if hale else [])
@@ -369,8 +306,8 @@ def log_row(e):
         f, m = R.deaths(d, sx='F'), R.deaths(d, sx='M'); k = sum(1 for s in SECTIONS if R.sd(d, s, 'F') or R.sd(d, s, 'M'))
         assert f'mortalitate ♀ {f} · ♂ {m}' in e['summary'] and f'{k} secțiuni' in e['summary'], e
         return evrow(tile('mortality'), f'Mortalitate · {k} secțiuni · {hen(n(-f))} · {roo(n(-m))}', meta, f'Mortalitate, {ddate(d)}')
-    sec = e['scope'].split(' · ')[1]; r = next(x for x in R.sales(d, d) if x['section'] == sec)
-    return evrow(tile('sale'), f'Vânzare · {sec} · {s4.sexpair(r["F"], r["M"])}', meta, f'Vânzare {sec}, {ddate(d)}')
+    sec = R.sale_codes(e)  # DATA04 (D168): one record per sale form
+    return evrow(tile('sale'), f'Vânzare · {sec} · {s4.sexpair(e["F"], e["M"])}', meta, f'Vânzare {sec}, {ddate(d)}')
 def panel_pasari(hale=False):
     rows = [log_row(e) for e in LOGE]
     log = block('h-jurnal', 'Jurnal păsări', f'Mortalitate · Sacrificare · Vânzare · cele mai noi',
@@ -450,8 +387,8 @@ def panel_productie():
     return tb_productie() + '\n' + charts(('h-lay', 'Ouat față de ghid', s4.readout()), ('h-egg', 'Masă ou', ro_egg()))
 
 # ================================================================= 0. REZUMAT (the S4 default board, written by s4_build.py)
-def main_rezumat():
-    return s4.shell(main('rezumat', s4.panel_default(table=tb_rezumat())))
+def main_rezumat():   # S4NG: s4s.panel_default draws the Rezumat table itself (shared with the state boards and S9/S10)
+    return s4.shell(main('rezumat', s4.panel_default()))
 
 # ================================================================= CSS (screen only, tokens only) + write
 CSS = s4.CSS + '''

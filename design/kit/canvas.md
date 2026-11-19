@@ -20,6 +20,12 @@
 - Desktop (PAGE): `w` 1440, `"expand":"fill"`; root fluid (no px width; `max-width` container, %/fr), `h` = its height at 1440 (e.g. 1024; over-tall beats clipped).
 - Phone: 390×844, root FIXED `width:390px;height:844px` (taller `h` only for a long scrolling form). No fake status bar.
 - `$preview` in data-props = the board's `w`×`h`. Gaps: 80 px between boards in a row, 120 px between rows.
+- Wide tables (D167, S4NG): the canvas is an example, so no board shows a clipped sideways scroll. When a table is wider than
+  its page at 1440, the board grows wider: `w` = 1440 + the table's overflow, up to the next 8 px (listed in
+  `design/canvas/scripts/board_widths.json`, measured by `s4s_render.py --widths`; `canvas_rows.place` and `s4s_build.write`
+  read it). The page keeps its 1440 layout (beside a docked SidePanel: 1440 less the panel) and the table region grows past
+  the page's right edge to the table's full width (board CSS `.s4s-wide`, canvas only); the product keeps its scroll region
+  and sticky Data column. `canvas_rows.py relayout` pushes the later boards of the row right so every gap stays ≥ 80.
 - Layout: one row per screen, starting y = 800. Default state at x 0, its states to the right (x += w + 80), phone boards after the desktop ones. Next row y = row y + tallest h + 120.
 
 ## Turning a self-contained screen HTML into an artboard (`.dc.html`)

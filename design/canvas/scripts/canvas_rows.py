@@ -7,11 +7,19 @@
 - relayout() / `python3 -I canvas_rows.py relayout <repo_root> [--canvas]` (RF01): re-stack the rows when board heights
   change. A row = the boards sharing one y. Rows above ROW0 (the 00 · Index board) and the first row at ROW0 keep their y;
   every later row gets y = previous row y + its tallest h + GAP_Y (120). x, w, h never change. Prints each moved row; writes
-  canvas.json only with --canvas (through save(), so overlapping boards stop it). Run it after a row's --canvas rebuild."""
+  canvas.json only with --canvas (through save(), so overlapping boards stop it). Run it after a row's --canvas rebuild.
+  S4NG (D167): it also lays each row out along x: a board that grew wider pushes the boards to its right so every gap stays
+  at least GAP_X (80); boards never move left.
+- Wide boards (D167 › 4): board_widths.json {stem: w} lists the boards drawn wider than their base width so a wide table
+  shows whole (no clipped sideways scroll on the canvas). place() takes w from it, s4s_build.write the board's $preview width."""
 import sys, json, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
 GAP_X, GAP_Y = 80, 120
+WIDTHS = json.loads((HERE / 'board_widths.json').read_text(encoding='utf-8')) if (HERE / 'board_widths.json').exists() else {}
+def width(stem, w):
+    """the board's drawn width: its base width (1440 / 390) or the wider one board_widths.json gives it (D167)"""
+    return max(w, WIDTHS.get(stem, w))
 
 
 def args(heights=None, argv=None):
@@ -59,7 +67,7 @@ def place(c, stem, seq, x0=0):
             f = f'{s}.dc.html'; assert f in B, f'{f} has no canvas entry: run its base build with --canvas first'
             e = B[f]
         else:
-            s, w, h, t = s; f = f'{s}.dc.html'; e = B.get(f)
+            s, w, h, t = s; f = f'{s}.dc.html'; e = B.get(f); w = width(s, w)
             if e is None:
                 e = B[f] = {'x': x, 'y': y, 'w': w, 'h': h, **({'expand': 'fill'} if w == 1440 else {}), 'title': t}
             else:
@@ -67,6 +75,7 @@ def place(c, stem, seq, x0=0):
         if fresh: e['x'] = x
         if f not in c['order']: c['order'].append(f)
         x += e['w'] + GAP_X
+    spread(c, [k for k, v in B.items() if v['y'] == y])   # D167: a board drawn wider pushes its row's later boards right
     return x
 
 
@@ -98,11 +107,25 @@ def rows(c):
     return sorted(by.items())
 
 
+def spread(c, keys):
+    """D167: within one row, push boards right so each starts at least GAP_X after the one before it (wider boards);
+    returns [(board, old x, new x)]"""
+    out, end = [], None
+    for k in sorted(keys, key=lambda k: c['boards'][k]['x']):
+        e = c['boards'][k]
+        if end is not None and e['x'] < end + GAP_X:
+            out.append((k, e['x'], end + GAP_X)); e['x'] = end + GAP_X
+        end = e['x'] + e['w']
+    return out
+
+
 def relayout(c):
-    """Re-stack the rows from ROW0 down in place; returns [(first board of the row, old y, new y)] for the rows that moved."""
+    """Re-stack the rows from ROW0 down in place; returns [(first board of the row, old y, new y)] for the rows that moved
+    (and, as (board, 'x', old x, new x), the boards a wider neighbour pushed right)."""
     moved, prev = [], None
     for y, keys in rows(c):
         if y < ROW0: continue
+        moved += [(k, 'x', a, b) for k, a, b in spread(c, keys)]
         ny = y if prev is None else prev[0] + prev[1] + GAP_Y
         if ny != y:
             for k in keys: c['boards'][k]['y'] = ny
@@ -113,7 +136,9 @@ def relayout(c):
 
 if __name__ == '__main__' and sys.argv[1:2] == ['relayout']:
     root = pathlib.Path(next(a for a in sys.argv[2:] if a != '--canvas')); c = load(root)
-    for k, a, b in relayout(c): print(f'{k}: y {a} → {b} ({b - a:+d})')
+    for m in relayout(c):
+        if m[1] == 'x': print(f'{m[0]}: x {m[2]} → {m[3]} ({m[3] - m[2]:+d})')
+        else: k, a, b = m; print(f'{k}: y {a} → {b} ({b - a:+d})')
     bad = overlaps(c)
     if bad: sys.exit(f'overlap: {bad[:3]}')
     print('rows', len([y for y, _ in rows(c) if y >= ROW0]), 'ok' if '--canvas' not in sys.argv else 'saved')

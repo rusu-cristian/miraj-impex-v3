@@ -717,7 +717,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * __btn/__menu rules are gone (the SexCountRow preview draws section 53 too). */
 .ip-sexrow__sel{position:relative;flex:1;min-width:0}
 /* Labels: the sex sign visible (in its record colour), section + "găini"/"cocoși" for screen readers only. */
-.ip-sexrow__lbl .ip-sex{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-small)}
+.ip-sexrow__lbl .ip-sex{line-height:var(--ip-lh-small)}
 /* Message (refusal / duplicate): bundle.css ip-err across the row, under the field it belongs to. */
 .ip-sexrow__msg{margin:0;align-items:flex-start}
 .ip-sexrow__msg .ip-icon{flex:none;margin-top:var(--ip-hair)}
@@ -746,7 +746,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
   .ip-sexrows--wide .ip-sexrows__cols,.ip-sexrows--wide .ip-sexrow,.ip-sexrows--wide .ip-sexrows__total{display:grid;grid-template-columns:var(--ip-sexrow-cols);grid-template-areas:var(--ip-sexrow-areas);column-gap:var(--space-4);align-items:center}
   .ip-sexrows--wide .ip-sexrows__cols{padding-bottom:var(--space-2);border-bottom:var(--ip-hair) solid var(--rule)}
   .ip-sexrows--wide .ip-sexrows__cols > span{display:flex;align-items:baseline;gap:var(--space-1)}
-  .ip-sexrows--wide .ip-sexrows__cols .ip-sex{font-size:var(--ip-fs-figure);letter-spacing:0}
+  .ip-sexrows--wide .ip-sexrows__cols .ip-sex{letter-spacing:0}
   .ip-sexrows--wide .ip-sexrow{row-gap:var(--space-1);padding-block:var(--space-2)}
   .ip-sexrows--wide .ip-sexrow:first-child{padding-top:var(--space-2)}
   .ip-sexrows--wide .ip-sexrow__head{display:contents}
@@ -783,7 +783,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * .ip-alloc__kg.is-suggested = yesterday's unconfirmed suggestion (kg in ink-muted, not counted). Tokens only. */
 .ip-alloc--phone{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who kg" "ctl ctl";align-items:baseline;row-gap:var(--space-3)}
 .ip-alloc--phone > .ip-alloc__who{grid-area:who;align-items:baseline;min-width:0}
-.ip-alloc--phone > .ip-alloc__who > .ip-sex{flex:none;width:var(--space-4);justify-content:center;font-size:var(--ip-fs-heading);line-height:var(--ip-lh-alloc)}
+.ip-alloc--phone > .ip-alloc__who > .ip-sex{flex:none;width:var(--space-4);justify-content:center} /* S4NG: the sign is a 16px icon (section 72) */
 .ip-alloc--phone > .ip-alloc__kg{grid-area:kg;display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-1)}
 .ip-alloc--phone > .ip-alloc__kg small{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)}
 .ip-alloc__kg.is-suggested{color:var(--ink-muted)}
@@ -2141,11 +2141,14 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  *   (500, panel, line-strong top edge: section 32); its th[scope=rowgroup] holds the expand key, a button filling the
  *   row header: chevron 16 (ink-secondary) + "SAPT 58" + dates in ink-secondary, row-h less space-1 high (28; phone 44),
  *   ghost (hover sunken, pressed rule), the system focus ring; the focused header rises over its neighbours so the ring
- *   is whole. A week row with no key (weighings: "fără cântărire") starts its text where a key's text starts (space-8).
+ *   is whole. Every week row has its key (D167: Greutate's week without a weighing opens to one muted row,
+ *   tr.ip-ptable__day.ip-ptable__none > td[colspan=all] > span "fără cântărire în această săptămână", its text at the day
+ *   labels' start (space-8, sticky there when the region scrolls sideways), ink-muted, one row-h).
  * - Daily rows tr.ip-ptable__day (hidden while closed): th[scope=row] indented to the week label's text (space-8),
  *   body text 400 on raised. The row before a week row drops its rule (section 32), also when its own week is closed
  *   (its day rows are hidden, so the week row is the block's last drawn row); the first week under the head keeps only
  *   the head's own bottom line (no double edge).
+ * - Column groups (D167): the spine Data · Vârstă (zile) · SAPT, then "În viață" first, the record groups, "Vânzare" always last.
  * - Columns: every column but the Data column is as narrow as its content (width 1%), so the Data column takes the slack
  *   and nothing wraps; cells stay one line (one row height, D150).
  * - Sticky: the first column sticks (section 36) and the head sticks to the region's top; the page caps the region at
@@ -2174,7 +2177,6 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable .is-rooster{color:var(--rec-rooster)}
 /* week row + expand key */
 .ip-ptable tr.ip-ptable__wk > th{padding-block:0;padding-inline:var(--space-1) var(--space-3)}
-.ip-ptable tr.ip-ptable__wk > th:not(:has(.ip-ptable__key)){padding-inline-start:var(--space-8)}
 .ip-ptable__key{display:flex;align-items:center;gap:var(--space-1);width:100%;height:calc(var(--row-h) - var(--space-1));margin:0;padding:0 var(--space-2);border:0;border-radius:var(--radius-sm);background:transparent;color:var(--ink);font:inherit;text-align:left;white-space:nowrap;cursor:pointer;transition:background-color var(--ip-dur-key) var(--ip-ease)}
 .ip-ptable__key > .ip-icon{flex:none;color:var(--ink-secondary)}
 .ip-ptable__key:hover,.ip-ptable__key.is-hover{background:var(--sunken)}
@@ -2184,6 +2186,8 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable__sub{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-secondary)} /* phone: the partial week's day count on a second line inside the 48 row */
 /* daily rows */
 .ip-ptable tr.ip-ptable__day > th{padding-left:var(--space-8)}
+.ip-ptable tr.ip-ptable__none > td{padding-left:var(--space-8);text-align:left;color:var(--ink-muted)}
+.ip-ptable tr.ip-ptable__none > td > span{position:sticky;left:var(--space-8);display:inline-block}
 /* one edge per week: a closed week's row is its block's last drawn row; the first week sits on the head's line */
 .ip-ptable > tbody:has(+ :is(tbody,tfoot) > tr.is-total:first-child) > tr:not([hidden]):not(:has(~ tr:not([hidden]))) > :is(th,td){border-bottom:0}
 .ip-ptable > thead + tbody > tr.is-total:first-child > :is(th,td){border-top:0}
@@ -2193,3 +2197,45 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable--dense :is(tbody,tfoot) td.num{padding-inline:var(--space-2)}
 .ip-ptable--phone :is(tbody,tfoot) > tr > :is(th,td){height:var(--control-h-touch)}
 .ip-ptable--phone .ip-ptable__key{height:calc(var(--control-h-touch) - var(--space-1))}
+
+/* ---------- 72. Sex signs as icons (S4NG, D167, D170) ---------- */
+/* No font in the stack has ♀/♂ (U+2640/2642): the browser's fallback drew them about 5px tall. Every ♀/♂ of the ip-sex
+ * markup (and the PeriodTable's span.is-hen / span.is-rooster, the GuideImportPreview sex cell) is drawn as the RecordTile
+ * venus / mars icon (same path data, 1.75 stroke, as a CSS mask on currentColor = rec-hen / rec-rooster); the sign's text
+ * stays in the DOM at font-size 0, so screen readers keep it (and the hidden "găini"/"cocoși" words beside it).
+ * - Standalone sign (the span holds only the sign: column heads and leaves, row heads and keys, labels over count inputs,
+ *   Stat and tile captions, section-total keys, chips and SegmentedControl items, list titles, table cells such as
+ *   "Breeder 2 · ♀"): a 16px icon (--ip-sign-lg, the ip-icon--16 size; its box only as wide as the shape's ink: 0.52 of it for venus, 0.72 for mars); inside running text (notes, hints, meta lines,
+ *   Stat guide lines, banners, toasts) a 14px icon (--ip-sign-sm). The span is a zero-height inline box as wide as the
+ *   icon, so no line or row grows (D150); the icon is centred on the text's middle (0.35em above the baseline), or on the
+ *   line in a centring flex parent (label, SegmentedControl item, section-total key, tile caption: there the sign keeps
+ *   one line box, so a label holding only the sign keeps its height).
+ * - Sign with its figure (SexCount "♀ <b>12 561</b>"): the sign is a flex-item icon as tall as the figure's text, 12–16px
+ *   (about 14 on figure rows), standing on the baseline; the figure keeps its size and line height (taken from the parent:
+ *   --ip-sex-fs = 1em, --ip-sex-lh = 1lh, registered lengths). A figure without a sign keeps none: table cells under a
+ *   signed row head (td.num) and values whose key already shows the sign (tile and section-total values).
+ * - Signs in plain text with no hook (dark Readout values and sub-lines, chart legends, toasts) stay text (S4NG notes).
+ * - Forced colours: the icon draws in CanvasText. */
+@property --ip-sex-fs{syntax:'<length>';inherits:true;initial-value:14px}
+@property --ip-sex-lh{syntax:'<length>';inherits:true;initial-value:20px}
+:root{--ip-sign-lg:16px;--ip-sign-sm:14px;
+  --ip-sign-venus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='9' r='5'/%3E%3Cpath d='M12 14v8M9 19h6'/%3E%3C/svg%3E");
+  --ip-sign-shape:var(--ip-sign-venus);--ip-sign-f:.52;   /* box width ÷ icon size: the shape's ink (venus 6–18, mars 4–21 of 24) */   /* the sign drawn: venus, mars on .ip-sex--rooster / .is-rooster */
+  --ip-sign-mars:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='14' r='5'/%3E%3Cpath d='M14 10l6-6M15 4h5v5'/%3E%3C/svg%3E")}
+:where(*):has(> .ip-sex, > span.is-hen, > span.is-rooster){--ip-sex-fs:1em;--ip-sex-lh:1lh}
+/* standalone sign */
+:where(span.ip-sex,span.is-hen,span.is-rooster){--ip-sign:var(--ip-sign-lg)}
+:where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *){display:inline-block;position:relative;flex:none;width:calc(var(--ip-sign) * var(--ip-sign-f));height:0;vertical-align:baseline;font-size:0;line-height:0;letter-spacing:0}
+:where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *)::before{content:"";position:absolute;left:0;bottom:calc(var(--ip-sex-fs) * .35 - var(--ip-sign) / 2);width:100%;height:var(--ip-sign);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}
+:is(p,.ip-note,.ip-hint,.ip-err,.ip-warnline,.ip-ev__meta,.ip-stat__guide,.ip-entry__hint,.ip-banner__body,.ip-toast__txt,.ip-readout__sub) :where(span.ip-sex,span.is-hen,span.is-rooster){--ip-sign:var(--ip-sign-sm)}
+:is(.ip-label,.ip-seg__item,.ip-stotals__key,.s4-capi) > :where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *){height:var(--ip-sex-lh)}   /* a centring flex parent: the sign keeps one line (a label holding only the sign keeps its height) */
+:is(.ip-label,.ip-seg__item,.ip-stotals__key,.s4-capi) > :where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *)::before{bottom:calc((var(--ip-sex-lh) - var(--ip-sign)) / 2)}
+/* sign with its figure */
+.ip-sex:has(> b):not(td.num > *, :is(.s4-capi,.ip-stotals__key):has(> .ip-sex) + * > *){font-size:0;line-height:0}
+.ip-sex:has(> b):not(td.num > *, :is(.s4-capi,.ip-stotals__key):has(> .ip-sex) + * > *)::before{content:"";flex:none;position:relative;top:calc(var(--ip-sign-c) * .2);margin-block-start:calc(-2 * var(--ip-hair));margin-inline-end:calc(-2 * var(--ip-hair));--ip-sign-c:clamp(12px,var(--ip-sex-fs),16px);--ip-sign-k:var(--ip-sign-c);width:calc(var(--ip-sign-c) * var(--ip-sign-f));height:var(--ip-sign-c);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}
+.ip-sex:has(> b):not(td.num > *, :is(.s4-capi,.ip-stotals__key):has(> .ip-sex) + * > *) > b{font-size:var(--ip-sex-fs);line-height:var(--ip-sex-lh)}
+:is(.ip-sex--rooster,.is-rooster){--ip-sign-shape:var(--ip-sign-mars);--ip-sign-f:.72}
+/* GuideImportPreview sex cell (the sign is the cell's text) */
+td.ip-gimp__sex:not(:has(*)){font-size:0}
+td.ip-gimp__sex:not(:has(*))::before{content:"";display:inline-block;vertical-align:middle;--ip-sign-k:var(--ip-sign-lg);width:calc(var(--ip-sign-lg) * var(--ip-sign-f));height:var(--ip-sign-lg);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}
+@media (forced-colors: active){:is(.ip-sex,.is-hen,.is-rooster,td.ip-gimp__sex)::before{background-color:CanvasText}}

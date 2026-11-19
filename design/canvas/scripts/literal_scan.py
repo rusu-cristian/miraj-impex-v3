@@ -43,9 +43,12 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     ('S4-ferma', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58 · '),
     ('S9-transfer', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58 · '),
     ('S10-vanzare', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58 · '),
+    # S4NG: the S9/S10 desktop backdrop is the Rezumat page with its table: SAPT 58 ends 16.11.2026 (the week's hidden name)
+    ('S9-transfer--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    ('S10-vanzare--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     # S4N: real figures that equal old sample ones: Hrană ♀ 3 691,7 kg on 02.11.2026 (day row), Hala 6 ♀ 8 475 alive on a SAPT 57 day (Păsări pe hale)
     ('S4-ferma', 'sample-figure', r'is-hen">3\u202f691,7<'),
-    ('S4-ferma--pasari', 'sample-figure', r'is-hen">8\u202f475<'),
+    ('S4-ferma--pasari', 'sample-figure', r'is-hen(?: ip-ptable__sec)?">8\u202f475<'),   # S4NG: În viață is a section's first column (D167)
     # RF07: Telița's real weighing of 10.02.2026 (H2 ♀, SAPT 19) is last week's on the S8 zi trecută replay (17.02.2026)
     ('S8-cantarire--zi-trecuta', 'start-10.02', r'Săpt\. trecută · 10\.02\.2026'),
 ]

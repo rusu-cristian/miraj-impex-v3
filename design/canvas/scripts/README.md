@@ -12,7 +12,13 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
   extracts (its own sample-era asserts); do not rebuild it before its job. The check per job is `literal_scan.py` (clean on
   the ported rows) + idempotence (run twice → byte-identical), not byte-identity with the old output.
 - After a row's `--canvas` rebuild run `python3 -I canvas_rows.py relayout $R --canvas` (re-stacks the rows below when its
-  tallest board changed; x kept, y = previous row y + tallest h + 120; overlap check).
+  tallest board changed; y = previous row y + tallest h + 120; overlap check; S4NG: within a row a board drawn wider pushes
+  the boards to its right so every gap stays ≥ 80, boards never move left).
+- Wide boards (S4NG, D167): `board_widths.json` {stem: w} = the boards drawn wider than 1440 so a wide table shows whole
+  (canvas.md › Sizes). `canvas_rows.place` takes w from it (every row's --canvas keeps it), `s4s_build.write` writes the
+  `$preview` width and the canvas-only `.s4s-wide` CSS (page at its 1440 layout, table regions at their full width past the
+  page edge). Re-measure with `s4s_render.py --widths <stem …>` (any /tmp/s4s stem, S9/S10 desktop included; it drops the
+  wide CSS and measures at 1440), then rebuild.
 
 ## Rebuild per row (in this order; whole canvas: run the rows top to bottom)
 | Row | Commands (each `python3 -I <script> $R …`) |
@@ -57,6 +63,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
 - realdata (RF01) ← s4s_build (and every row through it). s4s_build (desktop shell) ← s4, s4t, s3, s11, s2, s9, s10. s7_build ← s7s, s6; s7s ← s2, s8, s9, s10, s13; s6 ← s6s.
 - S4N: s4t_build ← s4s_build + design/system/scripts/sys14_build.py (PeriodTable builders, imported; it writes its preview only when run itself); s4_build ← s4t_build (Rezumat table).
+- S4NG: s4s_build loads sys14_build itself and draws the Rezumat PeriodTable (period, record types, FilterBar `filterbar4`, `ptable`, `rezumat_groups`, `tb_rezumat`, loading table) in `panel_default` / `main_page`, so the S4 state boards and the S9/S10 desktop backdrops show the same table; s4t_build re-exports these names (`P = s4.P`).
 - s12 ← s11; s13 ← s7s + s11 (rewrites the S7 boards); s14 ← s4t + s11; s16 ← s4t.
 - s2s ← s2; s14s ← s14 + s2; s15 ← s2s; s15s ← s15; s16s ← s16; s8s ← s8.
 - s17 ← s14s; s17s ← s17; s18 ← s17 + s3; s18s ← s18; s19 ← s18; s20, s21, s22 ← s19; s19s/s20s/s22s ← their base.

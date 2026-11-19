@@ -201,6 +201,19 @@ TR = J('transfers-seria2026.json')
 ARRIVED = dict(TR['arrival_totals'])                  # ♀ 26 883 · ♂ 3 024
 ILL = J('illustrative-events-hirbovat.json')          # culls, sexing_errors, sales (authors), weighings, event_log
 EVENTS = sorted(ILL['event_log'], key=lambda e: e['at'], reverse=True)
+# DATA04 (D168): one sale form = one record. record 'sale' carries `sections` [{section, F, M}] and totals F/M; an older
+# extract (one record per compartment) is read into the same shape. `section` = the first compartment (backward compatible).
+for _e in EVENTS:
+    if _e['record'] == 'sale':
+        if 'sections' not in _e:
+            _s = _e['scope'].split(' · ')[1]; _r = next(r for r in SALE_ROWS if r['date'] == _e['at'][:10] and r['section'] == _s)
+            _e.update(sections=[dict(section=_s, F=_r['F'], M=_r['M'])], F=_r['F'], M=_r['M'])
+        _e['section'] = _e['sections'][0]['section']
+        assert all(next(r for r in SALE_ROWS if r['date'] == _e['at'][:10] and r['section'] == x['section'])[k] == x[k]
+                   for x in _e['sections'] for k in 'FM') and (_e['F'], _e['M']) == tuple(sum(x[k] for x in _e['sections']) for k in 'FM'), _e
+SALE_EVENTS = [e for e in EVENTS if e['record'] == 'sale']   # newest first; 7 forms 12–18.11 (18.11: H6.1 + H6.2 ♀ 1 831 · ♂ 289)
+assert sorted((s['date'], s['section']) for s in SALE_ROWS) == sorted((e['at'][:10], x['section']) for e in SALE_EVENTS for x in e['sections'])
+def sale_codes(e): return ', '.join(x['section'] for x in e['sections'])   # "H6.1, H6.2"
 WEIGHINGS_HIR = ILL['weighings']                      # illustrative (D152): H5.1 10.11.2026
 
 # ---------- Telița and the previous flock (Seria 2025, codes mapped to H5–H7) ----------

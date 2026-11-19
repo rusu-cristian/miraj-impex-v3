@@ -310,10 +310,10 @@ def filterbar(mode='default'):
     if mode == 'period':  # Interval 01.11–15.11.2025: no record of the cycle in it, so no type chips (D45) and nothing to export
         itv = f'<span class="ip-interval" role="group" aria-label="Interval">{datef("iv-a", "de la", "01.11.2025")}{datef("iv-b", "până la", "15.11.2025")}</span>'
         exp = f'<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end is-disabled" disabled="disabled">{icon("download", 16)}Exportă .xlsx</button>'
-        return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 3)}{itv}{seg("Pas", ["Zi", "Săpt."], 1)}{exp}</div>'
+        return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 3)}{itv}{seg("Pas", ["Zi", "Săpt."], 0)}{exp}</div>'  # D166: grain Zi by default
     if mode == 'past':  # closed cycle: whole-cycle period; only the record types the previous flock has (eggs, mortality)
         chips = f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("eggs", "Ouă")}</div>'
-        return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", ["Tot ciclul"] + PERIODS[1:], 0)}{seg("Pas", ["Zi", "Săpt."], 1)}{EXPORT}{chips}</div>'
+        return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", ["Tot ciclul"] + PERIODS[1:], 0)}{seg("Pas", ["Zi", "Săpt."], 0)}{EXPORT}{chips}</div>'  # D166/D170: grain Zi
     return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 0)}{seg("Pas", ["Zi", "Săpt."], 1)}{EXPORT}{CHIPS}</div>'
 TABS = [('rezumat', 'Rezumat'), ('pasari', 'Păsări'), ('hrana', 'Hrană'), ('greutate', 'Greutate'), ('productie', 'Producție')]
 tabs = '<div class="ip-tabs" role="tablist" aria-label="Vederi Hîrbovăț">' + ''.join(
@@ -532,14 +532,109 @@ def event_row(e):
         miss = '' if len(rows) == len(due) else lamp('warn', f'lipsă {len(due) - len(rows)}')
         return ev('feed', f'Hrană zilnică · {len(rows)} din {len(due)} rânduri · <span class="ip-num">{n(kg)} kg</span>', meta, miss)
     if e['record'] == 'sale':
-        sec = e['scope'].split(' · ')[1]; r = next(x for x in R.sales(d, d) if x['section'] == sec)
-        return ev('sale', f'Vânzare · {sec} · {sexpair(r["F"], r["M"])}', meta)
+        return ev('sale', f'Vânzare · {R.sale_codes(e)} · {sexpair(e["F"], e["M"])}', meta)  # DATA04 (D168): one record per sale form
     raise ValueError(e)
 EVENTS = R.EVENTS[:9]
-assert [e['at'] for e in EVENTS][::4] == ['2026-11-18T13:16', '2026-11-18T08:15', '2026-11-17T08:07']
+assert [((R.D(e['at']) - R.TODAY).days, e['at'][11:]) for e in EVENTS][::4] == [(0, '13:16'), (-1, '11:42'), (-2, '13:25')]  # DATA04: 18.11 sale = one record
 events = [event_row(e) for e in EVENTS]
 
-def panel_default(ng=False, banner='', table=''):  # S4N (D154): table = the Rezumat PeriodTable, first in the tab (s4t_build)
+# ---------- Rezumat PeriodTable (S4N, D154/D165; S4NG, D167): the shared Rezumat page draws its table here, so every board
+# that shows the page (S4 default and states, the S9/S10 desktop backdrops) gets the same table; s4t_build re-exports these.
+import importlib.util as _ilu
+_spec14 = _ilu.spec_from_file_location('sys14_build', ROOT / 'design/system/scripts/sys14_build.py')
+P = _ilu.module_from_spec(_spec14); _spec14.loader.exec_module(P)   # PeriodTable builders (no file written on import)
+assert P.R is R
+PWEEKS4, P_FROM, P_TO, SER = P.WEEKS, P.P_FROM, P.P_TO, P.SER
+assert PWEEKS4 == [WK, WK - 1, WK - 2, WK - 3] and P_FROM == R.week_dates(WK - 3)[0] and P_TO == R.TODAY
+def inp(d): return P_FROM <= R.D(d) <= P_TO
+PCULLS = [c for c in R.ILL['culls'] if inp(c['date'])]                 # illustrative (D152): 11.11 H5.2 ♂ 1
+PSEXERR = [e for e in R.ILL['sexing_errors'] if inp(e['date'])]       # none in SAPT 56–59
+PMOVES = [m for m in R.TR['internal_moves_hirbovat'] if inp(m['date'])] + [a for a in R.TR['arrivals'] if inp(a['date'])]
+PSALES = R.sales(P_FROM, P_TO)
+PWEIGH = [w for w in R.WEIGHINGS_HIR if inp(w['date'])]
+assert [(c['date'], c['section'], c['sex'], c['qty']) for c in PCULLS] == [('2026-11-11', 'H5.2', 'M', 1)]
+assert not PSEXERR and not PMOVES and PSALES and PWEIGH  # Eroare sexare / Transfer / Populare: no records → no chip, no columns (D45)
+# D45: the FilterBar lists the record types with records in the period (Populare: Hîrbovăț is populated by transfer, never placed)
+PTYPES = [k for k, has in (('mortality', R.deaths(P_FROM, P_TO) > 0), ('cull', PCULLS), ('sexerr', PSEXERR), ('transfer', PMOVES),
+                           ('sale', PSALES), ('feed', R.feed_kg(P_TO, 'F') > 0), ('weighing', PWEIGH), ('eggs', R.eggs() > 0)) if has]
+assert PTYPES == ['mortality', 'cull', 'sale', 'feed', 'weighing', 'eggs']
+CHIPW = {'mortality': 'Mortalitate', 'cull': 'Sacrificare', 'sexerr': 'Eroare sexare', 'transfer': 'Transfer', 'sale': 'Vânzare',
+         'feed': 'Hrană', 'weighing': 'Cântărire', 'eggs': 'Ouă'}
+def chips4(on):
+    out = ''
+    for k in PTYPES:
+        if k == 'sexerr':
+            out += (f'<button type="button" class="ip-chip ip-rec ip-chip--split{"" if k in on else " ip-chip--off"}" role="checkbox" aria-checked="{"true" if k in on else "false"}">'
+                    f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>')
+        else:
+            out += chip(k, CHIPW[k], k in on)
+    return f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{out}</div>'
+def filterbar4():
+    """D159: period "4 săpt." (SAPT 56–59); grain Zi (D166: every week open, each key can close its week; Săpt. = week rows
+    only); chips = types of the period (D45). D165: the tag state is shared across tabs, all on by default."""
+    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 1)}{seg("Pas", ["Zi", "Săpt."], 0)}{EXPORT}{chips4(set(PTYPES))}</div>'
+def ptnote(*lines):  # below the region (ip-ptable__after): what a column means or leaves out
+    return '<div class="ip-ptable__after">' + ''.join(f'<p class="ip-note">{l}</p>' for l in lines) + '</div>'
+PW0, PW1 = R.week_dates(WK)[0], R.TODAY
+PART = (f'<span class="ip-num">{R.ddm(PW0)}–{R.ddm(PW1)}</span> · {(PW1 - PW0).days + 1} din 7 zile',      # SYS14 label
+        f'<span class="ip-num">{PW0.day:02d}–{R.ddm(PW1)}</span> · {(PW1 - PW0).days + 1} din 7 zile')    # D165: "17–18.11"
+assert PW0.month == PW1.month
+FIT = {'rz': (True, True), 'hr': (False, True), 'gr': (True, True), 'pr': (True, True)}  # uid → (dense, wrap), measured at 1440 (S4N fix 1, S4NG)
+def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None, weighings=False, after='', dense=False, wrap=False, skel=None, colw=None):
+    """D165: a Fermă table fits the 1440 page; density and wrapping heads only where a table needs them to fit:
+    dense = ip-ptable--dense (SYS14: figure cells one spacing step narrower, same row height), wrap = FIN14 .ip-table--wraphead
+    (figure heads may wrap between words). Hale / Compartimente and every table at 1280 may scroll under the sticky column;
+    on the canvas the board grows wider instead (D167). open_weeks None = every week of the period open (D166, SYS14 default).
+    skel = the loading state (§42/§71): the same table, every week open, bars of skel[i] ch per leaf (D132)."""
+    cap = f'{tab} · {SER}' + (f' · {scope}' if scope else '')
+    dense, wrap = FIT.get(uid, (dense, wrap))
+    t, _ = P.ptable(uid, cap, sections, open_weeks=open_weeks, weighings=weighings, skel=skel or False, colw=colw)
+    if not skel: assert t.count(PART[0]) == 1; t = t.replace(PART[0], PART[1])   # the partial week's visible dates; its hidden name keeps the full range
+    cls = ' '.join(c for c, on in (('ip-table--wraphead', wrap),) if on)
+    if cls or dense:
+        t = t.replace('class="ip-table ip-table--rowheads ip-ptable"', 'class="ip-table ip-table--rowheads' + (f' {cls}' if cls else '') + ' ip-ptable' + (' ip-ptable--dense' if dense else '') + '"', 1)
+    if skel:   # FIN11G: the loading table (region aria-hidden, block aria-busy, hidden status line), no Detaliu bar on Rezumat
+        return (f'<section aria-hidden="true"><p class="ip-cap ip-ptable__cap">{cap}</p>{P.region(t, cap, hidden=True)}</section>')
+    return (f'<section aria-labelledby="{uid}-h"><h2 class="ip-sr" id="{uid}-h">{tab}: tabel pe săptămâni și zile</h2>'
+            + P.block(uid, cap, t, bar=bar, sel=sel, after=after) + '</section>')
+def kg0(s):  # Rezumat: feed in whole kg (the Hrană tab keeps 0,1 kg), so the Total fermă table stays narrow (D165)
+    def f(kind, key):
+        if kind == 'w': return R.n(R.week(key)[f'kg_{s}'])
+        return R.n(R.feed_kg(key, s) if kind == 'd' else sum(R.week(k)[f'kg_{s}'] for k in PWEEKS4))
+    return f
+def rezumat_groups(ng=False):
+    """spec D1 › Rezumat (D165, D167): Total fermă only, no Detaliu, groups by record type: În viață first (D167) · Morți ♀ · ♂
+    (the register's deaths, culls included; Păsări splits them off) · Ouat (ouă, % ouat, ghid, incubabile, % incubabile, jos,
+    % jos; D167 adds the incubabile count and % jos; no "stare": the Readout carries it) · Hrană kg ♀ · ♂ · Vânzare last
+    (D167; only when the period has sales). ng: no guide, the ghid column drops out (D92)."""
+    pa, pr, hr = P.farm_pasari(), P.productie(), P.hrana()
+    ou, inc, jos = P.group(pr, 'Ouat'), P.group(pr, 'Incubabile'), P.group(pr, 'Jos')
+    lv = {lab: (lab, c, fn) for lab, c, fn in ou['leaves']}
+    def short(vis, full): return f'<span aria-hidden="true">{vis}</span><span class="ip-sr">{full}</span>'   # short heads: the table stays narrow (D165)
+    egg = [lv['ouă'], lv['% ouat']] + ([] if ng else [lv['ghid']]) + [
+        (short('incub.', 'ouă incubabile'), '', inc['leaves'][0][2]), (short('% incub.', '% incubabile'), '', inc['leaves'][1][2]),
+        (short('jos', 'ouă jos'), '', jos['leaves'][0][2]), (short('% jos', '% ouă jos'), '', jos['leaves'][1][2])]
+    out = [P.group(pa, 'În viață'), {'name': f'{P.ico("mortality")}Morți', 'leaves': P.group(pa, 'Mortalitate')['leaves']},
+           {'name': ou['name'], 'leaves': egg},
+           {'name': f'{P.ico("feed")}Hrană kg', 'leaves': [(P.sx(s), c, kg0(s)) for (_, c, _), s in zip(P.group(hr, 'Hrană · kg')['leaves'], 'FM')]}]   # S4NG: unit in the group head, plain ♀ · ♂ leaves (spec D1 "Hrană kg ♀ · ♂")
+    if PSALES: out.append(P.group(pa, 'Vânzare'))
+    return out
+RZ_NOTE = 'Morți = morții din registru, sacrificările incluse (Păsări le arată separat). % ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină.'
+# loading bars per leaf (ch of the usual figure): În viață 6 · 5, Morți 2 · 1, ouă 6, % ouat 5, ghid 5, incub. 6, % 5, jos 3, % 4, Hrană 5 · 4, Vânzare 6 · 3
+RZ_SKEL = [4, 4, 2, 1, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 3]   # ch1–ch4 exist (§42); the columns keep the loaded widths through RZ_COLW
+# §54 --ip-colw on the loading table's heads (Vârstă, SAPT, then the 15 leaves: În viață ♀ ♂, Morți ♀ ♂, ouă … % jos,
+# Hrană ♀ ♂, Vânzare ♀ ♂): the loaded columns' px (S4NG, measured) as shares of the 1158 px region at 1440, so every figure
+# column keeps its loaded width; the loaded table is 89 px wider than the page (D167), the skeleton fits it, the Data column
+# takes the difference
+RZ_COLW = [round(x / 1158 * 100, 2) for x in (71, 56, 64, 55, 44, 40, 71, 57, 55, 71, 66, 55, 48, 63, 55, 63, 55)]
+def tb_rezumat(ng=False, skel=False):
+    g = rezumat_groups(ng)
+    if skel: assert not ng and len(RZ_SKEL) == sum(len(r['leaves']) for r in g)
+    return ptable('rz', 'Rezumat', [('Total fermă', '', g)], bar=False, after='' if skel else ptnote(RZ_NOTE), skel=RZ_SKEL if skel else None,
+                  colw=RZ_COLW if skel else None)
+
+def panel_default(ng=False, banner='', table=None):  # S4N (D154): the Rezumat PeriodTable first in the tab (S4NG: drawn here by default)
+    if table is None: table = tb_rezumat(ng)
     al = alerts(ng)
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 {banner}{table}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
@@ -561,7 +656,8 @@ def panel_loading():
     hall = f'<div class="s4-hall"><div class="s4-hallhead">{sk("s4s-w20")}{sk("s4s-w30")}</div><div class="ip-tiles">{tile_}{tile_}</div></div>'
     row = f'<div class="ip-ev s4s-skrow">{sk("s4s-sq")}<div class="ip-ev__main s4s-skmain">{sk("s4s-w70")}{sk("s4s-w45")}</div>{sk("s4s-w15")}</div>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat" aria-busy="true">
-<p class="ip-sr" role="status">Se încarcă rezumatul Hîrbovăț pentru ciclul curent.</p>
+<p class="ip-sr" role="status">Se încarcă rezumatul Hîrbovăț, SAPT {WK - 3}–{WK}.</p>
+{tb_rezumat(skel=True)}
 <section class="s4-top" aria-hidden="true">{SKL.chart_readout("s4-readout", f"0 0 {CW} {CH}")}<div class="ip-stats s4-stats">{stat}</div></section>
 <section class="ip-block" aria-hidden="true"><div class="ip-sechead"><h2 class="ip-t-heading">Secțiuni</h2></div><div class="s4-halls">{hall * 3}</div><div class="s4s-sktotals">{sk("s4s-w100 s4s-h16")}{sk("s4s-w70")}{sk("s4s-w50")}</div></section>
 <div class="s4-split" aria-hidden="true">
@@ -695,11 +791,50 @@ def events_past():
         out.append(ev('eggs', f'Ouă · {", ".join(r["hall"] for r in rs)} · <span class="ip-num">{n(sum(r["total_eggs"] for r in rs))}</span> ouă', f'{ddate(d)} · SAPT {rs[0]["age_week"]} · din registru'))
     return out
 
+# S4NG (D170): the past cycle's Rezumat table: its last 4 age weeks (SAPT 62–65) all open, "Arată toate săptămânile" under it
+# (as S3, D160); the register of the previous flock has eggs per hall and deaths, no flock count and no feed (D52): no În viață,
+# no % ouat or guide, no Hrană; emptying days (from 15.01.2026) are not mortality (D54)
+PCAL = P.Cal(placed=dt.date.fromisoformat(R.D(c25['start_date']).isoformat()) - dt.timedelta(days=c25['age_days_start']), last=R.D(PREV_END))
+assert PCAL.sapt(R.D(PREV_END)) == PFIN == 65 and PCAL.age(R.D(c25['start_date'])) == c25['age_days_start']
+PW4 = [PFIN, PFIN - 1, PFIN - 2, PFIN - 3]
+PBY = {}
+for _r in PD['rows']: PBY.setdefault(R.D(_r['date']), []).append(_r)
+for _k in PW4: assert all(d in PBY for d in PCAL.days(_k)) and sum(r['total_eggs'] for d in PCAL.days(_k) for r in PBY[d]) == pall[_k]['total_eggs']
+def _pdays(kind, key): return [key] if kind == 'd' else PCAL.days(key) if kind == 'w' else [d for k in PW4 for d in PCAL.days(k)]
+def p_mort(sx):
+    def f(kind, key):
+        rows = [r for d in _pdays(kind, key) for r in PBY[d]]
+        live = [r for r in rows if not r['depopulation']]
+        return (DASH_, 'golire, nu mortalitate') if not live else n(sum(r[f'mortality_{sx}'] for r in live))
+    return f
+def p_sum(field):
+    return lambda kind, key: n(sum(r[field] for d in _pdays(kind, key) for r in PBY[d]))
+def p_share(field):
+    def f(kind, key):
+        rows = [r for d in _pdays(kind, key) for r in PBY[d]]
+        return pct(sum(r[field] for r in rows) / sum(r['total_eggs'] for r in rows) * 100)
+    return f
+DASH_ = '–'
+def tb_past():
+    def short(vis, full): return f'<span aria-hidden="true">{vis}</span><span class="ip-sr">{full}</span>'
+    groups = [{'name': f'{P.ico("mortality")}Morți', 'leaves': [(P.sx('F'), 'is-hen', p_mort('F')), (P.sx('M'), 'is-rooster', p_mort('M'))]},
+              {'name': f'{P.ico("eggs")}Ouat', 'leaves': [('ouă', '', p_sum('total_eggs')), (short('incub.', 'ouă incubabile'), '', p_sum('hatching_eggs')),
+                                                         (short('% incub.', '% incubabile'), '', p_share('hatching_eggs')), (short('jos', 'ouă jos'), '', p_sum('floor_eggs')),
+                                                         (short('% jos', '% ouă jos'), '', p_share('floor_eggs'))]}]
+    cap = f'Rezumat · Hîrbovăț · Seria 2025 · SAPT {PW4[-1]}–{PW4[0]}, ultimele 4 din SAPT {PWEEKS[0]}–{PFIN}'
+    t, tid = P.ptable('rz', cap, [('Total fermă', '', groups)], weeks=PW4, cal=PCAL)
+    after = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid}">Arată toate săptămânile</button>'
+             f'<p class="ip-note">apoi SAPT {PFIN} → {PWEEKS[0]} (înregistrări din {ddate(c25["data_start_date"])}). Fără efectiv în registru: fără În viață și % ouat; '
+             f'golirea din {ddate(PDEP)} nu apare ca mortalitate.</p></div>')
+    return (f'<section aria-labelledby="rz-h"><h2 class="ip-sr" id="rz-h">Rezumat: tabel pe săptămâni și zile</h2>'
+            + P.block('rz', cap, t, bar=False, after=after) + '</section>')
+
 def panel_past():
     # FIN16: the AlertRow empty state (SYS01: off lamp "nimic de verificat" + one sentence) as the list's own empty row
     # (li.ip-list__empty, as S2's "nimic introdus"), in place of the screen box .s4s-none
     none = f'<ul class="ip-list" aria-labelledby="h-chk"><li class="ip-list__empty">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></li></ul>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
+{tb_past()}
 <section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori, Seria 2025</h2>{readout_past()}{stats_past()}</section>
 <section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {R.drange(c25['data_start_date'], PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in PHALLS)}</div></section>
 <div class="s4-split">
@@ -719,7 +854,9 @@ DLG = f'''<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="aler
 </div></div>'''
 
 def main_page(mode='default', panel=None, ng=False):
-    fb = filterbar(mode if mode in ('period', 'past') else 'default')
+    # S4NG: the current cycle's Rezumat page (default, menu, no guide, loading; the S9/S10 backdrops) has the default board's
+    # FilterBar (4 săpt., Zi, the period's chips), since its table shows SAPT 56–59 (D159, D166)
+    fb = filterbar(mode) if mode in ('period', 'past') else filterbar4()
     return f'''<main class="ip-shell__main s4-main">
 {header('past' if mode == 'past' else 'noguide' if ng else 'default')}
 {cycle(mode if mode in ('menu', 'past') else 'default')}
@@ -774,14 +911,25 @@ CSS_STATES = '''.s4s-sktile{gap:var(--space-2)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}'''
 
+# D167 (S4NG, canvas only): a board drawn wider than 1440 (board_widths.json) keeps its page at the 1440 layout (beside a
+# docked SidePanel: 1440 less the panel) and lets each table region grow to its table's full width, past the page's right
+# edge, instead of a clipped sideways scroll; the product keeps the scroll region with the sticky Data column (D165)
+CSS_WIDE = '''.s4s-wide > .ip-shell{width:var(--board-page-w)}
+.s4s-wide > .ip-dockpage > .ip-shell{width:calc(var(--board-page-w) - var(--panel-w))}
+.s4s-wide .ip-tablescroll{width:min-content;min-width:100%;max-width:none;overflow:visible}'''
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'
 HEIGHTS = json.loads(pathlib.Path(__file__).with_name('s4s_heights.json').read_text()) if pathlib.Path(__file__).with_name('s4s_heights.json').exists() else {}
 def write(stem, title, body, overlay='', H=None, css=None, vp=None):
     H = H or HEIGHTS.get(stem, 1874)
+    import canvas_rows as _CR
+    W = _CR.width(stem, 1440)   # D167: a board whose table is wider than its page is drawn wider (board_widths.json)
     css = css if css is not None else CSS + '\n' + CSS_STATES
     vps = f'; --board-vp-h:{vp}px' if vp else ''  # FIN04 fix 1: a tall board's Dialog centres in its first viewport (additions.css §50)
-    root = f'<div class="ip-root s4s-rel" style="padding:0; min-height:{H}px{vps}">{body}{overlay}</div>'
+    wide = W > 1440
+    if wide:  # D167 (S4NG): the page keeps its 1440 layout, its wide tables extend past the page's right edge in full
+        vps += '; --board-page-w:1440px'; css = css + '\n' + CSS_WIDE
+    root = f'<div class="ip-root s4s-rel{" s4s-wide" if wide else ""}" style="padding:0; min-height:{H}px{vps}">{body}{overlay}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>
@@ -800,7 +948,7 @@ def write(stem, title, body, overlay='', H=None, css=None, vp=None):
 </helmet>
 {root}
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{{"$preview":{{"width":1440,"height":{H}}}}}'>
+<script type="text/x-dc" data-dc-script data-props='{{"$preview":{{"width":{W},"height":{H}}}}}'>
 class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 </script>
 </body>
@@ -816,7 +964,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 {FONTS}<style>{css}</style></head><body>{wroot}</body></html>'''
     pathlib.Path('/tmp/s4s').mkdir(exist_ok=True)
     pathlib.Path(f'/tmp/s4s/{stem}.html').write_text(wrap, encoding='utf-8')
-    print('ok', stem, H, len(dc))
+    print('ok', stem, *((W,) if W != 1440 else ()), H, len(dc))
 
 def shell(main, viewer=False, inert=False, series='2026'):
     sb = sidebar('Observator', viewer=True) if viewer else sidebar(series=series)
