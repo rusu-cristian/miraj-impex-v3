@@ -11,18 +11,20 @@
 - Mortality 18.11 (real deaths, D155): ♀ 3 · ♂ 0. Vânzare 18.11: ♀ 1 831 · ♂ 289 (H6.1 ♀ 676 · ♂ 201 · H6.2 ♀ 1 155 · ♂ 88). Sheet books ♀ 1 834 · ♂ 289 as mortality.
 - Cycle: deaths ♀ 1 521 (5,7 %) · ♂ 1 048 (34,7 %); sold 12–18.11 ♀ 12 801 · ♂ 1 182. Cycle open (closes when sales reach 0).
 - Eggs 18.11: 5 914 total · 5 308 incubabile (89,8 %) · 158 jos · H5 3 872 · H6 2 042 · H7 –.
-- **Lay 18.11: 41,1 %** (eggs ÷ ♀ at start of day, D156) vs guide SAPT 59 53,3 % (RealGhid). Sheet shows 47,1 % (end-of-day count).
+- **Lay 18.11: 41,1 %** (eggs ÷ ♀ at start of day, D156) vs guide SAPT 59 57,6 % (Productivitate col I, D184; was RealGhid 53,3 %). Sheet shows 47,1 % (end-of-day count).
+- Cat. 1–3 18.11 (form counts, D183; Total ouă = Cat 1 + 2 + 3 + Incubabile, D18): H5 13 · 417 · 27 + inc 3 415 = 3 872 · H6 8 · 110 · 31 + inc 1 893 = 2 042 · farm 21 · 527 · 58 (H7 empty).
 - Egg weight 18.11: H5 67 g · H6 65,1 g · farm 66,4 g (sheet farm 44 = plain mean incl. empty H7).
 - Feed 18.11: ♀ 2 303,2 kg · ♂ 154,7 kg; norm ♀ 160 g · ♂ 141–144 g vs guide SAPT 59 ♀ 157 · ♂ 156 g.
 - Stock end 18.11: ♀ feed 31 664,9 kg · ♂ feed 1 781 kg. Last deliveries 12.11 9 000 kg ♀ (fără preț) · 13.11 25 640 kg ♀ (199 000 lei).
 - Deliveries Hîrbovăț 17.02–13.11: 69 · ♀ 1 114 110 kg · ♂ 78 530 kg · 9 562 437 lei · 4 unpriced.
-- Last weeks (farm; lay = eggs ÷ start-of-day hen-days, D159; Productivitate end-of-day basis in brackets; SAPT 59 = 17–18.11 only):
+- Cat. 1–3 % of total eggs by week (farm, D183; reports): SAPT 56 0,2 / 0,6 / 0,9 % · SAPT 57 0,2 / 0,5 / 0,6 % · SAPT 58 0,3 / 2,6 / 0,8 % · SAPT 59 0,3 / 6,2 / 1,1 %.
+- Last weeks (farm; lay = eggs ÷ start-of-day hen-days, D159; Productivitate end-of-day basis in brackets; guide = Productivitate col I, D184; SAPT 59 = 17–18.11 only):
   | SAPT | dates | eggs | inc % | lay % (prod) | guide | deaths ♀/♂ | sold ♀/♂ | alive end ♀/♂ | feed kg ♀/♂ |
   |---|---|---|---|---|---|---|---|---|---|
-  | 56 | 27.10–02.11 | 117 929 | 98,3 | 65,2 (65,2) | 56,9 | 228/35 | 0/0 | 25 668/2 018 | 28 708,2/2 013,6 |
-  | 57 | 03.11–09.11 | 49 225 | 98,7 | 27,6 (27,6) | 55,7 | 260/34 | 0/0 | 25 408/1 984 | 23 284,2/1 970,6 |
-  | 58 | 10.11–16.11 | 47 512 | 96,3 | 30,4 (32,6) | 54,5 | 36/8 | 10 546/749 | 14 826/1 227 | 22 230,9/1 682,7 |
-  | 59 | 17.11–18.11 | 11 806 | 92,5 | 40,4 (43,8) | 53,3 | 10/0 | 2 255/433 | 12 561/794 | 4 675,3/329,7 |
+  | 56 | 27.10–02.11 | 117 929 | 98,3 | 65,2 (65,2) | 61,1 | 228/35 | 0/0 | 25 668/2 018 | 28 708,2/2 013,6 |
+  | 57 | 03.11–09.11 | 49 225 | 98,7 | 27,6 (27,6) | 59,9 | 260/34 | 0/0 | 25 408/1 984 | 23 284,2/1 970,6 |
+  | 58 | 10.11–16.11 | 47 512 | 96,3 | 30,4 (32,6) | 58,8 | 36/8 | 10 546/749 | 14 826/1 227 | 22 230,9/1 682,7 |
+  | 59 | 17.11–18.11 | 11 806 | 92,5 | 40,4 (43,8) | 57,6 | 10/0 | 2 255/433 | 12 561/794 | 4 675,3/329,7 |
 - Peak lay: SAPT 30 (90,3 %, 28.04–04.05); then SAPT 55 73,5 % → 56 65,2 % → 57 27,6 % → 58 30,4 %.
 - Not in the workbook (illustrative only, illustrative-events-hirbovat.json): culls + reasons, sexing errors, weighings, event authors/times.
 - Weighings (D157): label = age week, compare with guide week SAPT − 1 (e.g. 24.02.2026 SAPT 21 vs guide wk 20 2 370 g).

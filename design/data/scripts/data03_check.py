@@ -1,4 +1,4 @@
-"""DATA03 check: internal consistency of the rebuilt extracts (no workbook access).
+"""DATA03 check (+ DATA05 egg weight, DATA06 D184 guide lay % / D183 Cat 1–3): internal consistency of the rebuilt extracts (no workbook access).
 Usage: python3 -I data03_check.py <extracts_dir>"""
 import sys, json, os
 from collections import defaultdict
@@ -115,6 +115,46 @@ for c in CO:
     ok(rw['sapt'] == r['sapt'] and not any(x['sold'] for x in S if x['section'] == rw['section']), f'correction section without sales {c}')
 for n in ('mortality-telita-daily.json',):
     for r in L(n)['rows']: ok(r['sapt'] == r['age_week'], f'telita sapt {r["date"]}')
+# DATA06 (D184): guide lay % = Productivitate col I by age week (SAPT 56 = 61,1, not RealGhid's 56,9), everywhere
+gl = L('guide-laying.json')
+GLF = {r['age_week']: r['lay_pct'] for r in gl['rows'] if r['sex'] == 'F'}
+ALT = {r['age_week']: r for r in gl['alt_realghid']}
+ok((GLF[56], GLF[57], GLF[58], GLF[59], GLF[53]) == (61.1, 59.9, 58.8, 57.6, 64.5), f'D184 guide lay wk 53/56–59 {[GLF[k] for k in (53, 56, 57, 58, 59)]}')
+ok((ALT[56]['lay_pct'], ALT[59]['lay_pct'], ALT[53]['lay_pct'], ALT[53]['lay_pct_typed']) == (56.9, 53.3, 60.5, '605'), 'alt_realghid keeps RealGhid B')
+ok(sorted(k for k, v in GLF.items() if v is not None) == list(range(23, 63)), 'guide lay weeks 23–62')
+ok(all(ALT[k]['lay_pct_productivitate'] == GLF[k] for k in ALT), 'alt_realghid vs guide rows')
+ok('Productivitate col I' in gl['meta']['sources']['lay_pct'] and all(r['lay_pct'] is None for r in gl['rows'] if r['sex'] == 'M'), 'guide-laying lay source')
+for ds, f in F.items(): ok(f['guide_lay_pct'] == GLF.get(f['sapt']), f'daily guide lay {ds}')
+for wk in w['weeks']:
+    g = wk['guide']
+    ok(g['lay_pct'] == GLF.get(wk['sapt']) and g['lay_pct_realghid'] == (ALT[wk['sapt']]['lay_pct'] if wk['sapt'] in ALT else None), f"weekly guide lay {wk['sapt']}")
+    for blk in [wk['farm']] + list(wk['halls'].values()):
+        if 'lay_vs_guide_pts' in blk: ok(blk['lay_vs_guide_pts'] == round(blk['lay_pct'] - g['lay_pct'], 2), f"lay_vs_guide {wk['sapt']}")
+ok(ws[59]['guide']['lay_pct'] == 57.6 and F['2026-11-18']['guide_lay_pct'] == 57.6, 'D184 SAPT 59 guide 57,6')
+# DATA06 (D183 + D18): Cat 1–3 counts per hall and day; Total ouă = Cat 1 + Cat 2 + Cat 3 + Incubabile (Jos apart)
+for h in H:
+    if h['eggs'] is not None and h['date'] >= '2026-03-10':
+        ok(None not in (h['cat1'], h['cat2'], h['cat3']), f"cat missing {h['date']} {h['hall']}")
+        ok(h['cat1'] + h['cat2'] + h['cat3'] + h['inc'] == h['eggs'], f"D18 {h['date']} {h['hall']}")
+    else:
+        ok((h['cat1'], h['cat2'], h['cat3']) == (None, None, None), f"cat without eggs {h['date']} {h['hall']}")
+for ds, f in F.items():
+    hs = [h for h in H if h['date'] == ds]
+    for k in ('cat1', 'cat2', 'cat3'):
+        ok(f[k] == (None if all(h[k] is None for h in hs) else sum(h[k] or 0 for h in hs)), f'farm {k} {ds}')
+    if f['eggs'] and f['cat1'] is not None: ok(f['cat1'] + f['cat2'] + f['cat3'] + f['inc'] == f['eggs'], f'D18 farm {ds}')
+for wk in w['weeks']:
+    for hn, blk in [('farm', wk['farm'])] + list(wk['halls'].items()):
+        hd = [h for h in H if wk['from'] <= h['date'] <= wk['to'] and (hn == 'farm' or h['hall'] == hn)]
+        for k in ('cat1', 'cat2', 'cat3'):
+            exp = None if all(h[k] is None for h in hd) else sum(h[k] or 0 for h in hd)
+            ok(blk[k] == exp, f"week {wk['sapt']} {hn} {k} {blk[k]} vs {exp}")
+            ok(blk[k + '_pct'] == (round(100 * blk[k] / blk['eggs'], 2) if blk[k] is not None and blk['eggs'] else None), f"week {wk['sapt']} {hn} {k}_pct")
+        if blk['cat1'] is not None and blk['eggs']:
+            ok(blk['cat1'] + blk['cat2'] + blk['cat3'] + blk['inc'] == blk['eggs'], f"D18 week {wk['sapt']} {hn}")
+            ok(abs(blk['cat1_pct'] + blk['cat2_pct'] + blk['cat3_pct'] + blk['inc_pct'] - 100) < 0.03, f"cat % sum {wk['sapt']} {hn}")
+H18 = {h['hall']: (h['cat1'], h['cat2'], h['cat3']) for h in H if h['date'] == '2026-11-18'}
+ok(H18.get('H5') == (13, 417, 27) and H18.get('H6') == (8, 110, 31), f'18.11 Cat H5 13·417·27, H6 8·110·31 {H18}')
 fdl = L('feed-deliveries.json')
 hir = [r for r in fdl['rows'] if r['farm_id'] == 'hirbovat']
 ok(round(sum(r['total_lei'] or 0 for r in hir)) == fdl['meta']['totals']['hirbovat']['sheet_header']['lei'], 'lei total')

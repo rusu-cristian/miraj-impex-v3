@@ -8,7 +8,7 @@ sapt = floor(age_days / 7) + 1. Prints a check log; writes the JSON files and ke
 """
 import sys, json, os, datetime
 import openpyxl
-from openpyxl.utils import column_index_from_string as ci
+from openpyxl.utils import column_index_from_string as ci, get_column_letter
 
 WB, OUT = sys.argv[1], sys.argv[2]
 wb = openpyxl.load_workbook(WB, read_only=True, data_only=True)
@@ -169,11 +169,31 @@ lay_disagree = [(w, real_ghid[w]['lay'], prod[w]['lay_guide']) for w in sorted(r
                 if w in prod and prod[w]['lay_guide'] is not None and real_ghid[w]['lay'] is not None
                 and abs(real_ghid[w]['lay'] - prod[w]['lay_guide']) >= 1.0]
 log('lay guide RealGhid B vs Productivitate I differ by ≥1 pt in', len(lay_disagree), 'weeks, e.g.', lay_disagree[-6:])
+# DATA06 (D184): the app's lay % guide = Productivitate col I by age week (col A = SAPT per D151: its hen-days B and eggs D
+# equal the extracts' per-sapt sums, cross-checked below), over the weeks RealGhid col B covered (23–62). Productivitate
+# rows 63–67 repeat 53,7 (template continuation of wk 62) and are not taken.
+LAY_WEEKS = sorted(w for w in real_ghid if real_ghid[w]['lay'] is not None)
+lay_guide = {w: prod[w]['lay_guide'] for w in LAY_WEEKS if w in prod and prod[w]['lay_guide'] is not None}
+assert sorted(lay_guide) == LAY_WEEKS, (sorted(lay_guide), LAY_WEEKS)
+assert lay_guide[56] == 61.1 and lay_guide[59] == 57.6, (lay_guide[56], lay_guide[59])
+log('D184 lay guide = Productivitate col I, wk', LAY_WEEKS[0], '–', LAY_WEEKS[-1], '; wk 56', lay_guide[56], '(RealGhid', real_ghid[56]['lay'], '), wk 59', lay_guide[59], '(RealGhid', real_ghid[59]['lay'], ')')
+
+# ---------------------------------------------------------------- Cat 1–3 counts (D183): Raspunsuri (the daily form)
+# Per hall: Jos, Cat 1, Cat 2, Cat 3, Incubabil, Masa. One row per submission (Timestamp, Data).
+RASP_HALL = {'H5': 6, 'H6': 16, 'H7': 26}   # 0-based index of the hall's "Jos" column; Cat1..3, Inc follow
+R_rows = [list(r) for r in wb['Raspunsuri'].iter_rows(min_row=2, max_col=32, values_only=True)]
+rasp = {}   # iso date -> list of (timestamp, {hall: dict(jos, cat1, cat2, cat3, inc)})
+for r in R_rows:
+    if todate(r[1]) is None: continue
+    rasp.setdefault(iso(todate(r[1])), []).append((r[0], {h: dict(zip(('jos', 'cat1', 'cat2', 'cat3', 'inc'), (num(x) for x in r[c:c + 5])))
+                                                        for h, c in RASP_HALL.items()}))
+rasp_odd = []   # submissions not used: misdated or superseded
+used_form = {}  # iso date -> the submission used
 
 # ---------------------------------------------------------------- daily
 sec_rows, hall_rows, farm_rows = [], [], []
 alive_prev = {(s, x): 0 for s in SECTIONS for x in 'FM'}
-checks = dict(alive_continuity=[], farm_vs_sections=[], hall_eggs_vs_farm=[], lay_pct=[], kg_vs_norm=[], stock=[],
+checks = dict(alive_continuity=[], farm_vs_sections=[], hall_eggs_vs_farm=[], lay_pct=[], kg_vs_norm=[], stock=[], cat_identity=[], cat_no_form=[], masa_cat_pct=[],
               pct_sheet=[], total_rows=[])
 state = {}  # per date: dict
 stock_prev = None
@@ -230,6 +250,23 @@ for ds in dates:
             if start or alive or mort or sold or arr or (kg or 0) > 0:
                 sec_rows.append([ds, age, w, s, sex, mort, sold, arr, mv[(s, sex)], alive, g, kg, raw])
             alive_prev[(s, sex)] = alive
+    # Cat 1–3 (D183): the day's form submission whose totals agree with the Hirbovat sheet (the sheet takes the corrected
+    # resubmission when a day was sent twice or misdated); none agreeing → the last one, reported
+    def form_ok(sub):
+        for h in HALLS:
+            ce, _, cinc, _, cj, _ = HHALL[h]
+            v = sub[h]
+            if z(v['cat1']) + z(v['cat2']) + z(v['cat3']) + z(v['inc']) != z(C(r, ce)) or z(v['inc']) != z(C(r, cinc)) or z(v['jos']) != z(C(r, cj)):
+                return False
+        return True
+    subs = rasp.get(ds, [])
+    good = [s_ for s_ in subs if form_ok(s_[1])]
+    form = (good or subs or [(None, None)])[-1]
+    for s_ in subs:
+        if s_ is not form: rasp_odd.append(dict(date=ds, submitted=str(s_[0])[:16], used=False, _v=s_[1],
+                                                why='duplicate of the used submission' if s_[1] == form[1] else 'totals differ from the Hirbovat sheet (superseded)'))
+    used_form[ds] = form[1]
+    if subs and not good: checks['cat_identity'].append((ds, 'no submission matches the sheet'))
     # halls
     for h in HALLS:
         ce, cl, cinc, cincp, cj, cjp = HHALL[h]
@@ -248,11 +285,21 @@ for ds in dates:
             if pl is not None and abs(pl - lay) > 0.01: checks['pct_sheet'].append((ds, h, lay, pl))
         kgF = sum(z(day['sec'][(s, 'F')]['kg']) for s in secs); kgM = sum(z(day['sec'][(s, 'M')]['kg']) for s in secs)
         lay_d = pct(eggs, sF) if eggs is not None else None   # D156: eggs ÷ hens at the start of the day
+        # D183: Cat 1–3 counts from the form; null where the sheet has no eggs for the hall-day or no form was sent
+        cats = (form[1][h]['cat1'], form[1][h]['cat2'], form[1][h]['cat3']) if form[1] and eggs is not None else (None, None, None)
+        if eggs and form[1] is None: checks['cat_no_form'].append((ds, h, eggs))
+        if eggs is not None and cats[0] is not None and sum(z(x) for x in cats) + z(inc) != eggs:   # D18 identity
+            checks['cat_identity'].append((ds, h, eggs, cats, inc))
+        if mr and eggs:   # Masa Cat % per hall = count ÷ eggs × 100 (cross-check only)
+            mc = [C(mr, get_column_letter(ci(MASA_HALL[h][0]) + k)) for k in (1, 2, 3)]
+            if any(m is not None and c is not None and abs(m - 100 * c / eggs) > 0.01 for m, c in zip(mc, cats)):
+                checks['masa_cat_pct'].append((ds, h, mc, cats, eggs))
         day['hall'][h] = dict(aF=aF, aM=aM, sF=sF, sM=sM, mF=mF, mM=mM, soF=soF, soM=soM, eggs=eggs, inc=inc, jos=jos,
-                              lay=lay_d, lay_sheet=lay, incp=incp, josp=josp, ew=ew, kgF=kgF, kgM=kgM)
+                              lay=lay_d, lay_sheet=lay, incp=incp, josp=josp, ew=ew, kgF=kgF, kgM=kgM,
+                              cat1=cats[0], cat2=cats[1], cat3=cats[2])
         if aF or aM or sF or sM or eggs:
             hall_rows.append([ds, age, w, h, aF, aM, mF, mM, soF, soM, eggs, inc, jos, lay_d, r2(lay), r2(incp), r2(josp), r2(ew),
-                              round(kgF, 1), round(kgM, 1)])
+                              round(kgF, 1), round(kgM, 1), cats[0], cats[1], cats[2]])
     # farm
     f = {k: C(r, c) for k, c in HFARM.items()}
     sums = dict(mF=sum(v['raw'] for (s, x), v in day['sec'].items() if x == 'F'),
@@ -282,7 +329,8 @@ for ds in dates:
     lei = C(fr, 'AJ') if fr else None
     stF = C(fr, 'AH') if fr else None; stM = C(fr, 'AI') if fr else None
     gw = feed_guide.get(w, (None, None))
-    gl = real_ghid.get(w, {}).get('lay')
+    gl = lay_guide.get(w)   # D184: Productivitate col I
+    fcat = [None if all(day['hall'][h][k] is None for h in HALLS) else sum(z(day['hall'][h][k]) for h in HALLS) for k in ('cat1', 'cat2', 'cat3')]
     if fr:
         i = F_index[ds]
         if dF or dM:
@@ -301,13 +349,25 @@ for ds in dates:
     lay_start = pct(f['eggs'], sF) if f['eggs'] is not None else None
     farm_rows.append([ds, age, w, aF, aM, mF, mM, dpF, dpM, arF, arM, sums['mF'], sums['mM'], f['eggs'], f['inc'], f['jos'],
                       lay_start, r2(f['lay']), r2(f['incp']), r2(f['josp']), ew, r2(ew_sheet), kgF, kgM, dF, dM, lei,
-                      r1(stF), r1(stM), gw[0], gw[1], gl])
+                      r1(stF), r1(stM), gw[0], gw[1], gl, fcat[0], fcat[1], fcat[2]])
     day['farm'] = dict(aF=aF, aM=aM, sF=sF, sM=sM, mF=mF, mM=mM, arF=arF, arM=arM, dpF=dpF, dpM=dpM, eggs=f['eggs'],
                        inc=f['inc'], jos=f['jos'], lay=lay_start, lay_sheet=f['lay'], lay_start=lay_start, incp=f['incp'], josp=f['josp'],
                        ew=ew, ew_sheet=ew_sheet, kgF=kgF, kgM=kgM, dF=dF, dM=dM, lei=lei, stF=stF, stM=stM,
-                       gF=gw[0], gM=gw[1], gl=gl, mF_sheet=f['mF'], mM_sheet=f['mM'])
+                       gF=gw[0], gM=gw[1], gl=gl, mF_sheet=f['mF'], mM_sheet=f['mM'], cat1=fcat[0], cat2=fcat[1], cat3=fcat[2])
     state[ds] = day
 
+for k_ in sorted(rasp):
+    if k_ not in state:
+        for s_ in rasp[k_]: rasp_odd.append(dict(date=k_, submitted=str(s_[0])[:16], used=False, why='date outside the data range (misdated: year typed 2027; the day was resubmitted with the right date)'))
+for x in rasp_odd:
+    v = x.pop('_v', None)
+    same = [k_ for k_, u in used_form.items() if u == v and k_ != x['date']]
+    if v is not None and same and x['why'].startswith('totals differ'):
+        x['why'] = f'misdated: the figures equal the {same[0]} submission (the day was resubmitted with the right date)'
+rasp_odd.sort(key=lambda x: x['submitted'])
+cat_days = sorted({ds for ds in dates for h in HALLS if state[ds]['hall'][h]['cat1'] is not None and state[ds]['hall'][h]['eggs']})
+log('Cat 1–3 (D183): form submissions', sum(len(v) for v in rasp.values()), '; hall-days with eggs and Cat counts', sum(1 for ds in dates for h in HALLS if state[ds]['hall'][h]['eggs'] and state[ds]['hall'][h]['cat1'] is not None),
+    '; days', cat_days[0], '–', cat_days[-1], len(cat_days), '; unused submissions', rasp_odd)
 for k, v in checks.items():
     if k != 'total_rows': log(f'check {k}: {len(v)} issue(s)', v[:8])
 log('max single-day mortality per section × sex before 12.11:', {f'{s}{x}': v for (s, x), v in sorted(max_normal_mort.items())})
@@ -405,11 +465,20 @@ for w in sorted(Ht):
     farm['egg_g_sheet'] = farm['egg_g']
     # D176/DATA05: farm weekly egg weight = Σ(eggs × g) ÷ Σ eggs over every hall-day with eggs
     farm['egg_g'] = egg_mean([(r2(state[ds]['hall'][h]['ew']), state[ds]['hall'][h]['eggs']) for ds in wd for h in HALLS])
+    # D183: Cat 1–3 counts (Σ daily form counts) and % of total eggs (reports)
+    def cat_block(o, hs):
+        for k in ('cat1', 'cat2', 'cat3'):
+            vals = [state[ds]['hall'][h][k] for ds in wd for h in hs]
+            o[k] = None if all(v is None for v in vals) else sum(z(v) for v in vals)
+        for k in ('cat1', 'cat2', 'cat3'):
+            o[k + '_pct'] = pct(o[k], o['eggs']) if o[k] is not None else None
+    cat_block(farm, HALLS)
+    for h in HALLS: cat_block(halls[h], [h])
     g = real_ghid.get(w, {})
     fg = feed_guide.get(w, (None, None))
-    guide = dict(lay_pct=g.get('lay'), mort_cum_pct=g.get('mort'), eggs_hen_week=g.get('egg_wk'),
+    guide = dict(lay_pct=lay_guide.get(w), mort_cum_pct=g.get('mort'), eggs_hen_week=g.get('egg_wk'),
                  hatch_eggs_hen_week=g.get('inc_wk'), feed_g_F=fg[0], feed_g_M=fg[1],
-                 lay_pct_productivitate=prod.get(w, {}).get('lay_guide'),
+                 lay_pct_realghid=g.get('lay'),
                  eggs_plan_week=plan.get(w, {}).get('eggs_plan'))
     if guide['lay_pct'] is not None and farm['lay_pct'] is not None and farm['eggs']:
         farm['lay_vs_guide_pts'] = round(farm['lay_pct'] - guide['lay_pct'], 2)
@@ -456,7 +525,8 @@ dump('hirbovat-daily.json', {
                  sheets={'Hirbovat': 'mortality + alive per compartment × sex (cols O–BD), eggs per hall and farm (D–M)',
                          'Hrana Hirbovat': 'D/E guide g, F–Q g/bird, R/S deliveries kg ♀/♂ feed, T–AE kg per compartment × sex, AF/AG kg ♀/♂, AH/AI stock ♀/♂, AJ lei',
                          'Masa': 'egg weight per hall (I, N, S) and farm (D)', '%%': 'lay/inc/jos % (cross-check only; identical to Hirbovat)',
-                         'RealGhid': 'guide lay % by age week (col B)'},
+                         'Productivitate': 'guide lay % by age week (col I, D184; was RealGhid col B)',
+                         'Raspunsuri': 'Cat 1, Cat 2, Cat 3 counts per hall and day (the daily form; D183)'},
                  conventions=[
                      'Rows are arrays; column names in each block\'s "cols". Sex F = ♀, M = ♂. Dates ISO. null = not in the sheet.',
                      'age_days is the UI column "Vârstă (zile)" (D159): bird age per D151, 407 on 18.11.2026 (the workbook\'s Zile = age_days + 1 = 408 is not used).',
@@ -468,22 +538,24 @@ dump('hirbovat-daily.json', {
                      'g = norm g/bird (Hrana "Norma de consum"); kg = sheet kg = g × birds alive at the START of the day (previous day end) / 1000 (checked; differs from data-model "alive up to that date").',
                      'section_day rows exist from the first arrival in that compartment to the day it was emptied (pre-arrival and post-emptying zero rows dropped).',
                      'lay_pct (hall_day, farm_day) = eggs ÷ hens alive at the START of the day × 100 (D156; 18.11 farm 41,1 %). lay_pct_sheet = the sheet\'s % = eggs ÷ hens at the end of the day (47,08 % on 18.11, inflated by sales).',
-                     'eggs = total collected = incubabile + Cat 1–3 (Jos counted separately, not in eggs; as D18). Cat 1–3 not extracted (D153).',
+                     'eggs = total collected = Cat 1 + Cat 2 + Cat 3 + incubabile (Jos counted separately, not in eggs; D18, checked on every hall-day with eggs: 0 mismatches).',
+                     'cat1, cat2, cat3 (hall_day, farm_day; D183) = counts from the Raspunsuri form (10.03–18.11.2026). Where a day was sent more than once or misdated, the submission whose Cat 1–3 + Incubabil, Incubabil and Jos equal the Hirbovat sheet is used (the sheet does the same); the others are listed in meta.cat_form_unused. null = no eggs cell in the sheet for that hall-day (before lay, 17.02–09.03; H7 from 14.11, empty) — 0 is a real zero sent by the form. farm = Σ halls. Masa\'s Cat %% = count ÷ eggs × 100 (cross-check: %d differences).' % len(checks['masa_cat_pct']),
                      'egg_g farm (daily) = egg-weighted mean of hall weights (the sheet\'s Masa col D is a plain mean of three halls incl. an empty H7 = 0 after 13.11; kept as egg_g_sheet).',
                      'deliv_F_kg / deliv_M_kg = Hrana R ("gaina") / S ("cocos") — feed for hens / roosters; negative = stock adjustment (−300 on 21.02; −3 000 ♀ / +3 000 ♂ on 26.02 = feed moved between the two stocks). lei = Hrana AJ on that row (see feed-deliveries.json for the invoice pairing).',
-                     'guide_g_F/M = Hrana D/E by sapt; guide_lay_pct = RealGhid col B by age week (see guide-laying.json).',
+                     'guide_g_F/M = Hrana D/E by sapt; guide_lay_pct = Productivitate col I by age week (D184; see guide-laying.json).',
                  ],
                  not_extracted=['Hirbovat col N "Total incubabil" (row 2 = cumulative incubabile 4 902 522; daily cells = day-on-day change of incubabile)',
-                                'Masa Cat 1–3 % and Raspunsuri counts (D153)', 'Hrana rows after 18.11 (19.11 partly filled)'],
+                                'Masa Cat 1–3 % (= the form counts ÷ eggs; cross-check only)', 'Raspunsuri mortality and egg weight (the same as Hirbovat / Masa)', 'Hrana rows after 18.11 (19.11 partly filled)'],
+                 cat_form_unused=rasp_odd,
                  anomalies=anom),
     'sections': SECTIONS, 'halls': {h: [s for s in SECTIONS if HALL_OF[s] == h] for h in HALLS},
     'section_day': {'cols': ['date', 'age_days', 'sapt', 'section', 'sex', 'mort', 'sold', 'arr', 'mv', 'alive', 'g', 'kg', 'mort_sheet'], 'rows': sec_rows},
     'sales': {'cols': ['date', 'age_days', 'sapt', 'section', 'F', 'M'], 'rows': sales_rows},
     'hall_day': {'cols': ['date', 'age_days', 'sapt', 'hall', 'alive_F', 'alive_M', 'mort_F', 'mort_M', 'sold_F', 'sold_M', 'eggs', 'inc', 'jos',
-                          'lay_pct', 'lay_pct_sheet', 'inc_pct', 'jos_pct', 'egg_g', 'kg_F', 'kg_M'], 'rows': hall_rows},
+                          'lay_pct', 'lay_pct_sheet', 'inc_pct', 'jos_pct', 'egg_g', 'kg_F', 'kg_M', 'cat1', 'cat2', 'cat3'], 'rows': hall_rows},
     'farm_day': {'cols': ['date', 'age_days', 'sapt', 'alive_F', 'alive_M', 'mort_F', 'mort_M', 'sold_F', 'sold_M', 'arr_F', 'arr_M',
                           'mort_F_sheet', 'mort_M_sheet', 'eggs', 'inc', 'jos', 'lay_pct', 'lay_pct_sheet', 'inc_pct', 'jos_pct', 'egg_g', 'egg_g_sheet', 'kg_F', 'kg_M',
-                          'deliv_F_kg', 'deliv_M_kg', 'lei', 'stock_F_kg', 'stock_M_kg', 'guide_g_F', 'guide_g_M', 'guide_lay_pct'],
+                          'deliv_F_kg', 'deliv_M_kg', 'lei', 'stock_F_kg', 'stock_M_kg', 'guide_g_F', 'guide_g_M', 'guide_lay_pct', 'cat1', 'cat2', 'cat3'],
                  'rows': farm_rows},
 })
 
@@ -499,7 +571,8 @@ dump('hirbovat-weekly.json', {
                      'inc_pct = inc / eggs × 100; jos_pct_sheet as in the Total row; hall and farm egg_g = Σ(eggs × daily hall g) ÷ Σ eggs over the days with eggs (D176/DATA05; empty days excluded, so S4 and S14 agree); egg_g_sheet = the Masa Total row (hall: plain mean of the daily cells incl. empty days as 0; farm col D: a plain mean of three halls that counts an empty H7 as 0 from 14.11).',
                      'cum_mort_pct_*_sheet = the Total row\'s % under the "în viață" columns = cumulative deaths since 10.03.2026 (start of SAPT 24, lay start) ÷ birds alive at the end of 09.03.2026 (♀ 26 845 = RealGhid "intrat în ouat"; ♂ 2 931) — reproduced to ±0,05 pt; from 12.11 it includes the sales (D155). Compare with guide.mort_cum_pct.',
                      'kg_* = Σ daily kg; g_* = kg / bird-days on fed days (bird-weighted g/bird).',
-                     'guide: lay_pct, mort_cum_pct, eggs_hen_week, hatch_eggs_hen_week = RealGhid by age week (app guide); feed_g = Hrana Hirbovat D/E; lay_pct_productivitate = the second lay guide (Productivitate col I), for reference; eggs_plan_week = RealGhid col M (26 845 × eggs/hen/week guide).',
+                     'guide: lay_pct = Productivitate col I by age week (D184, DATA06); mort_cum_pct, eggs_hen_week, hatch_eggs_hen_week = RealGhid by age week; feed_g = Hrana Hirbovat D/E; lay_pct_realghid = RealGhid col B (the former lay guide), for reference; eggs_plan_week = RealGhid col M (26 845 × eggs/hen/week guide).',
+                     'cat1, cat2, cat3 (farm, halls; D183) = Σ daily form counts (hirbovat-daily cat1–3); cat*_pct = count ÷ eggs × 100 (% of total eggs, for reports); cat1_pct + cat2_pct + cat3_pct + inc_pct = 100. null before lay (no form).',
                      'lay_vs_guide_pts = lay_pct − guide.lay_pct (percentage points).',
                  ],
                  total_row_check=dict(compared='farm and per-compartment mortality (sheet-style sums, arrivals negative), farm and hall eggs/inc/jos, farm lay% (mean of daily); plus Productivitate hen-days/eggs and RealGhid real eggs',
@@ -522,7 +595,7 @@ for w in range(19, 66):
             fv, fsrc = old_feed.get((w, sex)), 'Seria_2026.xlsx Hrana Hîrbovăț (old)'
         if (w, sex) in old_feed and old_feed[(w, sex)] != fv: feed_diff.append((w, sex, old_feed[(w, sex)], fv))
         row = dict(guide_id='g-laying', age_week=w, sex=sex, feed_g=fv, feed_source=fsrc,
-                   lay_pct=g.get('lay') if sex == 'F' else None,
+                   lay_pct=lay_guide.get(w) if sex == 'F' else None,   # D184: Productivitate col I
                    mortality_cum_pct=g.get('mort') if sex == 'F' else None,
                    eggs_hen_cum=g.get('egg_cum') if sex == 'F' else None,
                    hatch_eggs_hen_cum=g.get('inc_cum') if sex == 'F' else None,
@@ -532,22 +605,23 @@ for w in range(19, 66):
                    body_weight_g=None, egg_weight_g=None, hatching_pct=None)
         rows.append(row)
 log('feed guide new vs old differences:', feed_diff)
-alt = [dict(age_week=w, lay_pct=prod[w]['lay_guide'], hatch_eggs_hen_cum=prod[w]['inc_hen_cum_guide'],
-            lay_pct_realghid=real_ghid.get(w, {}).get('lay')) for w in sorted(prod) if prod[w]['lay_guide'] is not None]
+alt = [dict(age_week=w, lay_pct=real_ghid[w]['lay'], lay_pct_typed='605' if w == 53 and typo_53 == 605 else None,
+            lay_pct_productivitate=lay_guide[w]) for w in LAY_WEEKS]
 dump('guide-laying.json', {
     'meta': dict(GEN, guide_name='Ross 308 ouat (illustrative name, D22)',
                  week_basis='age week (D151); rows age wk 19–65. The old cycle_week field (age − 18, D26) is dropped.',
-                 app_guide='RealGhid (lay_pct, mortality_cum_pct, eggs/hatching eggs per hen) — recommended: it is the sheet the farm uses for plan vs real (RealGhid M/N, from 10.03.2026), and its eggs/hen/week column reproduces the plan figures.',
+                 app_guide='lay_pct = Productivitate col I (D184, user 19.11.2026; DATA06 — was RealGhid col B); mortality_cum_pct and eggs/hatching eggs per hen stay RealGhid (the sheet the farm uses for plan vs real, RealGhid M/N from 10.03.2026).',
                  sources={'feed_g': 'Hrana Hirbovat cols D (G, ♀) / E (C, ♂), weekly, by the row\'s Sapt (wk 20–70); wk 19 from the old workbook',
-                          'lay_pct, mortality_cum_pct, eggs_hen_cum, hatch_eggs_hen_cum, eggs_hen_week, hatch_eggs_hen_week': 'RealGhid cols B, C, D, E, F, G, age wk 23–62 (on ♀ rows)',
+                          'lay_pct': 'Productivitate col I ("Producție · ghid"), age wk 23–62 (on ♀ rows; D184). Col A = age week (D151): its hen-days (B) and eggs (D) equal the extracts\' per-SAPT sums, wk 23–58. Rows 63–67 repeat 53,7 (template continuation of wk 62), not taken',
+                          'mortality_cum_pct, eggs_hen_cum, hatch_eggs_hen_cum, eggs_hen_week, hatch_eggs_hen_week': 'RealGhid cols C, D, E, F, G, age wk 23–62 (on ♀ rows)',
                           'hatchability_pct': 'RealGhid cols AF/AG (wk 24–65); not used this round (D153)'},
-                 anomalies=['RealGhid wk 53 lay % typed "605" → 60.5 (between 61.7 and 59.3).',
-                            'Two lay guides disagree: RealGhid B vs Productivitate I differ by ≥ 1 pt in %d weeks; e.g. wk 56 56,9 vs 61,1, wk 57 55,7 vs 59,9, wk 58 54,5 vs 58,8. Productivitate\'s curve is kept in alt_productivitate for reference only.' % len(lay_disagree),
+                 anomalies=['RealGhid wk 53 lay % typed "605" → 60.5 (between 61.7 and 59.3); since D184 RealGhid\'s lay curve is only in alt_realghid (Productivitate wk 53 = 64,5, no typo).',
+                            'Two lay guides disagree: Productivitate I vs RealGhid B differ by ≥ 1 pt in %d weeks; e.g. wk 56 61,1 vs 56,9, wk 57 59,9 vs 55,7, wk 58 58,8 vs 54,5, wk 59 57,6 vs 53,3. D184: the app uses Productivitate; RealGhid\'s curve is kept in alt_realghid for reference only.' % len(lay_disagree),
                             'The previous lay_pct (Sheet9 col P, D29) was the hatchability guide shifted; replaced.',
                             'feed_g differences vs the old file: %s' % (feed_diff or 'none')],
                  missing='body weight, egg weight, laying-flock ♂ mortality: no guide (D29)'),
     'rows': rows,
-    'alt_productivitate': alt,
+    'alt_realghid': alt,
 })
 
 # guide-growth: add age_week (= week)
@@ -912,12 +986,14 @@ sale_today = ' · '.join(f"{r[3]} ♀ {n(r[4])} · ♂ {n(r[5])}" for r in sales
 lines += [f"- Mortality 18.11 (real deaths, D155): ♀ {n(f['mF'])} · ♂ {n(f['mM'])}. Vânzare 18.11: ♀ {n(f['dpF'])} · ♂ {n(f['dpM'])} ({sale_today}). Sheet books ♀ {n(f['mF'] + f['dpF'])} · ♂ {n(f['mM'] + f['dpM'])} as mortality.",
           f"- Cycle: deaths ♀ {n(tot['F']['mortality'])} ({n(pct(tot['F']['mortality'], arr_tot['F']))} %) · ♂ {n(tot['M']['mortality'])} ({n(pct(tot['M']['mortality'], arr_tot['M']))} %); sold 12–18.11 ♀ {n(tot['F']['sold'])} · ♂ {n(tot['M']['sold'])}. Cycle open (closes when sales reach 0).",
           f"- Eggs 18.11: {n(f['eggs'])} total · {n(f['inc'])} incubabile ({n(r1(f['incp']))} %) · {n(f['jos'])} jos · H5 {n(state[TODAY]['hall']['H5']['eggs'])} · H6 {n(state[TODAY]['hall']['H6']['eggs'])} · H7 –.",
-          f"- **Lay 18.11: {n(r1(f['lay']))} %** (eggs ÷ ♀ at start of day, D156) vs guide SAPT 59 {n(real_ghid[59]['lay'])} % (RealGhid). Sheet shows {n(r1(f['lay_sheet']))} % (end-of-day count).",
+          f"- **Lay 18.11: {n(r1(f['lay']))} %** (eggs ÷ ♀ at start of day, D156) vs guide SAPT 59 {n(lay_guide[59])} % (Productivitate col I, D184; was RealGhid {n(real_ghid[59]['lay'])} %). Sheet shows {n(r1(f['lay_sheet']))} % (end-of-day count).",
+          '- Cat. 1–3 18.11 (form counts, D183; Total ouă = Cat 1 + 2 + 3 + Incubabile, D18): ' + ' · '.join(f"{h} {n(hh['cat1'])} · {n(hh['cat2'])} · {n(hh['cat3'])} + inc {n(hh['inc'])} = {n(hh['eggs'])}" for h, hh in ((h, state[TODAY]['hall'][h]) for h in ('H5', 'H6'))) + f" · farm {n(f['cat1'])} · {n(f['cat2'])} · {n(f['cat3'])} (H7 empty).",
           f"- Egg weight 18.11: H5 {n(r1(state[TODAY]['hall']['H5']['ew']))} g · H6 {n(r1(state[TODAY]['hall']['H6']['ew']))} g · farm {n(r1(f['ew']))} g (sheet farm {n(r1(f['ew_sheet']))} = plain mean incl. empty H7).",
           f"- Feed 18.11: ♀ {n(f['kgF'])} kg · ♂ {n(f['kgM'])} kg; norm ♀ {gr('F')} g · ♂ {gr('M')} g vs guide SAPT 59 ♀ {feed_guide[59][0]} · ♂ {feed_guide[59][1]} g.",
           f"- Stock end 18.11: ♀ feed {n(f['stF'])} kg · ♂ feed {n(f['stM'])} kg. Last deliveries 12.11 9 000 kg ♀ (fără preț) · 13.11 25 640 kg ♀ ({n([r for r in hir_rows if r['date'] == '2026-11-13'][0]['total_lei'])} lei).",
           f"- Deliveries Hîrbovăț 17.02–13.11: {len(hir_rows)} · ♀ {n(hk['F'])} kg · ♂ {n(hk['M'])} kg · {n(hl)} lei · {len(unpriced)} unpriced.",
-          '- Last weeks (farm; lay = eggs ÷ start-of-day hen-days, D159; Productivitate end-of-day basis in brackets; SAPT 59 = 17–18.11 only):',
+          '- Cat. 1–3 % of total eggs by week (farm, D183; reports): ' + ' · '.join(f"SAPT {x['sapt']} {n(r1(x['farm']['cat1_pct']))} / {n(r1(x['farm']['cat2_pct']))} / {n(r1(x['farm']['cat3_pct']))} %" for x in weeks if x['sapt'] in (56, 57, 58, 59)) + '.',
+          '- Last weeks (farm; lay = eggs ÷ start-of-day hen-days, D159; Productivitate end-of-day basis in brackets; guide = Productivitate col I, D184; SAPT 59 = 17–18.11 only):',
           '  | SAPT | dates | eggs | inc % | lay % (prod) | guide | deaths ♀/♂ | sold ♀/♂ | alive end ♀/♂ | feed kg ♀/♂ |',
           '  |---|---|---|---|---|---|---|---|---|---|']
 for wk in [x for x in weeks if x['sapt'] in (56, 57, 58, 59)]:
