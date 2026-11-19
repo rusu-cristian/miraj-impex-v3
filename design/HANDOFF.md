@@ -1,12 +1,13 @@
 # Handoff
-Updated: 2026-11-19 23:55 · Round 3 (D182–D185) in progress
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
+Updated: 2026-11-20 · Round 3 complete (D182–D189), canvas v1795132564-e1da
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795132564-e1da; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
 Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, weeks by bird age (D151), table-first PeriodTables with daily rows, group rules + tag-colour tints, ♀/♂ icons (D151–D181). 267 boards; literal_scan + sex_scan clean.
-Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152), created by this session. Old canvas e5d5275e… is stale.
+Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795132564-e1da), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- FINAL5 clean; published 1795132564-e1da (79 files). SYS17 one-line table heads (D189), head_scan.py, boards widened (S4 Rezumat 1616, Producție 1752, S11 1592…)
 - S4C2 S14 phone tag "Incubabile · Cat." (Găini kept, scrolls 39 px, D188) + Seria 2025 % Cat. (D187); kit text updated
 - S4C "% Cat. 1/2/3" in S4 Producție + S14 desktop tables (boards widened: S4 1608, S14 2240); D186 Cat sit with Incubabile, D187 Seria 2025 too (notes/S4C.md)
 - S6C Zilnic real Cat. 1–3 (18.11 H5 13·417·27, H6 8·110·31; 17.11 on zi trecută), D164 rule gone, 8 boards (notes/S6C.md)
@@ -18,14 +19,14 @@ Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/arti
 - FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- FINAL5 (cross-check, shots, publish canvas) (publish a new canvas version)
+- Nothing queued. Small open item: S11 loading board Consum skeleton narrower than the loaded table (needs widening that board to 1592, against the D189 note "loading boards stay 1440").
 
 ## Waiting on the user
 - To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181, D188 (tag name).
 - Open point 11: feed product names at Hîrbovăț ("Breeder 2"/"Cocoși" stay illustrative, D30).
 
 ## Unpublished on the canvas
-- DATA06…RF14 changes (publish in FINAL5).
+- None (v1795132564-e1da holds everything through SYS17/FINAL5).
 
 ## Things to remember
 - 17–18.11.2026 session (S19 → FIN08): each job = fresh builder → fresh reviewer → fix round via SendMessage to the same builder (then a short re-review via SendMessage to the same reviewer when the fix touches system CSS). FIN jobs: builders diff every changed board with a normalising script (strip <style>, map old→new classes) and rebuild per design/canvas/scripts/README.md.
