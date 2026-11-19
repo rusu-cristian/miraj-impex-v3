@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-19 · Round 2 complete
+Updated: 2026-11-19 23:55 · Round 3 (D182–D185) in progress
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
@@ -7,15 +7,17 @@ Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 1
 Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- DATA06 guide lay % from Productivitate col I (SAPT 59 53,3 → 57,6 %), real Cat. 1–3 counts per hall (18.11 H5 13·417·27, H6 8·110·31); weeks 27–32 and 56 H6 move into ±3 (notes/DATA06.md)
+- SYS16 approved by the user (19.11)
 - FV03 publish: new canvas with all 271 project files + tokens.json; Main index board lists the rows
 - FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- Nothing queued.
+- KIT03 → RF14 → S6C → S4C → FINAL5 (publish a new canvas version)
 
 ## Waiting on the user
 - To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181.
-- Open points (D153): incubation batches, Cat 1–3 egg categories, feed type names at Hîrbovăț (open-questions.md 8–13).
+- Open point 11: feed product names at Hîrbovăț ("Breeder 2"/"Cocoși" stay illustrative, D30).
 
 ## Unpublished on the canvas
 - None (round-2 canvas c70b5e5e holds every file in design/canvas/project/).
