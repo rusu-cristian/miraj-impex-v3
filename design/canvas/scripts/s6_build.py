@@ -1,16 +1,21 @@
-"""Build the S6 · Zilnic phone artboard (default state) from the extracts (spec C1, screens.md S6, D53).
-Hîrbovăț, 16.11.2026, SAPT 40 (D23/D24), Dr. Ceban after the morning round, everything typed, before Salvează: the
-16.11 sample day (sample-hirbovat-2026.json, D27) per section × sex (Mortalitate, Sacrificare 0), H3.1 with
-"Fără pierderi azi" checked (no losses that day), the Ouă group of each hall (eggs_daily 16.11). Alive on a card =
-start of the day (D53); yesterday hint = 15.11 and the mean of 09–15.11 (SYS05). No 3× warning and no refusal holds on
-this day (asserted), so no card carries a Tag except H3.1 "fără pierderi"; H3's lay is 70,1% vs ghid 74,1% (abatere).
+"""Build the S6 · Zilnic phone artboard (default state) from realdata (RF04; D151–D158, today 18.11.2026).
+Hîrbovăț, 18.11.2026, SAPT 59, Dr. Ceban (illustrative) after the morning round, everything typed, before Salvează: the real
+18.11 deaths per compartment × sex (Mortalitate = real deaths only, D155; the day's sales are Vânzare, not Zilnic), Sacrificare 0
+(no illustrative cull that day), the Ouă group of each hall with birds (eggs, incubabile, jos, egg weight of 18.11). Cards = the
+compartments with birds at the start of the day (H5.1 H5.2 H6.1 H6.2); H7, empty since 14.11, keeps its hall head and one muted
+line "goală din 14.11.2026" (D158d, as S7). Alive on a card = start of the day (D53); yesterday hint = 17.11 and the mean of the
+7 days before (SYS05); illustrative culls / sexing errors (illustrative-events) are carved out of the real deaths, as in S15/S16.
+Compartments with no death that day carry "Fără pierderi azi" checked. Lay % = eggs ÷ hens at the start of the day (D156) vs the
+guide of the age week; Cat. 1–3 are not in the extracts (D153): Cat. 1 holds the real non-incubable count (eggs − incubabile),
+Cat. 2/3 stay empty (null), so Total ouă = the real total (RF04, to review).
 Composed from system classes only: FormHeader, DateField (s7_build shell), HallCard, EntryCard + SYS05 additions,
-CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). No screen-only CSS beyond S7's: "din ♀ 8 475"
+CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). No screen-only CSS beyond S7's: "din ♀ …"
 stays on one line through HallCard's span.ip-eggs__base (S6P, system since FIN15). Field names = section heading + label via aria-labelledby (S6P).
 One tall phone board (canvas.md: taller h for a long scrolling form), SaveBar sticky at the foot, as S7.
-python3 -I s6_build.py <repo_root> [heights.json, default s6_heights.json]
+python3 -I s6_build.py <repo_root> [heights.json, default s6_heights.json] [--canvas]   (--canvas: refresh the entry's h/title in place)
 Imports s7_build (it rewrites the S7 default board at its default height, byte-identical). Writes
-design/canvas/project/S6-zilnic.dc.html and /tmp/s6/S6-zilnic.html (plain wrapper for renders)."""
+design/canvas/project/S6-zilnic.dc.html and /tmp/s6/S6-zilnic.html (plain wrapper for renders; the render measures the natural
+height with the min-height released, s6_render.py)."""
 import sys, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
@@ -22,11 +27,9 @@ H = json.loads(HP.read_text())[STEM] if HP and HP.exists() else 3400
 sys.argv = ['s7_build.py', str(ROOT)]  # RF02: s7_build's own default height
 sys.path.insert(0, str(HERE))
 B = importlib.import_module('s7_build')
+import realdata as R  # RF04: every figure, date, week and record from realdata (DATA03 extracts)
 n, dd, sexv, lamp, NB, MINUS = B.n, B.dd, B.sexv, B.lamp, B.NB, B.MINUS
-TODAY, YDAY, WEEK, START, S = B.TODAY, B.YDAY, B.WEEK, B.START, B.S
-EX = ROOT / 'design/data/extracts'
-GL = json.load(open(EX / 'guide-laying.json', encoding='utf-8'))
-FS = json.load(open(EX / 'farms-sections.json', encoding='utf-8'))
+TODAY, YDAY, WEEK, START = B.TODAY, B.YDAY, B.WEEK, B.START
 
 # record icons (path data from the RecordTile / EntryCardPlus / HallCard previews) + Checkbox check
 B.IC.update({
@@ -40,15 +43,24 @@ B.IC.update({
 })
 icon = B.icon
 
-# ---------- data (16.11.2026, sample D27) ----------
-HALLS = [s for s in FS['sections'] if s['farm_id'] == 'hirbovat' and s.get('is_hall') and s['active']]
-SECS = {h['id']: [s for s in FS['sections'] if s.get('parent_id') == h['id'] and s['active']] for h in HALLS}
-D = {(d['date'], d['section'], d['sex']): d for d in S['daily']}
-EGG = {e['hall']: e for e in S['eggs_daily'] if e['date'] == TODAY.isoformat()}
-LAYG = next(r['lay_pct'] for r in GL['rows'] if r['cycle_week'] == WEEK and r['sex'] == 'F')
-assert LAYG == 74.1 and [h['code'] for h in HALLS] == ['H1', 'H3', 'H4']
+# ---------- data (realdata, 18.11.2026) ----------
+HALLS = R.HHALLS                                     # H5 H6 H7
+LAYG = R.guide_lay(WEEK)                             # guide lay % of the age week (RealGhid; 53,3 at SAPT 59)
+assert LAYG is not None and WEEK == R.sapt(TODAY)
+def secs_with_birds(h, d=TODAY):
+    """the compartments of hall h with birds at the start of day d (the cards of that day)."""
+    return [s for s in R.HALL_SECS[h] if any(R.alive_start(s, sx, d) for sx in 'FM')]
+def _ill(kind, d, sec, sx):  # illustrative culls / sexing errors of a compartment-day (carved out of its real deaths)
+    return sum(abs(c['qty']) for c in R.ILL[kind] if c['date'] == R.iso(d) and c['section'] == sec and c['sex'] == sx)
+def cull_reason(d, sec, sx):
+    return next(c['reason'] for c in R.ILL['culls'] if c['date'] == R.iso(d) and c['section'] == sec and c['sex'] == sx)
 
-def day(sec, sx, d=TODAY): return D[(d.isoformat(), sec, sx)]
+def day(sec, sx, d=TODAY):
+    """what the vet types for a compartment × sex on day d: Mortalitate (real deaths − illustrative culls / sexing errors),
+    Sacrificare, Eroare sexare, and the birds alive at the start of the day (D53)."""
+    c, x = _ill('culls', d, sec, sx), _ill('sexing_errors', d, sec, sx)
+    m = R.deaths(d, sec=sec, sx=sx) - c - x; assert m >= 0, (d, sec, sx)
+    return {'mortality': m, 'culls': c, 'sexing_errors': x, 'alive_start': R.alive_start(sec, sx, d)}
 def hint(sec, sx, d=TODAY):
     w = [day(sec, sx, d - dt.timedelta(days=k))['mortality'] for k in range(1, 8)]
     return w[0], sum(w) / 7
@@ -70,7 +82,7 @@ def field(kind, sec, sx, uid, val, ro, hint_html='', st=None, msg_id=None):
     pat = '[0-9 &#8239;]*' if val >= 1000 else '[0-9]*'
     stc = f' is-{st}' if st else ''
     inv = ' aria-invalid="true"' if st == 'error' else ''
-    # accessible name = the card's section heading + the field label ("H1.1 Mortalitate găini"); <label for> keeps the tap target
+    # accessible name = the card's section heading + the field label ("H5.1 Mortalitate găini"); <label for> keeps the tap target
     return (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="{fid}" id="l-{fid}">{rec}{lbl} '
             f'<span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
             f'<span class="ip-input ip-count ip-count--{CLS[sx]}{stc}"><input id="{fid}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{cnt(val)}" aria-labelledby="t-{uid} l-{fid}"{" readonly" if ro else ""}{inv}{desc}></span>{hint_html}</div>')
@@ -90,7 +102,7 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
         for sx in 'FM':  # D53: refusal = removals per sex above alive at the start of the day; warning = mortality > 3 × 7-day mean
             assert not refused[sx]
             assert not warned[sx], (sec, sx)
-            assert t[sx]['culls'] == 0 and t[sx]['sexing_errors'] == 0  # 16.11: no culls, no sexing errors (no Motiv Select today)
+            assert t[sx]['culls'] == 0 and t[sx]['sexing_errors'] == 0  # 18.11: no illustrative cull / sexing error (no Motiv Select today)
     nolosses = all(t[sx]['mortality'] == 0 and t[sx]['culls'] == 0 for sx in 'FM')
     hints = {}
     for sx in 'FM':
@@ -123,7 +135,7 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
                 motiv += (f'<p class="ip-err ip-entry__msg ip-m0" id="{em}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Motiv lipsă pentru <span class="ip-num">{n(t[sx]["culls"])}</span> {WORD[sx]} sacrificate pe <span class="ip-num">{dd(d)}</span>. '
                           f'Alege motivul: boală, șchiopătare sau altul.</span></p>')
         elif t[sx]['culls'] > 0:
-            rsn = next(c['reason'] for c in S['culls'] if c['date'] == d.isoformat() and c['section'] == sec and c['sex'] == sx)
+            rsn = cull_reason(d, sec, sx)
             motiv += (f'<div class="ip-field is-{CLS[sx]}"><label class="ip-label" for="r{"0" if sx == "F" else "1"}-{uid}" id="l-r{"0" if sx == "F" else "1"}-{uid}">Motiv <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
                       f'<span class="ip-input ip-input--touch"><input id="r{"0" if sx == "F" else "1"}-{uid}" type="text" value="{rsn}" aria-labelledby="t-{uid} l-r{"0" if sx == "F" else "1"}-{uid}" readonly></span></div>')
     grid = (field('m', sec, 'F', uid, t['F']['mortality'], ro, hints['F'], st['F'], mid['F']) + field('m', sec, 'M', uid, t['M']['mortality'], ro, hints['M'], st['M'], mid['M'])
@@ -144,21 +156,25 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
 
 # ---------- Ouă group (HallCard) ----------
 def eggs(h, secs, hens, d=TODAY, ro=False):
-    e = EGG[h] if d == TODAY else next(x for x in S['eggs_daily'] if x['date'] == d.isoformat() and x['hall'] == h); u = h
-    assert e['hens_start'] == hens and e['guide_lay_pct'] == LAYG
-    tot = e['cat1'] + e['cat2'] + e['cat3'] + e['hatching_eggs']; assert tot == e['total_eggs']  # D18, Jos separate
-    lay = round(tot / hens * 100, 1); assert lay == e['lay_pct']
-    diff = round(lay - LAYG, 1); ok = abs(diff) <= 3  # D19 ±3 points
+    """the hall's Ouă group of day d (realdata hall row): Jos, Cat. 1–3, Incubabile, Masa medie; Total ouă = Cat. 1 + 2 + 3 +
+    Incubabile (D18, Jos separate). Cat. 1–3 are not extracted (D153): Cat. 1 = eggs − incubabile, Cat. 2/3 empty (null)."""
+    e = R.day(d, h); u = h
+    assert hens == R.alive_hall(h, 'F', d - dt.timedelta(days=1))  # hens at the start of the day (D156)
+    cat = {'ec1': e['eggs'] - e['inc'], 'ec2': None, 'ec3': None}
+    tot = sum(v or 0 for v in cat.values()) + e['inc']; assert tot == e['eggs']  # D18, Jos separate
+    lay = R.rnd(tot / hens * 100, 1); assert lay == R.rnd(R.lay_day(d, h), 1)
+    diff = R.rnd(lay - LAYG, 1); ok = abs(diff) <= 3  # D19 ±3 points
     def f(fid, lbl, v):
-        pat = '[0-9 &#8239;]*' if v >= 1000 else '[0-9]*'
-        return f'<div class="ip-field"><label class="ip-label" for="{fid}-{u}" id="l-{fid}-{u}">{lbl}</label><span class="ip-input ip-count"><input id="{fid}-{u}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{n(v)}" aria-labelledby="t-eggs-{u} l-{fid}-{u}"{" readonly" if ro else ""}></span></div>'
-    grid = (f('jos', 'Jos', e['floor_eggs']) + f('ec1', 'Cat. 1', e['cat1']) + f('ec2', 'Cat. 2', e['cat2']) + f('ec3', 'Cat. 3', e['cat3'])
-            + f('inc', 'Incubabile', e['hatching_eggs'])
-            + f'<div class="ip-field"><label class="ip-label" for="w-{u}" id="l-w-{u}">Masa medie<span class="ip-sr"> grame</span></label><span class="ip-input ip-eggs__weight ip-input--touch"><input id="w-{u}" inputmode="decimal" placeholder="–" autocomplete="off" value="{n(e["avg_egg_weight_g"], 1)}" aria-labelledby="t-eggs-{u} l-w-{u}"{" readonly" if ro else ""}><span class="suffix">g</span></span></div>')
+        pat = '[0-9 &#8239;]*' if (v or 0) >= 1000 else '[0-9]*'
+        val = '' if v is None else n(v)  # empty is null, not 0 (spec C1)
+        return f'<div class="ip-field"><label class="ip-label" for="{fid}-{u}" id="l-{fid}-{u}">{lbl}</label><span class="ip-input ip-count"><input id="{fid}-{u}" inputmode="numeric" pattern="{pat}" placeholder="–" autocomplete="off" value="{val}" aria-labelledby="t-eggs-{u} l-{fid}-{u}"{" readonly" if ro else ""}></span></div>'
+    grid = (f('jos', 'Jos', e['jos']) + f('ec1', 'Cat. 1', cat['ec1']) + f('ec2', 'Cat. 2', cat['ec2']) + f('ec3', 'Cat. 3', cat['ec3'])
+            + f('inc', 'Incubabile', e['inc'])
+            + f'<div class="ip-field"><label class="ip-label" for="w-{u}" id="l-w-{u}">Masa medie<span class="ip-sr"> grame</span></label><span class="ip-input ip-eggs__weight ip-input--touch"><input id="w-{u}" inputmode="decimal" placeholder="–" autocomplete="off" value="{n(e["egg_g"], 1)}" aria-labelledby="t-eggs-{u} l-w-{u}"{" readonly" if ro else ""}><span class="suffix">g</span></span></div>')
     sgn = '+' if diff > 0 else (MINUS if diff < 0 else '')
     sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else ' (prag <span class="ip-num">±3</span>)'} · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {n(hens)}</span></span>'
     calc = (f'<dl class="ip-eggs__calc" aria-label="Calculat din câmpuri, doar citire"><div><dt>Total ouă</dt><dd class="ip-eggs__val">{n(tot)}</dd>'
-            f'<dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat (<span class="ip-num">{n(e["floor_eggs"])}</span>)</dd></div>'
+            f'<dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat (<span class="ip-num">{n(e["jos"])}</span>)</dd></div>'
             f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">{n(lay, 1)}%</dd><dd class="ip-eggs__sub">{sub}</dd>'
             f'<dd class="ip-eggs__lamp">{lamp("ok", "în normă") if ok else lamp("warn", "abatere")}</dd></div></dl>')
     html = f'''<section class="ip-panel ip-eggs" aria-labelledby="t-eggs-{u}"><div class="ip-eggs__head"><span class="ip-tile ip-rec ip-rec--eggs" aria-hidden="true">{icon("eggs")}</span><h3 class="ip-entry__code" id="t-eggs-{u}">Ouă · {h}</h3><span class="ip-note">pe hală, pentru {" + ".join(secs)}</span></div>
@@ -166,16 +182,32 @@ def eggs(h, secs, hens, d=TODAY, ro=False):
 {calc}</section>'''
     return html, tot, lay, ok
 
-parts, ALL, EGGS = [], [], []
-for hl in HALLS:
-    h = hl['code']; secs = [s['code'] for s in SECS[hl['id']]]
-    cards = [entry(s) for s in secs]; ALL += [(s, c) for s, c in zip(secs, cards)]
-    af = sum(c[1]['F']['alive_start'] for c in cards); am = sum(c[1]['M']['alive_start'] for c in cards)
-    eh, tot, lay, ok = eggs(h, secs, af); EGGS.append((h, tot, lay, ok))
-    parts.append(f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(secs)}</span></span><span class="ip-pair"><span class="ip-sr">în viață </span>{sexv("F", n(af))}<span class="sep">·</span>{sexv("M", n(am))}</span></header>
+def hall_head(h, secs, f, m):
+    return (f'<header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(secs)}</span></span>'
+            f'<span class="ip-pair"><span class="ip-sr">în viață </span>{sexv("F", n(f))}<span class="sep">·</span>{sexv("M", n(m))}</span></header>')
+def halls(d=TODAY, card=None, ro=False):
+    """HallCards of day d: per hall with birds its compartment cards (card(sec) → entry(), default entry(sec, d)) and its Ouă
+    group; a hall without birds at the start of the day keeps its head and one muted line "goală din <date>" (D158d, as S7).
+    Returns (html, [(section, entry())], [(hall, total eggs, lay %, ok)])."""
+    parts, ALL, EG = [], [], []
+    for h in HALLS:
+        secs = secs_with_birds(h, d)
+        if not secs:
+            since = R.empty_since(h); assert since and since < d
+            parts.append(f'''<section class="ip-hall" aria-labelledby="h-{h}">{hall_head(h, R.HALL_SECS[h], 0, 0)}
+<p class="ip-note ip-m0">{lamp("off", "goală")} din <span class="ip-num">{dd(since)}</span></p></section>''')
+            continue
+        cards = [(card or (lambda s: entry(s, d)))(s) for s in secs]; ALL += list(zip(secs, cards))
+        af = sum(c[1]['F']['alive_start'] for c in cards); am = sum(c[1]['M']['alive_start'] for c in cards)
+        eh, tot, lay, ok = eggs(h, secs, af, d, ro); EG.append((h, tot, lay, ok))
+        parts.append(f'''<section class="ip-hall" aria-labelledby="h-{h}">{hall_head(h, secs, af, am)}
 <div class="ip-hall__sections">{"".join(c[0] for c in cards)}</div>
 {eh}</section>''')
-HALLS_HTML = '<div class="ip-halls">' + ''.join(parts) + '</div>'
+    return '<div class="ip-halls">' + ''.join(parts) + '</div>', ALL, EG
+
+HALLS_HTML, ALL, EGGS = halls()
+assert [s for s, _ in ALL] == [s for s in R.HSECS if R.has_birds(s, YDAY)]  # 18.11: H5.1 H5.2 H6.1 H6.2 (H7 empty since 14.11)
+assert sum(c[1][sx]['alive_start'] for _, c in ALL for sx in 'F') == R.alive_farm('F', YDAY)
 
 # ---------- header + date (S7 shell, Zilnic title and the mortality RecordTile) ----------
 HEAD = B.HEAD.replace(f'<span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span>',
@@ -184,21 +216,24 @@ assert '>Zilnic<' in HEAD and 'ip-rec--mortality' in HEAD and f'HÎRBOVĂȚ · {
 DATE = B.DATE
 
 # ---------- SaveBar (s7_build.savebar: two lines; segments never break inside, §20) ----------
-# Line 1: removals of the day (spec C1 toast form "6 secțiuni · ♀ −23 · ♂ −5"); line 2: eggs of the day + the one status.
+# Line 1: removals of the day (spec C1 toast form "6 secțiuni · ♀ −23 · ♂ −5"; 0 stays "0"); line 2: eggs of the day + the one status.
 remF = sum(c[1]['F']['mortality'] + c[1]['F']['culls'] + c[1]['F']['sexing_errors'] for _, c in ALL)
 remM = sum(c[1]['M']['mortality'] + c[1]['M']['culls'] + c[1]['M']['sexing_errors'] for _, c in ALL)
-EV = next(e for e in S['event_log'] if e['at'].startswith(TODAY.isoformat()) and e['record'] == 'mortality')
-EVE = next(e for e in S['event_log'] if e['at'].startswith(TODAY.isoformat()) and e['record'] == 'eggs')
+assert (remF, remM) == (R.deaths(TODAY, sx='F'), R.deaths(TODAY, sx='M'))  # Mortalitate = the real deaths of the day (D155)
+def ev(d, rec):  # the illustrative event-log entry of a day (author, time) on the real figures
+    return next(e for e in R.EVENTS if e['at'].startswith(R.iso(d)) and e['record'] == rec and e['action'] == 'create')
+EV, EVE = ev(TODAY, 'mortality'), ev(TODAY, 'eggs')
 egg_tot = sum(x[1] for x in EGGS)
-assert EV['summary'] == f'Zilnic salvat · {len(ALL)} secțiuni · ♀ {MINUS}{remF} · ♂ {MINUS}{remM}'  # the 08:34 save of these values
-assert f'{n(egg_tot)} total' in EVE['summary'] and n(egg_tot) == f'18{NB}688'
+assert EV['summary'] == f'Zilnic salvat · {len(ALL)} secțiuni · mortalitate ♀ {remF} · ♂ {remM}'  # the 08:15 save of these values
+assert EVE['summary'].startswith(f'Ouă · {egg_tot} total') and egg_tot == R.eggs()
+def signed(v): return f'{MINUS}{v}' if v else '0'
 def rec14(k): return f'<span class="ip-rec ip-rec--{k}">{icon(k, 14)}</span>'
 line1 = (f'{rec14("mortality")}<span><span class="ip-num">{len(ALL)}</span> secțiuni ·</span>'
-         f'<span>{sexv("F", f"{MINUS}{remF}")} · {sexv("M", f"{MINUS}{remM}")}</span>')
+         f'<span>{sexv("F", signed(remF))} · {sexv("M", signed(remM))}</span>')
 bad = [x for x in EGGS if not x[3]]
 line2 = f'{rec14("eggs")}<span><span class="ip-num">{n(egg_tot)}</span> ouă ·</span>' + (
     lamp('warn', 'abatere') + '<span>' + ', '.join(h for h, _, _, _ in bad) + '</span>' if bad else lamp('ok', 'în normă'))
-# line 2 names only the hall ("abatere · H3"): with its % (70,1%) it wraps to a third line at 390; the Ouă group of H3
+# line 2 names only the halls ("abatere · H5, H6"): with their % it wraps to a third line at 390; each Ouă group
 # carries the figure, the guide and the ±3 threshold.
 SAVE = B.savebar(line1, line2, '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>')
 
@@ -211,7 +246,7 @@ BODY = f'''<div class="ip-screen">
 {SAVE}
 </div>'''
 
-CSS = B.CSS  # FIN15: "din ♀ 8 475" on one line is HallCard's span.ip-eggs__base (additions.css)
+CSS = B.CSS  # FIN15: "din ♀ …" on one line is HallCard's span.ip-eggs__base (additions.css)
 root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{BODY}</div>'
 dc = f'''<!doctype html>
 <html lang="ro">
@@ -244,4 +279,6 @@ wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{TI
 {B.FONTS}<style>{CSS}</style></head><body>{root}</body></html>'''
 pathlib.Path('/tmp/s6').mkdir(exist_ok=True)
 pathlib.Path(f'/tmp/s6/{STEM}.html').write_text(wrap, encoding='utf-8')
+if CANVAS and __name__ == '__main__':  # RF04: refresh the hand-placed entry's h/title in place (x, y kept; canvas_rows.place)
+    c = CR.load(ROOT); CR.place(c, STEM, [(STEM, 390, H, TITLE)]); CR.save(ROOT, c)
 print('ok', STEM, H, len(dc), 'removals', remF, remM, 'eggs', egg_tot, [(h, l, ok) for h, _, l, ok in EGGS])
