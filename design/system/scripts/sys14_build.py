@@ -438,5 +438,6 @@ html += demo('Telefon 390 · o grupă de coloane (eticheta Mortalitate; În via�
 html += (f'<p class="ip-note" style="margin:0">Cifre reale Hîrbovăț, Seria 2026, până la {R.dd(R.TODAY)} (extrase DATA03): '
          f'SAPT 59 = {R.drange(*wk_label(59)[:2])} (2 din 7 zile). Mortalitate = morți reali, golirea din 12.11 e Vânzare (D155). '
          f'Greutatea H5.1 e ilustrativă. Rata pe perioadă a ghidului = media pe zile-găină.</p>\n</div>\n')
-OUT.parent.mkdir(exist_ok=True)
-OUT.write_text(html, encoding='utf-8'); print(len(html))
+if __name__ == '__main__':  # S4N: s4t_build imports the row/column builders above; only a direct run writes the preview
+    OUT.parent.mkdir(exist_ok=True)
+    OUT.write_text(html, encoding='utf-8'); print(len(html))

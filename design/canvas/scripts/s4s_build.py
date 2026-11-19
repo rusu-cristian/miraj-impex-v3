@@ -409,12 +409,13 @@ NOG = 'ghid: – fără ghid'
 def stats(ng=False):
     g_feed = NOG if ng else f'ghid {pair(gf_g, gm_g)} {lamp("ok", "în normă")}'
     g_lay = NOG if ng else f'ghid {pct(lay_guide)} · {sgn(rnd(lay_today-lay_guide,1))} pct {lay_lamp(lay_today - lay_guide)}'
+    # D161 (S4N): the guide's cumulative mortality counts from lay start, ours from arrival; the line says so
     g_mort = NOG if ng else f'ghid {hen(pct(MORT_G, 2))} {lamp("ok", "în normă") if cum["mortality_pct"]["F"] <= MORT_G else lamp("warn", "abatere")}'
     g_none = NOG if ng else 'ghid: – fără date în ghid'
     lo, hi = stocks[ST_LOW], stocks[ST_HIGH]
     return guides(f'''<div class="ip-stats s4-stats">
 <div class="ip-stat">{cap(None, 'În viață')}<span class="ip-stat__val">{pair(n(tot['F']), n(tot['M']))}</span><span class="ip-stat__guide">la sosire {pair(n(cum['start_counts']['F']), n(cum['start_counts']['M']))}</span><span class="ip-stat__guide">vânzări {pair(n(-cum['sold']['F']), n(-cum['sold']['M']))}</span></div>
-<div class="ip-stat">{cap('mortality', 'Mortalitate cumulată')}<span class="ip-stat__val">{pair(n(cum['mortality_pct']['F'],2), n(cum['mortality_pct']['M'],2))}<small>%</small></span><span class="ip-stat__guide">{g_mort}</span><span class="ip-stat__guide">din {ddate(C26_START)} {pair(n(-cum['dead']['F']), n(-cum['dead']['M']))}</span></div>
+<div class="ip-stat">{cap('mortality', 'Mortalitate cumulată')}<span class="ip-stat__val">{pair(n(cum['mortality_pct']['F'],2), n(cum['mortality_pct']['M'],2))}<small>%</small></span><span class="ip-stat__guide">{g_mort}</span>{"" if ng else '<span class="ip-stat__guide">(ghid din intrarea în ouat)</span>'}<span class="ip-stat__guide">din {ddate(C26_START)} {pair(n(-cum['dead']['F']), n(-cum['dead']['M']))}</span></div>
 <div class="ip-stat">{cap('weighing', f'Greutate {F} / {M}')}<span class="ip-stat__val">{pair(n(w_f), n(w_m))}<small>g</small></span><span class="ip-stat__guide">{g_none}</span><span class="ip-stat__guide ip-num">cântărit {ddate(WDAY)[:5]} · {", ".join(WSECS)}</span></div>
 <div class="ip-stat">{cap('feed', 'Hrană azi pe pasăre')}<span class="ip-stat__val">{pair(g_f, g_m)}<small>g</small></span><span class="ip-stat__guide">{g_feed}</span><span class="ip-stat__guide"><span>{len(FULL)} secțiuni · {EMPTY_NOTE}</span></span></div>
 <div class="ip-stat">{cap('feed', 'Stoc hrană · zile rămase')}<span class="ip-stat__val">{n(lo['days_left'],1)}<small>zile · {FT_NAME[ST_LOW]}</small></span><span class="ip-stat__guide"><span class="ip-num">până pe {ddate(lo['run_out_date'])}</span>{st_lamp(ST_LOW)}</span><span class="ip-stat__guide"><span>{FT_NAME[ST_HIGH]} · <span class="ip-num">{n(hi['days_left'],1)} zile · {n(hi['stock_kg'])} kg</span></span></span></div>
@@ -538,10 +539,10 @@ EVENTS = R.EVENTS[:9]
 assert [e['at'] for e in EVENTS][::4] == ['2026-11-18T13:16', '2026-11-18T08:15', '2026-11-17T08:07']
 events = [event_row(e) for e in EVENTS]
 
-def panel_default(ng=False, banner=''):
+def panel_default(ng=False, banner='', table=''):  # S4N (D154): table = the Rezumat PeriodTable, first in the tab (s4t_build)
     al = alerts(ng)
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
-{banner}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
+{banner}{table}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
 <section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">{len(FULL)} secțiuni cu păsări · {len(HALLS)} hale · {ddate(TODAY)}</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
 <div class="s4-split">
 <section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> {"alertă" if len(al) == 1 else "alerte"} · <span class="ip-num">{ddate(TODAY)}</span></span></div><ul class="ip-list" aria-labelledby="h-chk">{"".join(al)}</ul></section>
@@ -807,9 +808,12 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 '''
     out = ROOT / f'design/canvas/project/{stem}.dc.html'
     out.write_text(dc, encoding='utf-8')
+    # RF03 fix: the render wrapper is not pinned to the stored height H (a render would only read H back); it keeps the
+    # 1024 board-viewport floor (canvas.md), so sNN_render measures the content's natural height
+    wroot = root.replace(f'min-height:{H}px', f'min-height:{min(H, 1024)}px', 1)
     wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{title}</title>
 <link rel="stylesheet" href="file://{SYS}/tokens.css"><link rel="stylesheet" href="file://{SYS}/components/bundle.css"><link rel="stylesheet" href="file://{SYS}/components/additions.css">
-{FONTS}<style>{css}</style></head><body>{root}</body></html>'''
+{FONTS}<style>{css}</style></head><body>{wroot}</body></html>'''
     pathlib.Path('/tmp/s4s').mkdir(exist_ok=True)
     pathlib.Path(f'/tmp/s4s/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, H, len(dc))
