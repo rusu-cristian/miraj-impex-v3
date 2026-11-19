@@ -34,6 +34,7 @@ def num(t):
 # ------------------------------------------------------------------ records (RF09: realdata + the illustrative events, today 18.11.2026)
 import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts'))
+import sexsign as SXS  # SX01: every ♀/♂ of the previews = the §72 hook
 import realdata as D                                   # the design's one data module (pure data, no HTML)
 n, dd, T = D.n, D.dd, D.TODAY
 FARM = D.FARMS['hirbovat']['name']
@@ -181,7 +182,7 @@ def build_actions():
         f'<p class="ip-note" style="margin:0">{NOTE_ACT}</p>\n'
         '</div>\n')
     (ROOT / 'EventRowActions').mkdir(exist_ok=True)
-    (ROOT / 'EventRowActions' / 'preview.html').write_text(html, encoding='utf-8')
+    (ROOT / 'EventRowActions' / 'preview.html').write_text(SXS.sexify(html), encoding='utf-8')
 
 # ------------------------------------------------------------------ ChangeRow
 def val(k, old, new, deleted=False):
@@ -269,7 +270,7 @@ def build_change():
         f'<p class="ip-note" style="margin:0">{NOTE_CHG}</p>\n'
         '</div>\n')
     (ROOT / 'ChangeRow').mkdir(exist_ok=True)
-    (ROOT / 'ChangeRow' / 'preview.html').write_text(html, encoding='utf-8')
+    (ROOT / 'ChangeRow' / 'preview.html').write_text(SXS.sexify(html), encoding='utf-8')
 
 SX = {'F': '♀', 'M': '♂'}
 NOTE_ACT = (f'{FARM}, azi {num(dd(T))} (realdata, D152). Introdus azi = salvările veterinarului: Zilnic {num(hm(EM))} ({num(len(secs(T)))} secțiuni, ♀ {num(DF)} · ♂ {num(DM)}), '

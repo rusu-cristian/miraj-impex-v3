@@ -23,6 +23,7 @@ S7 = B.B
 R = B.R
 import skel as SKL
 import sstate_css as SC  # viewport / Toast-undo / Banner-action / skeleton CSS, shared with s7s_build
+import sexsign as SXS  # SX01: ♀/♂ outside a figure span = the §72 hook (sexsign.py)
 n, dd, sexv, lamp, icon, NB, MINUS = B.n, B.dd, B.sexv, B.lamp, B.icon, B.NB, B.MINUS
 TODAY, YDAY, START = B.TODAY, B.YDAY, B.START
 S7.IC.update({'info': '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'})  # Banner info preview
@@ -157,7 +158,7 @@ boards.append(('ferma-fara-pasari', 'fermă fără păsări', screen([date(TODAY
                hd=head(f'TELIȚA · {dd(TODAY)}'))))
 
 # 8 · salvat — right after Salvează at the foot of the form: Toast (spec C1 copy, object first: D143) + Anulează, read-only, Editează (D60)
-toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Zilnic salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀&#160;<span class="ip-num">{B.signed(r2[0])}</span> · ♂&#160;<span class="ip-num">{B.signed(r2[1])}</span></span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
+toast = SXS.sexify(f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Zilnic salvat · <span class="ip-num">{len(A2)}</span> secțiuni · ♀&#160;<span class="ip-num">{B.signed(r2[0])}</span> · ♂&#160;<span class="ip-num">{B.signed(r2[1])}</span></span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>''')  # SX01: §72 signs
 boards.append(('salvat', 'salvat', screen([B.DATE, h2], SAVED_BAR, 'salvat', view_cls='ip-screen__view--end', overlay=toast)))
 
 # 9 · motiv lipsă (S6M, D79) — D39 state example (no illustrative cull on 18.11): H5.1 ♀ Sacrificare 2 typed, Motiv left on

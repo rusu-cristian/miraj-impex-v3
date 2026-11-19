@@ -30,6 +30,7 @@ sys.argv = ['s7s_build.py', str(ROOT)]
 sys.path.insert(0, str(HERE))
 P = importlib.import_module('s7s_build'); B = P.B
 import sstate_css as SC
+import sexsign as SXS  # SX01: ♀/♂ outside a figure span = the §72 hook (sexsign.py)
 import realdata as R  # RF05: every figure, date, week and code from realdata (DATA03 extracts)
 # desktop shell: the S4 farm page (s4s_build writes nothing on import)
 sys.argv = ['s4s_build.py', str(ROOT)]
@@ -192,7 +193,7 @@ def rows(sc, mode='set', u='', touch=True):
     if mode == 'empty':
         filled, tot, sub = 0, ('–', '–'), f'în viață {pair(*sc.before)}'
     elif mode == 'refuz':
-        filled, tot, sub = len(sc.sold), RTOT, f'fără {RS} ♂ refuzat'
+        filled, tot, sub = len(sc.sold), RTOT, f'fără {RS} {SXS.sign("M")} refuzat'
     else:
         filled, tot, sub = len(sc.sold), sc.tot, f'în viață {"înainte " if mode == "ro" else ""}{pair(*sc.before)}'
     lg = f'<span class="ip-pair ip-pair--lg">{B.sexv("F", n(tot[0]) if isinstance(tot[0], int) else tot[0])}<span class="sep">·</span>{B.sexv("M", n(tot[1]) if isinstance(tot[1], int) else tot[1])}</span>'
@@ -292,7 +293,7 @@ boards.append(('confirmare', 'confirmare · golește ferma · exemplu de stare (
 ref_save = B.savebar(f'{lamp("fault", "refuzat")}<span>{RS}</span>', f'<span>cel mult {roo(RM)}</span>', SELL_OFF)
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen(form(REAL, 'refuz', fx=effect(REAL, 'refuz')), ref_save, view=' ip-screen__view--end'), 'vp'))
 # 4 · salvat — the real sale saved: read-only form scrolled to its end, Toast with Anulează (undo the same day), Vânzare nouă
-toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Vânzare înregistrată · '
+toast = SXS.sexify(f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Vânzare înregistrată · '
          f'<span class="ip-nowrap">♀ {num(n(REAL.tot[0]))}</span> · <span class="ip-nowrap">♂ {num(n(REAL.tot[1]))}</span> · Hîrbovăț · ciclul continuă</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [farm(REAL, 'ro'), DATE_RO, rows(REAL, 'ro'), buyer(True), note(True), effect(REAL)]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(REAL.tot, lead='vândut'), f'<span>poți anula până la {num("23:59")}</span>',

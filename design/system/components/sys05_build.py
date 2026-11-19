@@ -1,6 +1,7 @@
 """SYS05: build EntryCardPlus and HallCard preview.html fragments.
 Figures: design/data/extracts/sample-hirbovat-2026.json (16.11.2026 and 09.11–15.11.2026, sample D27)."""
 import pathlib
+import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts')); import sexsign as SXS  # SX01: every ♀/♂ of the preview = the §72 hook
 ROOT = pathlib.Path(__file__).resolve().parent  # design/system/components from this script's place, so a copy writes into itself
 N = ' '  # thousands
 M = '−'  # true minus
@@ -144,14 +145,14 @@ def eggs(hall, sfx, mode='filled', md=False):
         total = ('<div><dt>Total ouă</dt><dd class="ip-eggs__val">–</dd><dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat · '
                  'completează cele 4 câmpuri</dd></div>')
         lay = (f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">–</dd><dd class="ip-eggs__sub">ghid <span class="ip-num">{GUIDE}%</span> · '
-               f'după ce introduci ouăle · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {f_alive}</span></span></dd></div>')
+               f'după ce introduci ouăle · <span class="ip-eggs__base">din {SXS.figure("F", f_alive, num=True)}</span></dd></div>')
     else:
         total = (f'<div><dt>Total ouă</dt><dd class="ip-eggs__val">{g(e["total"])}</dd><dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · '
                  f'Jos separat (<span class="ip-num">{e["jos"]}</span>)</dd></div>')
         lamp = '<span class="ip-lamp ip-lamp--ok">în normă</span>' if e['ok'] else '<span class="ip-lamp ip-lamp--warn">abatere</span>'
         thr = '' if e['ok'] else ' (prag ±3)'
         lay = (f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">{e["lay"]}%</dd><dd class="ip-eggs__sub">ghid <span class="ip-num">{GUIDE}%</span> · '
-               f'<span class="ip-num">{e["d"][0]}{e["d"][1]}</span> puncte{thr} · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {f_alive}</span></span></dd>'
+               f'<span class="ip-num">{e["d"][0]}{e["d"][1]}</span> puncte{thr} · <span class="ip-eggs__base">din {SXS.figure("F", f_alive, num=True)}</span></dd>'
                f'<dd class="ip-eggs__lamp">{lamp}</dd></div>')
     btn = 'ip-btn' if md else 'ip-btn ip-btn--touch'
     foot = ''
@@ -211,7 +212,7 @@ ec.append('<p class="ip-note" style="margin:0;max-width:1234px">Cifre din eșant
 ec.append(DEMO)
 ec.append('</div>')
 (ROOT / 'EntryCardPlus').mkdir(exist_ok=True)
-(ROOT / 'EntryCardPlus' / 'preview.html').write_text('\n'.join(ec) + '\n', encoding='utf-8')
+(ROOT / 'EntryCardPlus' / 'preview.html').write_text(SXS.sexify('\n'.join(ec) + '\n'), encoding='utf-8')
 
 # ---------------- HallCard ----------------
 hc = ['<!-- @dsCard group="Entry" height=3900 subtitle="SYS05" -->', '<div class="ip-root ip-stack" style="gap:var(--space-8)">']
@@ -228,5 +229,5 @@ hc.append('<p class="ip-note" style="margin:0;max-width:1136px">Cifre din eșant
 hc.append(DEMO.replace('1234px', '1136px'))
 hc.append('</div>')
 (ROOT / 'HallCard').mkdir(exist_ok=True)
-(ROOT / 'HallCard' / 'preview.html').write_text('\n'.join(hc) + '\n', encoding='utf-8')
+(ROOT / 'HallCard' / 'preview.html').write_text(SXS.sexify('\n'.join(hc) + '\n'), encoding='utf-8')
 print('ok')

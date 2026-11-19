@@ -29,6 +29,7 @@ sys.argv = ['s7s_build.py', str(ROOT)]
 sys.path.insert(0, str(HERE))
 P = importlib.import_module('s7s_build'); B = P.B
 import sstate_css as SC  # SidePanel-beside-the-page, record icon, EffectPreview CSS (s13- names, shared with s13_build)
+import sexsign as SXS  # SX01: ♀/♂ outside a figure span = the §72 hook (sexsign.py)
 import realdata as R  # RF05: every figure, date, week and code from realdata (DATA03 extracts)
 # desktop shell: the S4 farm page (s4s_build writes nothing on import)
 sys.argv = ['s4s_build.py', str(ROOT)]
@@ -225,7 +226,7 @@ boards = []
 # 1 · telefon — the real 28.02.2026 move typed with Toate, before Mută
 boards.append(('', 'telefon · reluare 28.02.2026', screen(FORM(), B.savebar(sum1(), SUM2, MUTA))))
 # 2 · salvat — read-only form, Toast with Anulează (undo the same day), Transfer nou
-toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Transfer salvat · '
+toast = SXS.sexify(f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Transfer salvat · '
          f'♀ <span class="ip-num">{n(QTY)}</span> · Telița {SRC_SEC} → Hîrbovăț {DST_SEC} · ciclul Telița închis</span>'
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [DATE_RO, pick('ro'), dest('ro'), effect()]
@@ -237,7 +238,7 @@ boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare 
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft (D60). The Banner sits
 #   right above the EffectPreview and the form is scrolled to its end, so the Banner and the move it names both show above
 #   the SaveBar (S9P; at 390 the Banner at the top would push the preview under the SaveBar)
-ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Transferul nu s-a salvat: '
+ban = SXS.sexify(f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Transferul nu s-a salvat: '
        f'♀ <span class="ip-num">{n(QTY)}</span>, Telița {SRC_SEC} → Hîrbovăț {DST_SEC}, <span class="ip-num">{dd(DAY)}</span>.</p>'
        f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), ban, effect()], B.savebar(sum1(), SUM2, MUTA), view=' ip-screen__view--end')))

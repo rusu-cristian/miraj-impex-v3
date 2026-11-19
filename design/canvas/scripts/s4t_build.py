@@ -26,6 +26,8 @@ def __getattr__(name):  # PEP 562: `S` = s4s's lazy legacy alias (the superseded
 n, sgn, pct, rnd = R.n, R.sgn, R.pct, R.rnd
 ddate, icon, tile, ico, hen, roo, pair, lamp, sg = s4.ddate, s4.icon, s4.tile, s4.ico, s4.hen, s4.roo, s4.pair, s4.lamp, s4.sg
 F, M, NB = s4.F, s4.M, s4.NB
+import sexsign as SXS   # SX01: ♀/♂ outside a figure span = the §72 hook (glyph aria-hidden + word), sexsign.py
+sexify, sign = SXS.sexify, SXS.sign
 GL, TR = s4.GL, s4.TR
 TODAY, WK, SECTIONS, HALLS = s4.TODAY, s4.WK, R.HSECS, R.HHALLS
 def ddm(d): return R.ddm(d)
@@ -220,14 +222,14 @@ def readout(cid, cap, rl, val, sub, chart, read, cols, rows, caption, leg):
           + ''.join('<tr><th scope="row">' + r[0] + '</th>' + ''.join(f'<td>{c}</td>' for c in r[1:]) + '</tr>' for r in rows) + '</tbody></table>')
     ch = (f'{chart}\n<span class="ip-sr" id="{cid}-help">Săgețile stânga și dreapta mută săptămâna; Home și End: prima și ultima săptămână.</span>\n'
           f'<div class="ip-chart__read" id="{cid}-read" role="status" aria-live="polite">{read}</div>\n{tb}\n{leg}') if chart else read
-    return f'''<div class="ip-readout s4-readout">
+    return sexify(f'''<div class="ip-readout s4-readout">
 <div class="ip-readout__cap"><span>{cap}</span>{RLAMP[rl]}</div>
 <div class="ip-readout__val">{val}</div>
 <div class="ip-readout__sub">{sub}</div>
 {ch}
-</div>'''
-HB, RB = '<b>♀</b>', '<b>♂</b>'
-def rpair(f, m, unit=''):  # ♀ · ♂ figures on the dark Readout: signs in readout-ink (rec-hen/rooster are <3:1 there, D58)
+</div>''')   # SX01: the value, sub-line, read line and legend signs = §72 icons (the hidden data table keeps its text)
+HB, RB = '♀', '♂'   # SX01: legend keys; readout() draws them as §72 icons in readout-ink (was <b>♀</b>, a ~5 px fallback glyph)
+def rpair(f, m, unit=''):  # ♀ · ♂ figures on the dark Readout: signs in readout-ink (rec-hen/rooster are <3:1 there, D58); readout() hooks them (SX01)
     return f'♀ {f}<small>{unit}</small> · ♂ {m}<small>{unit}</small>'
 
 # ---------------------------------------------------------------- Stat + section helpers (also used by s14)

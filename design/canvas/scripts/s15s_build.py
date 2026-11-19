@@ -30,6 +30,7 @@ sys.path.insert(0, str(HERE))
 sys.argv = ['s15_build.py', str(ROOT), str(HP)]
 Q = importlib.import_module('s15_build')       # writes the S15 boards (and S2/S7, unchanged)
 import sstate_css as SC
+import sexsign as SXS  # SX01: ♀/♂ outside a figure span = the §72 hook (sexsign.py)
 Z, A, s4, B = Q.Z, Q.A, Q.s4, Q.B
 n, num, NB, D, R = A.n, A.num, A.NB, A.D, Q.R
 hen, roo, pair = A.hen, A.roo, A.pair
@@ -108,7 +109,7 @@ boards.append(('actiuni-deschis', 'vet · Acțiuni deschis', 'p', Z.pscreen([
 
 # 4 · după ștergere — the deleted row is gone, the group head counts without it, Toast with Anulează (graphite, role=status)
 fresh()
-toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{A.icon("check", 16)}'
+toast = SXS.sexify(f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{A.icon("check", 16)}'
          f'<p class="ip-toast__txt">Mortalitate ștearsă · {DEL} · în viață ♀ {num(n(dF["alive_start"]))}</p>'
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 boards.append(('dupa-stergere', 'vet · după ștergere', 'p', Z.pscreen([

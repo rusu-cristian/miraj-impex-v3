@@ -35,6 +35,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 HP = HERE / 's16_heights.json'
 sys.path.insert(0, str(HERE))
 import skel as SKL
+import sexsign as SXS  # SX01: ♀/♂ outside a figure span = the §72 hook (sexsign.py)
 sys.argv = ['s16_build.py', str(ROOT), str(HP)]
 Q = importlib.import_module('s16_build')        # writes the 5 S16 boards (unchanged) and the S16 canvas entries
 T, s4, SC = Q.T, Q.s4, Q.SC
@@ -91,7 +92,7 @@ def sheet(head, body, foot, inert=False, busy=False, toast=''):  # toast: inside
 FOOT = Q.DELK + Q.SAVE
 def toast(text, desk=False):
     w = 'ip-toastwrap ip-toastwrap--page' if desk else 'ip-toastwrap'  # §48 (FIN02): phone above the sheet foot, desktop bottom right
-    return (f'<div class="{w}"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">{text}</span>'
+    return (f'<div class="{w}"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">{SXS.sexify(text)}</span>'
             f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 
 boards = []   # (slug, state title, kind 'p' (tall sheet) | 'v' (844 viewport) | 'd' (natural) | 'dv' (1024 viewport), root markup)

@@ -75,6 +75,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   `sys12_build.py` (UserRow/OneTimePassword previews) and the S22 row.
 - sstate_css.py ← s2s, s6s, s7s, s8, s9, s10, s13, s14s, s15s, s16, s18 (s15 and later get it through these too).
 - canvas_rows.py: args/row_y/place/save for every build above.
+- sexsign.py (SX01, additions.css §72): the ♀/♂ sign markup (`sign`, `figure`, `sexify`) ← s4t (Readouts, legends: S4, S3, S14, S16, S17 through it), s3, s6, s6s, s8, s9, s10, s11, s15s, s16s and the system previews sys04/05/08/09/11/14 (at write). A change re-runs those rows and previews.
 - skel.py (FIN11G, additions.css §54): skeleton markup and table column shares (readout, track, field, line, widths) ← s2s, s6s, s7s, s8s, s11 (S12/S13/S14 through it), s14, s16s, s18 (+ s18s), s19 (+ s19s, s21, s22), s20 (+ s20s), s21, s22. A change re-runs those rows.
 
 ## Real data and checks (RF01)
@@ -99,5 +100,6 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   SAPT 40/41, 10.02.2026, the sample's figures, sample file, cycle_week, age − 18, "47 săpt."); exit 1 on a hit in a PORTED row
   (or in any row/file named). Allowed: Telița codes, Seria 2025 weeks, script lines marked `literal-ok`, its ALLOW list. Each
   RF job adds its row to PORTED.
+- `sex_scan.py $R [FILE …]` (SX01): lists every ♀/♂ on the boards and system previews not drawn as the §72 icon (outside the `ip-sex` hook, or a standalone hook holding other text); exit 1 if any.
 - `canvas_rows.py relayout $R [--canvas]`: see Rules. `s4s_render.py [--heights] [--w 1280] [stem …]`: re-measures the S4
   Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2944).

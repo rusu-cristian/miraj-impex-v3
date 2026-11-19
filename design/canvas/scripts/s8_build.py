@@ -30,6 +30,7 @@ sys.argv = ['s7s_build.py', str(ROOT)]
 sys.path.insert(0, str(HERE))
 P = importlib.import_module('s7s_build'); B = P.B
 import sstate_css as SC
+import sexsign as SXS  # SX01: ♀/♂ outside a figure span = the §72 hook (sexsign.py)
 n, dd, icon, sexv, lamp, NB, MINUS = B.n, B.dd, B.icon, B.sexv, B.lamp, B.NB, B.MINUS
 B.IC.update({  # weighing = RecordTile preview (scale); alert/check already added by s7s_build
  'weighing': '<path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/>',
@@ -220,7 +221,7 @@ err = (f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}<
 boards.append(('valoare-refuzata', f'valoare refuzată · {HBT} · exemplu de stare (D39)', screen(form(C, C['w'], dv(C['cv']), str(UNI_BAD), C['size'], uni_err=err),
                B.savebar(rec14() + what(C, C['w']), lamp('fault', 'refuzat') + f'<span>uniformitate <span class="ip-num">{UNI_BAD}%</span></span>', SAVE_OFF))))
 # 5 · salvat: read-only, Toast with Anulează (same day, D07), next step "Cântărire nouă" (as S13 "Livrare nouă", D73)
-toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Cântărire salvată · {C["sec"]} '
+toast = SXS.sexify(f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Cântărire salvată · {C["sec"]} '
          f'{SIGN[C["sx"]]} <span class="ip-num">{n(C["w"])}</span> g</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 boards.append(('salvat', f'salvat · {HBT}', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size'], ro=True),
                B.savebar(rec14() + f'<span>salvat ·</span>{what(C, C["w"])}', '<span>poți modifica până la <span class="ip-num">23:59</span></span>',

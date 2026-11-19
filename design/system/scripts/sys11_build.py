@@ -5,6 +5,7 @@ RealGhid's (lay % and cumulative mortality % ♀, SAPT 23–62) with the feed g 
 them, RealGhid's week 53 lay % "605" is refused (real, S20N; the extract reads it as 60,5). The three refused rows of the
 growth error state are state examples (D39)."""
 import json, pathlib
+import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts')); import sexsign as SXS  # SX01: every ♀/♂ of the preview = the §72 hook
 REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
 EXT = REPO / 'design/data/extracts'
@@ -414,5 +415,5 @@ html = ('<!-- @dsCard group="Data" height=3876 subtitle="SYS11" -->\n'
         'fișierul .pdf, cel fără antet și cel gol; fișierul de ouat numărat de la transfer (SAPT 1, D180).</p>\n'
         '</div>\n')
 (ROOT / 'GuideImportPreview').mkdir(exist_ok=True)
-(ROOT / 'GuideImportPreview' / 'preview.html').write_text(html, encoding='utf-8')
+(ROOT / 'GuideImportPreview' / 'preview.html').write_text(SXS.sexify(html), encoding='utf-8')
 print('ok', len(gr), len(er), nbad, len(lr), tb['line'])

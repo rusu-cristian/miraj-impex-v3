@@ -6,6 +6,7 @@ import sys, pathlib, datetime as dt
 REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from design/system/scripts
 sys.path.insert(0, str(REPO / 'design/canvas/scripts'))
 import realdata as R
+import sexsign as SXS  # SX01: every ♀/♂ of the preview = the §72 hook
 OUT = REPO / 'design/system/components/PeriodTable/preview.html'
 
 DASH = '–'
@@ -546,4 +547,4 @@ html += (f'<p class="ip-note" style="margin:0">Cifre reale Hîrbovăț, Seria 20
          f'Greutatea H5.1 e ilustrativă. Rata pe perioadă a ghidului = media pe zile-găină.</p>\n</div>\n')
 if __name__ == '__main__':  # S4N: s4t_build imports the row/column builders above; only a direct run writes the preview
     OUT.parent.mkdir(exist_ok=True)
-    OUT.write_text(html, encoding='utf-8'); print(len(html))
+    OUT.write_text(SXS.sexify(html), encoding='utf-8'); print(len(html))

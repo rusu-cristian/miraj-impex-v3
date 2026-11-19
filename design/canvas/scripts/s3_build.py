@@ -261,7 +261,7 @@ def fs_telita(phone=False):
             + fig('mortality', 'Mortalitate cumulată', f'{pair(n(TMP["F"], 2), n(TMP["M"], 2))}{PCT}', GN)
             + fig('feed', 'Hrană totală', f'{pair(n(FS["F"]), n(FS["M"]))}<small>g</small>',
                   f'<span class="ip-num">ghid {n(FG["F"])} / {n(FG["M"])} g ·</span><span class="ip-num">{sgn(FDEV["F"])}% / {sgn(FDEV["M"])}% · {len(FDAYS)} zile ·</span>'
-                  f'<span class="ip-num"><span class="ip-sex ip-sex--hen">♀ {n(FKG["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(FKG["M"])}</span> kg</span>',
+                  f'<span class="ip-num">{T.SXS.figure("F", n(FKG["F"]))} · {T.SXS.figure("M", n(FKG["M"]))} kg</span>',   # SX01: §72 signs (was one text span per sex, a ~5 px glyph)
                   lamp('ok', 'în normă'))
             + fig('transfer', 'Transferate', pair(n(ARR['F']), n(ARR['M'])), f'<span>sosite la Hîrbovăț ·</span><span class="ip-num">{XSPAN}</span>'))
     return f'''<article class="{fs_cls(phone)}" aria-labelledby="fs-telita" aria-describedby="fs-telita-c">{fs_head('telita', 'Telița', '#/ferme/telita?ciclu=cyc-telita-2026', lamp('off', 'închis'))}

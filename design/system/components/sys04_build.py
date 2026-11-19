@@ -1,5 +1,6 @@
 """SYS04: build StockReadout and CostBlock preview.html fragments. Figures from design/data/extracts (see READMEs)."""
 import pathlib
+import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts')); import sexsign as SXS  # SX01: every ♀/♂ of the preview = the §72 hook
 ROOT = pathlib.Path(__file__).resolve().parent  # design/system/components from this script's place, so a copy writes into itself
 N = ' '   # thousands
 M = '−'   # true minus
@@ -68,9 +69,9 @@ def cost_block(sfx, extra=False, wide=True):
     foot = ('' if extra else
         '<p class="ip-note ip-cost__foot">Lei = suma livrărilor cu preț; kg fără preț nu intră în cost. '
         'Lei/pasăre: la păsările de la începutul ciclului (Telița: populare <span class="ip-num">07.10.2025</span>, '
-        f'<span class="ip-sex ip-sex--hen">♀ {g("28 080")}</span> · <span class="ip-sex ip-sex--rooster">♂ {g("3 510")}</span>; '
-        f'Hîrbovăț: sosite <span class="ip-num">22.02–28.02.2026</span>, <span class="ip-sex ip-sex--hen">♀ {g("26 765")}</span> · '
-        f'<span class="ip-sex ip-sex--rooster">♂ {g("3 060")}</span>; seria: populare). '
+        f'{SXS.figure("F", g("28 080"), num=True)} · {SXS.figure("M", g("3 510"), num=True)}; '
+        f'Hîrbovăț: sosite <span class="ip-num">22.02–28.02.2026</span>, {SXS.figure("F", g("26 765"), num=True)} · '
+        f'{SXS.figure("M", g("3 060"), num=True)}; seria: populare). '
         f'Lei/ou: ouă totale (Cat. 1–3 + Incubabile) până pe <span class="ip-num">16.11.2026</span>: <span class="ip-num">{g("5 301 053")}</span>.</p>')
     return (f'<section class="ip-cost{" ip-cost--wide" if wide else ""}" aria-labelledby="cost-{sfx}"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-{sfx}">{title}</h3>'
             f'<span class="ip-note">{note}</span></div><div class="ip-cost__scroll" role="region" tabindex="0" aria-label="{title}">'  # FIN14B: a region in every layout, named by the caption (§36)
@@ -103,5 +104,5 @@ COST = ('<!-- @dsCard group="Data" height=1273 subtitle="SYS04" -->\n'
 
 for name, html in [('StockReadout', STOCK), ('CostBlock', COST)]:
     d = ROOT / name; d.mkdir(exist_ok=True)
-    (d / 'preview.html').write_text(html, encoding='utf-8')
+    (d / 'preview.html').write_text(SXS.sexify(html), encoding='utf-8')
 print('ok')

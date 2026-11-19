@@ -13,6 +13,7 @@ spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__
 s4 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4)  # reads sys.argv[1] (repo root)
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
 import skel as SKL
+import sexsign as SXS  # SX01: the §72 sign markup (Cost foot)
 import realdata as R
 ROOT, HP, CANVAS = CR.args('s11_heights.json')  # heights default: s11_heights.json
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
@@ -378,8 +379,8 @@ def sec_cost():
 <tbody><tr><th scope="row">Hîrbovăț · Seria 2026<span class="ip-cost__sub">din {dsp(R.CYCLE_START)} · <span class="ip-num">{R.SAPT(WK)}</span> · <span class="ip-num">{len(hp)}</span> livrări cu preț</span></th><td class="num">{n(hir_kg)}</td><td class="num">{n(hir_lei)}</td><td class="num">{d2(hir_lei / hir_birds)}</td><td class="num">{d2(hir_lei / eggs)}</td></tr>{unp_row("Hîrbovăț · Seria 2026", UNP_KG, f'<span class="ip-num">{len(unpriced)}</span> livrări, <span class="ip-num">{R.drange(d0, d1)}</span> · neincluse în cost')}</tbody>
 <tbody><tr class="is-total"><th scope="row">Total Seria 2026<span class="ip-cost__sub">nu include <span class="ip-num">{n(UNP_KG)} kg</span> fără preț</span></th><td class="num">{n(tel_kg + hir_kg)}</td><td class="num">{n(tel_lei + hir_lei)}</td><td class="num">{d2((tel_lei + hir_lei) / tel_birds)}</td><td class="num">{d2((tel_lei + hir_lei) / eggs)}</td></tr></tbody>'''
     foot = (f'<p class="ip-note ip-cost__foot">Lei = suma livrărilor cu preț; kg fără preț nu intră în cost. Lei/pasăre: la păsările de la începutul ciclului (Telița: populare {dsp(R.PLACEMENT)}, '
-            f'<span class="ip-sex ip-sex--hen">♀ {n(PL["totals"]["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(PL["totals"]["M"])}</span>; Hîrbovăț: sosite <span class="ip-num">{R.drange(ARR_DAYS[0], ARR_DAYS[-1])}</span>, '
-            f'<span class="ip-sex ip-sex--hen">♀ {n(arr["F"])}</span> · <span class="ip-sex ip-sex--rooster">♂ {n(arr["M"])}</span>; seria: populare). Lei/ou: ouă totale până pe {dsp(TODAY)}: <span class="ip-num">{n(eggs)}</span>.</p>')
+            f'{SXS.figure("F", n(PL["totals"]["F"]), num=True)} · {SXS.figure("M", n(PL["totals"]["M"]), num=True)}; Hîrbovăț: sosite <span class="ip-num">{R.drange(ARR_DAYS[0], ARR_DAYS[-1])}</span>, '
+            f'{SXS.figure("F", n(arr["F"]), num=True)} · {SXS.figure("M", n(arr["M"]), num=True)}; seria: populare). Lei/ou: ouă totale până pe {dsp(TODAY)}: <span class="ip-num">{n(eggs)}</span>.</p>')
     return f'''<section class="ip-block" aria-labelledby="h-cost">
 {sec_head("h-cost", "Cost", 'pe ciclu, pe pasăre și pe ou · din livrările cu preț')}
 <section class="ip-cost ip-cost--wide" aria-labelledby="cost-d"><div class="ip-cost__head"><h3 class="ip-cap" id="cost-d">Cost hrană · Seria 2026</h3><span class="ip-note">din livrările cu preț · până pe {dsp(TODAY)}</span></div><div class="ip-cost__scroll" role="region" tabindex="0" aria-label="Cost hrană · Seria 2026"><table class="ip-table ip-table--rowheads ip-cost__table"><caption class="ip-sr">Cost hrană · Seria 2026</caption>{t}</table></div>{foot}</section>

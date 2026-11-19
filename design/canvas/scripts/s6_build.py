@@ -27,6 +27,7 @@ H = json.loads(HP.read_text())[STEM] if HP and HP.exists() else 3400
 sys.argv = ['s7_build.py', str(ROOT)]  # RF02: s7_build's own default height
 sys.path.insert(0, str(HERE))
 B = importlib.import_module('s7_build')
+import sexsign as SXS  # SX01: the §72 sign markup
 import realdata as R  # RF04: every figure, date, week and record from realdata (DATA03 extracts)
 n, dd, sexv, lamp, NB, MINUS = B.n, B.dd, B.sexv, B.lamp, B.NB, B.MINUS
 TODAY, YDAY, WEEK, START = B.TODAY, B.YDAY, B.WEEK, B.START
@@ -172,7 +173,7 @@ def eggs(h, secs, hens, d=TODAY, ro=False):
             + f('inc', 'Incubabile', e['inc'])
             + f'<div class="ip-field"><label class="ip-label" for="w-{u}" id="l-w-{u}">Masa medie<span class="ip-sr"> grame</span></label><span class="ip-input ip-eggs__weight ip-input--touch"><input id="w-{u}" inputmode="decimal" placeholder="–" autocomplete="off" value="{n(e["egg_g"], 1)}" aria-labelledby="t-eggs-{u} l-w-{u}"{" readonly" if ro else ""}><span class="suffix">g</span></span></div>')
     sgn = '+' if diff > 0 else (MINUS if diff < 0 else '')
-    sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else ' (prag <span class="ip-num">±3</span>)'} · <span class="ip-eggs__base">din <span class="ip-sex ip-sex--hen">♀ {n(hens)}</span></span>'
+    sub = f'ghid <span class="ip-num">{n(LAYG, 1)}%</span> · <span class="ip-num">{sgn}{n(abs(diff), 1)}</span> puncte{"" if ok else ' (prag <span class="ip-num">±3</span>)'} · <span class="ip-eggs__base">din {SXS.figure("F", n(hens), num=True)}</span>'  # SX01: §72 sign + hidden word (was a ~5 px glyph)
     calc = (f'<dl class="ip-eggs__calc" aria-label="Calculat din câmpuri, doar citire"><div><dt>Total ouă</dt><dd class="ip-eggs__val">{n(tot)}</dd>'
             f'<dd class="ip-eggs__sub">= Cat. 1 + 2 + 3 + Incubabile · Jos separat (<span class="ip-num">{n(e["jos"])}</span>)</dd></div>'
             f'<div><dt>Ouat azi</dt><dd class="ip-eggs__val">{n(lay, 1)}%</dd><dd class="ip-eggs__sub">{sub}</dd>'

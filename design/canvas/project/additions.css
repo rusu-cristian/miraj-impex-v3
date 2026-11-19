@@ -2258,22 +2258,30 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  *   (about 14 on figure rows), standing on the baseline; the figure keeps its size and line height (taken from the parent:
  *   --ip-sex-fs = 1em, --ip-sex-lh = 1lh, registered lengths). A figure without a sign keeps none: table cells under a
  *   signed row head (td.num) and values whose key already shows the sign (tile and section-total values).
- * - Signs in plain text with no hook (dark Readout values and sub-lines, chart legends, toasts) stay text (S4NG notes).
+ * - SX01: no sign is left as plain text: dark Readout values, sub-lines, read lines and chart legends, toasts, the FarmSummary,
+ *   HallCard/S6 eggs and Cost foot figure lines write the standalone sign (glyph aria-hidden + hidden word, sexsign.py) before
+ *   their figure. On a dark surface (Readout, Toast) the icon takes the text's colour (rec-hen/rooster are under 3:1 there,
+ *   D58); legend keys readout-ink, as their words' marks. Sizes: Readout value 24px (--ip-sign-xl, the 32px figures' cap
+ *   height), legend keys 16px centred on the key's line, read lines / FarmSummary / eggs sub-lines 14px. Checked by
+ *   design/canvas/scripts/sex_scan.py (every ♀/♂ on boards and previews inside this hook).
  * - Forced colours: the icon draws in CanvasText. */
 @property --ip-sex-fs{syntax:'<length>';inherits:true;initial-value:14px}
 @property --ip-sex-lh{syntax:'<length>';inherits:true;initial-value:20px}
-:root{--ip-sign-lg:16px;--ip-sign-sm:14px;
+:root{--ip-sign-lg:16px;--ip-sign-sm:14px;--ip-sign-xl:var(--space-6);
   --ip-sign-venus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='9' r='5'/%3E%3Cpath d='M12 14v8M9 19h6'/%3E%3C/svg%3E");
   --ip-sign-shape:var(--ip-sign-venus);--ip-sign-f:.52;   /* box width ÷ icon size: the shape's ink (venus 6–18, mars 4–21 of 24) */   /* the sign drawn: venus, mars on .ip-sex--rooster / .is-rooster */
   --ip-sign-mars:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='14' r='5'/%3E%3Cpath d='M14 10l6-6M15 4h5v5'/%3E%3C/svg%3E")}
 :where(*):has(> .ip-sex, > span.is-hen, > span.is-rooster){--ip-sex-fs:1em;--ip-sex-lh:1lh}
 /* standalone sign */
 :where(span.ip-sex,span.is-hen,span.is-rooster){--ip-sign:var(--ip-sign-lg)}
-:where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *){display:inline-block;position:relative;flex:none;width:calc(var(--ip-sign) * var(--ip-sign-f));height:0;vertical-align:baseline;font-size:0;line-height:0;letter-spacing:0}
-:where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *)::before{content:"";position:absolute;left:0;bottom:calc(var(--ip-sex-fs) * .35 - var(--ip-sign) / 2);width:100%;height:var(--ip-sign);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}
-:is(p,.ip-note,.ip-hint,.ip-err,.ip-warnline,.ip-ev__meta,.ip-stat__guide,.ip-entry__hint,.ip-banner__body,.ip-toast__txt,.ip-readout__sub) :where(span.ip-sex,span.is-hen,span.is-rooster){--ip-sign:var(--ip-sign-sm)}
-:is(.ip-label,.ip-seg__item,.ip-stotals__key,.s4-capi) > :where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *){height:var(--ip-sex-lh)}   /* a centring flex parent: the sign keeps one line (a label holding only the sign keeps its height) */
-:is(.ip-label,.ip-seg__item,.ip-stotals__key,.s4-capi) > :where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *, .ip-cost__foot > *, .ip-eggs__base > *, .ip-fsum__sub .ip-num > *)::before{bottom:calc((var(--ip-sex-lh) - var(--ip-sign)) / 2)}
+:where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *){display:inline-block;position:relative;flex:none;width:calc(var(--ip-sign) * var(--ip-sign-f));height:0;vertical-align:baseline;font-size:0;line-height:0;letter-spacing:0}
+:where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *)::before{content:"";position:absolute;left:0;bottom:calc(var(--ip-sex-fs) * .35 - var(--ip-sign) / 2);width:100%;height:var(--ip-sign);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}
+:is(p,.ip-note,.ip-hint,.ip-err,.ip-warnline,.ip-ev__meta,.ip-stat__guide,.ip-entry__hint,.ip-banner__body,.ip-toast__txt,.ip-readout__sub,.ip-chart__read,.ip-fsum__sub,.ip-eggs__sub) :where(span.ip-sex,span.is-hen,span.is-rooster){--ip-sign:var(--ip-sign-sm)}
+:is(.ip-label,.ip-seg__item,.ip-stotals__key,.s4-capi,.ip-chart__legend > span) > :where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *){height:var(--ip-sex-lh)}   /* a centring flex parent: the sign keeps one line (a label holding only the sign keeps its height) */
+:is(.ip-label,.ip-seg__item,.ip-stotals__key,.s4-capi,.ip-chart__legend > span) > :where(span.ip-sex,span.is-hen,span.is-rooster):not(:has(*)):not(td.num > *)::before{bottom:calc((var(--ip-sex-lh) - var(--ip-sign)) / 2)}
+.ip-readout__val :where(span.ip-sex){--ip-sign:var(--ip-sign-xl)}   /* SX01: the dark Readout's value: as tall as its 32px figures */
+:is(.ip-readout,.ip-toast) :where(span.ip-sex){color:inherit}   /* SX01: dark surfaces: the text's colour (D58) */
+.ip-chart__legend :where(span.ip-sex){color:var(--readout-ink)}   /* SX01: legend keys in readout-ink, as the <b> they replace */
 /* sign with its figure */
 .ip-sex:has(> b):not(td.num > *, :is(.s4-capi,.ip-stotals__key):has(> .ip-sex) + * > *){font-size:0;line-height:0}
 .ip-sex:has(> b):not(td.num > *, :is(.s4-capi,.ip-stotals__key):has(> .ip-sex) + * > *)::before{content:"";flex:none;position:relative;top:calc(var(--ip-sign-c) * .2);margin-block-start:calc(-2 * var(--ip-hair));margin-inline-end:calc(-2 * var(--ip-hair));--ip-sign-c:clamp(12px,var(--ip-sex-fs),16px);--ip-sign-k:var(--ip-sign-c);width:calc(var(--ip-sign-c) * var(--ip-sign-f));height:var(--ip-sign-c);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}

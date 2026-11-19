@@ -1,6 +1,7 @@
 """Build SYS08 previews (MissingRow, EntryKeys, UnpricedCount): python3 sys08_build.py"""
 import pathlib, sys, datetime as dt
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts'))
+import sexsign as SXSIGN  # SX01: every ♀/♂ of the previews = the §72 hook
 import realdata as D                                   # RF09: the design's one data module (realdata, today 18.11.2026)
 ROOT = pathlib.Path(__file__).resolve().parents[1] / 'components'  # from this script's place (design/system/scripts), so a copy writes into itself
 N = ' '  # thin no-break space for thousands
@@ -114,7 +115,7 @@ def build_missing():
         f'<p class="ip-note" style="margin:0">{NOTE_MISS}</p>\n'
         '</div>\n')
     (ROOT / 'MissingRow').mkdir(exist_ok=True)
-    (ROOT / 'MissingRow' / 'preview.html').write_text(html, encoding='utf-8')
+    (ROOT / 'MissingRow' / 'preview.html').write_text(SXSIGN.sexify(html), encoding='utf-8')
 
 # ---------------------------------------------------------------- EntryKeys
 KEYS = [
@@ -163,7 +164,7 @@ def build_keys():
         f'<p class="ip-note" style="margin:0">Telița: real, ciclu închis {D.dd(D.CTEL["end_date"])} (cycles.json). Ordinea cheilor: screens.md S2 (vet: Zilnic, Hrană zilnică, Cântărire; managerul adaugă Transfer, Vânzare, Livrare hrană).</p>\n'
         '</div>\n')
     (ROOT / 'EntryKeys').mkdir(exist_ok=True)
-    (ROOT / 'EntryKeys' / 'preview.html').write_text(html, encoding='utf-8')
+    (ROOT / 'EntryKeys' / 'preview.html').write_text(SXSIGN.sexify(html), encoding='utf-8')
 
 # ---------------------------------------------------------------- UnpricedCount
 UP = D.UNPRICED; UP_KG = sum(r['qty_kg'] for r in UP)               # real: Hîrbovăț deliveries with no price in the register
@@ -210,7 +211,7 @@ def build_unpriced():
         f'<p class="ip-note" style="margin:0">{NOTE_UNP}</p>\n'
         '</div>\n')
     (ROOT / 'UnpricedCount').mkdir(exist_ok=True)
-    (ROOT / 'UnpricedCount' / 'preview.html').write_text(html, encoding='utf-8')
+    (ROOT / 'UnpricedCount' / 'preview.html').write_text(SXSIGN.sexify(html), encoding='utf-8')
 
 SXS = {'F': '♀', 'M': '♂'}
 NOTE_MISS = (f'{FARM}, azi {D.dd(T)} (realdata, D152). Real: în ultimele 7 zile ({D.drange(WIN[0], WIN[-1])}) lipsește Hrana zilnică doar la '
