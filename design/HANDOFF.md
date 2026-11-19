@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-19 · Last commit: e6ce7ea (+ canvas move)
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795075243-a466; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
+Updated: 2026-11-19 · Last commit: 110606a
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795082732-aba1; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
 
 ## Progress
-Complete · 114 / 114 jobs done (screens, FIN01–FIN16, FX01–FX07, FY01–FY04, FZ01); closing check clean · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none · COMPLETE (19.11.2026); all SYS jobs done
+Complete · 115 / 115 jobs done (FW01 added 19.11) (screens, FIN01–FIN16, FX01–FX07, FY01–FY04, FZ01); closing check clean · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none · COMPLETE (19.11.2026); all SYS jobs done
 
 ## Just finished
+- FW01 (D148, user): desktop content fills the page. additions.css §67: shell ≥ board height, the page's last block and its last frame (table frame, EmptyState, lists, user list, FileDrop, preview) grow to the board foot, rows keep their height, load-failure Banners keep theirs; width caps removed (S11, S12 table full width, S13 desktop, S15 960, S20 form/week table); FileDrop prompt centred; 37 boards, canvas.json unchanged; 1 fix round (Banner stretch); published to the new canvas (1795082732-aba1) (110606a)
 - 19.11.2026: new canvas created and filled with every repo file (257 boards, canvas.json, tokens.css/json, bundle.css, additions.css); the canvas now matches the repo
 - COMPLETE: closing check (FINAL3) clean after FZ01 (S22 reset-failed Banner per D147; 7 stale shots retaken) (e6ce7ea)
 - FY04 Banner paragraphs (D147): 29 failure Banners (24 boards, 5 previews) = lead ¶ + retry + kept ¶, text word for word; S22 Dialog Banner too (sys12 banner() takes a list); S18 telefon eroare-la-salvare h 1632; rows S19–S1 moved +8 by hand (user approved); passed review (d3ee0e6)
@@ -100,7 +101,7 @@ Complete · 114 / 114 jobs done (screens, FIN01–FIN16, FX01–FX07, FY01–FY0
 - Nothing queued. Review the "to review" decisions.
 
 ## Waiting on the user
-- To review (non-blocking, taken per standing instruction): D146 S16 page-end scroll; D147 Banner paragraphs; D141 save-error Banner at form end, D142 Înregistrează as parent of Introdus azi + entry forms, D143 object-first Toasts.
+- To review (non-blocking, taken per standing instruction): D148 FW01 details (FileDrop centred, EmptyState top, bare ground under load-failure Banners, lone S11 Readout spans, S20 preview capped at 13 rows, S1 login card unchanged); D146 S16 page-end scroll; D147 Banner paragraphs; D141 save-error Banner at form end, D142 Înregistrează as parent of Introdus azi + entry forms, D143 object-first Toasts.
 - Non-blocking: spec §1 roles table says the viewer sees "no prices", D4/D06 say read-only (D91 keeps D06) — correct the table before S11 viewer boards are revisited.
 - Non-blocking: D95 guide week — app formula D02 puts 24.02.2026 in SAPT 21 (2 525 g, în normă); the workbook compares with week 20 (abatere). Confirm D02.
 - None blocking otherwise. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
