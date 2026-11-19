@@ -1,19 +1,22 @@
-"""Build the S7 · Hrană zilnică state artboards (S7S) from the extracts, reusing s7_build.py.
-python3 -I s7s_build.py <repo_root>
-Imports s7_build (it rewrites the S7 default board at its height 3162, S7P) and reuses its helpers,
+"""Build the S7 · Hrană zilnică state artboards (S7S) on realdata (RF02, today 18.11.2026), reusing s7_build.py.
+python3 -I s7s_build.py <repo_root> [--canvas]   (--canvas: refresh the 7 entries' h/title in place, x and y kept)
+Stories that cannot happen on the real 18.11 data are D39 state examples on the real counts (title "· exemplu de stare
+(D39)"): fără zi anterioară (17.11 has grams), abatere (no row is > 10 % off the guide), stoc sub 0.
+Imports s7_build (it rewrites the S7 default board at its default height, S7P) and reuses its helpers,
 header, date field, CSS and data. Every state board is one 390×844 phone viewport: FormHeader pinned at the top,
 SaveBar at the foot, the form scrolled to the part the state concerns (scroll offsets measured at 390; all line heights
 are fixed px tokens, so they do not depend on the font). Writes design/canvas/project/S7-hrana-zilnica--<state>.dc.html
 and /tmp/s7s/<stem>.html (plain wrappers for renders)."""
 import sys, pathlib, importlib, datetime as dt
 
-ROOT = pathlib.Path(sys.argv[1])
-sys.argv = ['s7_build.py', str(ROOT), '3162']
+ROOT = pathlib.Path(sys.argv[1]); CANVAS = '--canvas' in sys.argv[2:]
+sys.argv = ['s7_build.py', str(ROOT)]
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 B = importlib.import_module('s7_build')
 import skel as SKL
+import realdata as R
 import sstate_css as SC  # viewport / Toast-undo / Banner-action / skeleton CSS, shared with s6s_build
-n, dd, icon, sexv, pair, lamp = B.n, B.dd, B.icon, B.sexv, B.pair, B.lamp
+n, dd, rnd, icon, sexv, pair, lamp = B.n, B.dd, B.rnd, B.icon, B.sexv, B.pair, B.lamp
 NB, MINUS, TODAY, YDAY, WEEK, START = B.NB, B.MINUS, B.TODAY, B.YDAY, B.WEEK, B.START
 GUIDE, FTN, FTS, HB, ROWS = B.GUIDE, B.FTN, B.FTS, B.HB_TYPES, B.ROWS
 B.IC.update({
@@ -37,7 +40,7 @@ def row(r, mode, g=None, uid=''):
         sel = f'<label class="ip-field" for="t-{gid}"><span class="ip-label">Tip hrană{sr}</span><span class="ip-input ip-input--touch is-readonly"><input id="t-{gid}" type="text" value="{FTN[r["feed_type_id"]]}" readonly/></span></label>'
     else:
         sel = f'<label class="ip-field"><span class="ip-label">Tip hrană{sr}</span><span class="ip-input ip-input--touch"><select>{opts}</select>{icon("chev", 16)}</span></label>'
-    kg = round(g * alive / 1000, 1) if mode in ('ok', 'warn', 'sugg', 'ro') else None
+    kg = rnd(g * alive / 1000, 1) if mode in ('ok', 'warn', 'sugg', 'ro') else None
     dev = (g - guide) / guide * 100 if kg is not None else 0
     if mode in ('ok', 'ro', 'warn'): mode_eff = 'warn' if abs(dev) > 10 and mode != 'ro' else mode
     else: mode_eff = mode
@@ -74,25 +77,19 @@ def row(r, mode, g=None, uid=''):
     confirmed = mode_eff in ('ok', 'warn', 'ro')
     return dict(html=html, conf=confirmed, kg=kg if confirmed else None, t=r['feed_type_id'], sx=sx, sec=sec)
 
-def halls(built):
-    hs = {}
-    for r, b in zip(ROWS, built): hs.setdefault(r['section'].split('.')[0], []).append((r, b['html']))
-    return '<div class="ip-halls">' + ''.join(
-        f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(dict.fromkeys(r["section"] for r, _ in rs))}</span></span>{pair(n(sum(r["alive"] for r, _ in rs if r["sex"] == "F")), n(sum(r["alive"] for r, _ in rs if r["sex"] == "M")), sr="în viață ")}</header>
-<div class="ip-hall__sections">{"".join(b for _, b in rs)}</div></section>''' for h, rs in hs.items()) + '</div>'
+def halls(built):  # s7_build.halls_html: H5, H6 rows + H7's "goală din" line (D158d)
+    return B.halls_html([(r, b['html']) for r, b in zip(ROWS, built)])
 
 # ---------- FeedTotals (phone) for a set of rows; start override = D39 state example ----------
-fbt = {(f['date'], f['feed_type_id']): f for f in B.S['feed_by_type_daily']}
-STK = {s['feed_type_id']: s for s in B.S['stock_today']}
 def ftot(built, start_override=None):
     out = []
     for t in HB:
         sx = FTS[t]; rs = [b for b in built if b['t'] == t]
         conf = [b for b in rs if b['conf']]; miss = [b for b in rs if not b['conf']]
-        start = (start_override or {}).get(t, fbt[(YDAY.isoformat(), t)]['stock_end_kg'])
-        azi = round(sum(b['kg'] for b in conf), 1) if conf else None
+        start = (start_override or {}).get(t, B.STK0[t])
+        azi = rnd(sum(b['kg'] for b in conf), 1) if conf else None
         after = start - (azi or 0)
-        avgk = STK[t]['avg_daily_kg_last3']
+        avgk = B.AVGK[t]
         days = max(after, 0) / avgk
         below0 = after < 0; ok = days >= 5
         sign = '♀' if sx == 'F' else '♂'; c = 'hen' if sx == 'F' else 'rooster'
@@ -100,15 +97,13 @@ def ftot(built, start_override=None):
         else:
             left = f'fără <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span><span class="ip-sr">{"găini" if sx == "F" else "cocoși"}</span> ' + ', '.join(b['sec'] for b in miss) if miss else 'toate confirmate'  # FIN08: coloured sign
             kgcell = f'<span class="ip-ftot__val">{n(azi, 1)}<small>kg</small></span><span class="ip-ftot__sub">{left}</span>'
-        stsub = ('<span class="ip-ftot__sub">stoc sub 0</span>' if below0 else '') + (f'<span class="ip-ftot__sub">din <span class="ip-num">{n(round(start))}</span> kg</span>' if azi is not None else '<span class="ip-ftot__sub">stoc acum</span>')
+        stsub = ('<span class="ip-ftot__sub">stoc sub 0</span>' if below0 else '') + (f'<span class="ip-ftot__sub">din <span class="ip-num">{n(start)}</span> kg</span>' if azi is not None else '<span class="ip-ftot__sub">stoc acum</span>')
         daysub = 'se termină azi' if below0 else f'până pe <span class="ip-num">{dd(TODAY + dt.timedelta(days=int(days)))}</span>'
-        banner = f'<div class="ip-banner ip-banner--warn ip-ftot__msg" role="status">{icon("warn", 16)}<div>Stocul de {FTN[t]} la Hîrbovăț ar ajunge la <span class="ip-num">{n(round(after))}</span> kg. Verifică livrările.</div></div>' if below0 else ''
-        out.append(dict(t=t, days=days, ok=ok, below0=below0, after=after, html=f'''<div class="ip-ftot__row" role="group" aria-label="{FTN[t]}, pentru {"găini" if sx == "F" else "cocoși"}"><div class="ip-ftot__type"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span><div><span class="ip-ftot__name">{FTN[t]} <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span></span><span class="ip-ftot__sub">{len(conf)} din {len(rs)} rânduri confirmate</span></div></div><div class="ip-ftot__cell ip-ftot__cell--kg"><span class="ip-ftot__key">Azi</span>{kgcell}</div><div class="ip-ftot__cell ip-ftot__cell--stock"><span class="ip-ftot__key">Stoc după azi</span><span class="ip-ftot__val">{n(round(after))}<small>kg</small></span>{stsub}</div><div class="ip-ftot__cell ip-ftot__cell--days"><span class="ip-ftot__key">Zile rămase</span><span class="ip-ftot__val">{n(days, 1)}<small>zile</small></span><span class="ip-ftot__sub">{daysub}</span></div><div class="ip-ftot__status">{lamp("ok", "în normă") if ok else lamp("warn", "abatere")}</div>{banner}</div>'''))
-    w0, w1 = STK[HB[0]]['avg_window']
-    avg = ', '.join(f'{FTN[t]}: <span class="ip-num">{n(STK[t]["avg_daily_kg_last3"])}</span> kg/zi' for t in HB)
+        banner = f'<div class="ip-banner ip-banner--warn ip-ftot__msg" role="status">{icon("warn", 16)}<div>Stocul de {FTN[t]} la Hîrbovăț ar ajunge la <span class="ip-num">{n(after)}</span> kg. Verifică livrările.</div></div>' if below0 else ''
+        out.append(dict(t=t, days=days, ok=ok, below0=below0, after=after, html=f'''<div class="ip-ftot__row" role="group" aria-label="{FTN[t]}, pentru {"găini" if sx == "F" else "cocoși"}"><div class="ip-ftot__type"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span><div><span class="ip-ftot__name">{FTN[t]} <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span></span><span class="ip-ftot__sub">{len(conf)} din {len(rs)} rânduri confirmate</span></div></div><div class="ip-ftot__cell ip-ftot__cell--kg"><span class="ip-ftot__key">Azi</span>{kgcell}</div><div class="ip-ftot__cell ip-ftot__cell--stock"><span class="ip-ftot__key">Stoc după azi</span><span class="ip-ftot__val">{n(after)}<small>kg</small></span>{stsub}</div><div class="ip-ftot__cell ip-ftot__cell--days"><span class="ip-ftot__key">Zile rămase</span><span class="ip-ftot__val">{n(days, 1)}<small>zile</small></span><span class="ip-ftot__sub">{daysub}</span></div><div class="ip-ftot__status">{lamp("ok", "în normă") if ok else lamp("warn", "abatere")}</div>{banner}</div>'''))
     html = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap ip-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
 {"".join(f["html"] for f in out)}
-<p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d.%m")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
+<p class="ip-note ip-ftot__foot">{B.FOOT}</p></section>'''
     return html, out
 
 def stocklamp(fts):
@@ -118,7 +113,7 @@ def stocklamp(fts):
     return lamp('ok', 'în normă') + '<span>stoc</span>'
 
 def savebar(built, line2, key, lead=''):  # the one SaveBar shell (s7_build.savebar / sum_rows)
-    nconf = sum(1 for b in built if b['conf']); tot = round(sum(b['kg'] for b in built if b['conf']), 1)
+    nconf = sum(1 for b in built if b['conf']); tot = rnd(sum(b['kg'] for b in built if b['conf']), 1)
     return B.savebar(B.sum_rows(nconf, len(built), tot if nconf else None, lead), line2, key), nconf, tot
 
 SAVE_KEY = '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>'
@@ -133,7 +128,7 @@ def copy(disabled_reason=None):
 </div>'''
     return B.COPY
 
-def default_modes():  # the S7 default: confirmed rows as entered, the two missing rows as yesterday's suggestion
+def default_modes():  # the S7 default: rows entered today as confirmed (all 8 on 18.11), any other as yesterday's suggestion
     return [('ok', None) if r['today_g'] is not None else ('sugg', None) for r in ROWS]
 
 def idx(sec, sx): return next(i for i, r in enumerate(ROWS) if r['section'] == sec and r['sex'] == sx)
@@ -153,46 +148,58 @@ def screen(main_parts, save, view_cls='', scroll=0, overlay=''):
 
 boards = []
 
-# 1 · fără zi anterioară — no 15.11 grams: empty fields, guide as placeholder, Copiază ieri disabled with its reason
+TOT = rnd(R.feed_kg(TODAY, 'F') + R.feed_kg(TODAY, 'M'), 1)  # the day's real kg (2 457,9 on 18.11)
+D39 = ' · exemplu de stare (D39)'
+
+# 1 · fără zi anterioară — D39 on the real 18.11 rows (17.11 has grams, so Copiază ieri works on the real day): empty fields,
+#   guide as placeholder, Copiază ieri disabled with its reason; stock = the real start-of-day stock
 b1 = [row(r, 'empty') for r in ROWS]
 ft1, f1 = ftot(b1)
 sv1, nc, _ = savebar(b1, stocklamp(f1), SAVE_OFF)
-assert nc == 0 and [n(f['days'], 1) for f in f1] == ['7,9', '4,8']
+assert nc == 0 and all(rnd(f['after'], 1) == B.STK0[f['t']] for f in f1)
 reason = f'Nimic de copiat: pe <span class="ip-num">{dd(YDAY)}</span> nu sunt grame introduse. Scrie gramele pentru fiecare rând.'
-boards.append(('fara-zi-anterioara', 'fără zi anterioară', screen([B.DATE, copy(reason), halls(b1), ft1], sv1)))
+boards.append(('fara-zi-anterioara', 'fără zi anterioară' + D39, screen([B.DATE, copy(reason), halls(b1), ft1], sv1)))
 
-# 2 · abatere — H1.2 ♂ 172 g typed (guide 155, +11%): warn field + warnline, Salvează enabled
-m = default_modes(); b2 = [row(r, *mm) for r, mm in zip(ROWS, m)]
-assert ROWS[idx('H1.2', 'M')]['today_g'] == 172
+# 2 · abatere — D39: no real row is > 10 % off the guide on 18.11 (♀ 160 g vs 157, ♂ 141–144 g vs 156); H5.2 ♂ typed 173 g
+#   (+11 % vs the guide's ♂ g): warn field + warnline, Salvează enabled. Every other row as entered.
+AB_SEC, AB_SX, AB_G = 'H5.2', 'M', 173
+assert all(abs(r['today_g'] - r['guide_g']) / r['guide_g'] <= 0.10 for r in ROWS)
+m = default_modes(); m[idx(AB_SEC, AB_SX)] = ('ok', AB_G); b2 = [row(r, *mm) for r, mm in zip(ROWS, m)]
+assert round((AB_G - GUIDE[AB_SX]) / GUIDE[AB_SX] * 100) == 11
 ft2, f2 = ftot(b2)
 sv2, nc, tot = savebar(b2, stocklamp(f2), SAVE_KEY)
-assert (nc, n(tot, 1)) == (10, f'3{NB}691,3')
-SCROLL2 = 329  # measured at 390 (S7P): H1.2 ♂ row (with its warn line) ends 16 px above the SaveBar; H1.2 ♀ and part of H1.1 ♂ above it
-boards.append(('abatere', 'abatere', screen([B.DATE, B.COPY, halls(b2), ft2], sv2, scroll=SCROLL2)))
+assert nc == len(ROWS) and tot == rnd(TOT + b2[idx(AB_SEC, AB_SX)]['kg'] - ROWS[idx(AB_SEC, AB_SX)]['kg'], 1)
+SCROLL2 = 329  # measured at 390 (S7P): H5.2 ♂ row (with its warn line) ends 16 px above the SaveBar; H5.2 ♀ and part of H5.1 ♂ above it
+boards.append(('abatere', 'abatere' + D39, screen([B.DATE, B.COPY, halls(b2), ft2], sv2, scroll=SCROLL2)))
 
-# 3 · valoare în afara limitei — H1.1 ♀ 350 g: error (D57 copy), refuzat, Salvează disabled until fixed
-m = default_modes(); m[idx('H1.1', 'F')] = ('error', 350)
+# 3 · valoare în afara limitei — H5.1 ♀ 350 g typed: error (D57 copy), refuzat, Salvează disabled until fixed (an input
+#   state, never saved: not a D39 example)
+ER_SEC, ER_G = 'H5.1', 350
+m = default_modes(); m[idx(ER_SEC, 'F')] = ('error', ER_G)
 b3 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft3, f3 = ftot(b3)
-sv3, nc, tot = savebar(b3, f'{lamp("fault", "refuzat")}<span>H1.1 <span class="ip-sex ip-sex--hen">♀</span> <span class="ip-num">350{NB}g</span> ·</span><span>scrie <span class="ip-num">1–300</span>{NB}g</span>', SAVE_OFF)
-assert (nc, n(tot, 1)) == (9, f'3{NB}015,1')
+sv3, nc, tot = savebar(b3, f'{lamp("fault", "refuzat")}<span>{ER_SEC} <span class="ip-sex ip-sex--hen">♀</span> <span class="ip-num">{ER_G}{NB}g</span> ·</span><span>scrie <span class="ip-num">1–300</span>{NB}g</span>', SAVE_OFF)
+assert (nc, tot) == (len(ROWS) - 1, rnd(TOT - ROWS[idx(ER_SEC, 'F')]['kg'], 1))
 boards.append(('valoare-in-afara-limitei', 'valoare în afara limitei', screen([B.DATE, B.COPY, halls(b3), ft3], sv3)))
 
-# 4 · stoc sub 0 — spec C2 sentence; D39 state example (start-of-day Breeder 2 stock 2 093 kg so that today's 3 332,5 kg gives −1 240)
+# 4 · stoc sub 0 — spec C2 sentence (−1 240 kg); D39 state example: the start-of-day Breeder 2 stock set so that today's
+#   real ♀ kg leaves −1 240 kg (real stock 18.11: 31 664,9 kg)
+SUB0 = 1240  # spec C2: "ar ajunge la −1 240 kg"
 m = default_modes(); b4 = [row(r, *mm) for r, mm in zip(ROWS, m)]
-ft4, f4 = ftot(b4, start_override={'ft-breeder2': 2093})
-assert n(round(f4[0]['after'])) == f'{MINUS}1{NB}240' and f4[0]['below0']
+BR = HB[0]; assert FTS[BR] == 'F'
+ft4, f4 = ftot(b4, start_override={BR: rnd(R.feed_kg(TODAY, 'F')) - SUB0})
+assert n(f4[0]['after']) == f'{MINUS}1{NB}240' and f4[0]['below0']
 sv4, _, _ = savebar(b4, stocklamp(f4), SAVE_KEY)
-boards.append(('stoc-sub-0', 'stoc sub 0 · exemplu de stare (D39)', screen([B.DATE, B.COPY, halls(b4), ft4], sv4, view_cls='ip-screen__view--end')))
+boards.append(('stoc-sub-0', 'stoc sub 0' + D39, screen([B.DATE, B.COPY, halls(b4), ft4], sv4, view_cls='ip-screen__view--end')))
 
-# 5 · salvat — all 12 rows confirmed (H3.2 ♂ 157, H4.2 ♀ 156 from yesterday) and saved: read-only, Toast with Anulează, Editează
+# 5 · salvat — all rows confirmed and saved: read-only, Toast with Anulează, Editează
 m = [('ro', r['today_g'] if r['today_g'] is not None else r['yesterday_g']) for r in ROWS]
 b5 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft5, f5 = ftot(b5)
-tot5 = round(sum(b['kg'] for b in b5), 1); br2 = round(f5[0]['after'])
-assert n(tot5, 1) == f'4{NB}398,9' and br2 == 27611 and n(f5[1]['days'], 1) == '3,8'
+tot5 = rnd(sum(b['kg'] for b in b5), 1); br2 = f5[0]['after']
+assert tot5 == TOT and rnd(br2, 1) == R.stock(TODAY)['F']
 sv5, _, _ = savebar(b5, '<span>Dr. Ceban ·</span><span>poți modifica până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Editează</button>', lead='salvat')
-toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Hrană zilnică salvată · <span class="ip-num">12</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc Breeder 2: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
+toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Hrană zilnică salvată · <span class="ip-num">{len(b5)}</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc {FTN[BR]}: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
 boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE}</div>', halls(b5), ft5], sv5, overlay=toast)))
 
 # 6 · eroare la salvare — connectivity: fault Banner + Reîncearcă (focus, S16P), typed values kept (draft in the browser); the Banner
@@ -200,7 +207,7 @@ boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE
 m = default_modes(); b6 = [row(r, *mm) for r, mm in zip(ROWS, m)]
 ft6, f6 = ftot(b6)
 sv6, nc6, tot6 = savebar(b6, stocklamp(f6), SAVE_KEY)
-assert (nc6, n(tot6, 1)) == (10, f'3{NB}691,3')
+assert (nc6, tot6) == (len(ROWS), TOT)
 ban = f'''<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Hrana zilnică nu s-a salvat: <span class="ip-num">{nc6}</span> rânduri · <span class="ip-num">{n(tot6, 1)}</span> kg, <span class="ip-num">{dd(TODAY)}</span>.</p><p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>'''
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([B.DATE, B.COPY, halls(b6), ft6, ban], sv6, view_cls='ip-screen__view--end')))
 
@@ -262,3 +269,6 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 {B.FONTS}<style>{CSS}{CSS_EXTRA.get(slug, '')}</style></head><body>{root}</body></html>'''
     pathlib.Path(f'/tmp/s7s/{stem}.html').write_text(wrap, encoding='utf-8')
     print('ok', stem, title, len(dc))
+if CANVAS and __name__ == '__main__':  # RF02: refresh the 7 hand-placed entries' h/title in place (x, y kept; canvas_rows.place)
+    import canvas_rows as CR
+    c = CR.load(ROOT); CR.place(c, STEM0, [(f'{STEM0}--{slug}', 390, VH, f'{TITLE0} · {state}') for slug, state, _ in boards]); CR.save(ROOT, c)

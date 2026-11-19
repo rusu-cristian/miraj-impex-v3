@@ -1,39 +1,56 @@
-"""Build the S7 · Hrană zilnică phone artboard (default state) from the extracts.
-Hîrbovăț, 16.11.2026, SAPT 40, Dr. Ceban mid-entry: 10 of 12 rows confirmed (allocations_today), H3.2 ♂ and H4.2 ♀
-still yesterday's suggestion, H1.2 ♂ 172 g (+11% vs guide 155 g). Composed from system classes only (FormHeader,
-DateField, Button, AllocationRow (ip-alloc--phone, S7P), Select, TextField, Lamp, SexCount, HallCard hall head, FeedTotals
-+ compact SaveBar); screen-only CSS (s7-*) is page layout with tokens. One tall phone board (canvas.md: taller h for a long
-scrolling form). savebar() is the one SaveBar shell shared with the state boards (s7s_build.py).
-python3 -I s7_build.py <repo_root> [height]
+"""Build the S7 · Hrană zilnică phone artboard (default state) from realdata (RF02; D151–D158, today 18.11.2026).
+Hîrbovăț, 18.11.2026, SAPT 59, Dr. Ceban (illustrative) has entered every row: the 8 rows of the 4 compartments with birds
+(H5.1 H5.2 H6.1 H6.2 × ♀ · ♂, the workbook's g/bird of the day), birds = alive at the start of the day (the fed count, C2:
+♀ 14 395 × 160 g = 2 303,2 kg); H7 empty since 14.11 = one muted line (D158d). Composed from system classes only
+(FormHeader, DateField, Button, AllocationRow (ip-alloc--phone, S7P), Select, TextField, Lamp, SexCount, HallCard hall head,
+FeedTotals + compact SaveBar); screen-only CSS (s7-*) is page layout with tokens. One tall phone board (canvas.md: taller h
+for a long scrolling form). savebar()/halls_html() are shared with the state boards (s7s_build.py).
+python3 -I s7_build.py <repo_root> [height] [--canvas]   (--canvas: refresh the entry's h/title in place, x and y kept)
 Writes design/canvas/project/S7-hrana-zilnica.dc.html and /tmp/s7/S7-hrana-zilnica.html (plain wrapper for renders)."""
 import sys, json, pathlib, datetime as dt
 
 ROOT = pathlib.Path(sys.argv[1])
-A = [a for a in sys.argv[1:] if a != '--canvas']  # --canvas: no canvas step (entries kept)
-H = int(A[1]) if len(A) > 1 else 3162  # S7P height (s7s/s6 pass 3162 too)
+A = [a for a in sys.argv[1:] if a != '--canvas']
+H = int(A[1]) if len(A) > 1 else 2426  # RF02 height (was 3162, S7P); s7s/s6 take this default (no int passed by importers)
 EX = ROOT / 'design/data/extracts'
-S = json.load(open(EX / 'sample-hirbovat-2026.json', encoding='utf-8'))
-GL = json.load(open(EX / 'guide-laying.json', encoding='utf-8'))
-FT = json.load(open(EX / 'feed-types.json', encoding='utf-8'))
-CY = json.load(open(EX / 'cycles.json', encoding='utf-8'))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import realdata as R  # RF02: every figure, date, week and stock from realdata (DATA03 extracts)
+from realdata import NB, MINUS, n, dd, rnd
 
-NB = ' '; MINUS = '−'
-TODAY = dt.date(2026, 11, 16); YDAY = TODAY - dt.timedelta(days=1)
-START = dt.date.fromisoformat(S['meta']['cycle_start'])
-WEEK = (TODAY - START).days // 7 + 1
-assert WEEK == 40 == S['summary_today']['cycle_week']
+def __getattr__(name):  # PEP 562: `S` is a legacy alias for rows not yet ported (s6, s13; RF00 §3); the S7 boards never read it
+    if name == 'S':
+        globals()['S'] = json.load(open(EX / 'sample-hirbovat-2026.json', encoding='utf-8'))  # literal-ok: superseded file, legacy alias only
+        return globals()['S']
+    raise AttributeError(name)
 
-def n(v, dec=0):
-    s = f'{abs(v):,.{dec}f}'.replace(',', 'X').replace('.', ',').replace('X', NB)
-    return (MINUS if v < 0 else '') + s
-def dd(d): return d.strftime('%d.%m.%Y')
+TODAY = R.TODAY; YDAY = TODAY - dt.timedelta(days=1)
+START = R.CYCLE_START                   # Hîrbovăț cycle from 22.02.2026 (SAPT 20)
+WEEK = R.WK                             # D151 age week: SAPT 59
+assert WEEK == R.sapt(TODAY) == R.C26['sapt_today']
 
-GUIDE = {r['sex']: r['feed_g'] for r in GL['rows'] if r['cycle_week'] == WEEK}
-assert GUIDE == {'F': 158, 'M': 155}
-FTN = {r['id']: r['name'] for r in FT['rows']}
-FTS = {r['id']: r['for_sex'] for r in FT['rows']}
-HB_TYPES = [r['id'] for r in FT['rows'] if r['farm_id'] == 'hirbovat' and r['active']]
-ROWS = S['allocations_today']; assert len(ROWS) == 12
+GUIDE = {sx: R.guide_feed(WEEK, sx) for sx in 'FM'}  # guide feed g/bird of the age week (♀ 157 · ♂ 156 at SAPT 59)
+assert all(GUIDE.values())
+FTN = {t: r['name'] for t, r in R.FEED_TYPES.items()}
+FTS = {t: r['for_sex'] for t, r in R.FEED_TYPES.items()}
+HB_TYPES = [t for t, r in R.FEED_TYPES.items() if r['farm_id'] == 'hirbovat' and r['active']]
+assert [FTS[t] for t in HB_TYPES] == ['F', 'M'] and all(R.FEED_TYPE[FTS[t]] == t for t in HB_TYPES)
+
+def _row(sec, sx):
+    """one allocation row of today: birds at the start of the day (the fed count), the day's g (today) and the day before's
+    (yesterday = the Copiază ieri suggestion), the workbook's kg."""
+    t, y = R.sd(TODAY, sec, sx), R.sd(YDAY, sec, sx)
+    return {'section': sec, 'sex': sx, 'alive': R.alive_start(sec, sx), 'guide_g': GUIDE[sx], 'feed_type_id': R.FEED_TYPE[sx],
+            'today_g': t['g'] if t and t['kg'] else None, 'yesterday_g': y['g'] if y and y['kg'] else None, 'kg': t['kg'] if t else None}
+ROWS = [_row(sec, sx) for sec in R.HSECS for sx in 'FM' if R.alive_start(sec, sx)]
+EMPTY = {h: R.empty_since(h) for h in R.HHALLS if not any(R.alive_start(s, sx) for s in R.HALL_SECS[h] for sx in 'FM')}
+assert len(ROWS) == 2 * len([s for s in R.HSECS if R.has_birds(s, YDAY)]) and all(EMPTY.values())
+assert sum(r['alive'] for r in ROWS if r['sex'] == 'F') == R.alive_farm('F', YDAY) == R.day(TODAY)['alive_F'] + R.deaths(TODAY, sx='F') + R.sold(TODAY, sx='F')
+# stock at the start of the day and the 3-day mean consumption (days left, run-out date: realdata.stock_days)
+STK0 = {t: R.stock(YDAY)[FTS[t]] for t in HB_TYPES}
+AVGK = {t: R.stock_days(FTS[t])[1] for t in HB_TYPES}
+AVG_WIN = (TODAY - dt.timedelta(days=2), TODAY)
+FOOT = (f'Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{R.drange(*AVG_WIN)}</span> ('
+        + ', '.join(f'{FTN[t]}: <span class="ip-num">{n(AVGK[t])}</span> kg/zi' for t in HB_TYPES) + '). Abatere sub 5 zile.')
 
 # ---------- icons (path data copied from the FormHeader / DateField / Select / FeedTotals previews; copy = Lucide "copy") ----------
 IC = {
@@ -85,8 +102,8 @@ def row(r):
     guide = r['guide_g']; assert guide == GUIDE[sx]
     confirmed = r['today_g'] is not None
     g = r['today_g'] if confirmed else r['yesterday_g']
-    kg = round(g * alive / 1000, 1)
-    if confirmed: assert abs(kg - r['kg']) < 0.051, (sec, sx, kg, r['kg'])
+    kg = rnd(g * alive / 1000, 1)
+    if confirmed: assert kg == r['kg'], (sec, sx, kg, r['kg'])
     dev = (g - guide) / guide * 100
     opts = ''.join(f'<option{" selected" if t == r["feed_type_id"] else ""}>{FTN[t]}</option>' for t in HB_TYPES if FTS[t] == sx)
     sel = f'<label class="ip-field"><span class="ip-label">Tip hrană<span class="ip-sr">, {sec} {word}</span></span><span class="ip-input ip-input--touch"><select>{opts}</select>{icon("chev", 16)}</span></label>'
@@ -110,41 +127,49 @@ def row(r):
 </div>''', confirmed, kg, r['feed_type_id'], sx, sec
 
 built = [row(r) for r in ROWS]
-halls = {}
-for r, b in zip(ROWS, built):
-    halls.setdefault(r['section'].split('.')[0], []).append((r, b[0]))
-HALLS = '<div class="ip-halls">' + ''.join(
-    f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(dict.fromkeys(r["section"] for r, _ in rs))}</span></span>{pair(n(sum(r["alive"] for r, _ in rs if r["sex"] == "F")), n(sum(r["alive"] for r, _ in rs if r["sex"] == "M")), sr="în viață ")}</header>
-<div class="ip-hall__sections">{"".join(b for _, b in rs)}</div></section>''' for h, rs in halls.items()) + '</div>'
+def halls_html(pairs):
+    """HallCards for [(row, AllocationRow html)] in hall order; a hall without birds today (H7 since 14.11) keeps its head and
+    shows one muted line "goală din <date>" (D158d, as S4's D161 line), no rows."""
+    hs = {}
+    for r, h in pairs: hs.setdefault(r['section'].split('.')[0], []).append((r, h))
+    out = ''
+    for h in R.HHALLS:
+        if h in EMPTY:
+            secs, f, m = R.HALL_SECS[h], 0, 0
+            body = f'<p class="ip-note ip-m0">{lamp("off", "goală")} din <span class="ip-num">{dd(EMPTY[h])}</span></p>'
+        else:
+            rs = hs[h]; secs = list(dict.fromkeys(r['section'] for r, _ in rs))
+            f = sum(r['alive'] for r, _ in rs if r['sex'] == 'F'); m = sum(r['alive'] for r, _ in rs if r['sex'] == 'M')
+            body = f'<div class="ip-hall__sections">{"".join(x for _, x in rs)}</div>'
+        out += f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(secs)}</span></span>{pair(n(f), n(m), sr="în viață ")}</header>
+{body}</section>'''
+    assert set(hs) | set(EMPTY) == set(R.HHALLS)
+    return '<div class="ip-halls">' + out + '</div>'
+HALLS = halls_html([(r, b[0]) for r, b in zip(ROWS, built)])
 
 # ---------- feed totals (FeedTotals, phone) ----------
-fbt = {(f['date'], f['feed_type_id']): f for f in S['feed_by_type_daily']}
-STK = {s['feed_type_id']: s for s in S['stock_today']}
 def ftrow(t):
     sx = FTS[t]; rs = [b for b in built if b[3] == t]
     conf = [b for b in rs if b[1]]; miss = [b for b in rs if not b[1]]
-    azi = round(sum(b[2] for b in conf), 1)
-    start = fbt[(YDAY.isoformat(), t)]['stock_end_kg']
+    azi = rnd(sum(b[2] for b in conf), 1)
+    start = STK0[t]
     after = start - azi
-    st = STK[t]; assert abs(round(after) - st['stock_kg']) <= 1 and abs(azi - fbt[(TODAY.isoformat(), t)]['consumption_kg']) < 0.05
-    days = after / st['avg_daily_kg_last3']; assert round(days, 1) == st['days_left']
-    run = dt.date.fromisoformat(st['run_out_date'])
+    assert rnd(after, 1) == R.stock(TODAY)[sx] and azi == R.feed_kg(TODAY, sx)  # the day's real consumption and end stock
+    days, _, run = R.stock_days(sx); assert abs(days - after / AVGK[t]) < 1e-9
     ok = days >= 5
     sign = '♀' if sx == 'F' else '♂'; c = 'hen' if sx == 'F' else 'rooster'
     left = f'fără <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span><span class="ip-sr">{"găini" if sx == "F" else "cocoși"}</span> ' + ', '.join(b[5] for b in miss) if miss else 'toate confirmate'  # FIN08: coloured sign
-    return {'t': t, 'days': days, 'ok': ok, 'html': f'''<div class="ip-ftot__row" role="group" aria-label="{FTN[t]}, pentru {"găini" if sx == "F" else "cocoși"}"><div class="ip-ftot__type"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span><div><span class="ip-ftot__name">{FTN[t]} <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span></span><span class="ip-ftot__sub">{len(conf)} din {len(rs)} rânduri confirmate</span></div></div><div class="ip-ftot__cell ip-ftot__cell--kg"><span class="ip-ftot__key">Azi</span><span class="ip-ftot__val">{n(azi, 1)}<small>kg</small></span><span class="ip-ftot__sub">{left}</span></div><div class="ip-ftot__cell ip-ftot__cell--stock"><span class="ip-ftot__key">Stoc după azi</span><span class="ip-ftot__val">{n(round(after))}<small>kg</small></span><span class="ip-ftot__sub">din <span class="ip-num">{n(round(start))}</span> kg</span></div><div class="ip-ftot__cell ip-ftot__cell--days"><span class="ip-ftot__key">Zile rămase</span><span class="ip-ftot__val">{n(days, 1)}<small>zile</small></span><span class="ip-ftot__sub">până pe <span class="ip-num">{dd(run)}</span></span></div><div class="ip-ftot__status">{lamp("ok", "în normă") if ok else lamp("warn", "abatere")}</div></div>'''}
+    return {'t': t, 'days': days, 'ok': ok, 'html': f'''<div class="ip-ftot__row" role="group" aria-label="{FTN[t]}, pentru {"găini" if sx == "F" else "cocoși"}"><div class="ip-ftot__type"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("feed")}</span><div><span class="ip-ftot__name">{FTN[t]} <span class="ip-sex ip-sex--{c}" aria-hidden="true">{sign}</span></span><span class="ip-ftot__sub">{len(conf)} din {len(rs)} rânduri confirmate</span></div></div><div class="ip-ftot__cell ip-ftot__cell--kg"><span class="ip-ftot__key">Azi</span><span class="ip-ftot__val">{n(azi, 1)}<small>kg</small></span><span class="ip-ftot__sub">{left}</span></div><div class="ip-ftot__cell ip-ftot__cell--stock"><span class="ip-ftot__key">Stoc după azi</span><span class="ip-ftot__val">{n(after)}<small>kg</small></span><span class="ip-ftot__sub">din <span class="ip-num">{n(start)}</span> kg</span></div><div class="ip-ftot__cell ip-ftot__cell--days"><span class="ip-ftot__key">Zile rămase</span><span class="ip-ftot__val">{n(days, 1)}<small>zile</small></span><span class="ip-ftot__sub">până pe <span class="ip-num">{dd(run)}</span></span></div><div class="ip-ftot__status">{lamp("ok", "în normă") if ok else lamp("warn", "abatere")}</div></div>'''}
 FTR = [ftrow(t) for t in HB_TYPES]
-w0, w1 = STK[HB_TYPES[0]]['avg_window']
-avg = ', '.join(f'{FTN[t]}: <span class="ip-num">{n(STK[t]["avg_daily_kg_last3"])}</span> kg/zi' for t in HB_TYPES)
 FTOT = f'''<section class="ip-ftot" aria-labelledby="ft-h"><div class="ip-ftot__head"><h2 class="ip-cap ip-m0" id="ft-h">Total pe tip de hrană</h2><span class="ip-note"><span class="ip-num">{dd(TODAY)}</span> · doar rânduri confirmate</span></div>
 {"".join(f["html"] for f in FTR)}
-<p class="ip-note ip-ftot__foot">Zile rămase = stocul după azi ÷ consumul mediu <span class="ip-num">{dt.date.fromisoformat(w0).strftime("%d.%m")}–{dd(dt.date.fromisoformat(w1))}</span> ({avg}). Abatere sub 5 zile.</p></section>'''
+<p class="ip-note ip-ftot__foot">{FOOT}</p></section>'''
 
 # ---------- save bar (compact FeedTotals summary; lamp word "abatere" per D42/D50, detail names type + days) ----------
 # One SaveBar shell for the default and the state boards (s7s_build.py imports savebar/sum_rows). Two lines at 390 (S7P):
 # line 1 = wheat · "n din m rânduri ·" · kg; line 2 = one status (Lamp + word + detail) or the saved meta. Each segment
 # is one no-wrap flex item (additions.css §20), so a narrower bar wraps between segments, never inside a figure.
-# "2 de confirmat" is not repeated on line 2: it is 12 − 10 from line 1, and each such row says "de confirmat" (S7P).
+# An unconfirmed count is not repeated on line 2: it is m − n from line 1, and each such row says "de confirmat" (S7P).
 FEED14 = f'<span class="ip-rec ip-rec--feed">{icon("feed", 14)}</span>'
 def sum_rows(nconf, nrows, kg, lead=''):
     kgs = f'<span><span class="ip-num">{n(kg, 1)}</span> kg</span>' if kg is not None else '<span>– kg</span>'
@@ -152,11 +177,11 @@ def sum_rows(nconf, nrows, kg, lead=''):
     return f'{FEED14}{rows}{kgs}'
 def savebar(line1, line2, key):
     return f'''<div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line">{line1}</span><span class="ip-savebar__line">{line2}</span></span>{key}</div>'''
-nconf = sum(1 for b in built if b[1]); total = round(sum(b[2] for b in built if b[1]), 1)
+nconf = sum(1 for b in built if b[1]); total = rnd(sum(b[2] for b in built if b[1]), 1)
 worst = min(FTR, key=lambda f: f['days'])
 slamp = (lamp('warn', 'abatere') + f'<span>{FTN[worst["t"]]} <span class="ip-num">{n(worst["days"], 1)}</span> zile</span>') if not worst['ok'] else lamp('ok', 'în normă') + '<span>stoc</span>'
 SAVE = savebar(sum_rows(nconf, len(built), total), slamp, '<button type="button" class="ip-btn ip-btn--primary ip-btn--touch">Salvează</button>')
-assert (nconf, n(total, 1)) == (10, f'3{NB}691,3')
+assert (nconf, total) == (len(ROWS), rnd(R.feed_kg(TODAY, 'F') + R.feed_kg(TODAY, 'M'), 1))  # screens.md #s7: 8 rânduri · 2 457,9 kg
 
 BODY = f'''<div class="ip-screen">
 {HEAD}
@@ -211,4 +236,7 @@ wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{TI
 {FONTS}<style>{CSS}</style></head><body>{root}</body></html>'''
 pathlib.Path('/tmp/s7').mkdir(exist_ok=True)
 pathlib.Path(f'/tmp/s7/{STEM}.html').write_text(wrap, encoding='utf-8')
+if '--canvas' in sys.argv[2:] and __name__ == '__main__':  # RF02: refresh the hand-placed entry's h/title in place (x, y kept; canvas_rows.place)
+    import canvas_rows as CR
+    c = CR.load(ROOT); CR.place(c, STEM, [(STEM, 390, H, TITLE)]); CR.save(ROOT, c)
 print('ok', STEM, H, len(dc))

@@ -9,7 +9,7 @@ CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summar
 stays on one line through HallCard's span.ip-eggs__base (S6P, system since FIN15). Field names = section heading + label via aria-labelledby (S6P).
 One tall phone board (canvas.md: taller h for a long scrolling form), SaveBar sticky at the foot, as S7.
 python3 -I s6_build.py <repo_root> [heights.json, default s6_heights.json]
-Imports s7_build (it rewrites the S7 default board at 3162, byte-identical). Writes
+Imports s7_build (it rewrites the S7 default board at its default height, byte-identical). Writes
 design/canvas/project/S6-zilnic.dc.html and /tmp/s6/S6-zilnic.html (plain wrapper for renders)."""
 import sys, json, pathlib, importlib, datetime as dt
 
@@ -19,7 +19,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 STEM, TITLE = 'S6-zilnic', 'S6 · Zilnic'
 H = json.loads(HP.read_text())[STEM] if HP and HP.exists() else 3400
 
-sys.argv = ['s7_build.py', str(ROOT), '3162']
+sys.argv = ['s7_build.py', str(ROOT)]  # RF02: s7_build's own default height
 sys.path.insert(0, str(HERE))
 B = importlib.import_module('s7_build')
 n, dd, sexv, lamp, NB, MINUS = B.n, B.dd, B.sexv, B.lamp, B.NB, B.MINUS

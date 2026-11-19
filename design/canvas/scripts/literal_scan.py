@@ -7,7 +7,7 @@ D152 (H1.x/H3.x/H4.x, hall H1/H3/H4 next to "Hîrbovăț"), 16.11.2026 as today,
 cycle start 10.02.2026, the superseded sample's figures RF00 lists (25 252, 25 257, 2 685, 26 765, 29 825, 28 252, 3 967, 18 688, 3 691,
 31 450, 4 121/4 119/4 130, 8 475),
 the sample file, cycle_week, "age − 18" and "47 săpt." (Seria 2025 is SAPT 19–65 now, D151).
-Allowed: Telița codes (H1/H3 with "Telița" in reach), Seria 2025 weeks (SAPT 40 with "Seria 2025" in reach), a script line
+Allowed: Telița codes (H1/H3 with "Telița" in reach), Seria 2025 weeks (SAPT 40/41 with "Seria 2025" in reach), a script line
 marked `literal-ok` (say why on the line), and the ALLOW entries below (board stem prefix, pattern id, context regex) for
 what RF00 keeps (D39 examples, Telița replays). When a row's RF job lands, add it to PORTED."""
 import sys, re, pathlib
@@ -19,6 +19,7 @@ PATTERNS = [  # id, regex, applies to ('dc' board, 'py' script)
     ('old-hall', re.compile(r'(?<![\w.\-/#])H[134](?![\w.\-])'), 'dc py'),
     ('today-16.11', re.compile(r'16\.11\.2026|\bazi 16\.11\b|2026-11-16'), 'dc py'),
     ('sapt-40', re.compile(rf'(?i)\bsapt\.?{SP}*40\b'), 'dc py'),
+    ('sapt-41', re.compile(rf'(?i)\bsapt\.?{SP}*41\b'), 'dc py'),  # D161 (RF02): the old sample's next week
     ('start-10.02', re.compile(r'10\.02\.2026|2026-02-10'), 'dc py'),
     ('sample-figure', re.compile(rf'(?<![\d  ])(?:25{SP}?252|25{SP}?257|2{SP}685|26{SP}?765|29{SP}?825|28{SP}?252|3{SP}967|18{SP}?688|3{SP}691|31{SP}?450|4{SP}121|4{SP}119|4{SP}130|8{SP}475)(?![\d])'), 'dc py'),
     ('sample-file', re.compile(r'sample-hirbovat|sample_hirbovat'), 'dc py'),
@@ -27,7 +28,7 @@ PATTERNS = [  # id, regex, applies to ('dc' board, 'py' script)
     ('weeks-47', re.compile(rf'\b47{SP}?(?:săpt|săptămâni)'), 'dc py'),
 ]
 NEAR = 160  # chars around a board hit searched for context
-CTX_OK = {'old-hall': re.compile(r'Teli[țţt]a'), 'sapt-40': re.compile(r'Seria 2025')}
+CTX_OK = {'old-hall': re.compile(r'Teli[țţt]a'), 'sapt-40': re.compile(r'Seria 2025'), 'sapt-41': re.compile(r'Seria 2025')}
 CTX_NEED = {'old-hall': re.compile(r'Hîrbovăț|Hirbovat|Hala H[134]\b|H1, H3|H3, H4')}  # boards: a bare H1/H3/H4 only counts at Hîrbovăț
 ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match) — what RF00 keeps; add with the reason
 ]
@@ -57,7 +58,7 @@ ROWS = [
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
 ]
-PORTED = {'S4R'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S7'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
