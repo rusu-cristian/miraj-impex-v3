@@ -1,8 +1,10 @@
 """S19 · Ferme și secțiuni (spec B1, screens.md S19; nav map: Setări › Ferme și secțiuni, owner). Desktop-led like S17/S18
-(a Setări page): desktops first, then the phone. Today = 16.11.2026 (D23/D24).
-Content, from the extracts only (farms-sections, cycles through s18_build): Telița creștere, guide Ross 308 creștere,
-sections H1 H2 H3 H6 H5-1 H5-2, empty since its cycle closed 28.02.2026 (D25); Hîrbovăț ouat, guide Ross 308 ouat, halls
-H1 H3 H4 with compartments H1.1 … H4.2, laying cycle open from 10.02.2026 (SAPT 40). Guide names illustrative (D22).
+(a Setări page): desktops first, then the phone. RF11: every code, date, week and section state from realdata (through
+s18_build and the SYS10 top; today 18.11.2026, D152; weeks = bird age weeks, D151).
+Content: Telița creștere, guide Ross 308 creștere, its six sections (one level), empty since its cycle closed (D25); Hîrbovăț
+ouat, guide Ross 308 ouat, halls H5–H7 with two compartments each, laying cycle open from its start (♂ 22.02.2026) in
+today's age week; H7 empty since its sale (14.11, D155): lamp "goală" + "din 14.11" on the hall row (D158d). Edits on the
+real tree are D39 examples named by the SYS10 top (ADD_CODE, DUP_CODE, BLOCKED, TEL_*). Guide names illustrative (D22).
 The farm panel's section tree is the SYS10 SectionTree (additions.css §28): its markup helpers are read from
 design/system/scripts/sys10_build.py (the part above its preview blocks, so nothing is written there).
 Boards (row below S18: y 32656 + 1632 + 120 = 34408; x step w + 80; D110):
@@ -10,9 +12,12 @@ Boards (row below S18: y 32656 + 1632 + 120 = 34408; x step w + 80; D110):
                                              of farms (Tip, Ghid Tag, Secțiuni, Ciclu, Editează)
   --hirbovat                                 list beside the non-modal farm SidePanel (Hîrbovăț): Nume (focus), Tip read-only
                                              (cycle open), Ghid Select + next-cycle rule, SectionTree, Salvează ferma
-  --telita                                   Telița panel (empty farm): Tip SegmentedControl, H5-2 menu open (Retrage live)
-  --retragere-blocata                        Hîrbovăț panel, H1.1 menu open: Retrage aria-disabled with the B1 reason
-  --retrage-sectiunea                        D39: Retrage H5-2 Dialog over the inert page + panel, focus on Anulează
+  --telita                                   Telița panel (empty farm): Tip SegmentedControl, its last section's menu open
+                                             (Retrage live)
+  --retragere-blocata                        Hîrbovăț panel, the first compartment with birds (BLOCKED) menu open: Retrage
+                                             aria-disabled with the B1 reason
+  --retrage-sectiunea                        D39: Retrage Telița's last section, Dialog over the inert page + panel, focus on
+                                             Anulează
   --fara-ghid                                D39/D51: Telița without a guide: Tag "fără ghid" in the list and the tree, Ghid
                                              "Fără ghid" with the actuals-only line (the open list is left to S19S)
   --ghid-nepotrivit                          D39: Telița Tip back to Creștere with Ross 308 ouat kept → the B1 sentence,
@@ -41,6 +46,7 @@ T = importlib.util.module_from_spec(sp)
 with contextlib.redirect_stdout(io.StringIO()):
     sp.loader.exec_module(T)   # rewrites the S18 (and through s17_build S17/S14S/S2/S7) boards byte-identical
 SC, Q, s4, A = T.SC, T.Q, T.s4, T.A
+R = T.R   # realdata (RF10/RF11)
 icon, lamp, num, dd, NB = T.icon, T.lamp, T.num, T.dd, T.NB
 cT, cH, WK, GUIDE, FARM, FS = T.cT, T.cH, T.WK, T.GUIDE, T.FARM, T.FS
 
@@ -50,7 +56,9 @@ CUT = '# ------------------------------------------------------------------ bloc
 assert SRC.count(CUT) == 1
 ST = {'__name__': 'sys10_parts', '__file__': str(ROOT / 'design/system/scripts/sys10_build.py')}  # sys10 finds the repo from its own path
 exec(compile(SRC.split(CUT)[0], 'sys10_build.py', 'exec'), ST)
-assert ST['DATA'] == FS and ST['BIRDS'] == {'hirbovat': True, 'telita': False}
+assert ST['DATA'] is FS and ST['RD'] is R   # one realdata module (s18_build imported it)
+BLOCKED, ADD_HALL, ADD_CODE, DUP_CODE = ST['BLOCKED'], ST['ADD_HALL'], ST['ADD_CODE'], ST['DUP_CODE']
+TEL_RET, TEL_UP, TEL_UP_ORDER = ST['TEL_RET'], ST['TEL_UP'], ST['TEL_UP_ORDER']
 
 # ================================================================= data (extracts only)
 TYPE_RO = {'growth': 'Creștere', 'laying': 'Ouat'}
@@ -58,12 +66,13 @@ TYPE_LO = {'growth': 'creștere', 'laying': 'ouat'}
 assert [f['id'] for f in FS['farms']] == ['telita', 'hirbovat']
 assert FARM['telita']['type'] == 'growth' and FARM['hirbovat']['type'] == 'laying'
 assert GUIDE == {'g-growth': 'Ross 308 creștere', 'g-laying': 'Ross 308 ouat'}
-assert cH['start_date'] == '2026-02-10' and cH['end_date'] is None and WK == 40
-assert cT['end_date'] == '2026-02-28'
+assert cH is R.C26 and cT is R.CTEL and WK == R.WK == R.sapt(R.TODAY)
+assert cH['end_date'] is None and R.D(cH['start_date']) == R.CYCLE_START and cT['end_date'] is not None
+assert R.COUNTS_TELITA['totals']['all'] == 0   # Telița empty today (real)
 ORDER = ['hirbovat', 'telita']   # list order: the farm with an open cycle first, then by name
 def tree_of(fid): return ST['farm_tree'](fid)
-assert tree_of('telita') == [(c, []) for c in ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']]
-assert tree_of('hirbovat') == [('H1', ['H1.1', 'H1.2']), ('H3', ['H3.1', 'H3.2']), ('H4', ['H4.1', 'H4.2'])]
+assert tree_of('telita') == [(c, []) for c in R.SECTIONS['telita']]
+assert tree_of('hirbovat') == [(h, R.HALL_SECS[h]) for h in R.HHALLS]
 def pl(k, one, many): return f'<span class="ip-nowrap">{num(k)} {one if k == 1 else many}</span>'
 def sec_count(fid):
     t = tree_of(fid); halls = [x for x in t if x[1]]
@@ -73,7 +82,8 @@ def sec_count(fid):
 def sec_codes(fid):
     t = tree_of(fid)
     if any(k for _, k in t):
-        return ' · '.join(f'<span class="ip-nowrap">{" ".join(k)}</span>' for _, k in t)
+        # a wrapped line never ends on "·": the separator stays with the hall's codes after it (RF11, seen at 1280)
+        return ' '.join(f'<span class="ip-nowrap">{"· " if i else ""}{" ".join(k)}</span>' for i, (_, k) in enumerate(t))
     return ' '.join(f'<span class="ip-nowrap">{c}</span>' for c, _ in t)
 def cyc_cell(fid):
     if fid == 'hirbovat':
@@ -355,21 +365,22 @@ desk('', '', page(None))
 # 2 · Hîrbovăț panel (open cycle): Tip read-only, guide rule, the tree with birds; focus on Nume (first field)
 desk('--hirbovat', 'Hîrbovăț · panoul fermei',
      vp('hirbovat') + fpanel('hirbovat', tip_field('hirbovat', readonly=True), ghid_field('hirbovat'), tree_farm('hirbovat'), focus_name=True), PH)
-# 3 · Telița panel (empty farm): Tip editable, H5-2 menu open with Retrage live
-desk('--telita', 'Telița · panoul fermei · meniul H5-2',
-     vp('telita') + fpanel('telita', tip_field(sel='growth'), ghid_field('telita'), tree_farm('telita', open_code='H5-2', istate={4: 'is-active'})), PH)
-# 4 · Retrage blocked: Hîrbovăț H1.1 has birds (real, cycle open)
-desk('--retragere-blocata', 'Hîrbovăț · retragere blocată: H1.1 are păsări',
+# 3 · Telița panel (empty farm): Tip editable, its last section's menu open with Retrage live
+desk('--telita', f'Telița · panoul fermei · meniul {TEL_RET}',
+     vp('telita') + fpanel('telita', tip_field(sel='growth'), ghid_field('telita'), tree_farm('telita', open_code=TEL_RET, istate={4: 'is-active'})), PH)
+# 4 · Retrage blocked: Hîrbovăț's first compartment with birds (real, cycle open)
+assert R.alive(BLOCKED, 'F') and R.alive(BLOCKED, 'M')
+desk('--retragere-blocata', f'Hîrbovăț · retragere blocată: {BLOCKED} are păsări',
      vp('hirbovat') + fpanel('hirbovat', tip_field('hirbovat', readonly=True), ghid_field('hirbovat'),
-                             tree_farm('hirbovat', open_code='H1.1', istate={4: 'is-active'})), PH)
-# 5 · Retrage H5-2 Dialog (D39), focus on Anulează, page and panel inert
+                             tree_farm('hirbovat', open_code=BLOCKED, istate={4: 'is-active'})), PH)
+# 5 · Retrage the Telița section (D39: none was ever retired), focus on Anulează, page and panel inert
 DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
-       f'<h2 id="dlg-t">Retrage secțiunea H5-2 de la Telița</h2>'
-       f'<p class="ip-dialog__note" id="dlg-n">H5-2 nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte. '
+       f'<h2 id="dlg-t">Retrage secțiunea {TEL_RET} de la Telița</h2>'
+       f'<p class="ip-dialog__note" id="dlg-n">{TEL_RET} nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte. '
        f'O secțiune retrasă nu se mai poate reactiva.</p>'
        f'<div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button>'
        f'<button type="button" class="ip-btn ip-btn--destructive">Retrage secțiunea</button></div></div></div>')
-desk('--retrage-sectiunea', 'Telița · Retrage H5-2 · exemplu de stare (D39)',
+desk('--retrage-sectiunea', f'Telița · Retrage {TEL_RET} · exemplu de stare (D39)',
      vp('telita', inert=True) + fpanel('telita', tip_field(sel='growth'), ghid_field('telita'), tree_farm('telita'), inert=True) + DLG, PH)
 # 6 · fără ghid (D39/D51): Telița without a guide, the Ghid list open (filtered to creștere)
 desk('--fara-ghid', 'Telița fără ghid · exemplu de stare (D39)',

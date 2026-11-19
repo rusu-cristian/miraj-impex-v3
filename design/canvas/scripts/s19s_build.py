@@ -1,8 +1,9 @@
 """S19S · Ferme și secțiuni · state boards (spec B1; D110, D75, D111). Imports s19_build (which rewrites the 10 S19 boards,
 and through s18_build the S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S19 states on the same row (y 34408).
 Desktops first (a Setări page, as S17S/S18S): the new desktops follow the nine S19 desktops; the S19 phone moves right
-(x only). Today = 16.11.2026 (D23/D24). Real: farms, types, codes, halls, Hîrbovăț open SAPT 40, Telița empty from
-28.02.2026; guide names illustrative (D22). Every edit not in the extracts is a D39 example, said in the board title.
+(x only). RF11: realdata through s19_build (today 18.11.2026, D152; age weeks, D151). Real: farms, types, codes, halls,
+Hîrbovăț open in today's age week (H7 empty since 14.11), Telița empty since its cycle closed; guide names illustrative (D22).
+Every edit not in the extracts is a D39 example on the real codes (SYS10 top: ADD_CODE, DUP_CODE, TEL_*), said in the title.
 Boards
   --se-incarca            header kept (no farm names in the meta yet), framed table skeleton, hidden status
   --eroare-la-incarcare   header kept, fault Banner + Reîncearcă in place of the table
@@ -16,12 +17,12 @@ Boards
   --nume-folosit          D39: Fermă nouă "Hirbovat" (ouat): the name is taken by Hîrbovăț (compared without case and
                           diacritics, D111)
   --ghid-lista            D39: Telița without a guide, the Ghid list open (Fără ghid · Ghiduri de creștere)
-  --adauga-compartiment   D39: Hîrbovăț, Adaugă compartiment in H1, "H1.3" typed, save failed: tree Banner + Reîncearcă
-                          (focus, S16P; FX04, was the row's Salvează), code kept
-  --cod-duplicat          D39: Hîrbovăț, "H1.2" typed in the new-compartment row: error, focus in the field
-  --redenumeste-cod-gol   D39: Telița, Redenumește H5-2 with the code cleared: error, focus in the field
-  --retrasa-mutata        D39: Telița after the Retrage H5-2 Dialog (H5-2 retrasă, listed last, no key) and then Mută în
-                          sus on H3 (a 2-a din 5; focus stays on H3's key; live region)
+  --adauga-compartiment   D39: Hîrbovăț, Adaugă compartiment in the first hall, its next code (ADD_CODE) typed, save
+                          failed: tree Banner + Reîncearcă (focus, S16P; FX04, was the row's Salvează), code kept
+  --cod-duplicat          D39: Hîrbovăț, that hall's last code (DUP_CODE) typed in the new-compartment row: error, focus
+  --redenumeste-cod-gol   D39: Telița, Redenumește its last section with the code cleared: error, focus in the field
+  --retrasa-mutata        D39: Telița after the Retrage Dialog (its last section retrasă, listed last, no key) and then
+                          Mută în sus on its third (a 2-a din 5; focus stays on that key; live region)
 No screen CSS of its own (the Banner with Reîncearcă is additions.css §49, FIN03; the Toast is §48, FIN02); S19P: the skeleton rows
 are the system `tr.ip-table__skel` (additions.css §42), the Tip error uses §41, the tree error line gets the alert icon. Fix 1: every
 multi-line Banner puts its icon on the first line (s7s-banner, §49 with a key); Ghid on Fermă nouă is not required (s19_build).
@@ -41,6 +42,7 @@ with contextlib.redirect_stdout(io.StringIO()):
 T, ST, SC, Q, s4 = M.T, M.ST, M.SC, M.Q, M.s4
 icon, lamp, num, dd, NB = M.icon, M.lamp, M.num, M.dd, M.NB
 FARM, GUIDE, WK, cH, cT = M.FARM, M.GUIDE, M.WK, M.cH, M.cT
+ADD_HALL, ADD_CODE, DUP_CODE, TEL_RET, TEL_UP, TEL_UP_ORDER = M.ADD_HALL, M.ADD_CODE, M.DUP_CODE, M.TEL_RET, M.TEL_UP, M.TEL_UP_ORDER
 S19_OUT = [{k: b[k] for k in ('stem', 'w', 'h')} for b in M.out]
 STEM, TT = M.STEM, M.TT
 assert [b['stem'] for b in S19_OUT][-1] == STEM + '--telefon' and len(S19_OUT) == 10
@@ -111,12 +113,12 @@ def edit(level, label, value, e=None, focus=True, is_last=True):
         assert r.count(err('st-e-err', e)) == 1   # S19P: alert icon, as the panel field errors (SYS10 draws it since FIN13)
     return r
 TREE_BANNER = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body">'
-               '<p class="ip-m0">Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.</p>'
+               f'<p class="ip-m0">Compartimentul {ADD_CODE} nu s-a salvat: conexiunea s-a întrerupt.</p>'
                '<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Codul scris rămâne în rând.</p></div>'
                '<button type="button" class="ip-btn ip-btn--secondary ip-banner__key ip-focus">Reîncearcă</button></div>')  # FX04 (D143): §49 + Reîncearcă (focus, S16P)
-ORDER_UP = ['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2']
-assert [c for c, _ in M.tree_of('telita')] == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
-MOVED = 'H3 mutată în sus: a 2-a din 5 secțiuni la Telița.'
+ORDER_UP = TEL_UP_ORDER
+assert [c for c, _ in M.tree_of('telita')] == M.R.SECTIONS['telita'] and ORDER_UP.index(TEL_UP) == 1
+MOVED = ST['moved'](len(ORDER_UP) - 1)   # TEL_RET retired first: 5 active
 
 # ================================================================= CSS (screen only, tokens only)
 CSS19S = ''   # FIN03: the Banner action key is additions.css §49 (.ip-banner__key); no screen CSS left
@@ -168,30 +170,30 @@ desk('--nume-folosit', f'Fermă nouă · nume deja folosit · {D39}: „Hirbovat
 # 8 · Ghid list open (D39 fără ghid): filtered to the farm's type
 desk('--ghid-lista', f'Telița fără ghid · lista Ghid deschisă · {D39}',
      M.vp('telita', noguide=('telita',)) + M.fpanel('telita', TEL_TIP, M.ghid_field('telita', 'open'), M.tree_farm('telita', noguide=True)), PH)
-# 9 · Adaugă compartiment H1.3, save failed (D39): Banner + Reîncearcă (focus, S16P; FX04) over the tree, the code kept in the row
-r = edit(3, 'Compartiment nou în H1', 'H1.3', focus=False)
+# 9 · Adaugă compartiment ADD_CODE, save failed (D39): Banner + Reîncearcă (focus, S16P; FX04) over the tree, the code kept in the row
+r = edit(3, f'Compartiment nou în {ADD_HALL}', ADD_CODE, focus=False)
 assert r.count('class="ip-btn ip-btn--secondary">Salvează') == 1
-desk('--adauga-compartiment', f'Hîrbovăț · Adaugă compartiment H1.3 · salvarea a eșuat · {D39}',
-     M.vp('hirbovat') + M.fpanel('hirbovat', HIR_TIP, M.ghid_field('hirbovat'), tree_x('hirbovat', banner=TREE_BANNER, after={'H1': r})), PH)
-# 10 · cod duplicat (D39): "H1.2" typed in the new-compartment row
-desk('--cod-duplicat', f'Hîrbovăț · Adaugă compartiment · cod deja folosit · {D39}: „H1.2”',
+desk('--adauga-compartiment', f'Hîrbovăț · Adaugă compartiment {ADD_CODE} · salvarea a eșuat · {D39}',
+     M.vp('hirbovat') + M.fpanel('hirbovat', HIR_TIP, M.ghid_field('hirbovat'), tree_x('hirbovat', banner=TREE_BANNER, after={ADD_HALL: r})), PH)
+# 10 · cod duplicat (D39): DUP_CODE typed in the new-compartment row
+desk('--cod-duplicat', f'Hîrbovăț · Adaugă compartiment · cod deja folosit · {D39}: „{DUP_CODE}”',
      M.vp('hirbovat') + M.fpanel('hirbovat', HIR_TIP, M.ghid_field('hirbovat'),
-                                 tree_x('hirbovat', after={'H1': edit(3, 'Compartiment nou în H1', 'H1.2', 'H1.2 există deja în H1. Scrie alt cod, de exemplu H1.3.')})), PH)
-# 11 · Redenumește H5-2 with the code cleared (D39)
-desk('--redenumeste-cod-gol', f'Telița · Redenumește H5-2 · cod gol · {D39}',
+                                 tree_x('hirbovat', after={ADD_HALL: edit(3, f'Compartiment nou în {ADD_HALL}', DUP_CODE, ST['DUP_MSG'])})), PH)
+# 11 · Redenumește TEL_RET with the code cleared (D39)
+desk('--redenumeste-cod-gol', f'Telița · Redenumește {TEL_RET} · cod gol · {D39}',
      M.vp('telita') + M.fpanel('telita', TEL_TIP, M.ghid_field('telita'),
-                               tree_x('telita', replace={'H5-2': edit(2, 'Cod nou pentru H5-2', '', 'Scrie codul nou al secțiunii H5-2 sau apasă Anulează.', is_last=False)})), PH)
-# 12 · after the Retrage H5-2 Dialog, then Mută în sus on H3 (D39): the list beside counts 5 active sections in the new order
+                               tree_x('telita', replace={TEL_RET: edit(2, f'Cod nou pentru {TEL_RET}', '', f'Scrie codul nou al secțiunii {TEL_RET} sau apasă Anulează.', is_last=False)})), PH)
+# 12 · after the Retrage TEL_RET Dialog, then Mută în sus on TEL_UP (D39): the list beside counts 5 active sections in the new order
 keep = M.tree_of
-M.tree_of = lambda fid: [t for t in ST['farm_tree'](fid, ORDER_UP) if t[0] != 'H5-2'] if fid == 'telita' else keep(fid)
+M.tree_of = lambda fid: [t for t in ST['farm_tree'](fid, ORDER_UP) if t[0] != TEL_RET] if fid == 'telita' else keep(fid)
 try:
     VP = M.vp('telita')
 finally:
     M.tree_of = keep
-assert '<span class="ip-num">5</span> secțiuni' in VP and 'H5-2' not in VP.split('<span class="s19-fn">Telița</span>')[1].split('</tr>')[0]
-desk('--retrasa-mutata', f'Telița · H5-2 retrasă, apoi H3 mutată în sus · {D39} · anunț live „{MOVED}”',
+assert '<span class="ip-num">5</span> secțiuni' in VP and TEL_RET not in VP.split('<span class="s19-fn">Telița</span>')[1].split('</tr>')[0]
+desk('--retrasa-mutata', f'Telița · {TEL_RET} retrasă, apoi {TEL_UP} mutată în sus · {D39} · anunț live „{MOVED}”',
      VP + M.fpanel('telita', TEL_TIP, M.ghid_field('telita'),
-                   tree_x('telita', note=ST['farm_note']('telita', 1), live=MOVED, order=ORDER_UP, retired=('H5-2',), kstates={'H3': 'ip-focus'})), PH)
+                   tree_x('telita', note=ST['farm_note']('telita', 1), live=MOVED, order=ORDER_UP, retired=(TEL_RET,), kstates={TEL_UP: 'ip-focus'})), PH)
 
 pathlib.Path('/tmp/s19/boards.json').write_text(json.dumps(S19_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))
 

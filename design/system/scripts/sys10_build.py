@@ -1,9 +1,13 @@
 """Build the SYS10 preview (SectionTree, S19 Ferme și secțiuni): python3 sys10_build.py
-Names and codes come from design/data/extracts/farms-sections.json (real); guide names are illustrative (D22)."""
-import json, pathlib
+RF11: names, codes, section states and dates come from design/canvas/scripts/realdata.py (farms-sections, counts, cycles;
+today 18.11.2026, D152); guide names are illustrative (D22). Every edit shown on a real code is a D39 state example.
+@dsCard height = the content (.ip-root) height at 1440 + 32 (FIN13B); re-measure after a change (H_CARD)."""
+import sys, pathlib
 REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
-DATA = json.loads((REPO / 'design/data/extracts/farms-sections.json').read_text(encoding='utf-8'))
+sys.path.insert(0, str(REPO / 'design/canvas/scripts'))
+import realdata as RD   # s19_build execs this part after s18_build imported it: the same module
+DATA = RD.FS
 
 def svg(paths, cls='ip-icon ip-icon--16'):
     return f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true">{paths}</svg>'
@@ -30,9 +34,15 @@ def farm_tree(fid, order=None):
         tree.sort(key=lambda t: order.index(t[0]))
     return tree
 
-# Section state today (16.11.2026): Hîrbovăț's laying cycle is open (from 10.02.2026), so every compartment holds birds;
-# Telița's growth cycle closed on 28.02.2026 (birds moved to Hîrbovăț, D25), so its sections are empty.
-BIRDS = {'hirbovat': True, 'telita': False}
+# Section state today (RD.TODAY, 18.11.2026): Hîrbovăț's laying cycle is open (from RD.CYCLE_START), its halls hold birds
+# except the one emptied by sale (H7 since 14.11, D155/D158d); Telița's growth cycle closed when its birds moved to
+# Hîrbovăț (D25), so every Telița section is empty. Codes are unique per farm only (Telița H6 ≠ Hîrbovăț H6): look up by farm.
+assert RD.COUNTS_TELITA['totals']['all'] == 0
+def birds(fid, code):
+    """the section (or every compartment of a hall) holds birds at the end of today."""
+    return fid == 'hirbovat' and RD.has_birds(code)
+def kids_of(fid, code):
+    return next((k for c, k in farm_tree(fid) if c == code), [])
 
 def plural(n, one, many):
     return f'<span class="ip-num">{n}</span> {one if n == 1 else many}'
@@ -50,6 +60,10 @@ def farm_note(fid, retired=0):
 
 # ------------------------------------------------------------------ parts
 LAMP = {True: '<span class="ip-lamp ip-lamp--ok">cu păsări</span>', False: '<span class="ip-lamp ip-lamp--off">goală</span>'}
+def state_cell(fid, code, kind, b):
+    """Stare: the lamp; an empty hall of a farm whose cycle is still open adds its muted date (D158d: "goală din 14.11")."""
+    es = RD.empty_since(code) if (fid == 'hirbovat' and kind == 'hall' and not b) else None
+    return LAMP[b] + (f' <span class="ip-note ip-nowrap">din <span class="ip-num">{RD.ddm(es)}</span></span>' if es else '')
 
 def menu_html(mid, code, items, note, open_=False):
     """items: (label, disabled, sep_before, state). The note is about Retrage (its effect, or why it is disabled), so only
@@ -86,11 +100,13 @@ def items_for(kind, first, last, birds, state_on=None):
     it.append(('Retrage', 'why' if birds else False, True, st(4)))
     return it
 
-def note_for(kind, code, birds):
+def note_for(kind, code, birds, kids=()):
+    if kind == 'hall' and birds:
+        return f'{code} are compartimente cu păsări. O poți retrage după ce le retragi pe ele.'
+    if kind == 'hall' and kids:   # components.md SYS10 Rules: a hall with active compartments is blocked as one with birds
+        return f'{code} are compartimente active ({", ".join(kids)}). O poți retrage după ce le retragi pe ele.'
     if not birds:
         return f'Retrage scoate {code} din formulare și de pe pagina fermei; înregistrările rămân.'
-    if kind == 'hall':
-        return f'{code} are compartimente cu păsări. O poți retrage după ce le retragi pe ele.'
     return f'{code} are păsări. O poți retrage când e goală.'
 
 def farm_row(fid, name=None, tag=None, note=None):
@@ -112,8 +128,9 @@ def sec_row(p, fid, code, kind, first, last, birds, open_=False, kstate='', pare
     if retired:
         return f'<tr class="{cls}">{cell}<td><span class="ip-tag ip-tag--neutral">retrasă</span></td><td class="ip-stree__act"></td></tr>'
     mid = f'{p}-m-{code}'.replace('.', '-').replace('/', '-')
-    act = act_cell(mid, code, items_for(kind, first, last, birds, istate), note_for(kind, code, birds), open_, kstate)
-    return f'<tr class="{cls}">{cell}<td>{LAMP[birds]}</td>{act}</tr>'
+    kids = kids_of(fid, code) if kind == 'hall' else ()
+    act = act_cell(mid, code, items_for(kind, first, last, birds or bool(kids), istate), note_for(kind, code, birds, kids), open_, kstate)
+    return f'<tr class="{cls}">{cell}<td>{state_cell(fid, code, kind, birds)}</td>{act}</tr>'
 
 def add_row(fid, label='Adaugă secțiune'):
     name = FARMS[fid]['name'] if fid in FARMS else 'Fermă exemplu'
@@ -123,7 +140,7 @@ def add_row(fid, label='Adaugă secțiune'):
 def edit_row(p, level, label, value, err=None, focus=False, is_last=True, placeholder=''):
     """Inline edit row (add or rename), one row height since FW03 (D150): the row holds the code field at the code's place
     and Salvează + Anulează on the row line, on the edit fill (tr.ip-table__edit); under it one detail row (additions.css §69, indented as the row's level)
-    holds the field's label ("Compartiment nou în H1", "Cod nou pentru H5-2": keeps the old code in view) and its error."""
+    holds the field's label ("Compartiment nou în H5", "Cod nou pentru H5-2": keeps the old code in view) and its error."""
     lvl = 'ip-stree--l3' if level == 3 else 'ip-stree--l2'
     iid = f'{p}-in'
     eid = f'{p}-err'
@@ -143,7 +160,6 @@ def section_rows(p, fid, open_code=None, kstates=None, after=None, replace=None,
     kstates = kstates or {}
     after = after or {}
     replace = replace or {}
-    birds = BIRDS[fid]
     rows = []
     tree = farm_tree(fid, order)
     active = [t for t in tree if t[0] not in retired]
@@ -153,11 +169,11 @@ def section_rows(p, fid, open_code=None, kstates=None, after=None, replace=None,
         if code in replace:
             rows.append(replace[code])
         else:
-            rows.append(sec_row(p, fid, code, kind, i == 0, i == len(active) - 1, birds, open_code == code,
+            rows.append(sec_row(p, fid, code, kind, i == 0, i == len(active) - 1, birds(fid, code), open_code == code,
                                 kstates.get(code, ''), note=note, istate=istate if open_code == code else None))
         for j, c in enumerate(kids):
             last_kid = j == len(kids) - 1 and code not in after
-            rows.append(sec_row(p, fid, c, 'comp', j == 0, j == len(kids) - 1, birds, open_code == c,
+            rows.append(sec_row(p, fid, c, 'comp', j == 0, j == len(kids) - 1, birds(fid, c), open_code == c,
                                 kstates.get(c, ''), parent=code, is_last=last_kid,
                                 istate=istate if open_code == c else None))
         if code in after:
@@ -192,40 +208,60 @@ def banner(kind, paras, focus=False):
     return (f'<div class="ip-banner ip-banner--{kind} ip-banner--act" role="alert">{svg(IC["alert"])}<div class="ip-banner__body">{body}</div>'
             f'<button type="button" class="ip-btn ip-btn--secondary ip-banner__key{f}">Reîncearcă</button></div>')
 
+# ------------------------------------------------------------------ state examples on the real tree (RF11; S19/S19S read these)
+# Hîrbovăț: Adaugă compartiment in the first hall = its next free code (H5 → H5.3); the duplicate = that hall's last code
+# (H5.2); Retrage blocked on the first compartment with birds (H5.1); the empty-code example in the last hall (H7). Telița
+# (D39, no section was ever retired): Retrage / Redenumește on its last section (H5-2), Mută în sus on its third (H3).
+TREE_H = dict(farm_tree('hirbovat'))
+ADD_HALL = RD.HHALLS[0]
+ADD_CODE = f'{ADD_HALL}.{len(TREE_H[ADD_HALL]) + 1}'
+DUP_CODE = TREE_H[ADD_HALL][-1]
+BLOCKED = next(c for c in RD.HSECS if birds('hirbovat', c))
+LAST_HALL = RD.HHALLS[-1]
+assert ADD_CODE not in RD.HSECS and DUP_CODE in RD.HSECS and BLOCKED == RD.HSECS[0]
+TEL = [c for c, _ in farm_tree('telita')]; assert TEL == RD.SECTIONS['telita']
+TEL_OPEN, TEL_RET, TEL_UP = TEL[1], TEL[-1], TEL[2]
+TEL_UP_ORDER = TEL[:1] + [TEL_UP] + [c for c in TEL[1:] if c != TEL_UP]   # TEL_UP after Mută în sus: 2nd
+TEL_RENAME = TEL_RET.replace('-', '/')   # the register's own label for that section (farms-sections workbook_labels)
+assert TEL_RENAME in next(x for x in DATA['sections'] if x['farm_id'] == 'telita' and x['code'] == TEL_RET)['workbook_labels']
+ORD = {2: 'a 2-a'}
+DUP_MSG = f'{DUP_CODE} există deja în {ADD_HALL}. Scrie alt cod, de exemplu {ADD_CODE}.'   # one wording, preview and S19 board
+def moved(n_active): return f'{TEL_UP} mutată în sus: {ORD[TEL_UP_ORDER.index(TEL_UP) + 1]} din {n_active} secțiuni la Telița.'
+
 # ------------------------------------------------------------------ blocks
 B = []
-B.append(('Hîrbovăț · implicit (ciclu deschis: compartimente cu păsări)', farm('a', 'hirbovat')))
-B.append(('Hîrbovăț · meniul H1.1 deschis: Retrage blocat, cu motivul', farm('b', 'hirbovat', open_code='H1.1', istate={0: 'is-active'})))
-B.append(('Telița · meniul H2 deschis: toate acțiunile (ciclu închis, secțiuni goale)', farm('c', 'telita', open_code='H2')))
-B.append(('Cheia Acțiuni: hover (H1) · apăsat (H2) · focus (H3)',
-          farm('d', 'telita', kstates={'H1': 'is-hover', 'H2': 'is-pressed', 'H3': 'ip-focus'})))
-MOVED = 'H3 mutată în sus: a 2-a din 6 secțiuni la Telița.'
-B.append((f'Mută în sus H3 (exemplu de stare): focus rămâne pe cheia H3 · anunț live „{MOVED}”',
-          farm('d2', 'telita', order=['H1', 'H3', 'H2', 'H6', 'H5-1', 'H5-2'], kstates={'H3': 'ip-focus'}, live=MOVED)))
-B.append(('Adaugă compartiment în H1 · cod scris (exemplu de stare)',
-          farm('e', 'hirbovat', after={'H1': edit_row('e', 3, 'Compartiment nou în H1', 'H1.3', focus=True)})))
+B.append(('Hîrbovăț · implicit (ciclu deschis; ' + LAST_HALL + ' goală din ' + RD.ddm(RD.empty_since(LAST_HALL)) + ')', farm('a', 'hirbovat')))
+B.append((f'Hîrbovăț · meniul {BLOCKED} deschis: Retrage blocat, cu motivul', farm('b', 'hirbovat', open_code=BLOCKED, istate={0: 'is-active'})))
+B.append((f'Telița · meniul {TEL_OPEN} deschis: toate acțiunile (ciclu închis, secțiuni goale)', farm('c', 'telita', open_code=TEL_OPEN)))
+B.append((f'Cheia Acțiuni: hover ({TEL[0]}) · apăsat ({TEL[1]}) · focus ({TEL[2]})',
+          farm('d', 'telita', kstates={TEL[0]: 'is-hover', TEL[1]: 'is-pressed', TEL[2]: 'ip-focus'})))
+MOVED = moved(len(TEL))
+B.append((f'Mută în sus {TEL_UP} (exemplu de stare): focus rămâne pe cheia {TEL_UP} · anunț live „{MOVED}”',
+          farm('d2', 'telita', order=TEL_UP_ORDER, kstates={TEL_UP: 'ip-focus'}, live=MOVED)))
+B.append((f'Adaugă compartiment în {ADD_HALL} · cod scris (exemplu de stare)',
+          farm('e', 'hirbovat', after={ADD_HALL: edit_row('e', 3, f'Compartiment nou în {ADD_HALL}', ADD_CODE, focus=True)})))
 B.append(('Cod deja folosit',
-          farm('f', 'hirbovat', after={'H1': edit_row('f', 3, 'Compartiment nou în H1', 'H1.2',
-               err='Codul H1.2 există deja la Hîrbovăț. Scrie alt cod.')})))
+          farm('f', 'hirbovat', after={ADD_HALL: edit_row('f', 3, f'Compartiment nou în {ADD_HALL}', DUP_CODE,
+               err=DUP_MSG)})))
 B.append(('Cod gol (Salvează fără cod)',
-          farm('g', 'hirbovat', after={'H4': edit_row('g', 3, 'Compartiment nou în H4', '',
+          farm('g', 'hirbovat', after={LAST_HALL: edit_row('g', 3, f'Compartiment nou în {LAST_HALL}', '',
                err='Scrie codul compartimentului.')})))
-B.append(('Redenumește H5-2 → H5/2 (eticheta din registru, exemplu de stare)',
-          farm('h', 'telita', replace={'H5-2': edit_row('h', 2, 'Cod nou pentru H5-2', 'H5/2', focus=True)})))
+B.append((f'Redenumește {TEL_RET} → {TEL_RENAME} (eticheta din registru, exemplu de stare)',
+          farm('h', 'telita', replace={TEL_RET: edit_row('h', 2, f'Cod nou pentru {TEL_RET}', TEL_RENAME, focus=True)})))
 B.append(('Salvarea a eșuat: rândul rămâne deschis, cu codul scris (focus pe Reîncearcă)',
           tree('i', 'Secțiuni, Hîrbovăț',
-               [farm_row('hirbovat')] + section_rows('i', 'hirbovat', after={'H1': edit_row('i', 3, 'Compartiment nou în H1', 'H1.3')})
+               [farm_row('hirbovat')] + section_rows('i', 'hirbovat', after={ADD_HALL: edit_row('i', 3, f'Compartiment nou în {ADD_HALL}', ADD_CODE)})
                + [add_row('hirbovat')],
-               banner=banner('fault', ['Compartimentul H1.3 nu s-a salvat: conexiunea s-a întrerupt.',
+               banner=banner('fault', [f'Compartimentul {ADD_CODE} nu s-a salvat: conexiunea s-a întrerupt.',
                                        'Verifică conexiunea la internet, apoi apasă Reîncearcă. Codul scris rămâne în rând.'], focus=True))))
 DIALOG = ('<div class="ip-scrim"><div class="ip-dialog" role="dialog" aria-modal="true" aria-labelledby="j-t" aria-describedby="j-d">'
-          '<h2 id="j-t">Retrage secțiunea H5-2 de la Telița</h2>'
-          '<p id="j-d" style="margin:0">H5-2 nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte.</p>'
+          f'<h2 id="j-t">Retrage secțiunea {TEL_RET} de la Telița</h2>'
+          f'<p id="j-d" style="margin:0">{TEL_RET} nu mai apare în formulare și pe pagina fermei. Înregistrările ei din Seria 2026 rămân în rapoarte.</p>'
           '<div class="ip-row" style="justify-content:flex-end;gap:var(--space-2)">'
           '<button type="button" class="ip-btn ip-btn--secondary ip-focus">Anulează</button>'
           '<button type="button" class="ip-btn ip-btn--destructive">Retrage secțiunea</button></div></div></div>')
-B.append(('Retrage H5-2 · Dialog (focus pe Anulează)', DIALOG))
-B.append(('După retragere: H5-2 retrasă (exemplu de stare)', farm('k', 'telita', retired=('H5-2',))))
+B.append((f'Retrage {TEL_RET} · Dialog (exemplu de stare, focus pe Anulează)', DIALOG))
+B.append((f'După retragere: {TEL_RET} retrasă (exemplu de stare)', farm('k', 'telita', retired=(TEL_RET,))))
 EX = ('<tr class="is-group ip-stree__farm"><td colspan="3"><span class="ip-stree__farmname"><b>Fermă exemplu</b>'
       '<span class="ip-tag ip-tag--neutral">fără ghid</span></span><span class="ip-note">creștere · fără secțiuni</span></td></tr>'
       '<tr class="ip-stree__empty ip-stree--l2"><td colspan="3"><span class="ip-stree__cell"><span class="ip-lamp ip-lamp--off">fără secțiuni</span>'
@@ -247,18 +283,22 @@ WIDE = tree('p', 'Secțiuni, toate fermele',
             [farm_row('telita')] + section_rows('p', 'telita') + [add_row('telita'),
              farm_row('hirbovat')] + section_rows('p2', 'hirbovat') + [add_row('hirbovat')])
 
-OPEN = ('Hîrbovăț · meniul H1.1', 'Telița · meniul H2')  # the open menu hangs below its table: reserve the room
+OPEN = (f'Hîrbovăț · meniul {BLOCKED}', f'Telița · meniul {TEL_OPEN}')  # the open menu hangs below its table: reserve the room
 grid = ''.join(f'<div style="width:var(--panel-w){";padding-bottom:calc(var(--space-12) * 2)" if t.startswith(OPEN) else ""}">{cap(t)}{h}</div>' for t, h in B)
-html = ('<!-- @dsCard group="Data" height=3797 subtitle="SYS10" -->\n'
+def codes(fid):
+    return ', '.join(f'{c} ({", ".join(k)})' if k else c for c, k in farm_tree(fid))
+H_CARD = 3678   # @dsCard height = content (.ip-root) at 1440 + 32 (FIN13B/FX05 rule; RF11: 3646 + 32, was 3797)
+html = (f'<!-- @dsCard group="Data" height={H_CARD} subtitle="SYS10" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
         f'<div>{cap("S19 · panoul fermei · desktop (lățime panou 440 px)")}'
         f'<div style="display:grid;grid-template-columns:repeat(3,var(--panel-w));gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'
         f'<div style="width:calc(var(--panel-w) * 2 + var(--space-6))">{cap("Toate fermele · aceeași componentă, lățime de pagină")}{WIDE}</div>\n'
-        '<p class="ip-note" style="margin:0;max-width:calc(var(--panel-w) * 2)">Reale (farms-sections.json): Telița H1, H2, H3, H6, H5-1, H5-2; '
-        'Hîrbovăț H1 (H1.1, H1.2), H3 (H3.1, H3.2), H4 (H4.1, H4.2); tipurile fermelor. Ilustrative (D22): numele ghidurilor. '
-        'Stări de azi (16.11.2026): ciclul de ouat Hîrbovăț e deschis din 10.02.2026, Telița goală după 28.02.2026 (D25). '
-        'Exemple de stare (D39): codul scris H1.3, redenumirea H5-2 → H5/2 (eticheta din registru), H5-2 retrasă, salvarea eșuată; '
-        'ferma nouă e „Fermă exemplu” (D38).</p>\n'
+        '<p class="ip-note" style="margin:0;max-width:calc(var(--panel-w) * 2)">Reale (farms-sections.json): '
+        f'Telița {codes("telita")}; Hîrbovăț {codes("hirbovat")}; tipurile fermelor. Ilustrative (D22): numele ghidurilor. '
+        f'Stări de azi ({RD.dd(RD.TODAY)}): ciclul de ouat Hîrbovăț e deschis din {RD.dd(RD.CYCLE_START)}, azi {RD.SAPT(RD.WK)}; '
+        f'{LAST_HALL} goală din {RD.dd(RD.empty_since(LAST_HALL))} (vânzare); Telița goală din {RD.dd(RD.CTEL["end_date"])} (D25). '
+        f'Exemple de stare (D39): codul scris {ADD_CODE}, codul dublat {DUP_CODE}, redenumirea {TEL_RET} → {TEL_RENAME} (eticheta din registru), '
+        f'{TEL_RET} retrasă, {TEL_UP} mutată, salvarea eșuată; ferma nouă e „Fermă exemplu” (D38).</p>\n'
         '</div>\n')
 (ROOT / 'SectionTree').mkdir(exist_ok=True)
 (ROOT / 'SectionTree' / 'preview.html').write_text(html, encoding='utf-8')
