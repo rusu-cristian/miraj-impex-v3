@@ -121,18 +121,22 @@ def add_row(fid, label='Adaugă secțiune'):
             f'{svg(IC["plus"])}{label}<span class="ip-sr"> la {name}</span></button></td></tr>')
 
 def edit_row(p, level, label, value, err=None, focus=False, is_last=True, placeholder=''):
+    """Inline edit row (add or rename), one row height since FW03 (D150): the row holds the code field at the code's place
+    and Salvează + Anulează on the row line, on the edit fill (tr.ip-table__edit); under it one detail row (additions.css §69, indented as the row's level)
+    holds the field's label ("Compartiment nou în H1", "Cod nou pentru H5-2": keeps the old code in view) and its error."""
     lvl = 'ip-stree--l3' if level == 3 else 'ip-stree--l2'
     iid = f'{p}-in'
     eid = f'{p}-err'
     st = ' is-error' if err else (' is-focus' if focus else '')
-    inv = f' aria-invalid="true" aria-describedby="{eid}"' if err else ''
+    inv = f' aria-invalid="true" aria-errormessage="{eid}" aria-describedby="{eid}"' if err else ''
     ph = f' placeholder="{placeholder}"' if placeholder else ''
     e = f'<p class="ip-err ip-fieldmsg" id="{eid}">{svg(IC["alert"], "ip-icon ip-icon--14")}<span>{err}</span></p>' if err else ''  # §38 field message with the alert icon (S19P, FIN13)
-    return (f'<tr class="ip-stree__edit {lvl}{" is-last" if is_last else ""}"><td colspan="3"><span class="ip-stree__form">'
-            f'<label class="ip-label" for="{iid}">{label}</label>'
+    return (f'<tr class="ip-table__edit ip-stree__edit {lvl}{" is-last" if is_last else ""}"><td colspan="3"><span class="ip-stree__form">'
             f'<span class="ip-input ip-stree__in{st}"><input id="{iid}" type="text" value="{value}" autocomplete="off"{ph}{inv}></span>'
             f'<button type="button" class="ip-btn ip-btn--secondary">Salvează</button>'
-            f'<button type="button" class="ip-btn ip-btn--ghost">Anulează</button>{e}</span></td></tr>')
+            f'<button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>'
+            f'<tr class="ip-table__detail ip-stree__detail"><td colspan="3"><div class="ip-table__detailbody">'
+            f'<label class="ip-label" for="{iid}">{label}</label>{e}</div></td></tr>')
 
 def section_rows(p, fid, open_code=None, kstates=None, after=None, replace=None, retired=(), istate=None, order=None):
     """after: {code: extra_row_html} inserted after that row; replace: {code: html}."""

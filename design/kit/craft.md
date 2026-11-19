@@ -47,7 +47,7 @@ Don't:
 - **Focus:** `:focus-visible` = 2px `focus` ring, 2px offset, on every interactive element, never removed; input-type fields draw it on their own edge, inside the box (offset −2px, additions §68, D149).
 - **Targets:** ≥44px hit area on touch; phone controls `control-h-touch` (48) and CountInput 56. Desktop 32px controls keep ≥24px and are spaced.
 - **Keyboard:** everything reachable in order; Enter moves to the next CountInput; Dialog focus starts on Anulează; GuideChart has a keyboard readout and a hidden data table; CycleTrack blocks are focusable links with a text summary.
-- **Labels and roles:** visible label above every field; IconButton has `aria-label`; RecordTile is `aria-hidden` with the row text naming the type; RecordChip is `role="checkbox"` + `aria-checked`.
+- **Labels and roles:** visible label above every field (inline table edits, D150: the column head plus the field's `aria-label` naming the row, or a `label` in the row's detail row, e.g. the SectionTree code field); IconButton has `aria-label`; RecordTile is `aria-hidden` with the row text naming the type; RecordChip is `role="checkbox"` + `aria-checked`.
 - **States, all designed:** hover, focus, pressed, disabled (`sunken` + `ink-disabled`), loading (static `sunken` skeletons; spinner only inside a button, label kept), empty (EmptyState: unlit lamp, one sentence, next step), error (fault border + line naming the fix), warning (saveable) vs refusal (save disabled), no permission ("Nu ai acces la această fermă.").
 - **Numbers:** Plex Mono, `tabular-nums`, right-aligned in tables; one format per screen.
 - **Forms:** one column, label above, "(opțional)" for optional; validate on blur and save; focus the first error; keep typed values and the draft.

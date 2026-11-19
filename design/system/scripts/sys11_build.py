@@ -90,7 +90,7 @@ def reason(r):
         return (f'SAPT {r["week"]} {sexg("M")}', 'greutatea „#REF!” nu e număr', 'Greutatea „#REF!” nu e număr. Scrie greutatea în grame.', 'body_weight_g')
     if k == 'dup':
         return (f'SAPT {r["week"]} {sexg("F")}', f'e deja pe rândul {r["dup_of"]}',
-                f'Rândul {r["dup_of"]} are deja sapt. {r["week"]} {sexg("F")}. Păstrează un singur rând.', 'week')
+                f'Rândul {num(r["dup_of"])} are deja sapt. {num(r["week"])} {sexg("F")}. Păstrează un singur rând.', 'week')  # FW03: figures in Mono in the detail's error line
     if k == 'nosex':
         return (f'SAPT {r["week"]}', 'lipsește sexul', f'Lipsește sexul. Scrie G ({sexg("F")}) sau C ({sexg("M")}).', 'sex')
     return None
@@ -142,15 +142,17 @@ def row_html(p, kind, r, focus_cell=None):
         else:
             cells.append(f'<td class="num{tone}">{v}</td>')
     rs = reason(r)
-    if rs:
-        chk = (f'<span class="ip-gimp__why"><span class="ip-lamp ip-lamp--fault">refuzat</span>'
-               f'<span id="{p}-r{r["line"]}-why">{rs[2]}</span></span>')
+    detail = ''
+    if rs:  # FW03 (D150): the row keeps its height with the fault Lamp in Verificare; the reason sits in the detail row under it
+        chk = '<span class="ip-gimp__why"><span class="ip-lamp ip-lamp--fault">refuzat</span></span>'
+        detail = (f'<tr class="ip-table__detail"><td colspan="{len(cells) + 1}"><div class="ip-table__detailbody">'
+                  f'<p class="ip-err ip-fieldmsg" id="{p}-r{r["line"]}-why">{svg(IC["fault"], "ip-icon ip-icon--14")}<span>{rs[2]}</span></p></div></td></tr>')
     elif gaps:
         chk = f'<span class="ip-gimp__gap">fără date în ghid: {", ".join(gaps)}</span>'
     else:
         chk = ''
     cls = ' class="is-refused"' if rs else ''
-    return f'<tr{cls}>{"".join(cells)}<td class="ip-gimp__chk">{chk}</td></tr>'
+    return f'<tr{cls}>{"".join(cells)}<td class="ip-gimp__chk">{chk}</td></tr>{detail}'
 
 def table(p, kind, rows, label, focus=None, busy=False, body=None, sum_=True):
     b = ' aria-busy="true"' if busy else ''

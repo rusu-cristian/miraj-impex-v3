@@ -10,3 +10,4 @@ Text, decimal, password and note inputs.
   - read-only: `sunken`
   - disabled
 - **Phone:** height `control-h-touch`, 17px text.
+- **In a table row** (DataTable inline edit, FW03, D150): no label above (the column head and the field's `aria-label` name it); its hint and error line go in the row's detail row (`tr.ip-table__detail`, additions.css §69), the error with the alert icon and `aria-errormessage`; the row keeps its height.

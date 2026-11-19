@@ -72,20 +72,14 @@
 .s11-in > input{text-align:right;font-variant-numeric:tabular-nums}
 .s11-in--tot{width:calc(var(--space-12) * 3)}
 .s11-acts{display:flex;gap:var(--space-2);justify-content:flex-end}
-.s11-editrow > td{background:var(--sunken)}
 .s11-s12{display:inline-flex;align-items:center;gap:var(--space-2);white-space:nowrap}
 .s11-foot > .ip-link{white-space:nowrap;flex:none}
 .s11-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s11-table td.num > .ip-skel{margin-left:auto}
 .s11-empty{padding:var(--space-8) var(--space-4)}
+.s11-table{--ip-row-field-h:var(--control-h)} /* FW03 (additions.css §69): rows held at 37 by the 24px links, so in-row fields keep control-h */
+.s11-table tr.ip-table__edit > td.edit{padding-block:calc(var(--space-1) / 2)} /* … in td.edit's 2px (bundle.css): 37 as the rows round it */
 .s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */
-.s11-err{margin:0;white-space:normal;align-items:flex-start} /* field error line (S11M Motiv, S12 prices) */
-.s11-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s11-modrow > td{border-bottom:0} /* S11M: saved price · Preț nou · Motiv read as one open row */
-.s11-modlbl{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--space-2)}
-.s11-modwhy > td{vertical-align:top;height:auto;white-space:normal;padding-top:var(--space-1);padding-bottom:var(--space-3)}
-.s11-motiv{max-width:calc(var(--space-12) * 12)}
-.s11-modwhy > td.s11-modact{padding-top:calc(var(--space-1) + var(--space-4) + var(--space-1));padding-right:var(--space-2)} /* keys on the Motiv field's line (label 16 + gap 4) */
 
 .s13-rec{color:var(--c);display:inline-flex;flex:none}
 .s13-opt{font-weight:400;color:var(--ink-muted)}

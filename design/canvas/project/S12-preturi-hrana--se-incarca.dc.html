@@ -72,20 +72,14 @@
 .s11-in > input{text-align:right;font-variant-numeric:tabular-nums}
 .s11-in--tot{width:calc(var(--space-12) * 3)}
 .s11-acts{display:flex;gap:var(--space-2);justify-content:flex-end}
-.s11-editrow > td{background:var(--sunken)}
 .s11-s12{display:inline-flex;align-items:center;gap:var(--space-2);white-space:nowrap}
 .s11-foot > .ip-link{white-space:nowrap;flex:none}
 .s11-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s11-table td.num > .ip-skel{margin-left:auto}
 .s11-empty{padding:var(--space-8) var(--space-4)}
+.s11-table{--ip-row-field-h:var(--control-h)} /* FW03 (additions.css §69): rows held at 37 by the 24px links, so in-row fields keep control-h */
+.s11-table tr.ip-table__edit > td.edit{padding-block:calc(var(--space-1) / 2)} /* … in td.edit's 2px (bundle.css): 37 as the rows round it */
 .s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */
-.s11-err{margin:0;white-space:normal;align-items:flex-start} /* field error line (S11M Motiv, S12 prices) */
-.s11-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s11-modrow > td{border-bottom:0} /* S11M: saved price · Preț nou · Motiv read as one open row */
-.s11-modlbl{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--space-2)}
-.s11-modwhy > td{vertical-align:top;height:auto;white-space:normal;padding-top:var(--space-1);padding-bottom:var(--space-3)}
-.s11-motiv{max-width:calc(var(--space-12) * 12)}
-.s11-modwhy > td.s11-modact{padding-top:calc(var(--space-1) + var(--space-4) + var(--space-1));padding-right:var(--space-2)} /* keys on the Motiv field's line (label 16 + gap 4) */
 .s12-meta{align-items:center;gap:var(--space-2)}
 .s12-table td.edit > .ip-skel{height:var(--control-h);border-radius:var(--radius-sm)} /* loading: the inputs' footprint, no row jump */
 .s12-form{display:flex;flex-direction:column;gap:var(--space-3);margin:0} /* FW01 (D148): spans the page (was fit-content, 768 at 1440) */
@@ -93,9 +87,6 @@
 .s12-why{font-family:var(--font-sans);font-weight:400}
 .s12-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s12-foot > .ip-btn{flex:none}
-.s12-table tr.s12-haserr > td{border-bottom:0} /* the field error row belongs to the row above */
-.s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
-.s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */
 .s12-col-date,.s12-col-farm{width:calc(var(--space-12) * 2 + var(--space-6))} /* FW01: 120, a dd.mm.yyyy date or a farm name + cell padding */
 .s12-col-kg{width:calc(var(--space-12) * 2)} /* FW01: 96, a 5-digit kg figure + cell padding */
 .s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */

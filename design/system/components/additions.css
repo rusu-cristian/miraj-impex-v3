@@ -1078,13 +1078,18 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-stree__menu > .ip-note{margin:0;padding:var(--space-1) var(--space-3) var(--space-2);max-width:calc(var(--space-12) * 5)}
 /* Retired section (B1 "retire"): listed after the active ones, code ink-secondary, Tag neutral "retrasă", no key. */
 .ip-stree__row.is-retired .ip-stree__code{color:var(--ink-secondary)}
-/* Inline edit row (add or rename): a medium TextField (DataTable inline edit) sized for a code, Salvează (secondary) +
- * Anulează (ghost) on the same line, the error line under the field. Typed values stay after a failed save. */
-.ip-stree__t tr.ip-stree__edit > td{height:auto;padding-block:var(--space-1);white-space:normal}
+/* Inline edit row (add or rename), one row height since FW03 (D150, section 69): tr.ip-table__edit (the edit fill), a
+ * medium TextField (DataTable inline edit) sized for a code at the code's place, Salvează (secondary) + Anulează (ghost)
+ * on the same line, all row-h less space-1 (28), 2px clear above and below: the row is as tall as the rows with their 32px Acțiuni key. Under it the detail row (tr.ip-table__detail
+ * .ip-stree__detail), its content at the row's indent: the field's label ("Compartiment nou în H1", "Cod nou pentru
+ * H5-2" keeps the old code in view; label for the field) and the error line. Typed values stay after a failed save. */
+.ip-stree__t tr.ip-stree__edit > td{padding-block:calc(var(--space-1) / 2)} /* field and keys row-h less space-1 (28, section 69) + 2px each side = the 32px Acțiuni key of the other rows */
 .ip-stree__form{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2)}
 .ip-stree__in{flex:none;width:calc(var(--space-12) * 2)}
-.ip-stree__form > .ip-label{flex-basis:100%;margin:0} /* visible label above the field (craft §5): "Compartiment nou în H1", "Cod nou pentru H5-2" keeps the old code in view */
-.ip-stree__form > .ip-err{flex-basis:100%;margin:0}
+.ip-stree__t tr.ip-stree__edit.ip-stree--l2 + tr.ip-stree__detail > td{padding-left:calc(var(--space-3) + var(--space-4))}
+.ip-stree__t tr.ip-stree__edit.ip-stree--l3 + tr.ip-stree__detail > td{position:relative;padding-left:calc(var(--space-3) + var(--space-8) + var(--space-2))}
+.ip-stree__t tr.ip-stree__edit.ip-stree--l3:not(.is-last) + tr.ip-stree__detail > td::before{content:"";position:absolute;left:calc(var(--space-3) + var(--space-4) + var(--space-1));top:0;bottom:calc(-1 * var(--ip-hair));border-left:var(--ip-hair) solid var(--line)} /* the rail runs on to the next compartment */
+.ip-stree__t tr.ip-stree__detail > td{padding-bottom:var(--space-2)}
 /* Add row: a ghost Button "Adaugă secțiune" at the end of each farm, aligned with the section codes. */
 .ip-stree__t tr.ip-stree__add > td{padding-block:0}
 .ip-stree__add .ip-btn{padding-inline:var(--space-2);margin-left:calc(-1 * var(--space-2))}
@@ -1117,7 +1122,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__bn{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
 .ip-gimp__bn > p{margin:0}
 .ip-gimp__bn b{font-weight:500}
-.ip-gimp__bn .ip-sex,.ip-gimp__why .ip-sex{line-height:1} /* a coloured ♀/♂ in the text (inline-flex Mono, 18px box) keeps the 13/18 and 12/16 line boxes (FIN08, FIN13) */
+.ip-gimp__bn .ip-sex,.ip-gimp__t .ip-table__detail .ip-sex{line-height:1} /* a coloured ♀/♂ in the text (inline-flex Mono, 18px box) keeps the 13/18 and 12/16 line boxes (FIN08, FIN13) */
 .ip-gimp__errs{margin:0;padding-left:var(--space-4)}
 .ip-gimp__errs .ip-link{font-family:inherit}
 /* Filter bar: caption + SegmentedControl of toggle buttons (aria-pressed). Buttons get the control font back. */
@@ -1140,13 +1145,13 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__t td.ip-gimp__sex{font-weight:500}
 .ip-gimp__t td.ip-gimp__none{color:var(--ink-muted)} /* "–" = fără date în ghid (B2 partial guide) */
 /* Refused cell: the value exactly as read, fault text on the fault tint inside a hair fault edge (text 4.6:1, D34a).
- * aria-invalid + aria-describedby → the reason in the row's Verificare cell; tabindex -1 so the Banner link lands on it. */
+ * aria-invalid + aria-describedby → the reason in the row's detail row (FW03); tabindex -1 so the Banner link lands on it. */
 .ip-gimp__t td.ip-gimp__bad{background:var(--fault-bg);color:var(--fault);outline:var(--ip-hair) solid var(--fault);outline-offset:calc(-1 * var(--ip-hair))}
 .ip-gimp__t td.ip-gimp__bad:focus-visible,.ip-gimp__t td.ip-gimp__bad.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
-/* Verificare: fault Lamp "refuzat" + the reason naming the value and the fix; or the guide line "fără date în ghid: …". */
+/* Verificare: fault Lamp "refuzat" (the row keeps row-h; FW03, D150: the reason naming the value and the fix is the error
+ * line, alert icon, in the detail row right under the refused row, section 69); or the guide line "fără date în ghid: …". */
 .ip-gimp__t td.ip-gimp__chk{white-space:normal;height:auto;padding-block:var(--space-1)}
 .ip-gimp__why{display:block;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink)}
-.ip-gimp__why > .ip-lamp{margin-right:var(--space-2)}
 .ip-gimp__gap{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
 /* Loading line and skeleton rows (aria-busy on the table): six section 42 rows (tr.ip-table__skel, aria-hidden) under the
  * real head, no hidden text row (the counts line says "Se citește fișierul.", the live region names the file). Each bar
@@ -2032,4 +2037,65 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 @media (forced-colors: active){
   .ip-input:focus-within:not(.is-disabled),.ip-input.is-focus,.ip-input.ip-focus,:is(input,select,textarea).ip-input:focus-visible,
   .ip-select__btn:is(.is-disabled,[aria-disabled="true"]):is(:focus-visible,.ip-focus),.ip-otp__pw:is(:focus-visible,.ip-focus){outline-color:Highlight}
+}
+
+/* =====================================================================================================
+ * FW03 · Table rows keep one height; a row's messages go in a detail row (D150, user 19.11.2026), system-wide.
+ * Spec: components.md › Additions › FW03.
+ * ===================================================================================================== */
+
+/* ---------- 69. DataTable · row detail: the row keeps its height, its messages sit in one detail row under it (FW03) ---------- */
+/* A row that carries an inline edit, a hint, a suggestion or an error keeps the table's row height: its fields and keys
+ * sit on the row line in their own columns, row-h less space-1 high (28, centred in td.edit with no block padding:
+ * about 2px clear above and below), so the row is as tall as its neighbours; values and lamps that fit stay in their
+ * cells. A table whose rows are held taller by their content sets --ip-row-field-h on the table and its td.edit padding
+ * (S11 Livrări: rows 37 with 24px links, so control-h fields with bundle.css's 2px). Everything that made the row taller moves into ONE detail row right under
+ * it: tr.ip-table__detail > td[colspan = all the columns], a plain td (no th, no headers attribute: not a data cell of any
+ * column; section 36 never sticks a spanning first cell). Its content, div.ip-table__detailbody, starts at the first
+ * column's text start (the cell's space-3 inset; a tree row's own indent, section 28) and lays out as one wrapping line:
+ * - message lines take a whole line each (p or label: hint or suggestion p.ip-hint, the label of a field in the row
+ *   above, the error p.ip-err.ip-fieldmsg with its alert icon, section 38; figures in .ip-num Mono): what explains the
+ *   row's own fields first, then the detail's field line, then that field's error (in the DOM right after the field;
+ *   drawn after the line);
+ * - a field line: a TextField (div.ip-field, label above; 384 wide, never under 240; control-h), the row keys
+ *   span.ip-table__keys (Salvează + Anulează) right after it, then an aside note p.ip-table__aside (its text in one span:
+ *   "… rămân în jurnal") taking the rest of the line, its text left-aligned and centred vertically on the field's line;
+ *   it wraps under them when the rest is narrower than 240 (items on one line sit on its foot: the field's input, the keys
+ *   and the aside share the input's line);
+ * - keys alone (keys that don't fit the row's cells) sit at the content start.
+ * Tied to its row: the row's bottom hair takes the row's own fill (an edited row's sunken, else transparent: the cell's
+ * raised shows through), so there is no line between the two and the row keeps its height, in separate and collapsed
+ * tables alike (S19's collapsed tree drew the table's raised hair between two sunken rows); the detail row closes with
+ * the rule (a totals row after it keeps its line-strong edge, section 32; the framed region's last row drops it). An
+ * edited row (tr.ip-table__edit) and its detail row share the edit fill (sunken); a faulty row that is not being edited
+ * (S20 refused file row) keeps raised for both. The detail's content never widens a column (contain: inline-size: the
+ * table lays out as without it). In a scroll region (section 36) the content stays in view at the region's start while a
+ * wider table scrolls sideways (sticky, at most the region's width less its space-3 insets: the region is an inline-size
+ * container when it holds a detail row).
+ * Phone (≤ 599.98): a table that holds an edited row takes the touch size on every body row (control-h-touch + space-1,
+ * 52), so its in-row fields and keys are control-h-touch (48) and all rows stay equal; the detail's field and keys are
+ * control-h-touch too; keys and aside wrap under the field, the error stays right under it.
+ * A11y: a field in the row carries aria-invalid + aria-errormessage → its error line and aria-describedby → the detail's
+ * texts (error, hint, note); focus order = DOM order: the row's fields → the detail's fields → its keys. The rows above and
+ * below keep their heights. Tokens only. */
+.ip-table tr:has(+ tr.ip-table__detail) > :is(td,th){border-bottom-color:transparent}
+.ip-table tr.ip-table__edit:has(+ tr.ip-table__detail) > :is(td,th){border-bottom-color:var(--sunken)} /* the edit fill (collapsed borders would show the table's raised) */
+.ip-table tr.ip-table__edit :is(.ip-input,.ip-btn,.ip-iconbtn){height:var(--ip-row-field-h,calc(var(--row-h) - var(--space-1)))}
+.ip-table tr.ip-table__edit > td.edit{padding-block:0} /* the field is shorter than the row: centred, no block padding (bundle.css 2px would add a pixel) */
+.ip-table tr.ip-table__detail > td{height:auto;padding:0 var(--space-3) var(--space-3);white-space:normal;vertical-align:top;text-align:left;font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink)}
+.ip-table :is(tr.ip-table__edit > :is(td,th),tr.ip-table__edit + tr.ip-table__detail > td){background:var(--sunken)}
+.ip-table__detailbody{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--space-2) var(--space-4);contain:inline-size}
+.ip-table__detailbody > :is(p,label){flex:1 0 100%;margin:0}
+.ip-table__detailbody > .ip-field{flex:0 1 calc(var(--space-12) * 8);min-width:calc(var(--space-12) * 5);margin:0}
+.ip-table__detailbody > p.ip-table__aside{flex:1 1 calc(var(--space-12) * 5);min-height:var(--control-h);display:flex;align-items:center}
+.ip-table__keys{display:flex;flex-wrap:wrap;gap:var(--space-2);flex:none}
+.ip-table__detailbody > .ip-field ~ .ip-err{order:1} /* the field's error after its line (in the DOM right after the field, read next) */
+.ip-tablescroll:has(> .ip-table .ip-table__detail){container-type:inline-size} /* the region's width, for its detail rows */
+.ip-tablescroll .ip-table__detailbody{position:sticky;left:var(--space-3);max-width:calc(100cqi - 2 * var(--space-3))}
+@media (max-width: 599.98px){
+  .ip-table:has(tr.ip-table__edit){--ip-row-field-h:var(--control-h-touch)}
+  .ip-table:has(tr.ip-table__edit) > tbody > tr:not(.ip-table__detail) > :is(td,th){height:calc(var(--control-h-touch) + var(--space-1))}
+  .ip-table__detailbody :is(.ip-input,.ip-btn){height:var(--control-h-touch)}
+  .ip-table__detailbody > p.ip-table__aside{min-height:var(--control-h-touch)}
+  .ip-table__detailbody > .ip-field ~ .ip-err{order:0} /* keys and aside wrap under the field, its error stays right under it */
 }

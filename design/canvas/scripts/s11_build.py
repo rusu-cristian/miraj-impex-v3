@@ -151,32 +151,35 @@ def sec_stock(farm='all'):
 
 # ---------- 3. Livrări ----------
 def mod_rows(d, head, lab, err):
-    """S11M (D69): "Modifică" opens the S11 inline edit row under the saved price: the delivery row keeps its saved
-    lei/kg and total (current price), then Preț nou (the same s11-in lei/kg ↔ total lei inputs), then the required
-    Motiv field with the journal line, and Salvează prețul / Anulează. err: Salvează pressed with Motiv empty."""
+    """S11M (D69), one row height since FW03 (D150): "Modifică" turns the delivery row into the edited row
+    (tr.ip-table__edit, the table's row height): Preț nou in the Lei/kg and Total lei columns (the s11-in lei/kg ↔ total lei
+    inputs, where the saved figures were), who/when kept. Under it one detail row (additions.css §69): the hint naming the
+    saved price and how the other figure is calculated, then the required Motiv field + Salvează prețul / Anulează + the journal
+    note on one line, then Motiv's error. err: Salvează pressed with Motiv empty."""
     t = FT[d['feed_type_id']]; nm = t['name']; did = d['id']
     old = f'{d2(d["price_per_kg"])}{NBSP}lei/kg'
-    cur = (f'<tr class="s11-editrow s11-modrow" id="modifica-pret-{did}">{head}<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td>'
-           f'<td class="ip-muted">proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span><span class="ip-sr">, preț salvat</span></td><td class="s11-act"></td></tr>')
     kg_v = f' value="{d2(MOD_NEW)}"' if err else ''
-    tot = (f'<span class="ip-input s11-in s11-in--tot is-suggested"><input id="mp-tot" type="text" inputmode="decimal" value="{n(MOD_NEW_TOT)}" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="mp-help mp-sample"/><span class="suffix">lei</span></span>' if err
-           else f'<span class="ip-input s11-in s11-in--tot"><input id="mp-tot" type="text" inputmode="decimal" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="mp-help"/><span class="suffix">lei</span></span>')
-    new = (f'<tr class="s11-editrow s11-modrow"><td colspan="4"><div class="s11-modlbl"><span class="ip-label">Preț nou</span>'
-           f'<span class="ip-hint" id="mp-help">scrie lei/kg sau totalul; celălalt se calculează din <span class="ip-num">{n(d["qty_kg"])}{NBSP}kg</span></span></div></td>'
-           f'<td class="edit"><span class="ip-input s11-in{"" if err else " is-focus"}"><input id="mp-kg" type="text" inputmode="decimal"{kg_v} aria-label="Lei/kg nou, livrarea din {lab}" aria-describedby="mp-help{" mp-sample" if err else ""}"/><span class="suffix">lei/kg</span></span></td>'
-           f'<td class="edit">{tot}</td><td colspan="2"></td></tr>')
-    jur = f'Prețul vechi (<span class="ip-num">{old}</span>), cel nou și motivul rămân în jurnal, în Istoric modificări.'
+    desc = 'mp-help mp-sample' if err else 'mp-help'
+    kg = (f'<span class="ip-input s11-in{"" if err else " is-focus"}"><input id="mp-kg" type="text" inputmode="decimal"{kg_v} aria-label="Lei/kg nou, livrarea din {lab}" aria-describedby="{desc}"/><span class="suffix">lei/kg</span></span>')
+    tot = (f'<span class="ip-input s11-in s11-in--tot is-suggested"><input id="mp-tot" type="text" inputmode="decimal" value="{n(MOD_NEW_TOT)}" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="{desc}"/><span class="suffix">lei</span></span>' if err
+           else f'<span class="ip-input s11-in s11-in--tot"><input id="mp-tot" type="text" inputmode="decimal" aria-label="Total lei nou, livrarea din {lab}" aria-describedby="{desc}"/><span class="suffix">lei</span></span>')
+    row = (f'<tr class="ip-table__edit" id="modifica-pret-{did}">{head}<td class="edit">{kg}</td><td class="edit">{tot}</td>'
+           f'<td class="ip-muted">proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span><span class="ip-sr">, preț salvat {old}</span></td><td class="s11-act"></td></tr>')
+    hint = (f'<p class="ip-hint" id="mp-help">Preț salvat: <span class="ip-num">{old}</span> · <span class="ip-num">{n(d["total_lei"])}{NBSP}lei</span>. '
+            f'Scrie prețul nou în lei/kg sau totalul; celălalt se calculează din <span class="ip-num">{n(d["qty_kg"])}{NBSP}kg</span>.</p>')
+    jur = f'<p class="ip-hint ip-table__aside" id="mp-jur"><span>Prețul vechi (<span class="ip-num">{old}</span>), cel nou și motivul rămân în jurnal, în Istoric modificări.</span></p>'
+    keys = '<span class="ip-table__keys"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span>'
     if err:
         msg = (f'{nm} <span class="ip-num">{ddate(d["date"])}</span>: scrie motivul ca să schimbi prețul din <span class="ip-num">{d2(d["price_per_kg"])}</span> '
                f'în <span class="ip-num">{d2(MOD_NEW)}{NBSP}lei/kg</span>')
-        fld = (f'<span class="ip-input is-error is-focus"><input id="mp-mot" type="text" required="required" aria-required="true" aria-invalid="true" aria-describedby="mp-err mp-jur" placeholder="de ex. preț corectat pe factură"/></span>'
-               f'<p class="ip-err s11-err" id="mp-err">{ico(ALERT, 14)}<span>{msg}</span></p>')
+        fld = ('<span class="ip-input is-error is-focus"><input id="mp-mot" type="text" required="required" aria-required="true" aria-invalid="true" aria-errormessage="mp-err" aria-describedby="mp-err mp-jur" placeholder="de ex. preț corectat pe factură"/></span>')
+        e = f'<p class="ip-err ip-fieldmsg" id="mp-err">{ico(ALERT, 14)}<span>{msg}</span></p>'
     else:
         fld = '<span class="ip-input"><input id="mp-mot" type="text" required="required" aria-required="true" aria-describedby="mp-jur" placeholder="de ex. preț corectat pe factură"/></span>'
-    why = (f'<tr class="s11-editrow s11-modwhy"><td colspan="6"><div class="ip-field s11-motiv"><label class="ip-label" for="mp-mot">Motiv</label>{fld}'
-           f'<p class="ip-hint ip-m0" id="mp-jur">{jur}</p></div></td>'
-           f'<td colspan="2" class="s11-modact"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>')
-    return cur + new + why
+        e = ''
+    why = f'<div class="ip-field"><label class="ip-label" for="mp-mot">Motiv</label>{fld}</div>'
+    detail = f'<tr class="ip-table__detail"><td colspan="8"><div class="ip-table__detailbody">{hint}{why}{e}{keys}{jur}</div></td></tr>'
+    return row + detail
 
 def del_row(d, role, mode='default'):
     t = FT[d['feed_type_id']]; sx = {'F': ' · ' + F, 'M': ' · ' + M}.get(t['for_sex'], '')
@@ -187,7 +190,7 @@ def del_row(d, role, mode='default'):
     if role == 'Observator': return f'<tr>{head}</tr>'  # D64: viewers see no prices
     if owner and mode in ('mod', 'moderr') and d['id'] == MOD['id']: return mod_rows(d, head, lab, mode == 'moderr')
     if owner and mode == 'default' and d['id'] == EDIT_ID:  # inline edit (DataTable: medium TextField, lei/kg ↔ total)
-        return f'''<tr class="s11-editrow">{head}<td class="edit"><span class="ip-input is-focus s11-in"><input id="pr-kg" type="text" inputmode="decimal" aria-label="Lei/kg, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei/kg</span></span></td><td class="edit"><span class="ip-input s11-in s11-in--tot"><input id="pr-tot" type="text" inputmode="decimal" aria-label="Total lei, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei</span></span></td><td colspan="2" class="edit"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>'''
+        return f'''<tr class="ip-table__edit">{head}<td class="edit"><span class="ip-input is-focus s11-in"><input id="pr-kg" type="text" inputmode="decimal" aria-label="Lei/kg, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei/kg</span></span></td><td class="edit"><span class="ip-input s11-in s11-in--tot"><input id="pr-tot" type="text" inputmode="decimal" aria-label="Total lei, livrarea din {lab}" aria-describedby="pr-help"/><span class="suffix">lei</span></span></td><td colspan="2" class="edit"><span class="s11-acts"><button type="button" class="ip-btn ip-btn--secondary">Salvează prețul</button><button type="button" class="ip-btn ip-btn--ghost">Anulează</button></span></td></tr>'''
     if d['priced']:
         by = f'proprietar · <span class="ip-num">{ddate(d["priced_at"])}</span>' if d.get('priced_at') else '– din registru'
         price = f'<td class="num s11-pc">{d2(d["price_per_kg"])}</td><td class="num s11-pc">{n(d["total_lei"])}</td><td class="ip-muted">{by}</td>'
@@ -367,20 +370,14 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-in > input{text-align:right;font-variant-numeric:tabular-nums}
 .s11-in--tot{width:calc(var(--space-12) * 3)}
 .s11-acts{display:flex;gap:var(--space-2);justify-content:flex-end}
-.s11-editrow > td{background:var(--sunken)}
 .s11-s12{display:inline-flex;align-items:center;gap:var(--space-2);white-space:nowrap}
 .s11-foot > .ip-link{white-space:nowrap;flex:none}
 .s11-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s11-table td.num > .ip-skel{margin-left:auto}
 .s11-empty{padding:var(--space-8) var(--space-4)}
-.s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */
-.s11-err{margin:0;white-space:normal;align-items:flex-start} /* field error line (S11M Motiv, S12 prices) */
-.s11-err > .ip-icon{flex:none;margin-top:var(--ip-hair)}
-.s11-modrow > td{border-bottom:0} /* S11M: saved price · Preț nou · Motiv read as one open row */
-.s11-modlbl{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--space-2)}
-.s11-modwhy > td{vertical-align:top;height:auto;white-space:normal;padding-top:var(--space-1);padding-bottom:var(--space-3)}
-.s11-motiv{max-width:calc(var(--space-12) * 12)}
-.s11-modwhy > td.s11-modact{padding-top:calc(var(--space-1) + var(--space-4) + var(--space-1));padding-right:var(--space-2)} /* keys on the Motiv field's line (label 16 + gap 4) */'''
+.s11-table{--ip-row-field-h:var(--control-h)} /* FW03 (additions.css §69): rows held at 37 by the 24px links, so in-row fields keep control-h */
+.s11-table tr.ip-table__edit > td.edit{padding-block:calc(var(--space-1) / 2)} /* … in td.edit's 2px (bundle.css): 37 as the rows round it */
+.s11-table th.s11-thedit,.s11-table td.s11-pc{padding-right:var(--space-2)} /* Lei/kg + Total lei: header, figures and the inputs' right edge on one line (td.edit padding) */'''
 
 STEM = 'S11-rapoarte-hrana'
 BOARDS = [

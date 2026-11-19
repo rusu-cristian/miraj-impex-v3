@@ -60,9 +60,11 @@ def row(d, first, mode='default'):
     if mode == 'work' and d is W_ROW:  # typed lei/kg (sample), total calculated from kg: suggested until edited
         kg_val = f' value="{n(B2_LAST["price_per_kg"], 2)}"'; tot_cls = ' is-suggested'; tot_val = f' value="{n(W_TOT)}"'
     if mode == 'work' and d is E_ROW:  # refused on save: 0 lei/kg; the first error takes focus, total stays empty
-        kg_cls = ' is-error is-focus'; kg_val = ' value="0"'; kg_aria = f' aria-invalid="true"'; tr = ' class="s12-haserr"'
-        after = (f'<tr class="s12-errrow"><td colspan="4"><span class="ip-sr">{lab(d)}</span></td><td colspan="2" class="edit">'
-                 f'<p class="ip-err s11-err" id="err-{d["id"]}">{ico(ALERT, 14)}<span>{err_text(d)}</span></p></td></tr>')
+        kg_cls = ' is-error is-focus'; kg_val = ' value="0"'; kg_aria = f' aria-invalid="true" aria-errormessage="err-{d["id"]}"'
+        # FW03 (D150): the row keeps its height; its error line sits in the detail row under it (additions.css §69), from
+        # the first column's text start
+        after = (f'<tr class="ip-table__detail"><td colspan="6"><div class="ip-table__detailbody">'
+                 f'<p class="ip-err ip-fieldmsg" id="err-{d["id"]}">{ico(ALERT, 14)}<span>{err_text(d)}</span></p></div></td></tr>')
     desc = f'err-{d["id"]} pr-help' if kg_aria else 'pr-help'
     return (f'<tr{tr}><td class="num">{ddate(d["date"])}</td><td>{FARM[d["farm_id"]]}</td>'
             f'<td><span class="s11-type">{s11.PKG}<span>{t["name"]}{sx}</span></span></td><td class="num">{n(d["qty_kg"])}</td>'
@@ -145,9 +147,6 @@ CSS = s11.CSS + '''
 .s12-why{font-family:var(--font-sans);font-weight:400}
 .s12-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s12-foot > .ip-btn{flex:none}
-.s12-table tr.s12-haserr > td{border-bottom:0} /* the field error row belongs to the row above */
-.s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
-.s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */
 .s12-col-date,.s12-col-farm{width:calc(var(--space-12) * 2 + var(--space-6))} /* FW01: 120, a dd.mm.yyyy date or a farm name + cell padding */
 .s12-col-kg{width:calc(var(--space-12) * 2)} /* FW01: 96, a 5-digit kg figure + cell padding */
 .s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */
