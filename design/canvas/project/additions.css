@@ -987,7 +987,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-ev--change:is(.is-hover,:has(.ip-chg__link:hover)):not(.is-pressed):not(:has(.ip-chg__link:active)) .ip-tag--neutral{background:var(--rule)} /* the neutral Tag keeps its fill on the sunken hover row */
 /* Values */
 .ip-chg__vals{grid-area:vals;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
-.ip-chg__val{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--space-2)}
+.ip-chg__val{display:grid;grid-template-columns:minmax(0,max-content) repeat(3,auto);justify-content:start;align-items:baseline;gap:0 var(--space-2)} /* RF09 (D178): the old → new pair stays on one line beside its key; only the key wraps */
 .ip-chg__k{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
 .ip-chg__val del,.ip-chg__val ins{font:400 var(--ip-fs-figure)/var(--ip-lh-figure) var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 .ip-chg__val del{color:var(--ink-secondary);text-decoration-line:line-through;text-decoration-color:var(--ink-muted)}
@@ -2137,17 +2137,21 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  * - Head: up to three rows, section > record > leaf; section, group and leaf heads centred over their columns (SYS15,
  *   D175; section 32's right-aligned colgroup heads stay for other DataTables). A section head may hold a note line
  *   (span.ip-ptable__note, "goală din 14.11"). ♀/♂ signs and figures: .is-hen / .is-rooster.
- * - Column groups stand out (SYS15, D175): every cell of a record group (head, week, day, foot, skeleton) carries its
- *   tint class, .ip-ptable__ga | .ip-ptable__gb, alternating in table order across the sections so neighbours never share
- *   one; the spine (Data · Vârstă · SAPT · Fermă), the section heads and spanning message cells carry none. Tints are
- *   tokens (colgroup-a|b: body, -total: week rows and the foot, -head: head cells; A sand from rec-feed, B cool from
- *   rec-weighing, mixed on steel-0, each ≥1.12:1 against white): week rows keep their stronger look on top (500,
- *   line-strong top edge, the -total step). Leaf heads are centred over right-aligned figures (the user's request, D175).
+ * - Column groups stand out (SYS15, D175) in their filter tag's colour (SYS16, D177): every cell of a record group (head,
+ *   week, day, foot, skeleton) carries .ip-ptable__g plus its record type, .ip-ptable__g--<type> (mortality: Mortalitate,
+ *   % cumulat, Rezumat Morți · cull · sexerr · transfer · placement: Populare · sale · feed: Hrană, Livrări, Lei, Stoc ·
+ *   weighing: Cântărire / Greutate · eggs: Ouat, Incubabile, Jos, Masă ou); a group with no tag (În viață, Găini) carries
+ *   .ip-ptable__g alone and stays untinted, as do the spine (Data · Vârstă · SAPT · Fermă), the section heads and spanning
+ *   message cells. Tints are tokens per type (colgroup-<type>: body 1.13:1 against white, -total: week rows and the foot
+ *   1.17:1, -head: head cells 1.23:1; the chip's own rec-*-bg brought to those steps, Eroare sexare from sunken as its
+ *   neutral split chip); same-type neighbours (Mortalitate · % cumulat, Ouat · Incubabile · Jos · Masă ou) are told apart by their
+ *   start edges, not by the tint. Week rows keep their stronger look on top (500, line-strong top edge, the -total step).
+ *   Leaf heads are centred over right-aligned figures (the user's request, D175).
  *   Each group's first column (.ip-ptable__gs; a section's first column also .ip-ptable__sec) draws a full-height
  *   colgroup-rule left edge, head to foot (inside the cell, so no column widens; a section's first column keeps its 1px
  *   border); on a table with section heads (Hale, Compartimente) a section's start edge is line-strong, so halls
  *   separate from groups through the body; the region's frame is the last group's right edge. Figures stay right-aligned,
- *   the spine left. Forced colours: tints drop (system backgrounds), rules stay in CanvasText.
+ *   the spine left. Forced colours: tints drop (Canvas), rules stay in CanvasText.
  * - Week block: one tbody.ip-ptable__week per age week. Its first row, tr.is-total.ip-ptable__wk, is the totals row look
  *   (500, panel, line-strong top edge: section 32); its th[scope=rowgroup] holds the expand key, a button filling the
  *   row header: chevron 16 (ink-secondary) + "SAPT 58" + dates in ink-secondary, row-h less space-1 high (28; phone 44),
@@ -2185,18 +2189,28 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 /* "Total perioadă" sticks with the first column (section 36 covers thead and tbody only) */
 .ip-tablescroll > .ip-ptable > tfoot > tr > :first-child{position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule);background:var(--panel)}
 .ip-ptable :is(thead th:not(.ip-ptable__data):not([style*="--ip-colw"]),tbody td,tfoot td){width:1%} /* a declared share (section 54) wins */
-/* column groups (SYS15, D175): full-height start edges, centred heads, alternating tints */
+/* column groups (SYS15, D175): full-height start edges, centred heads; tints = the filter tag colours (SYS16, D177) */
 .ip-ptable :is(th,td).ip-ptable__sec{border-left:var(--ip-hair) solid var(--colgroup-rule)}
 .ip-ptable :is(th,td).ip-ptable__gs:not(.ip-ptable__sec){box-shadow:inset var(--ip-hair) 0 0 var(--colgroup-rule)} /* an inset edge: no column widens (a section's first column keeps its border) */
-.ip-ptable:has(> thead th.ip-ptable__sec:not(.ip-ptable__ga,.ip-ptable__gb)) :is(th,td).ip-ptable__sec{border-left-color:var(--line-strong)} /* Hale / Compartimente: halls stand apart from their groups */
-.ip-ptable thead th:is(.ip-ptable__ga,.ip-ptable__gb,.ip-ptable__sec){text-align:center}
-.ip-ptable thead th.ip-ptable__ga{background:var(--colgroup-a-head)}
-.ip-ptable thead th.ip-ptable__gb{background:var(--colgroup-b-head)}
-.ip-ptable :is(tbody,tfoot) td.ip-ptable__ga{background:var(--colgroup-a)}
-.ip-ptable :is(tbody,tfoot) td.ip-ptable__gb{background:var(--colgroup-b)}
-.ip-ptable tr.is-total > td.ip-ptable__ga{background:var(--colgroup-a-total)}
-.ip-ptable tr.is-total > td.ip-ptable__gb{background:var(--colgroup-b-total)}
-@media (forced-colors: active){.ip-ptable :is(th,td):is(.ip-ptable__gs,.ip-ptable__sec){border-left:var(--ip-hair) solid CanvasText}} /* box-shadow is dropped there */
+.ip-ptable:has(> thead th.ip-ptable__sec:not(.ip-ptable__g)) :is(th,td).ip-ptable__sec{border-left-color:var(--line-strong)} /* Hale / Compartimente: halls stand apart from their groups */
+.ip-ptable thead th:is(.ip-ptable__g,.ip-ptable__sec){text-align:center}
+/* SYS16 (D177): each record type names its three tints; one rule per level paints them (a group with no type keeps the DataTable surfaces) */
+.ip-ptable__g--mortality{--ip-g:var(--colgroup-mortality);--ip-g-total:var(--colgroup-mortality-total);--ip-g-head:var(--colgroup-mortality-head)}
+.ip-ptable__g--cull{--ip-g:var(--colgroup-cull);--ip-g-total:var(--colgroup-cull-total);--ip-g-head:var(--colgroup-cull-head)}
+.ip-ptable__g--sexerr{--ip-g:var(--colgroup-sexerr);--ip-g-total:var(--colgroup-sexerr-total);--ip-g-head:var(--colgroup-sexerr-head)}
+.ip-ptable__g--transfer{--ip-g:var(--colgroup-transfer);--ip-g-total:var(--colgroup-transfer-total);--ip-g-head:var(--colgroup-transfer-head)}
+.ip-ptable__g--placement{--ip-g:var(--colgroup-placement);--ip-g-total:var(--colgroup-placement-total);--ip-g-head:var(--colgroup-placement-head)}
+.ip-ptable__g--sale{--ip-g:var(--colgroup-sale);--ip-g-total:var(--colgroup-sale-total);--ip-g-head:var(--colgroup-sale-head)}
+.ip-ptable__g--feed{--ip-g:var(--colgroup-feed);--ip-g-total:var(--colgroup-feed-total);--ip-g-head:var(--colgroup-feed-head)}
+.ip-ptable__g--weighing{--ip-g:var(--colgroup-weighing);--ip-g-total:var(--colgroup-weighing-total);--ip-g-head:var(--colgroup-weighing-head)}
+.ip-ptable__g--eggs{--ip-g:var(--colgroup-eggs);--ip-g-total:var(--colgroup-eggs-total);--ip-g-head:var(--colgroup-eggs-head)}
+.ip-ptable thead th[class*="ip-ptable__g--"]{background:var(--ip-g-head)}
+.ip-ptable :is(tbody,tfoot) td[class*="ip-ptable__g--"]{background:var(--ip-g)}
+.ip-ptable tr.is-total > td[class*="ip-ptable__g--"]{background:var(--ip-g-total)}
+@media (forced-colors: active){
+  .ip-ptable :is(th,td):is(.ip-ptable__gs,.ip-ptable__sec){border-left:var(--ip-hair) solid CanvasText} /* box-shadow is dropped there */
+  .ip-ptable :is(th,td)[class*="ip-ptable__g--"]{background:Canvas} /* tints drop: the rules carry the groups */
+}
 .ip-ptable__note{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary)}
 .ip-ptable .is-hen{color:var(--rec-hen)}
 .ip-ptable .is-rooster{color:var(--rec-rooster)}

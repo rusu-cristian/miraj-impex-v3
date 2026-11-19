@@ -265,14 +265,25 @@ def greutate():
     return [{'name': f'{ico("weighing")}Cântărire', 'leaves': out}]
 
 # ---------- table ----------
-# SYS15 (D175): every record group's cells (head and body) carry its tint, alternating a / b in table order across the
-# sections (neighbours never share one; the spine and the section heads carry none), and its first column the group's
-# start edge (a full-height rule, additions.css section 71). Markup hooks only: the look is in CSS.
-def _gtint(i): return 'ip-ptable__ga' if i % 2 == 0 else 'ip-ptable__gb'
-def _gcls(i, start, sec=False):
-    return ' '.join(x for x in (_gtint(i), 'ip-ptable__gs' if start else '', 'ip-ptable__sec' if sec else '') if x)
+# SYS15 (D175) + SYS16 (D177): every record group's cells (head and body) carry .ip-ptable__g and the group's record type,
+# .ip-ptable__g--<type>, tinted in its filter tag (RecordChip) colour; a group with no tag (În viață, Găini) carries
+# .ip-ptable__g alone (untinted), the spine and the section heads carry none. Its first column draws the group's start edge
+# (a full-height rule, additions.css section 71), which also parts same-type neighbours (Mortalitate · % cumulat, Ouat ·
+# Incubabile · Jos · Masă ou). Markup hooks only: the look is in CSS.
+import re as _re
+GTYPES = ('mortality', 'cull', 'sexerr', 'transfer', 'placement', 'sale', 'feed', 'weighing', 'eggs')   # RecordChip types (hen = Găini: no tag)
+def rec_of(g):
+    """a group's record type: g['rec'] when given, else its head icon's ip-rec--<type> (thico maps delivery/price to feed),
+    else "Eroare sexare" (its split icon has no record colour) → sexerr; '' = no tag (În viață, Găini)."""
+    if 'rec' in g: return g['rec'] or ''
+    m = _re.search(r'ip-rec--(\w+)', g['name'])
+    if m: return m.group(1) if m.group(1) in GTYPES else ''
+    return 'sexerr' if 'Eroare sexare' in _re.sub(r'<[^>]+>', '', g['name']) else ''
+def _gcls(rec, start, sec=False):
+    return ' '.join(x for x in ('ip-ptable__g', f'ip-ptable__g--{rec}' if rec else '', 'ip-ptable__gs' if start else '',
+                                'ip-ptable__sec' if sec else '') if x)
 def cell(val, cls, sec):
-    """sec: a leaf's group classes (leaves_of: tint, start edge, section edge); True / False kept for older callers."""
+    """sec: a leaf's group classes (leaves_of: group + record type, start edge, section edge); True / False kept for older callers."""
     g = sec if isinstance(sec, str) else ('ip-ptable__sec' if sec else '')
     c = ' '.join(x for x in (('' if cls == 'txt' else 'num'), ('' if cls == 'txt' else cls), g) if x)
     if isinstance(val, tuple):
@@ -296,7 +307,6 @@ def head(sections, spine, show_sec, colw=None, fcol=None):
         r0 += f'<th scope="col" rowspan="{nrows}">Fermă</th>'
     rows = [r0, '', ''] if show_sec else [r0, '']
     ri = 1 if show_sec else 0
-    gi = 0   # SYS15: group index in table order (tint a / b)
     for si, (sname, note, recs) in enumerate(sections):
         width = sum(len(r['leaves']) for r in recs)
         if show_sec:
@@ -304,7 +314,7 @@ def head(sections, spine, show_sec, colw=None, fcol=None):
             rows[0] += f'<th scope="colgroup" colspan="{width}" class="ip-ptable__sec ip-ptable__gs">{sname}{nt}</th>'
         first = True
         for r in recs:
-            g = _gcls(gi, True, first)
+            rt = rec_of(r); g = _gcls(rt, True, first)
             if r.get('single'):
                 sr = f'<span class="ip-sr">{r.get("sr", "")}</span>'
                 lab = r['leaves'][0][0]
@@ -314,19 +324,21 @@ def head(sections, spine, show_sec, colw=None, fcol=None):
                 rows[ri] += f'<th scope="colgroup" colspan="{len(r["leaves"])}" class="{g}">{r["name"]}</th>'
                 for li, (lab, cls, _) in enumerate(r['leaves']):
                     nc = '' if cls == 'txt' else 'num'
-                    rows[ri + 1] += f'<th scope="col" class="{(nc + " " + _gcls(gi, li == 0, first and li == 0)).strip()}"{st()}>{lab}</th>'
-            first = False; gi += 1
+                    rows[ri + 1] += f'<th scope="col" class="{(nc + " " + _gcls(rt, li == 0, first and li == 0)).strip()}"{st()}>{lab}</th>'
+            first = False
     return '<thead>' + ''.join(f'<tr>{r}</tr>' for r in rows if r) + '</thead>'
 
 def leaves_of(sections):
-    """(cls, value fn, group classes) per leaf column; the group classes (SYS15: tint, start edge, section edge) are a str."""
-    out = []; gi = 0
+    """(cls, value fn, group classes) per leaf column; the group classes (SYS15/SYS16: group + record type, start edge,
+    section edge) are a str."""
+    out = []
     for (_, _, recs) in sections:
         first = True
         for r in recs:
+            rt = rec_of(r)
             for li, (lab, cls, fn) in enumerate(r['leaves']):
-                out.append((cls, fn, _gcls(gi, li == 0, first and li == 0)))
-            first = False; gi += 1
+                out.append((cls, fn, _gcls(rt, li == 0, first and li == 0)))
+            first = False
     return out
 
 def wd(d):
