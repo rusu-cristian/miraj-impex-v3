@@ -1,21 +1,21 @@
 # Handoff
-Updated: 2026-11-19 · Last commit: 0628925
+Updated: 2026-11-19 · Last commit: 3143d94
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795092506-1769; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
 
 ## Progress
-Round 2 (19.11.2026): new workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, table-first tabs (D151–D158). Round 1: 118/118 done. Round 2 jobs: DATA03 done, RF00 done, KIT02 + RF01 building; then SYS14 PeriodTable → S4N → S4NS → S3N, RF02–RF13, S14N, S18N, S20N, FINAL4.
+Round 2 (19.11.2026): new workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, table-first (D151–D170). Done: DATA03, DATA04, KIT02, RF00, SYS14, RF01–RF07, S4N, S4NF, S4NG (user approved the Fermă screens after 3 gate rounds). Building: S4NS (Fermă states + phone), RF08 (S15+S16). Then S3N, S14N, RF09, RF10, S18N, S20N, RF11–RF13, SX01, FINAL4 (+ publish the canvas).
 
 ## Just finished
-- DATA03 extracts from Raport_NOU_2026.xlsx: 18.11.2026 SAPT 59 (age 407), alive ♀ 12 561 · ♂ 794 (H5, H6; H7 empty since 14.11), deaths ♀ 3 · ♂ 0, sold ♀ 1 831 · ♂ 289 (D155), lay 41,1 % vs 53,3 % (D156); hirbovat-daily/weekly.json, key-figures-18-11.md; 1 fix round (0628925)
-- RF00 refresh plan (notes/RF00.md): realdata.py shared module, literal scan, RF01–RF13 per row
-- Setup round 2: D151 week = age week (age 0 at placement), D152 real data/today 18.11/H5–H7, D153 incubation later, D154 table first (d7ed6b9)
+- S4NG Fermă gate round 2 (D167, D170): În viață first / Vânzare last in every PeriodTable, Rezumat incub. + % jos, every week open everywhere, wide tables drawn in full on wider boards (board_widths.json), ♀/♂ as venus/mars icons (additions §72, CSS), Seria 2025 table (b730c94)
+- RF06 S2 Acasă (18 boards, D169), RF07 S8 Cântărire (D157), DATA04 one sale = one record (D168), RF05 S9/S10, RF04 S6 (D164), RF03 S11–S13 (D163), RF02 S7, RF01 realdata.py/literal_scan.py
+- S4N/S4NF: Fermă table-first; user: all weeks open (D166)
 
 ## Next up
-- KIT02, RF01 (building) → SYS14 → S4N (screen gate: show the user the Fermă table)
+- S3N Serie table-first (after S4NS), S14N Rapoarte daily rows (after S3N), RF09 S17
 
 ## Waiting on the user
-- To review: D154 (Rezumat stays first tab, table-led), D158 (RF00 details a–g).
-- Round 1 "to review" items still open (D141–D148 etc., see git history of this file).
+- To review (non-blocking): D154 (Rezumat first tab), D158, D161–D163, D165, D168–D170 (Claude calls).
+- Canvas not yet republished with round 2 — FINAL4 publishes.
 
 ## Unpublished on the canvas
 - None: the new canvas (19.11.2026) holds every file in design/canvas/project/. Later changes: publish per design/kit/canvas.md to slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b and list them here until published.
