@@ -258,8 +258,10 @@ def cell(val, cls, sec):
         return f'<td class="{c}">{DASH}<span class="ip-sr"> {val[1]}</span></td>'
     return f'<td class="{c}">{val}</td>'
 
-def head(sections, spine, show_sec, colw=None):
-    """sections: [(name html, note, records)]. Rows: section (if show_sec) > record > leaf."""
+def head(sections, spine, show_sec, colw=None, fcol=None):
+    """sections: [(name html, note, records)]. Rows: section (if show_sec) > record > leaf. fcol: the S3 "Fermă" text column
+    (default: spine 's3'; S3N: also after the phone's sticky first column)."""
+    if fcol is None: fcol = spine == 's3'
     nrows = (1 if show_sec else 0) + 2
     data_h = 'Data · Vârstă (zile)' if spine == 'phone' else 'Data'
     r0 = f'<th scope="col" class="ip-ptable__data" rowspan="{nrows}">{data_h}</th>'
@@ -269,7 +271,7 @@ def head(sections, spine, show_sec, colw=None):
         return f' style="--ip-colw:{v}%"' if v else ''
     if spine != 'phone':
         r0 += f'<th scope="col" class="num" rowspan="{nrows}"{st()}>Vârstă (zile)</th><th scope="col" class="num" rowspan="{nrows}"{st()}>SAPT</th>'
-    if spine == 's3':
+    if fcol:
         r0 += f'<th scope="col" rowspan="{nrows}">Fermă</th>'
     rows = [r0, '', ''] if show_sec else [r0, '']
     ri = 1 if show_sec else 0
@@ -309,13 +311,18 @@ def wd(d):
     return f'<span aria-hidden="true">{WD[d.weekday()]}</span><span class="ip-sr">{WDF[d.weekday()]}</span> {num(R.ddm(d))}'
 
 def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None, weeks=WEEKS, weighings=False,
-           focus=None, dense=False, foot=True, skel=False, colw=None, cal=CAL):
+           focus=None, dense=False, foot=True, skel=False, colw=None, cal=CAL, farm=None):
+    """farm (S3N): (kind, key) -> the S3 "Fermă" text ('w' week, 'd' day, 'f' period); on the desktop spines it is the Fermă
+    column (spine 's3' without it keeps "Hîrbovăț"); on the phone (D174) there is no column: a day whose farm() is not
+    None (the transfer weeks) shows it as the sticky cell's second small line"""
     if show_sec is None: show_sec = len(sections) > 1
+    fcol = spine == 's3' or (farm is not None and spine != 'phone')
+    farm_of = farm or (lambda kind, key: 'Hîrbovăț')
     if open_weeks is None: open_weeks = tuple(weeks)   # D166: every week of the period open by default; () = grain Săpt.
     L = leaves_of(sections)
     cls = 'ip-table ip-table--rowheads ip-ptable' + (' ip-ptable--phone' if spine == 'phone' else '') + (' ip-ptable--dense' if dense else '')
     tid = f'{uid}-t'
-    h = f'<table class="{cls}" id="{tid}"><caption class="ip-sr">{caption}</caption>' + head(sections, spine, show_sec, colw)
+    h = f'<table class="{cls}" id="{tid}"><caption class="ip-sr">{caption}</caption>' + head(sections, spine, show_sec, colw, fcol)
     def spine_cells(kind, key, label):
         if spine == 'phone': return ''
         if kind == 'w':
@@ -326,7 +333,7 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
         else:
             pa, pb = cal.period(weeks)
             s = f'<td class="num">{cal.age(pa)}{DASH}{cal.age(pb)}</td><td class="num">{weeks[-1]}{DASH}{weeks[0]}</td>'
-        if spine == 's3': s += '<td>Hîrbovăț</td>'
+        if fcol: s += f'<td>{farm_of(kind, key)}</td>'
         return s
     def figs(kind, key):
         if skel:
@@ -360,27 +367,29 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
             th = (f'<th scope="rowgroup"><button type="button" class="ip-ptable__key{fc}" aria-expanded="{"true" if opened else "false"}" '
                   f'aria-controls="{" ".join(ids)}">{svg(CHEV["open" if opened else "closed"])}<span>{lbl}</span></button></th>')
         sk = ' ip-table__skel' if skel else ''
-        rows = f'<tr class="is-total ip-ptable__wk{sk}">{th}{spine_cells("w", k, "") if not skel else skel_spine()}{figs("w", k)}</tr>'
+        rows = f'<tr class="is-total ip-ptable__wk{sk}">{th}{spine_cells("w", k, "") if not skel else skel_spine(spine, fcol)}{figs("w", k)}</tr>'
         if no_w and not skel:   # one row across the table, its text at the day labels' start (sticky in a scrolled region)
-            ncol = (1 if spine == 'phone' else 3 + (spine == 's3')) + len(L)
+            ncol = (1 if spine == 'phone' else 3) + fcol + len(L)
             rows += (f'<tr class="ip-ptable__day ip-ptable__none" id="{ids[0]}"{"" if opened else " hidden"}><td colspan="{ncol}">'
                      f'<span>fără cântărire în această săptămână</span></td></tr>')
         for d, i in zip(ds, ids):
             hid = '' if opened else ' hidden'
             if skel:
                 if not opened: continue
-                rows += f'<tr class="ip-ptable__day{sk}" id="{i}"><th scope="row"><span class="ip-skel ip-skel--w3"></span></th>{skel_spine()}{figs("d", d)}</tr>'
+                rows += f'<tr class="ip-ptable__day{sk}" id="{i}"><th scope="row"><span class="ip-skel ip-skel--w3"></span></th>{skel_spine(spine, fcol)}{figs("d", d)}</tr>'
                 continue
             lab = wd(d) + (f' · {num(cal.age(d))}' if spine == 'phone' else '')
+            if spine == 'phone' and farm and farm('d', d): lab += f'<span class="ip-ptable__sub">{farm("d", d)}</span>'   # D174: the farm on a second line
             rows += f'<tr class="ip-ptable__day" id="{i}"{hid}><th scope="row">{lab}</th>{spine_cells("d", d, "")}{figs("d", d)}</tr>'
         h += f'<tbody class="ip-ptable__week">{rows}</tbody>'
     if foot:
         lab = 'Total perioadă' if not skel else '<span class="ip-skel ip-skel--w2"></span>'
-        h += f'<tfoot><tr class="is-total{" ip-table__skel" if skel else ""}"><th scope="row">{lab}</th>{spine_cells("f", None, "") if not skel else skel_spine()}{figs("f", None)}</tr></tfoot>'
+        h += f'<tfoot><tr class="is-total{" ip-table__skel" if skel else ""}"><th scope="row">{lab}</th>{spine_cells("f", None, "") if not skel else skel_spine(spine, fcol)}{figs("f", None)}</tr></tfoot>'
     return h + '</table>', tid
 
-def skel_spine():   # Vârstă ("406–407") ch4, SAPT ("59") ch2
-    return ''.join(f'<td class="num"><span class="ip-skel ip-skel--end ip-skel--ch{n}"></span></td>' for n in (4, 2))
+def skel_spine(spine='farm', fcol=False):   # Vârstă ("406–407") ch4, SAPT ("59") ch2; S3N: the S3 Fermă text cell ("Hîrbovăț") ch4 at its start
+    out = '' if spine == 'phone' else ''.join(f'<td class="num"><span class="ip-skel ip-skel--end ip-skel--ch{n}"></span></td>' for n in (4, 2))
+    return out + ('<td><span class="ip-skel ip-skel--ch4"></span></td>' if fcol else '')
 
 def region(table_html, caption, hidden=False):
     if hidden:

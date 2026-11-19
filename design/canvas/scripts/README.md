@@ -25,7 +25,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 |---|---|
 | S4  | `s4s_build.py --canvas`, `s4_build.py --canvas` (Rezumat: h/title refreshed in place), `s4t_build.py --canvas` (the 4 tabs: h/title in place, S4N), `s4ns_build.py --canvas` (S4NS: 2 desktop + 3 phone state boards after the row; heights `s4ns_render.py --heights` → s4ns_heights.json) |
 | S7  | `s7_build.py --canvas`, `s7s_build.py --canvas` (h/title refreshed in place, RF02) |
-| S3  | `s3_build.py --canvas` |
+| S3  | `s3_build.py --canvas` (S3N: 4 desktops + the phone board after them; h from `s3_render.py --heights`, the phone's width from `s3_render.py --widths` → board_widths.json; when the row grows it re-stacks the rows below itself, as `canvas_rows.py relayout`) |
 | S11 | `s11_build.py --canvas` (h/title refreshed in place, RF03) |
 | S12 | `s12_build.py --canvas` (h/title refreshed in place, RF03) |
 | S13 | `s13_build.py --canvas` (h/title refreshed in place, RF03; rewrites the S7 boards byte-identical) |
@@ -65,6 +65,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 - S4N: s4t_build ← s4s_build + design/system/scripts/sys14_build.py (PeriodTable builders, imported; it writes its preview only when run itself); s4_build ← s4t_build (Rezumat table).
 - S4NS: s4ns_build ← s4t_build (→ s4s_build, sys14) + s2_build (phone screen/tab bar/write_phone; rewrites the S2/S7 default boards byte-identical). Phone boards whose table is wider than 390 are drawn wider too (board_widths.json, page 390, `.s4ns-wide`, D167).
 - S4NG: s4s_build loads sys14_build itself and draws the Rezumat PeriodTable (period, record types, FilterBar `filterbar4`, `ptable`, `rezumat_groups`, `tb_rezumat`, loading table) in `panel_default` / `main_page`, so the S4 state boards and the S9/S10 desktop backdrops show the same table; s4t_build re-exports these names (`P = s4.P`).
+- S3N: s3_build ← s4t_build (→ s4s_build, sys14: `ptable(farm=…)` draws the S3 Fermă column, also on the phone spine) + s2_build (phone shell; rewrites the S2/S7 default boards byte-identical). s18 reads s3's `cT`, `cH`, `cP`, `ARR`, `X0D`, `X1D` (kept).
 - s12 ← s11; s13 ← s7s + s11 (rewrites the S7 boards); s14 ← s4t + s11; s16 ← s4t.
 - s2s ← s2; s14s ← s14 + s2; s15 ← s2s; s15s ← s15; s16s ← s16; s8s ← s8.
 - s17 ← s14s; s17s ← s17; s18 ← s17 + s3; s18s ← s18; s19 ← s18; s20, s21, s22 ← s19; s19s/s20s/s22s ← their base.

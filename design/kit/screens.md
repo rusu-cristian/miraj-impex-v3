@@ -72,10 +72,10 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
    - the "azi" line
    - the SAPT readout per open cycle (the birds' age week, round 2, D151: "SAPT 59")
    - clicking a block opens that farm at that cycle
-3. **Farm summaries:** one panel per farm with its type, guide, cycle (round 2: its SAPT span, "SAPT 1–21" / "SAPT 20–59"), alive ♀ · ♂ and key figures vs the guide.
-4. **Tabs:** Păsări · Hrană · Greutate · Producție, aggregated per farm. Round 2 (D154, spec D1 › Series page), each tab in this order:
-   1. ⭐ **Table** (PeriodTable, no Detaliu switch): the last 4 weeks, SAPT 59–56 (newest first, D159/D160), with their days behind the expand key, a "Fermă" column, one "Total serie" group; no FilterBar (D63), Exportă in the header; under the table the key "Arată toate săptămânile" (SAPT 59 → 1, D160)
+3. **Tabs** (D174: right under the track, table first): Păsări · Hrană · Greutate · Producție, aggregated per farm. Round 2 (D154, spec D1 › Series page), each tab in this order:
+   1. ⭐ **Table** (PeriodTable, no Detaliu switch): the last 4 weeks, SAPT 59–56 (newest first, D159/D160), with their days behind the expand key, a "Fermă" column, one "Total serie" group; no FilterBar (D63), Exportă in the header; under the table the key "Arată toate săptămânile" (SAPT 59 → 1, D160) and its notes; on a phone single-choice record tags (default Mortalitate, D174)
    2. the tab's charts
+4. **Farm summaries** ("Ferme", after the tabs, D174): one panel per farm with its type, guide, cycle (round 2: its SAPT span, "SAPT 1–21" / "SAPT 20–59"), alive ♀ · ♂ and key figures vs the guide.
 
 ### S4 · Scope page · farm level (Hîrbovăț · ciclu Seria 2026) ← first build
 1. **Page header:**
