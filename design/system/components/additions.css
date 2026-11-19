@@ -2122,3 +2122,74 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-stree__farm .ip-stree__farmname{display:inline-flex;vertical-align:middle}
 .ip-stree__farm .ip-stree__farmname + .ip-note{display:inline;margin-left:var(--space-2);vertical-align:middle}
 .ip-users__t tr.ip-users__empty > td{height:var(--row-h);padding-block:0}
+
+/* =====================================================================================================
+ * SYS14 · PeriodTable: a DataTable by age week with its days inside (D154, D159, D160), for every tab of the scope pages
+ * (S3, S4, S5) and the S11 Consum / S14 Producție reports. Spec: components.md › Additions › PeriodTable (round 2, spec).
+ * ===================================================================================================== */
+
+/* ---------- 71. PeriodTable (SYS14) ---------- */
+/* table.ip-table.ip-table--rowheads.ip-ptable in the framed scroll region (section 36), every DataTable rule kept: row
+ * heads and the totals edge (section 32), skeleton rows (section 42), one row height (sections 69/70). Additions:
+ * - Head controls: div.ip-ptable__bar right above the region (farm tabs only): the caption "Detaliu" + the system
+ *   SegmentedControl Fermă · Hale · Compartimente (role=radiogroup, ip-seg--touch on a phone). The visible caption line
+ *   p.ip-cap.ip-ptable__cap follows it (aria-hidden: the table's caption and the region's aria-label say the same).
+ * - Head: up to three rows, section > record > leaf; group heads right-aligned on a rule (section 32). A section group's
+ *   first column (head cells and body cells, .ip-ptable__sec) starts on a rule left edge, steel only. A section head may
+ *   hold a note line (span.ip-ptable__note, "goală din 14.11"). ♀/♂ signs and figures: .is-hen / .is-rooster.
+ * - Week block: one tbody.ip-ptable__week per age week. Its first row, tr.is-total.ip-ptable__wk, is the totals row look
+ *   (500, panel, line-strong top edge: section 32); its th[scope=rowgroup] holds the expand key, a button filling the
+ *   row header: chevron 16 (ink-secondary) + "SAPT 58" + dates in ink-secondary, row-h less space-1 high (28; phone 44),
+ *   ghost (hover sunken, pressed rule), the system focus ring; the focused header rises over its neighbours so the ring
+ *   is whole. A week row with no key (weighings: "fără cântărire") starts its text where a key's text starts (space-8).
+ * - Daily rows tr.ip-ptable__day (hidden while closed): th[scope=row] indented to the week label's text (space-8),
+ *   body text 400 on raised. The row before a week row drops its rule (section 32), also when its own week is closed
+ *   (its day rows are hidden, so the week row is the block's last drawn row); the first week under the head keeps only
+ *   the head's own bottom line (no double edge).
+ * - Columns: every column but the Data column is as narrow as its content (width 1%), so the Data column takes the slack
+ *   and nothing wraps; cells stay one line (one row height, D150).
+ * - Sticky: the first column sticks (section 36) and the head sticks to the region's top; the page caps the region at
+ *   --ip-ptable-max-h (from its own sizes: viewport less its sticky header). Unset (boards, D42) the region is uncapped.
+ * - Density ip-ptable--dense: figure cells one spacing step narrower (S3 at 1280); same row height.
+ * - Phone ip-ptable--phone (the page renders the phone markup: spine folded into the first column, "Ma 17.11 · 406",
+ *   one column group): every body and foot row control-h-touch (48), the key 44; a partial week's "2 din 7 zile" sits on
+ *   a second line under "SAPT 59 · 17.11–18.11" (span.ip-ptable__sub, small, ink-secondary), so the sticky column stays
+ *   as wide as a whole week's label.
+ * - Loading: the same table, tr.ip-table__skel rows (section 42), the week rows' bars in rule on panel; both copies
+ *   declare the loaded column shares on their leaf heads (section 54, --ip-colw), so the columns do not move.
+ * - Below the region: div.ip-ptable__after (the S3 "Arată toate săptămânile" key, the foot note of a partial guide).
+ * Tokens only. */
+.ip-ptable__bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3);margin:0 0 var(--space-3)}
+.ip-ptable__cap{display:block;margin:0 0 var(--space-2)}
+.ip-ptable__after{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4);margin-top:var(--space-3)}
+.ip-ptable__after > p{margin:0}
+.ip-tablescroll:has(> .ip-ptable){max-block-size:var(--ip-ptable-max-h,none);overflow:auto}
+.ip-ptable > thead{position:sticky;top:0;z-index:3}
+/* "Total perioadă" sticks with the first column (section 36 covers thead and tbody only) */
+.ip-tablescroll > .ip-ptable > tfoot > tr > :first-child{position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule);background:var(--panel)}
+.ip-ptable :is(thead th:not(.ip-ptable__data):not([style*="--ip-colw"]),tbody td,tfoot td){width:1%} /* a declared share (section 54) wins */
+.ip-ptable .ip-ptable__sec{border-left:var(--ip-hair) solid var(--rule)}
+.ip-ptable__note{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary)}
+.ip-ptable .is-hen{color:var(--rec-hen)}
+.ip-ptable .is-rooster{color:var(--rec-rooster)}
+/* week row + expand key */
+.ip-ptable tr.ip-ptable__wk > th{padding-block:0;padding-inline:var(--space-1) var(--space-3)}
+.ip-ptable tr.ip-ptable__wk > th:not(:has(.ip-ptable__key)){padding-inline-start:var(--space-8)}
+.ip-ptable__key{display:flex;align-items:center;gap:var(--space-1);width:100%;height:calc(var(--row-h) - var(--space-1));margin:0;padding:0 var(--space-2);border:0;border-radius:var(--radius-sm);background:transparent;color:var(--ink);font:inherit;text-align:left;white-space:nowrap;cursor:pointer;transition:background-color var(--ip-dur-key) var(--ip-ease)}
+.ip-ptable__key > .ip-icon{flex:none;color:var(--ink-secondary)}
+.ip-ptable__key:hover,.ip-ptable__key.is-hover{background:var(--sunken)}
+.ip-ptable__key:active,.ip-ptable__key.is-pressed{background:var(--rule)}
+.ip-ptable th:has(> .ip-ptable__key:is(:focus-visible,.ip-focus)){z-index:4}
+.ip-ptable__dates{color:var(--ink-secondary);font-weight:400}
+.ip-ptable__sub{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-secondary)} /* phone: the partial week's day count on a second line inside the 48 row */
+/* daily rows */
+.ip-ptable tr.ip-ptable__day > th{padding-left:var(--space-8)}
+/* one edge per week: a closed week's row is its block's last drawn row; the first week sits on the head's line */
+.ip-ptable > tbody:has(+ :is(tbody,tfoot) > tr.is-total:first-child) > tr:not([hidden]):not(:has(~ tr:not([hidden]))) > :is(th,td){border-bottom:0}
+.ip-ptable > thead + tbody > tr.is-total:first-child > :is(th,td){border-top:0}
+/* loading: week-row bars stay visible on panel */
+.ip-ptable tr.is-total .ip-skel{background:var(--rule)}
+/* density and phone */
+.ip-ptable--dense :is(tbody,tfoot) td.num{padding-inline:var(--space-2)}
+.ip-ptable--phone :is(tbody,tfoot) > tr > :is(th,td){height:var(--control-h-touch)}
+.ip-ptable--phone .ip-ptable__key{height:calc(var(--control-h-touch) - var(--space-1))}
