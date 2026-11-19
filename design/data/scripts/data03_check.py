@@ -95,6 +95,15 @@ ok([[s_['section'] for s_ in x['sections']] for x in r14] == [['H6.2'], ['H7.1',
 for ev in e['culls'] + e['sexing_errors']:
     r = smap[(ev['date'], ev['section'], ev['sex'])]
     ok(abs(ev['qty']) <= r['mort'] and ev['carved_from_mortality_of_day'] == r['mort'] and not r['sold'], f"carve {ev}")
+# RF08 (D158a): the one shared correction = a real compartment-day (stored = the real deaths), a vet Zilnic entry before it
+CO = e['corrections']
+ok(len(CO) == 1, f'one correction {len(CO)}')
+for c in CO:
+    rw = c['row']; r = smap[(rw['date'], rw['section'], rw['sex'])]
+    ok(c['new_values']['qty'] == r['mort'] and 0 <= c['old_values']['qty'] != r['mort'] and not r['sold'], f'correction figures {c}')
+    ok(any(x['record'] == 'mortality' and x['at'] == c['entry_at'] and x['user'] == c['entry_user'] for x in e['event_log']), f'correction entry {c}')
+    ok(rw['date'] < c['at'][:10] <= '2026-11-18' and c['entry_at'] < c['at'] and len(c['reason']) <= 200, f'correction time/reason {c}')
+    ok(rw['sapt'] == r['sapt'] and not any(x['sold'] for x in S if x['section'] == rw['section']), f'correction section without sales {c}')
 for n in ('mortality-telita-daily.json',):
     for r in L(n)['rows']: ok(r['sapt'] == r['age_week'], f'telita sapt {r["date"]}')
 fdl = L('feed-deliveries.json')

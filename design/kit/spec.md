@@ -384,11 +384,11 @@ All forms work at 360px width. Each one shows the farm, the date and the birds' 
 - **Job:** When a past number turns out wrong, I want to fix it with a reason, so the counts are right and we know what changed.
 - **Entry points:** any entry in an event log or table › Corectează.
 - **Flow:**
-  1. Open the entry and change the values.
+  1. Open the entry: the whole save (D172, one save = one record, D168), e.g. a Zilnic save shows every compartment × sex in it as the Zilnic form does; any figure can be changed, a changed figure is marked ("modificat", the saved value under it).
   2. A reason is required (≤ 200 characters).
-  3. A preview shows the effect: "H2 · găini în viață de pe 03.11.2026 se schimbă cu +12."
+  3. A preview shows the effect of each change and the totals that follow: "H2 · găini în viață de pe 03.11.2026 se schimbă cu +12."
   4. Salvează corecția.
-- **Actions:** Șterge, with the reason required and a confirmation dialog.
+- **Actions:** Șterge (the whole save), with the reason required and a confirmation dialog.
 - **Rules:**
   - The same "never below 0" check runs over every later day.
   - The old and new values go to `AUDIT_LOG`.

@@ -855,6 +855,17 @@ for m in internal_moves:
 events.sort(key=lambda e: e['at'])
 _form_at = {(f_['date'], r['section']): f"{f_['date']}T{f_['time']}" for f_ in sale_forms for r in f_['rows']}
 sales_ev = [dict(date=r[0], sapt=r[2], section=r[3], F=r[4], M=r[5], real=True, created_by='Ion Rusu', created_at=_form_at[(r[0], r[3])]) for r in sales_rows]  # created_at = its record's `at` (D168)
+# RF08 (D158a): the one illustrative correction S15/S16/S17 and SYS09 share (no real audit log exists). The manager corrects,
+# the morning after, the vet's Zilnic row of yesterday (17.11) in the compartment with the most ♀ deaths that never had a
+# sale (so no sale bounds the effect): the stored figure is the real one (new), the vet first typed 2 fewer (old).
+_cd = '2026-11-17'
+_cm, _cs = max((secday(_cd, s, 'F')['mort'], s) for s in SECTIONS
+               if secday(_cd, s, 'F')['mort'] >= 2 and not any(state[x]['sec'][(s, y)]['sold'] for x in dates for y in 'FM'))
+_ce = next(e_ for e_ in events if e_['record'] == 'mortality' and e_['at'][:10] == _cd)
+corrections = [dict(at='2026-11-18T10:12', user='Ion Rusu', role='manager', record='mortality', action='update',
+                    row=dict(date=_cd, sapt=sapt(_cd), section=_cs, sex='F'), entry_at=_ce['at'], entry_user=_ce['user'],
+                    old_values=dict(qty=_cm - 2), new_values=dict(qty=_cm),
+                    reason='Numărătoare refăcută: 2 găini găsite moarte sub hrănitoare.', real_figures='new = the real deaths of that compartment-day; old value, author, time and reason illustrative')]
 weighings = [dict(date='2026-11-10', sapt=sapt('2026-11-10'), section='H5.1', sex='F', avg_weight_g=3960, cv_pct=8.1, uniformity_pct=79.0,
                   sample_size=60, guide_weight_g=None, guide_state='fără date în ghid', created_by='Dr. Ceban', created_at='2026-11-10T09:15'),
              dict(date='2026-11-10', sapt=sapt('2026-11-10'), section='H5.1', sex='M', avg_weight_g=4870, cv_pct=9.4, uniformity_pct=74.0,
@@ -865,8 +876,9 @@ dump('illustrative-events-hirbovat.json', dict(
               consistency='Every cull / sexing error is carved out of the real deaths of that compartment-day (carved_from_mortality_of_day); daily totals and alive counts stay the real ones. Event-log figures are the real daily totals of hirbovat-daily.json. sales = the real Vânzare quantities (D155, hirbovat-daily sales) per compartment; only their author/time are illustrative. One sale form = one event_log record (D168, DATA04): record=sale lists its compartments in `sections` [{section, F, M}] with totals F/M (= Σ its sales rows); the compartments of one hall sold on one day are one form, created_at of each sales row = its record\'s at; 14.11 has two forms (H6.2, then H7.1 + H7.2).',
               not_included='No transfer between Hîrbovăț halls: the sheet has none (not invented); the one real move between compartments (22.10.2026 H7.2 → H7.1 ♂ 19) is in transfers-seria2026.json, its event_log entry below gives it an illustrative author/time. Sales 12–18.11 are real quantities (D155), listed under sales with illustrative author/time.',
               names='Dr. Ceban (vet), Ion Rusu (manager) — illustrative, as before (D27 sample).',
+              corrections='RF08 (D158a): one illustrative audit record shared by S15/S16/S17 and SYS09: Ion Rusu corrects on 18.11 the vet\'s Zilnic row of 17.11 (the compartment with the most ♀ deaths and no sale); new_values = the real deaths (daily rows hold them), old_values illustrative.',
               replaces='sample-hirbovat-2026.json (superseded; kept for reference)'),
-    culls=culls, sexing_errors=[sex_err] if sex_err else [], sales=sales_ev, weighings=weighings, event_log=events))
+    culls=culls, sexing_errors=[sex_err] if sex_err else [], sales=sales_ev, weighings=weighings, corrections=corrections, event_log=events))
 
 # ---------------------------------------------------------------- key-figures-18-11.md
 f = state[TODAY]['farm']; fy = state['2026-11-17']['farm']

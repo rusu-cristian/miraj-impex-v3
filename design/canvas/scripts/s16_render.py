@@ -2,6 +2,8 @@
 1280×1024) to design/shots/S16.png, S16-1 … S16-4.png (canvas order) + S16-4-1280.png, and report sideways scroll,
 duplicate ids, broken ARIA references, unnamed form controls, text under 4.5:1, targets under 44 (phone) / 24 (desktop),
 the tab order, the sheet body overflow, and page elements under the open SidePanel.
+--heights (D172): each board's natural height = its base viewport (844 / 1024) + the sheet / panel body's overflow there,
+rounded up to 4, into s16_heights.json (the builds use it for the tall boards only); then rebuild.
 --measure: on the desktop board (built with scroll 0) read the top of the Jurnal block, write scroll = top − space-6 into
 s16_heights.json ("S16-corecteaza--desktop@scroll"); rebuild with s16_build.py <repo> s16_heights.json afterwards."""
 import asyncio, json, pathlib, sys
@@ -10,6 +12,8 @@ R = pathlib.Path(__file__).resolve().parents[3]
 HJ = R / 'design/canvas/scripts/s16_heights.json'
 ORDER = [('S16-corecteaza', 390, 844), ('S16-corecteaza--motiv-lipsa', 390, 844), ('S16-corecteaza--refuzat', 390, 844),
          ('S16-corecteaza--sterge-confirmare', 390, 844), ('S16-corecteaza--desktop', 1440, 1024), ('S16-corecteaza--desktop', 1280, 1024)]
+MEASURE = r"""(base) => { const r = document.querySelector('.ip-root'); r.style.height = r.style.height ? base + 'px' : ''; r.style.minHeight = r.style.height ? '' : base + 'px';
+ const b = document.querySelector('.ip-sidepanel__body--form'); return b ? Math.max(0, b.scrollHeight - b.clientHeight) : 0; }"""  # D172: the sheet / panel overflow at the base viewport
 CHECK = r"""() => {
  const ids = [...document.querySelectorAll('[id]')].map(e => e.id); const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
  const refs = [...document.querySelectorAll('[aria-describedby],[aria-labelledby],[for],[aria-controls],[aria-activedescendant]')].flatMap(e =>
@@ -36,12 +40,18 @@ CHECK = r"""() => {
    key: kr ? [Math.round(kr.left), Math.round(kr.top), Math.round(kr.right), Math.round(kr.bottom)] : null};
 }"""
 async def main():
-    measure = '--measure' in sys.argv; only = [a for a in sys.argv[1:] if not a.startswith('--')]
+    measure = '--measure' in sys.argv; heights = '--heights' in sys.argv; only = [a for a in sys.argv[1:] if not a.startswith('--')]
+    HS = json.loads(HJ.read_text()) if HJ.exists() else {}; new = {}
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome')
         for k, (st, w, h) in enumerate(ORDER):
             if only and st not in only: continue
             if measure and st != 'S16-corecteaza--desktop': continue
+            if heights:
+                pg = await b.new_page(viewport={'width': w, 'height': h}); await pg.goto(f'file:///tmp/s16/{st}.html'); await pg.wait_for_timeout(800)
+                if w != 1280: new[st] = h + -(-(await pg.evaluate(MEASURE, h)) // 4) * 4
+                await pg.close(); continue
+            h = HS.get(st, h) if w == 1440 or w == 390 else h
             pg = await b.new_page(viewport={'width': w, 'height': h})
             await pg.goto(f'file:///tmp/s16/{st}.html'); await pg.wait_for_timeout(1000)
             res = await pg.evaluate(CHECK); print(st, w, res)
@@ -53,4 +63,6 @@ async def main():
             await pg.screenshot(path=str(R / 'design/shots' / name))
             await pg.close()
         await b.close()
+    if heights:
+        HS.update(new); HJ.write_text(json.dumps(HS, indent=1) + '\n'); print('heights', new)
 asyncio.run(main())

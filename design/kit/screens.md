@@ -167,7 +167,7 @@ Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / S
 Today's entries grouped by record type; edit or delete.
 
 ### S16 · Corectează (side panel or sheet)
-The entry with its record icon, editable fields, an effect preview, the reason, Salvează corecția / Șterge.
+The entry (the whole save, D172: every compartment × sex as its entry form, changed figures marked) with its record icon, editable fields, an effect preview, the reason, Salvează corecția / Șterge.
 
 ### S17 · Istoric modificări
 Filters (user, farm, record type, period), then the change list with record icons.
