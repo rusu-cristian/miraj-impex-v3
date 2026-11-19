@@ -1,11 +1,24 @@
 {
   "meta": {
-    "generated_by": "DATA01",
-    "source": "design/data/Seria_2026.xlsx",
-    "workbook_last_real_date": "2026-02-28",
-    "real": "farm names, section codes and hall grouping are from the workbook (Telita row 2, Hrana Hîrbovăț row 1, Sheet9 row 2, import date row 1)",
+    "generated_by": "DATA03",
+    "script": "design/data/scripts/data03_build.py <Raport_NOU_2026.xlsx> <extracts_dir>",
+    "source": "design/data/Raport_NOU_2026.xlsx",
+    "last_real_date": "2026-11-18",
+    "week_rule": "D151: age_days = date − 2025-10-07 (+ age_at_placement_days 0); sapt = floor(age_days / 7) + 1",
+    "real": "farm names, section codes and hall grouping from the workbooks (Telița: Seria_2026.xlsx Telita row 2; Hîrbovăț: Raport_NOU_2026.xlsx Hirbovat rows 1–2, Hrana Hirbovat row 2)",
     "illustrative": "guide names (D22) and ids",
-    "notes": ["Telița sections hold one sex each in Seria 2026 (H1, H2, H3, H6 hens; H5-1, H5-2 roosters).", "Hîrbovăț compartments hold both sexes; eggs are counted per hall (parent).", "to_hirbovat_by_sheet_name comes from the H-sheet names; the dated movements pair differently (see transfers-seria2026.json).", "Hrana Hîrbovăț row 2 labels its norm columns H5.1G … H7.2C (wrong; they sit under H1.1 … H4.2)."]
+    "code_map_old_to_new": {
+      "H1": "H5",
+      "H3": "H6",
+      "H4": "H7",
+      "H1.1": "H5.1",
+      "H1.2": "H5.2",
+      "H3.1": "H6.1",
+      "H3.2": "H6.2",
+      "H4.1": "H7.1",
+      "H4.2": "H7.2"
+    },
+    "notes": ["Telița sections hold one sex each in Seria 2026 (H1, H2, H3, H6 hens; H5-1, H5-2 roosters).", "Hîrbovăț compartments hold both sexes; eggs are counted per hall (parent).", "Hîrbovăț codes renamed H1/H3/H4 → H5/H6/H7 (D152); the old Hrana Hîrbovăț labels H5.1G … H7.2C were right. The previous-flock files (eggs-hirbovat-prev-*) still use the old hall codes H1/H3/H4 = H5/H6/H7.", "to_hirbovat_2026 = where each Telița section's birds went on 22–28.02.2026 (dated movements, transfers-seria2026.json).", "active = the section exists; birds_on_2026_11_18 = still holds birds (H7 emptied 14.11; H6.2 5 ♂ + 475 ♀ left)."]
   },
   "guides": [
     {"id": "g-growth", "name": "Ross 308 creștere", "type": "growth", "illustrative_name": true},
@@ -16,20 +29,20 @@
     {"id": "hirbovat", "name": "Hîrbovăț", "type": "laying", "guide_id": "g-laying"}
   ],
   "sections": [
-    {"id": "tel-H1", "farm_id": "telita", "code": "H1", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H1", "H1"], "to_hirbovat_by_sheet_name": ["H4.1", "H4.2"]},
-    {"id": "tel-H2", "farm_id": "telita", "code": "H2", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H2", "H2"]},
-    {"id": "tel-H3", "farm_id": "telita", "code": "H3", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H3", "H3"], "to_hirbovat_by_sheet_name": ["H1.1", "H1.2"]},
-    {"id": "tel-H6", "farm_id": "telita", "code": "H6", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H6", "H6"], "to_hirbovat_by_sheet_name": ["H3.1", "H3.2"]},
-    {"id": "tel-H5-1", "farm_id": "telita", "code": "H5-1", "parent_id": null, "active": true, "sex_seria2026": "M", "workbook_labels": ["H5-1", "H5/1"]},
-    {"id": "tel-H5-2", "farm_id": "telita", "code": "H5-2", "parent_id": null, "active": true, "sex_seria2026": "M", "workbook_labels": ["H5-2", "H5/2"]},
-    {"id": "hir-H1", "farm_id": "hirbovat", "code": "H1", "parent_id": null, "active": true, "is_hall": true, "workbook_labels": ["Hala 1"]},
-    {"id": "hir-H1.1", "farm_id": "hirbovat", "code": "H1.1", "parent_id": "hir-H1", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H1.1", "G11", "C11"]},
-    {"id": "hir-H1.2", "farm_id": "hirbovat", "code": "H1.2", "parent_id": "hir-H1", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H1.2", "G12", "C12"]},
-    {"id": "hir-H3", "farm_id": "hirbovat", "code": "H3", "parent_id": null, "active": true, "is_hall": true, "workbook_labels": ["Hala 3"]},
-    {"id": "hir-H3.1", "farm_id": "hirbovat", "code": "H3.1", "parent_id": "hir-H3", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H3.1", "G31", "C31"]},
-    {"id": "hir-H3.2", "farm_id": "hirbovat", "code": "H3.2", "parent_id": "hir-H3", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H3.2", "G32", "C32"]},
-    {"id": "hir-H4", "farm_id": "hirbovat", "code": "H4", "parent_id": null, "active": true, "is_hall": true, "workbook_labels": ["Hala 4"]},
-    {"id": "hir-H4.1", "farm_id": "hirbovat", "code": "H4.1", "parent_id": "hir-H4", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H4.1", "G41", "C41"]},
-    {"id": "hir-H4.2", "farm_id": "hirbovat", "code": "H4.2", "parent_id": "hir-H4", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H4.2", "G42", "C42"]}
+    {"id": "tel-H1", "farm_id": "telita", "code": "H1", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H1", "H1"], "to_hirbovat_2026": ["H6.1", "H6.2", "H7.1"]},
+    {"id": "tel-H2", "farm_id": "telita", "code": "H2", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H2", "H2"], "to_hirbovat_2026": ["H7.1", "H7.2"]},
+    {"id": "tel-H3", "farm_id": "telita", "code": "H3", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H3", "H3"], "to_hirbovat_2026": ["H5.2", "H6.1"]},
+    {"id": "tel-H6", "farm_id": "telita", "code": "H6", "parent_id": null, "active": true, "sex_seria2026": "F", "workbook_labels": ["H6", "H6"], "to_hirbovat_2026": ["H5.1", "H5.2"]},
+    {"id": "tel-H5-1", "farm_id": "telita", "code": "H5-1", "parent_id": null, "active": true, "sex_seria2026": "M", "workbook_labels": ["H5-1", "H5/1"], "to_hirbovat_2026": ["H5.1", "H5.2", "H6.1", "H6.2", "H7.1", "H7.2"]},
+    {"id": "tel-H5-2", "farm_id": "telita", "code": "H5-2", "parent_id": null, "active": true, "sex_seria2026": "M", "workbook_labels": ["H5-2", "H5/2"], "to_hirbovat_2026": ["H5.1", "H5.2", "H6.1", "H6.2", "H7.1", "H7.2"]},
+    {"id": "hir-H5", "farm_id": "hirbovat", "code": "H5", "parent_id": null, "active": true, "is_hall": true, "workbook_labels": ["Hala 5"], "old_code": "H1"},
+    {"id": "hir-H5.1", "farm_id": "hirbovat", "code": "H5.1", "parent_id": "hir-H5", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H5.1", "H5.1G", "H5.1C"], "old_code": "H1.1", "birds_on_2026_11_18": true},
+    {"id": "hir-H5.2", "farm_id": "hirbovat", "code": "H5.2", "parent_id": "hir-H5", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H5.2", "H5.2G", "H5.2C"], "old_code": "H1.2", "birds_on_2026_11_18": true},
+    {"id": "hir-H6", "farm_id": "hirbovat", "code": "H6", "parent_id": null, "active": true, "is_hall": true, "workbook_labels": ["Hala 6"], "old_code": "H3"},
+    {"id": "hir-H6.1", "farm_id": "hirbovat", "code": "H6.1", "parent_id": "hir-H6", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H6.1", "H6.1G", "H6.1C"], "old_code": "H3.1", "birds_on_2026_11_18": true},
+    {"id": "hir-H6.2", "farm_id": "hirbovat", "code": "H6.2", "parent_id": "hir-H6", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H6.2", "H6.2G", "H6.2C"], "old_code": "H3.2", "birds_on_2026_11_18": true},
+    {"id": "hir-H7", "farm_id": "hirbovat", "code": "H7", "parent_id": null, "active": true, "is_hall": true, "workbook_labels": ["Hala 7"], "old_code": "H4"},
+    {"id": "hir-H7.1", "farm_id": "hirbovat", "code": "H7.1", "parent_id": "hir-H7", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H7.1", "H7.1G", "H7.1C"], "old_code": "H4.1", "birds_on_2026_11_18": false},
+    {"id": "hir-H7.2", "farm_id": "hirbovat", "code": "H7.2", "parent_id": "hir-H7", "active": true, "sexes": ["F", "M"], "workbook_labels": ["H7.2", "H7.2G", "H7.2C"], "old_code": "H4.2", "birds_on_2026_11_18": false}
   ]
 }

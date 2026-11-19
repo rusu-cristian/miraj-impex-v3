@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "generated_by": "DATA03",
+    "script": "design/data/scripts/data03_build.py <Raport_NOU_2026.xlsx> <extracts_dir>",
+    "illustrative": true,
+    "label": "ILLUSTRATIVE — records the workbook does not hold (D152): culls with reasons, a sexing error, event authors/times, weighings. Not workbook data.",
+    "consistency": "Every cull / sexing error is carved out of the real deaths of that compartment-day (carved_from_mortality_of_day); daily totals and alive counts stay the real ones. Event-log figures are the real daily totals of hirbovat-daily.json. sales = the real Vânzare quantities (D155, hirbovat-daily sales); only their author/time are illustrative.",
+    "not_included": "No transfer between Hîrbovăț halls: the sheet has none (not invented); the one real move between compartments (22.10.2026 H7.2 → H7.1 ♂ 19) is in transfers-seria2026.json, its event_log entry below gives it an illustrative author/time. Sales 12–18.11 are real quantities (D155), listed under sales with illustrative author/time.",
+    "names": "Dr. Ceban (vet), Ion Rusu (manager) — illustrative, as before (D27 sample).",
+    "replaces": "sample-hirbovat-2026.json (superseded; kept for reference)"
+  },
+  "culls": [
+    {"date": "2026-04-10", "sapt": 27, "section": "H6.1", "sex": "F", "qty": 2, "reason": "boală", "note": null, "carved_from_mortality_of_day": 4, "mortality_left": 2, "created_by": "Dr. Ceban", "created_at": "2026-04-10T08:20"},
+    {"date": "2026-06-14", "sapt": 36, "section": "H5.1", "sex": "F", "qty": 1, "reason": "șchiopătare", "note": null, "carved_from_mortality_of_day": 3, "mortality_left": 2, "created_by": "Dr. Ceban", "created_at": "2026-06-14T08:21"},
+    {"date": "2026-08-10", "sapt": 44, "section": "H6.1", "sex": "M", "qty": 2, "reason": "boală", "note": null, "carved_from_mortality_of_day": 4, "mortality_left": 2, "created_by": "Dr. Ceban", "created_at": "2026-08-10T08:22"},
+    {"date": "2026-10-19", "sapt": 54, "section": "H7.1", "sex": "F", "qty": 1, "reason": "altul", "note": "pasăre cu prolaps, scoasă din efectiv", "carved_from_mortality_of_day": 3, "mortality_left": 2, "created_by": "Dr. Ceban", "created_at": "2026-10-19T08:23"},
+    {"date": "2026-11-11", "sapt": 58, "section": "H5.2", "sex": "M", "qty": 1, "reason": "șchiopătare", "note": null, "carved_from_mortality_of_day": 1, "mortality_left": 0, "created_by": "Dr. Ceban", "created_at": "2026-11-11T08:31"}
+  ],
+  "sexing_errors": [
+    {"date": "2026-05-19", "sapt": 33, "section": "H6.2", "sex": "F", "qty": -1, "note": "cocoș găsit printre găini, scos din efectiv", "carved_from_mortality_of_day": 3, "mortality_left": 2, "created_by": "Dr. Ceban", "created_at": "2026-05-19T08:40"}
+  ],
+  "sales": [
+    {"date": "2026-11-12", "sapt": 58, "section": "H7.2", "F": 1442, "M": 0, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-12T11:00"},
+    {"date": "2026-11-14", "sapt": 58, "section": "H6.2", "F": 305, "M": 53, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-14T12:17"},
+    {"date": "2026-11-14", "sapt": 58, "section": "H7.1", "F": 4224, "M": 311, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-14T13:34"},
+    {"date": "2026-11-14", "sapt": 58, "section": "H7.2", "F": 2691, "M": 328, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-14T11:51"},
+    {"date": "2026-11-15", "sapt": 58, "section": "H6.2", "F": 1077, "M": 0, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-15T12:08"},
+    {"date": "2026-11-16", "sapt": 58, "section": "H6.2", "F": 807, "M": 57, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-16T13:25"},
+    {"date": "2026-11-17", "sapt": 59, "section": "H6.2", "F": 424, "M": 144, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-17T11:42"},
+    {"date": "2026-11-18", "sapt": 59, "section": "H6.1", "F": 676, "M": 201, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-18T12:59"},
+    {"date": "2026-11-18", "sapt": 59, "section": "H6.2", "F": 1155, "M": 88, "real": true, "created_by": "Ion Rusu", "created_at": "2026-11-18T13:16"}
+  ],
+  "weighings": [
+    {"date": "2026-11-10", "sapt": 58, "section": "H5.1", "sex": "F", "avg_weight_g": 3960, "cv_pct": 8.1, "uniformity_pct": 79.0, "sample_size": 60, "guide_weight_g": null, "guide_state": "fără date în ghid", "created_by": "Dr. Ceban", "created_at": "2026-11-10T09:15"},
+    {"date": "2026-11-10", "sapt": 58, "section": "H5.1", "sex": "M", "avg_weight_g": 4870, "cv_pct": 9.4, "uniformity_pct": 74.0, "sample_size": 40, "guide_weight_g": null, "guide_state": "fără date în ghid", "created_by": "Dr. Ceban", "created_at": "2026-11-10T09:32"}
+  ],
+  "event_log": [
+    {"at": "2026-10-22T09:20", "user": "Ion Rusu", "role": "manager", "record": "transfer", "action": "create", "scope": "Hîrbovăț · H7.2 → H7.1", "summary": "Transfer · 19 cocoși · H7.2 → H7.1"},
+    {"at": "2026-11-12T10:30", "user": "Ion Rusu", "role": "manager", "record": "feed_delivery", "action": "create", "scope": "Hîrbovăț", "summary": "Livrare · 9000 kg · găini · fără preț"},
+    {"at": "2026-11-12T11:00", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H7.2", "summary": "Vânzare · H7.2 · ♀ 1442", "real_figures": true},
+    {"at": "2026-11-13T10:30", "user": "Ion Rusu", "role": "manager", "record": "feed_delivery", "action": "create", "scope": "Hîrbovăț", "summary": "Livrare · 25640 kg · găini · 199000 lei"},
+    {"at": "2026-11-14T11:51", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H7.2", "summary": "Vânzare · H7.2 · ♀ 2691 · ♂ 328", "real_figures": true},
+    {"at": "2026-11-14T12:17", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H6.2", "summary": "Vânzare · H6.2 · ♀ 305 · ♂ 53", "real_figures": true},
+    {"at": "2026-11-14T13:34", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H7.1", "summary": "Vânzare · H7.1 · ♀ 4224 · ♂ 311", "real_figures": true},
+    {"at": "2026-11-15T12:08", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H6.2", "summary": "Vânzare · H6.2 · ♀ 1077", "real_figures": true},
+    {"at": "2026-11-16T08:12", "user": "Dr. Ceban", "role": "vet", "record": "mortality", "action": "create", "scope": "Hîrbovăț · 4 secțiuni", "summary": "Zilnic salvat · 4 secțiuni · mortalitate ♀ 0 · ♂ 0"},
+    {"at": "2026-11-16T08:25", "user": "Dr. Ceban", "role": "vet", "record": "eggs", "action": "create", "scope": "Hîrbovăț · H5, H6", "summary": "Ouă · 5848 total · 5409 incubabile · 97 jos"},
+    {"at": "2026-11-16T08:41", "user": "Dr. Ceban", "role": "vet", "record": "feed", "action": "create", "scope": "Hîrbovăț · alocare zilnică", "summary": "Hrană · ♀ 2501.3 kg · ♂ 183.1 kg"},
+    {"at": "2026-11-16T13:25", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H6.2", "summary": "Vânzare · H6.2 · ♀ 807 · ♂ 57", "real_figures": true},
+    {"at": "2026-11-17T08:07", "user": "Dr. Ceban", "role": "vet", "record": "mortality", "action": "create", "scope": "Hîrbovăț · 4 secțiuni", "summary": "Zilnic salvat · 4 secțiuni · mortalitate ♀ 7 · ♂ 0"},
+    {"at": "2026-11-17T08:19", "user": "Dr. Ceban", "role": "vet", "record": "eggs", "action": "create", "scope": "Hîrbovăț · H5, H6", "summary": "Ouă · 5892 total · 5610 incubabile · 153 jos"},
+    {"at": "2026-11-17T08:36", "user": "Dr. Ceban", "role": "vet", "record": "feed", "action": "create", "scope": "Hîrbovăț · alocare zilnică", "summary": "Hrană · ♀ 2372.1 kg · ♂ 175 kg"},
+    {"at": "2026-11-17T11:42", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H6.2", "summary": "Vânzare · H6.2 · ♀ 424 · ♂ 144", "real_figures": true},
+    {"at": "2026-11-18T08:15", "user": "Dr. Ceban", "role": "vet", "record": "mortality", "action": "create", "scope": "Hîrbovăț · 4 secțiuni", "summary": "Zilnic salvat · 4 secțiuni · mortalitate ♀ 3 · ♂ 0"},
+    {"at": "2026-11-18T08:27", "user": "Dr. Ceban", "role": "vet", "record": "eggs", "action": "create", "scope": "Hîrbovăț · H5, H6", "summary": "Ouă · 5914 total · 5308 incubabile · 158 jos"},
+    {"at": "2026-11-18T08:44", "user": "Dr. Ceban", "role": "vet", "record": "feed", "action": "create", "scope": "Hîrbovăț · alocare zilnică", "summary": "Hrană · ♀ 2303.2 kg · ♂ 154.7 kg"},
+    {"at": "2026-11-18T12:59", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H6.1", "summary": "Vânzare · H6.1 · ♀ 676 · ♂ 201", "real_figures": true},
+    {"at": "2026-11-18T13:16", "user": "Ion Rusu", "role": "manager", "record": "sale", "action": "create", "scope": "Hîrbovăț · H6.2", "summary": "Vânzare · H6.2 · ♀ 1155 · ♂ 88", "real_figures": true}
+  ]
+}

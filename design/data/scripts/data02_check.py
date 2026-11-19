@@ -1,9 +1,12 @@
-"""DATA02 checks: python3 -I data02_check.py <extracts_dir>"""
+"""DATA02 checks (RETIRED after DATA03; exits early on DATA03 extracts): python3 -I data02_check.py <extracts_dir>"""
 import sys, os, json, collections
 EX = sys.argv[1]
 L = lambda n: json.load(open(os.path.join(EX, n), encoding='utf-8'))
 s, c, fd = L('sample-hirbovat-2026.json'), L('counts-latest.json'), L('feed-deliveries.json')
 pd_, pw = L('eggs-hirbovat-prev-daily.json'), L('eggs-hirbovat-prev-weekly.json')
+if c.get('meta', {}).get('generated_by') == 'DATA03':
+    print('data02_check.py RETIRED: it checks sample-hirbovat-2026.json (superseded by DATA03). Use data03_check.py.')
+    sys.exit(0)
 err = []
 last = {}
 for r in s['daily']:

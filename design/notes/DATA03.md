@@ -1,0 +1,10 @@
+# DATA03 · Extracts rebuilt from Raport_NOU_2026.xlsx (real to 18.11.2026, D151/D152, fix round D155–D157)
+- Scripts: `data/scripts/data03_build.py` (idempotent, prints check log), `data03_check.py` (OK, covers D155–D157), `data03_probe.py`; data02_check.py exits as RETIRED. Run after data01/data02_prev/d36.
+- New: hirbovat-daily.json (compartment/hall/farm arrays + `sales`), hirbovat-weekly.json (SAPT 20–59, 59 = partial template Total row), illustrative-events-hirbovat.json, extracts/key-figures-18-11.md. Rewritten: farms-sections (H5–H7), cycles, transfers, counts-latest, feed-deliveries (+69 Hîrbovăț), guide-laying (RealGhid), weighings-weekly (+sapt, guide_week). sample-hirbovat-2026.json superseded.
+- D155: removals from 12.11 (≥ 40 birds/compartment-day) are sales: ♀ 12 801 · ♂ 1 182 in 9 rows; `mort` = real deaths, `mort_sheet` keeps the sheet's cell; alive unchanged; cycle stays open (H5, H6 hold birds).
+- Today 18.11 (SAPT 59, age 407): alive ♀ 12 561 · ♂ 794; deaths ♀ 3 · ♂ 0; sold ♀ 1 831 · ♂ 289; eggs 5 914 (inc 5 308); lay 41,1 % (D156, start-of-day hens) vs guide 53,3 % (sheet 47,1 %).
+- D156: weekly lay = eggs ÷ hen-days (wk 58 32,58 %); sheet % kept as lay_pct_sheet. D157: weighings guide_week = sapt − 1 (24.02.2026 SAPT 21 vs 2 370 g, +7,7 %).
+- Hîrbovăț cycle start = 22.02.2026 (first birds, ♂ 3 024; ♀ 26 883 on 25–28.02), SAPT 20.
+- Checks: Zile/Sapt = D151 on all rows; alive continuity 0 issues; eggs, compartment mortality, Productivitate hen-days/eggs = Total rows. Sheet error: farm ♂ mortality col D on 22 Tuesdays (17.11 424 vs 144) → 22 week totals; extracts use compartment sums.
+- Other anomalies: kg 460/compartment 02–04.11; Masa farm egg weight = plain mean incl. empty H7; 07.03 delivery 10,57 lei/kg; inferred move 22.10 H7.2 → H7.1 ♂ 19.
+- Guides: RealGhid = app lay guide (wk 53 "605" → 60,5); Productivitate differs ≥1 pt in 35 weeks (kept as alt). Hîrbovăț feed product unknown (only ♀/♂ stock).
