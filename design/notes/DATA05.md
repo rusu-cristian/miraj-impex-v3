@@ -1,0 +1,5 @@
+# DATA05 · Weekly egg weight = egg-weighted mean over days with eggs (D176)
+- data03_build.py: hall and farm weekly `egg_g` = Σ(eggs × daily hall g) ÷ Σ eggs over the hall-days with eggs (empty days excluded); the sheet's Masa Total row kept as `egg_g_sheet` (hall and farm). Second run byte-identical; data03_check.py checks every week's hall/farm egg_g against hall_day rows + D176 SAPT 58 (OK).
+- SAPT 58: H7 37,88 → 66,28 g, farm 62,23 → 66,61 g (H5 66,22 → 66,19, H6 67,38 → 67,29); SAPT 23 (first eggs, 5 days without weight) farm 12,71 → 48,47; other weeks ±0,02.
+- s14_build egg_w now reads the extract (week egg_g, day row, period = weeks weighted by eggs, as sys14); 62.23 assert replaced by egg_g_sheet asserts. S14/S14s output byte-identical (so S17 unaffected).
+- Rebuilt: S4 Producție (table SAPT 58 66,6, period 67,1; readout "SAPT 58: 66,6 g"; chart/table SAPT 23 48,5), PeriodTable preview (sys14). S4 Rezumat/phones, S3, S11, S14 unchanged; canvas.json unchanged after relayout; literal_scan S4R/S4T/S14 clean.

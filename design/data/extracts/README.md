@@ -1,6 +1,6 @@
 # Data extracts (Seria 2026)
 
-Sources: **`design/data/Raport_NOU_2026.xlsx`** (D152; Hîrbovăț and current figures, real to **18.11.2026** = "today" on every board) and `design/data/Seria_2026.xlsx` (Telița placement/mortality/feed, weighings, the previous flock's eggs — the new file lacks or repeats them). Built by `design/data/scripts/` (see its README). Last rebuild: RF08 (the shared correction, D158a; only illustrative-events-hirbovat.json changed) after DATA04 (sale records per form, D168) after DATA03 (fix round D155–D157).
+Sources: **`design/data/Raport_NOU_2026.xlsx`** (D152; Hîrbovăț and current figures, real to **18.11.2026** = "today" on every board) and `design/data/Seria_2026.xlsx` (Telița placement/mortality/feed, weighings, the previous flock's eggs — the new file lacks or repeats them). Built by `design/data/scripts/` (see its README). Last rebuild: DATA05 (weekly egg weight per hall/farm = Σ(eggs × g) ÷ Σ eggs over the days with eggs, D176; hirbovat-weekly.json values, hirbovat-daily.json meta text) after RF08 (the shared correction, D158a; only illustrative-events-hirbovat.json changed) after DATA04 (sale records per form, D168) after DATA03 (fix round D155–D157).
 
 ## Conventions
 - `age_days` = the UI column "Vârstă (zile)" (D159): bird age per D151, 407 on 18.11.2026 (workbook Zile = age_days + 1).
@@ -40,7 +40,7 @@ Sources: **`design/data/Raport_NOU_2026.xlsx`** (D152; Hîrbovăț and current f
 ## Workbook anomalies (reported, kept as typed)
 - `Hirbovat` col D (farm ♂ mortality) ≠ sum of compartments on 22 days, all Tuesdays (e.g. 17.11 typed 424, compartments 144); ♂ alive and every other farm column match. The weekly Total ♂ follows col D, so 22 week totals differ from the compartment sums (listed in hirbovat-weekly meta). The extracts use compartment sums.
 - `Hrana Hirbovat` kg = 460 per compartment on 02–04.11 (20 cells) while g × birds ≈ 690 kg; kept (consumption and stock use the typed kg).
-- `Masa` farm egg weight = plain mean of three halls (H7 = 0 after 13.11 → 44 g on 18.11); the extracts give an egg-weighted mean.
+- `Masa` farm egg weight = plain mean of three halls (H7 = 0 after 13.11 → 44 g on 18.11), and its weekly Total row per hall averages in empty days as 0 (H7 SAPT 58 37,9 g); the extracts give egg-weighted means over the days with eggs (D176/DATA05: H7 SAPT 58 66,3 g, farm 66,6 g; the sheet's figures kept as `egg_g_sheet`).
 - Total-row lay % = mean of daily % (wk 58 33,55); the extracts use eggs ÷ start-of-day hen-days (D159; Productivitate's end-of-day 32,58 kept as lay_pct_prod). The sheet's daily % uses the end-of-day count (18.11 47,08 %).
 - Sheet cumulative mortality % = deaths since 10.03.2026 ÷ birds on 09.03 (♀ 26 845 = RealGhid "intrat în ouat"); from 12.11 it includes the sales.
 - 07.03.2026 delivery 18 240 kg with 192 736 lei (10,57 lei/kg) — outlier, kept.

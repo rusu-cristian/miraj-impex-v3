@@ -60,18 +60,19 @@ FEED_DEV = (FEED_F / FEED_GF - 1) * 100
 cyc = s4.cum
 MORT_G = R.guide_mort(WK)
 
-# egg weight per week / day / period from the daily rows, weighted by eggs (S14N): the extract's hall weekly egg_g is the
-# sheet's Masa Total row, a plain mean that counts an emptied hall's days (H7 SAPT 58 37,9 g; farm 62,2 g): reported, not used
+# egg weight per week / day / period from the extract (D176/DATA05): hall and farm weekly egg_g = Σ(eggs × g) ÷ Σ eggs over
+# the days with eggs (empty days excluded; the sheet's Masa Total row, which averaged in H7's empty days, is egg_g_sheet);
+# the period = the weeks' egg_g weighted by their eggs (as sys14 productie, so S4 Producție and S14 agree)
 def egg_w(h=None):
-    def rows(kind, key):
-        ds = P.days_of(key) if kind == 'w' else [key] if kind == 'd' else [d for k in WEEKS for d in P.days_of(k)]
-        return [r for r in (R.day(d, h) for d in ds) if r and r['eggs'] and r['egg_g']]
     def f(kind, key):
-        rs = rows(kind, key)
-        if not rs: return (DASH, f'goală din {R.ddm(H7_EMPTY)}')
-        return n(sum(r['egg_g'] * r['eggs'] for r in rs) / sum(r['eggs'] for r in rs), 1)
+        if kind == 'w': r = W(key, h); g = r and r['egg_g']
+        elif kind == 'd': r = R.day(key, h); g = r and r['eggs'] and r['egg_g']
+        else:
+            ws = [W(k, h) for k in WEEKS]; ws = [r for r in ws if r and r['eggs'] and r['egg_g']]
+            g = sum(r['egg_g'] * r['eggs'] for r in ws) / sum(r['eggs'] for r in ws) if ws else None
+        return n(g, 1) if g else (DASH, f'goală din {R.ddm(H7_EMPTY)}')
     return f
-assert egg_w('H7')('w', 58) == '66,3' and egg_w()('w', 58) == '66,6' and W(58)['egg_g'] == 62.23
+assert egg_w('H7')('w', 58) == '66,3' and egg_w()('w', 58) == '66,6' and W(58)['egg_g_sheet'] == 57.16 and W(58, 'H7')['egg_g_sheet'] == 37.88
 
 # ================================================================= the PeriodTable groups (spec D3, D167 order)
 def short(vis, full): return f'<span aria-hidden="true">{vis}</span><span class="ip-sr">{full}</span>'   # short head, full words hidden (as Rezumat)

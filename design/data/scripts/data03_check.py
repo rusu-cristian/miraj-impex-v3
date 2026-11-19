@@ -47,6 +47,15 @@ for wk in w['weeks']:
     ok(fm['hen_days'] == sum(agg[r['date']]['start_F'] for r in days), f"week {wk['sapt']} hen-days start (D159)")
     ok(fm['lay_pct_prod'] == (round(100 * fm['eggs'] / fm['hen_days_prod'], 2) if fm['hen_days_prod'] else None), f"week {wk['sapt']} lay prod")
     ok(abs(fm['kg_F'] - sum(r['kg_F'] or 0 for r in days)) < 1, f"week {wk['sapt']} kg_F")
+    # D176/DATA05: weekly egg weight = Σ(eggs × g) ÷ Σ eggs over the hall-days with eggs (empty days excluded)
+    hd = [r for r in H if wk['from'] <= r['date'] <= wk['to'] and r['eggs'] and r['egg_g']]
+    def em(rows): return round(sum(r['eggs'] * r['egg_g'] for r in rows) / sum(r['eggs'] for r in rows), 2) if rows else None
+    ok(fm['egg_g'] == em(hd), f"week {wk['sapt']} farm egg_g {fm['egg_g']} vs {em(hd)}")
+    for hn, ho in wk['halls'].items():
+        ok(ho['egg_g'] == em([r for r in hd if r['hall'] == hn]), f"week {wk['sapt']} {hn} egg_g {ho['egg_g']}")
+        ok(ho['egg_g'] is None or 40 < ho['egg_g'] < 80, f"week {wk['sapt']} {hn} egg_g range {ho['egg_g']}")
+ws = {wk['sapt']: wk for wk in w['weeks']}
+ok(round(ws[58]['halls']['H7']['egg_g'], 1) == 66.3 and round(ws[58]['farm']['egg_g'], 1) == 66.6, 'D176 SAPT 58 H7 66,3 / farm 66,6')
 sc_ = d['sales']['cols']; SL = [dict(zip(sc_, r)) for r in d['sales']['rows']]
 for x in 'FM':
     ok(sum(r[x] for r in SL) == sum(r['sold'] for r in S if r['sex'] == x), f'sales list {x}')

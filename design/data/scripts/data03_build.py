@@ -85,6 +85,10 @@ def by_date_and_totals(rows):
     return daily, totals
 
 def C(row, col): return num(row[ci(col) - 1])
+def egg_mean(pairs):
+    """Σ(eggs × g) ÷ Σ eggs over (g, eggs) pairs with both present (D176: days without eggs excluded)."""
+    p = [(g, e) for g, e in pairs if g and e]
+    return round(sum(g * e for g, e in p) / sum(e for g, e in p), 2) if p else None
 
 SECTIONS = ['H5.1', 'H5.2', 'H6.1', 'H6.2', 'H7.1', 'H7.2']
 HALLS = ['H5', 'H6', 'H7']
@@ -386,7 +390,9 @@ for w in sorted(Ht):
         ce, cl, cinc, cincp, cj, cjp = HHALL[h]
         o.update(eggs=C(tr, ce), inc=C(tr, cinc), jos=C(tr, cj), lay_pct=pct(z(C(tr, ce)), o['hen_days']), lay_pct_prod=pct(z(C(tr, ce)), o['hen_days_prod']),
                  lay_pct_sheet=r2(C(tr, cl)), inc_pct=pct(z(C(tr, cinc)), C(tr, ce)), jos_pct_sheet=r2(C(tr, cjp)),
-                 egg_g=r2(C(Mt[w], MASA_HALL[h][0])) if w in Mt and C(Mt[w], MASA_HALL[h][0]) else None)
+                 egg_g_sheet=r2(C(Mt[w], MASA_HALL[h][0])) if w in Mt and C(Mt[w], MASA_HALL[h][0]) else None)
+        # D176/DATA05: hall weekly egg weight = egg-weighted mean over the days with eggs (empty days excluded)
+        o['egg_g'] = egg_mean([(r2(state[ds]['hall'][h]['ew']), state[ds]['hall'][h]['eggs']) for ds in wd])
         o['sections'] = {}
         for s in secs:
             cmM, caM, cmF, caF = HSEC[s]
@@ -396,9 +402,9 @@ for w in sorted(Ht):
                                     kg_F=so['kg_F'], kg_M=so['kg_M'], g_F=so['g_F'], g_M=so['g_M'],
                                     cum_mort_pct_F_sheet=r2(C(tr, caF)), cum_mort_pct_M_sheet=r2(C(tr, caM)))
         halls[h] = o
-    hw = [(halls[h]['egg_g'], halls[h]['eggs']) for h in HALLS if halls[h]['egg_g'] and halls[h]['eggs']]
     farm['egg_g_sheet'] = farm['egg_g']
-    farm['egg_g'] = round(sum(a * b for a, b in hw) / sum(b for a, b in hw), 2) if hw else None
+    # D176/DATA05: farm weekly egg weight = Σ(eggs × g) ÷ Σ eggs over every hall-day with eggs
+    farm['egg_g'] = egg_mean([(r2(state[ds]['hall'][h]['ew']), state[ds]['hall'][h]['eggs']) for ds in wd for h in HALLS])
     g = real_ghid.get(w, {})
     fg = feed_guide.get(w, (None, None))
     guide = dict(lay_pct=g.get('lay'), mort_cum_pct=g.get('mort'), eggs_hen_week=g.get('egg_wk'),
@@ -463,7 +469,7 @@ dump('hirbovat-daily.json', {
                      'section_day rows exist from the first arrival in that compartment to the day it was emptied (pre-arrival and post-emptying zero rows dropped).',
                      'lay_pct (hall_day, farm_day) = eggs ÷ hens alive at the START of the day × 100 (D156; 18.11 farm 41,1 %). lay_pct_sheet = the sheet\'s % = eggs ÷ hens at the end of the day (47,08 % on 18.11, inflated by sales).',
                      'eggs = total collected = incubabile + Cat 1–3 (Jos counted separately, not in eggs; as D18). Cat 1–3 not extracted (D153).',
-                     'egg_g farm = egg-weighted mean of hall weights (the sheet\'s Masa col D is a plain mean of three halls incl. an empty H7 = 0 after 13.11; kept as egg_g_sheet).',
+                     'egg_g farm (daily) = egg-weighted mean of hall weights (the sheet\'s Masa col D is a plain mean of three halls incl. an empty H7 = 0 after 13.11; kept as egg_g_sheet).',
                      'deliv_F_kg / deliv_M_kg = Hrana R ("gaina") / S ("cocos") — feed for hens / roosters; negative = stock adjustment (−300 on 21.02; −3 000 ♀ / +3 000 ♂ on 26.02 = feed moved between the two stocks). lei = Hrana AJ on that row (see feed-deliveries.json for the invoice pairing).',
                      'guide_g_F/M = Hrana D/E by sapt; guide_lay_pct = RealGhid col B by age week (see guide-laying.json).',
                  ],
@@ -490,7 +496,7 @@ dump('hirbovat-weekly.json', {
                      'Farm totals use compartment sums (D156): the sheet\'s farm ♂ mortality is wrong on 22 Tuesdays (see total_row_check).',
                      'hen_days = Σ hens alive at the START of each day (D159, same basis as the daily lay %); lay_pct = eggs / hen_days × 100 (D156/D159). hen_days_prod = Σ hens at the end of each day (= Productivitate col B, checked) and lay_pct_prod = eggs / hen_days_prod (= Productivitate "de facto", wk 58 32,58), kept for reference.',
                      'lay_pct_sheet = the sheet Total row = plain mean of the daily % (wk 58 33,55).',
-                     'inc_pct = inc / eggs × 100; jos_pct_sheet as in the Total row; hall egg_g = Masa Total row; farm egg_g = egg-weighted mean of the halls (egg_g_sheet = Masa col D Total, a plain mean of three halls that counts an empty H7 as 0 from 14.11).',
+                     'inc_pct = inc / eggs × 100; jos_pct_sheet as in the Total row; hall and farm egg_g = Σ(eggs × daily hall g) ÷ Σ eggs over the days with eggs (D176/DATA05; empty days excluded, so S4 and S14 agree); egg_g_sheet = the Masa Total row (hall: plain mean of the daily cells incl. empty days as 0; farm col D: a plain mean of three halls that counts an empty H7 as 0 from 14.11).',
                      'cum_mort_pct_*_sheet = the Total row\'s % under the "în viață" columns = cumulative deaths since 10.03.2026 (start of SAPT 24, lay start) ÷ birds alive at the end of 09.03.2026 (♀ 26 845 = RealGhid "intrat în ouat"; ♂ 2 931) — reproduced to ±0,05 pt; from 12.11 it includes the sales (D155). Compare with guide.mort_cum_pct.',
                      'kg_* = Σ daily kg; g_* = kg / bird-days on fed days (bird-weighted g/bird).',
                      'guide: lay_pct, mort_cum_pct, eggs_hen_week, hatch_eggs_hen_week = RealGhid by age week (app guide); feed_g = Hrana Hirbovat D/E; lay_pct_productivitate = the second lay guide (Productivitate col I), for reference; eggs_plan_week = RealGhid col M (26 845 × eggs/hen/week guide).',
