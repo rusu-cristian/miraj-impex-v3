@@ -20,9 +20,9 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S4  | `s4s_build.py --canvas`, `s4_build.py --canvas` (Rezumat: h/title refreshed in place), `s4t_build.py` (no canvas step) |
 | S7  | `s7_build.py --canvas`, `s7s_build.py --canvas` (h/title refreshed in place, RF02) |
 | S3  | `s3_build.py --canvas` |
-| S11 | `s11_build.py` (no canvas step) |
-| S12 | `s12_build.py` (no canvas step) |
-| S13 | `s13_build.py` (no canvas step) |
+| S11 | `s11_build.py --canvas` (h/title refreshed in place, RF03) |
+| S12 | `s12_build.py --canvas` (h/title refreshed in place, RF03) |
+| S13 | `s13_build.py --canvas` (h/title refreshed in place, RF03; rewrites the S7 boards byte-identical) |
 | S6  | `s6_build.py`, `s6s_build.py` (no canvas step) |
 | S9  | `s9_build.py` (no canvas step) |
 | S10 | `s10_build.py --canvas` |
@@ -39,7 +39,12 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S22 | `s22_build.py --canvas`, `s22s_build.py --canvas` |
 | S1  | `s1_build.py --canvas` |
 S4/S7/S11/S12/S13/S6/S9 entries were placed by hand: their x never changes; y only through `canvas_rows.py relayout`, and the
-S4 Rezumat entries' h/title through `s4s_build.py`/`s4_build.py --canvas` (RF01), the S7 ones through `s7_build.py`/`s7s_build.py --canvas` (RF02).
+S4 Rezumat entries' h/title through `s4s_build.py`/`s4_build.py --canvas` (RF01), the S7 ones through `s7_build.py`/`s7s_build.py --canvas` (RF02),
+the S11/S12/S13 ones through `s11_build.py`/`s12_build.py`/`s13_build.py --canvas` (RF03).
+
+- Heights (RF03 fix): `s4s_build.write` (the desktop board writer every 1440 row uses) pins the board's `min-height` to the stored h
+  only in the `.dc.html`; its `/tmp/s4s/<stem>.html` render wrapper keeps just the 1024 viewport floor, so `sNN_render.py` measures
+  the content's natural height instead of reading the stored h back. Re-measure → write `sNN_heights.json` → rebuild `--canvas` → relayout.
 
 ## Never run for a row
 - `sNN_render.py` / `s4s_render.py` (any flag) as part of a rebuild: it re-measures in Chrome (fallback fonts) and rewrites `sNN_heights.json`

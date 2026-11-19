@@ -31,6 +31,11 @@ NEAR = 160  # chars around a board hit searched for context
 CTX_OK = {'old-hall': re.compile(r'Teli[țţt]a'), 'sapt-40': re.compile(r'Seria 2025'), 'sapt-41': re.compile(r'Seria 2025')}
 CTX_NEED = {'old-hall': re.compile(r'Hîrbovăț|Hirbovat|Hala H[134]\b|H1, H3|H3, H4')}  # boards: a bare H1/H3/H4 only counts at Hîrbovăț
 ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match) — what RF00 keeps; add with the reason
+    # RF03: the end of a past age week (SAPT 58 = 10.11–16.11.2026) in the S11 Consum week rows (also under S13's SidePanel)
+    ('S11-', 'today-16.11', r'SAPT \d+</span> <span class="s11-gsub">\d\d\.\d\d–16\.11\.2026'),
+    ('S13-livrare-hrana--desktop', 'today-16.11', r'SAPT \d+</span> <span class="s11-gsub">\d\d\.\d\d–16\.11\.2026'),
+    # RF03: Telița's real last delivery (10.02.2026), on the S11 "fără livrări în perioadă" board
+    ('S11-rapoarte-hrana--fara-livrari', 'start-10.02', r'Ultima livrare'),
 ]
 # README order. (id, board stem prefixes, generator scripts)
 ROWS = [
@@ -58,7 +63,7 @@ ROWS = [
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
 ]
-PORTED = {'S4R', 'S7'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S7', 'S11', 'S12', 'S13'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):

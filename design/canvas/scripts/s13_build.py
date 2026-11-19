@@ -2,10 +2,11 @@
 Phone boards (390×844) reuse the S7 phone form shell by import (s7_build / s7s_build: FormHeader, DateField, icons, Lamp,
 SaveBar shell + compact two-line summary, viewport/Toast/Banner CSS; the SidePanel/rec/effect CSS lives in sstate_css). The desktop board reuses the S11 manager page by
 import (s11_build → s4s_build shell, sidebar, board writer) with the system SidePanel over it.
-Content: the phone boards replay the 10.11.2026 Breeder 2 delivery (sample-hirbovat-2026.json, D27; the spec C5 example):
-24 000 kg, stock 7 450 kg (end of 09.11) → 31 450 kg, entered by Ion Rusu at 11:52 (event log). The desktop board is a new
-delivery on 16.11.2026 with the kg still empty, over the S11 page of that day (stock 28 252 kg, as its Readout).
-python3 -I s13_build.py <repo_root> [heights.json, default s13_heights.json]
+Content (RF03, realdata): the phone boards replay the real 12.11.2026 delivery of 9 000 kg hen feed, the one the workbook has
+no price for (C5: the manager enters no price), on the ♀ stock at the end of 11.11 (Breeder 2: the Hîrbovăț feed type is the stock
+the kg went into, product unknown, D30 name), entered by Ion Rusu at 10:30 (illustrative event log). The desktop board is a new
+delivery on 18.11.2026 (SAPT 59) with the kg still empty, over the S11 manager page of that day (stock as its Readout).
+python3 -I s13_build.py <repo_root> [heights.json, default s13_heights.json] [--canvas]   (--canvas: refresh the 5 entries' h/title in place)
 Writes design/canvas/project/S13-livrare-hrana[--<state>].dc.html, /tmp/s13/<stem>.html and /tmp/s4s/<stem>.html (renders)."""
 import sys, re, json, pathlib, importlib, importlib.util, datetime as dt
 
@@ -24,24 +25,23 @@ spec = importlib.util.spec_from_file_location('s11_build', HERE / 's11_build.py'
 s11 = importlib.util.module_from_spec(spec); spec.loader.exec_module(s11)
 s4 = s11.s4
 
+R = B.R
 n, dd, lamp, NB = B.n, B.dd, B.lamp, B.NB
-S, START, FTN, FTS = B.S, B.START, B.FTN, B.FTS
+START, FTN, FTS = B.START, B.FTN, B.FTS
 B.IC.update({'delivery': s4.IC['delivery'], 'coins': s11.COINS, 'x': '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'})
 icon = B.icon
 
 # ---------- data ----------
-DEL = next(d for d in S['deliveries'] if d['id'] == 'del-hir-2026-11-10-b2')
-EDAY = dt.date.fromisoformat(DEL['date']); FT = DEL['feed_type_id']; KG = DEL['qty_kg']
-EWEEK = (EDAY - START).days // 7 + 1
-fbt = {(f['date'], f['feed_type_id']): f for f in S['feed_by_type_daily']}
-BEFORE = round(fbt[((EDAY - dt.timedelta(days=1)).isoformat(), FT)]['stock_end_kg']); AFTER = BEFORE + KG
+DEL = max(R.UNPRICED, key=lambda d: d['date'])  # the newest delivery without a price: 12.11.2026, 9 000 kg ♀ feed
+EDAY = R.D(DEL['date']); FT = DEL['feed_type_id']; KG = DEL['qty_kg']; SX = FTS[FT]
+EWEEK = R.sapt(EDAY)
+assert R.day(EDAY)[f'deliv_{SX}_kg'] == KG and SX == DEL['for_sex']  # the only delivery of that stock that day
+BEFORE = R.stock(EDAY - dt.timedelta(days=1))[SX]; AFTER = BEFORE + KG  # stock at the end of the day before + the delivery
 win = [EDAY - dt.timedelta(days=k) for k in (3, 2, 1)]
-AVG3 = sum(fbt[(d.isoformat(), FT)]['consumption_kg'] for d in win) / 3; DAYS = AFTER / AVG3
-EV = next(e for e in S['event_log'] if e['record'] == 'feed_delivery' and e['at'].startswith(DEL['date']))
-assert (EWEEK, KG, BEFORE, AFTER, FTN[FT], n(DAYS, 1)) == (40, 24000, 7450, 31450, 'Breeder 2', '7,9')
-assert AFTER == S['summary_today']['spec_examples']['C5_toast_stock_after_10_11_delivery_kg'] and not DEL['priced']
-assert (EV['user'], EV['at'][11:]) == ('Ion Rusu', '11:52')
-NOW = s11.stocks[FT]['stock_kg']; assert NOW == 28252  # desktop: 16.11.2026, as the S11 Readout
+AVG3 = sum(R.feed_kg(d, SX) for d in win) / 3; DAYS = AFTER / AVG3
+EV = next(e for e in R.EVENTS if e['record'] == 'feed_delivery' and e['at'].startswith(DEL['date']))  # illustrative author/time
+assert f"{KG} kg" in EV['summary'] and 'fără preț' in EV['summary'] and not DEL['priced']
+NOW = s11.stocks[FT]['stock_kg']  # desktop: 18.11.2026, as the S11 Readout
 HB = [t for t in B.HB_TYPES]  # Hîrbovăț active types: Breeder 2 (♀), Cocoși (♂)
 
 def sexsign(t):
@@ -51,14 +51,15 @@ def rec(k, size=14): return f'<span class="ip-rec ip-rec--feed s13-rec">{icon(k,
 FARMS = ['Hîrbovăț', 'Telița']
 CYC = json.loads((ROOT / 'design/data/extracts/cycles.json').read_text(encoding='utf-8'))
 assert [c['status'] for c in CYC['cycles'] if c['farm_id'] == 'telita'] == ['closed'] and \
-    max(c['end_date'] for c in CYC['cycles'] if c['farm_id'] == 'telita') == '2026-02-28'  # no open cycle at Telița on 10.11 or 16.11.2026
+    max(c['end_date'] for c in CYC['cycles'] if c['farm_id'] == 'telita') < DEL['date']  # no open cycle at Telița on 12.11 or 18.11.2026
 TEL_WHY = 'fără ciclu deschis'
 def kgs(v): return f'<span class="ip-num">{n(v)}{NB}kg</span>'
 
 # ---------- phone form (S7 shell) ----------
 assert 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"' in B.HEAD  # FX07/D142: the S7 shell's back link
-HEAD = B.HEAD.replace(icon('feed'), icon('delivery')).replace('Hrană zilnică', 'Livrare hrană').replace(dd(B.TODAY), dd(EDAY))
-assert HEAD.count('Livrare hrană') == 1 and dd(EDAY) in HEAD and icon('delivery') in HEAD
+HEAD = (B.HEAD.replace(icon('feed'), icon('delivery')).replace('Hrană zilnică', 'Livrare hrană')
+        .replace(f'{dd(B.TODAY)} · SAPT {B.WEEK}', f'{dd(EDAY)} · SAPT {EWEEK}'))
+assert HEAD.count('Livrare hrană') == 1 and f'{dd(EDAY)} · SAPT {EWEEK}' in HEAD and icon('delivery') in HEAD
 
 def farm(ro=False, touch=True):
     t = ' ip-input--touch' if touch else ''
@@ -77,8 +78,8 @@ def farm(ro=False, touch=True):
             f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div>'
             f'<ul class="ip-menu ip-select__menu" role="listbox" id="f-farm-list" aria-labelledby="f-farm-l" tabindex="-1" hidden="hidden">{opts}</ul></div></div>')
 
-DATE = B.DATE.replace(dd(B.TODAY), dd(EDAY))
-assert DATE.count(dd(EDAY)) == 1 and f'SAPT {EWEEK}' in DATE
+DATE = B.DATE.replace(dd(B.TODAY), dd(EDAY)).replace(f'SAPT {B.WEEK} ·', f'SAPT {EWEEK} ·')
+assert DATE.count(dd(EDAY)) == 1 and f'SAPT {EWEEK} ·' in DATE
 DATE_RO = f'''<div class="ip-field"><label class="ip-label" for="d-val">Data</label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="d-val" type="text" value="{dd(EDAY)}" readonly aria-describedby="d-wk"/></span><span class="ip-note ip-num" id="d-wk">SAPT {EWEEK} · ciclu din {dd(START)}</span></div>'''
 
 def ftype(sel=FT, ro=False, touch=True):
@@ -164,8 +165,8 @@ CSS = P.CSS + SC.MAIN + SC.REC + SC.OPT + SC.M0 + '''
 .s13-noprice > .s13-rec{margin-top:var(--ip-hair)}
 .ip-input--area textarea::placeholder{color:var(--ink-muted)}'''
 
-# ---------- desktop: SidePanel over S11 · Rapoarte · Hrană (manager), 16.11.2026 ----------
-DT = s4.TODAY; DTD = dt.date.fromisoformat(DT); DWEEK = (DTD - START).days // 7 + 1; assert DWEEK == 40
+# ---------- desktop: SidePanel over S11 · Rapoarte · Hrană (manager), 18.11.2026 ----------
+DT = s4.TODAY; DTD = dt.date.fromisoformat(DT); DWEEK = R.sapt(DTD); assert DWEEK == R.WK
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DTD)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data livrării din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">SAPT {DWEEK} · ciclu din {dd(START)}</span></div>'''
 PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="lp" aria-labelledby="lp-t">
 <div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--feed" aria-hidden="true">{icon("delivery")}</span><div><h2 class="ip-t-heading ip-m0" id="lp-t">Livrare hrană</h2><p class="ip-note ip-num ip-m0">HÎRBOVĂȚ · {dd(DTD)} · SAPT {DWEEK}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Livrare hrană">{icon("x")}</button></div>
@@ -240,3 +241,5 @@ s4.write(STEM0 + '--desktop', TITLE0 + ' · desktop', DESK, PANEL, H=DH, css=CSS
 out.append((STEM0 + '--desktop', TITLE0 + ' · desktop', DH))
 if HP:
     HP.write_text(json.dumps({s: h for s, _, h in out}, indent=1))
+if CANVAS:  # RF03: refresh the 5 hand-placed entries' h/title in place (x, y kept; canvas_rows.place)
+    c = CR.load(ROOT); CR.place(c, STEM0, [(s, 1440 if s.endswith('--desktop') else 390, h, t) for s, t, h in out]); CR.save(ROOT, c)

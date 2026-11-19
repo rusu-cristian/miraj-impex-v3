@@ -2,11 +2,13 @@
 (the S11 inline price inputs, s11-in) and one Salvează prețurile for every edited row; plus state boards.
 Reuses the S4 shell through s11_build.py (sidebar with Rapoarte current, icons, formats, board writer, S11 table CSS).
 No price is invented: the inputs open empty (D64), so Salvează prețurile is disabled; the error board is the load failure.
-The "în lucru" board (D68) types the last real Breeder 2 price (9,22 lei/kg, 30.10.2026, labelled sample) into the 04.11 row
-with its total derived from kg, and shows the field error on the 06.11 row (0 lei/kg) with focus on it.
-python3 -I s12_build.py <repo_root> [heights.json, default s12_heights.json]
+RF03: the 4 real unpriced Hîrbovăț deliveries (realdata, through s11): 17.02 ♀ + ♂ (stocked before the birds came), 14.03 ♂,
+12.11 ♀. The "în lucru" board (D68, D163) types the nearest real Breeder 2 price (25.02.2026, 2 decimals, labelled sample)
+into the oldest Breeder 2 row with its total derived from kg, and shows the field error on the next row (0 lei/kg) with focus on it.
+python3 -I s12_build.py <repo_root> [heights.json, default s12_heights.json] [--canvas]   (--canvas: refresh the 5 entries' h/title in place)
 Writes design/canvas/project/S12-preturi-hrana[--<state>].dc.html and /tmp/s4s/<stem>.html (plain wrappers)."""
 import sys, json, pathlib, importlib.util
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import realdata as R
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
 ROOT, HP, CANVAS = CR.args('s12_heights.json')  # heights default: s12_heights.json
@@ -19,17 +21,18 @@ s4 = s11.s4
 n, ddate, icon, lamp, F, M = s4.n, s4.ddate, s4.icon, s4.lamp, s4.F, s4.M
 FT, FARM, NB = s11.FT, s11.FARM, s11.NBSP
 
-# ---------- data (all from the extracts, via s11: Telița feed-deliveries.json + Hîrbovăț sample deliveries) ----------
+# ---------- data (realdata via s11: Telița's 13 + Hîrbovăț's 69 real deliveries) ----------
 UNP = sorted(s11.unpriced, key=lambda d: (d['date'], d['feed_type_id'] != 'ft-breeder2'))  # C6: oldest first
-UNP_KG = sum(d['qty_kg'] for d in UNP)
-assert [d['date'] for d in UNP] == ['2026-11-04', '2026-11-06', '2026-11-10', '2026-11-14'] and UNP_KG == 76107
+UNP_KG = s11.UNP_KG
+assert all(d['farm_id'] == 'hirbovat' for d in UNP)  # header: "toate la Hîrbovăț"
 ALL_KG = sum(d['qty_kg'] for d in s11.dels)
-assert (s11.N_ALL, ALL_KG) == (76, 1483387)
-B2_LAST = max((d for d in s11.dels if d['priced'] and d['feed_type_id'] == 'ft-breeder2' and d['farm_id'] == 'hirbovat'), key=lambda d: d['date'])
-assert (B2_LAST['date'], B2_LAST['price_per_kg']) == ('2026-10-30', 9.22)
-W_ROW, E_ROW = UNP[0], UNP[1]  # în lucru: 04.11 Breeder 2 priced (sample), 06.11 Cocoși with the field error
-W_TOT = round(W_ROW['qty_kg'] * B2_LAST['price_per_kg'])
-assert (W_ROW['date'], W_ROW['qty_kg'], W_TOT, E_ROW['date'], E_ROW['feed_type_id']) == ('2026-11-04', 24068, 221907, '2026-11-06', 'ft-cocosi')
+W_ROW = next(d for d in UNP if d['feed_type_id'] == 'ft-breeder2')  # în lucru: the oldest Breeder 2 row priced (sample)
+# D163: the sample price is the priced Breeder 2 delivery nearest in date to that row (25.02.2026, 8,00 lei/kg)
+B2_LAST = min((d for d in s11.dels if d['priced'] and d['feed_type_id'] == 'ft-breeder2' and d['farm_id'] == 'hirbovat'),
+              key=lambda d: (abs((R.D(d['date']) - R.D(W_ROW['date'])).days), d['date']))
+B2_PRICE = s4.rnd(B2_LAST['price_per_kg'], 2)  # the price as typed in the field (2 decimals)
+E_ROW = UNP[UNP.index(W_ROW) + 1]                                    # the row under it with the field error
+W_TOT = s4.rnd(W_ROW['qty_kg'] * B2_PRICE)
 ALERT, ico = s11.ALERT, s11.ico  # shared with S11 (Modifică preț, S11M)
 
 # ---------- header ----------
@@ -58,7 +61,7 @@ def row(d, first, mode='default'):
     kg_cls, kg_val, kg_aria, tot_cls, tot_val, tr, after = '', '', '', '', '', '', ''
     if mode == 'default' and first: kg_cls = ' is-focus'
     if mode == 'work' and d is W_ROW:  # typed lei/kg (sample), total calculated from kg: suggested until edited
-        kg_val = f' value="{n(B2_LAST["price_per_kg"], 2)}"'; tot_cls = ' is-suggested'; tot_val = f' value="{n(W_TOT)}"'
+        kg_val = f' value="{n(B2_PRICE, 2)}"'; tot_cls = ' is-suggested'; tot_val = f' value="{n(W_TOT)}"'
     if mode == 'work' and d is E_ROW:  # refused on save: 0 lei/kg; the first error takes focus, total stays empty
         kg_cls = ' is-error is-focus'; kg_val = ' value="0"'; kg_aria = f' aria-invalid="true" aria-errormessage="err-{d["id"]}"'
         # FW03 (D150): the row keeps its height; its error line sits in the detail row under it (additions.css §69), from
@@ -91,8 +94,8 @@ def form(mode='default'):
     if work:
         foot = (f'<span class="ip-note" id="save-why"><span class="ip-num">1</span> din <span class="ip-num">{len(UNP)}</span> livrări cu preț scris · <span class="ip-num">1</span> preț de corectat</span>'
                 '<button type="submit" class="ip-btn ip-btn--primary" aria-describedby="save-why">Salvează prețurile</button>')
-        sample = (f'<p class="ip-hint s12-help">Valoare de exemplu: <span class="ip-num">{n(B2_LAST["price_per_kg"], 2)}{NB}lei/kg</span> la <span class="ip-num">{ddate(W_ROW["date"])}</span> '
-                  f'(ultimul preț Breeder 2, din <span class="ip-num">{ddate(B2_LAST["date"])}</span>); totalul <span class="ip-num">{n(W_TOT)}{NB}lei</span> e calculat din <span class="ip-num">{n(W_ROW["qty_kg"])}{NB}kg</span>.</p>')
+        sample = (f'<p class="ip-hint s12-help">Valoare de exemplu: <span class="ip-num">{n(B2_PRICE, 2)}{NB}lei/kg</span> la <span class="ip-num">{ddate(W_ROW["date"])}</span> '
+                  f'(cel mai apropiat preț Breeder 2, din <span class="ip-num">{ddate(B2_LAST["date"])}</span>); totalul <span class="ip-num">{n(W_TOT)}{NB}lei</span> e calculat din <span class="ip-num">{n(W_ROW["qty_kg"])}{NB}kg</span>.</p>')
     else:
         foot = (f'<span class="ip-note" id="save-why"><span class="ip-num">0</span> din <span class="ip-num">{len(UNP)}</span> livrări cu preț scris · scrie un preț ca să salvezi</span>'
                 '<button type="submit" class="ip-btn ip-btn--primary" disabled="disabled" aria-describedby="save-why">Salvează prețurile</button>')
@@ -163,3 +166,5 @@ BOARDS = [
 if __name__ == '__main__':
     for stem, title, body, ov in BOARDS:
         s4.write(stem, title, body, ov, H=HEIGHTS.get(stem, 1024), css=CSS)
+    if CANVAS:  # RF03: refresh the 5 hand-placed entries' h/title in place (x, y kept; canvas_rows.place)
+        c = CR.load(ROOT); CR.place(c, STEM, [(stem, 1440, HEIGHTS.get(stem, 1024), title) for stem, title, _, _ in BOARDS]); CR.save(ROOT, c)
