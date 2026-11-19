@@ -7,6 +7,7 @@ Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 1
 Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795123576-0152), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- S4C2 S14 phone tag "Incubabile · Cat." (Găini kept, scrolls 39 px, D188) + Seria 2025 % Cat. (D187); kit text updated
 - S4C "% Cat. 1/2/3" in S4 Producție + S14 desktop tables (boards widened: S4 1608, S14 2240); D186 Cat sit with Incubabile, D187 Seria 2025 too (notes/S4C.md)
 - S6C Zilnic real Cat. 1–3 (18.11 H5 13·417·27, H6 8·110·31; 17.11 on zi trecută), D164 rule gone, 8 boards (notes/S6C.md)
 - RF14 new guide on 44 boards (S4 Rezumat ghid 57,6% · −16,5 pct; 01.11 farm → abatere, H6 SAPT 56 → în normă), S20 "645" example; whole canvas rebuilt byte-idempotent (notes/RF14.md)
@@ -17,10 +18,10 @@ Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/arti
 - FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- S4C2 (S14 phone + Seria 2025) → FINAL5 (publish a new canvas version)
+- FINAL5 (cross-check, shots, publish canvas) (publish a new canvas version)
 
 ## Waiting on the user
-- To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181.
+- To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181, D188 (tag name).
 - Open point 11: feed product names at Hîrbovăț ("Breeder 2"/"Cocoși" stay illustrative, D30).
 
 ## Unpublished on the canvas
