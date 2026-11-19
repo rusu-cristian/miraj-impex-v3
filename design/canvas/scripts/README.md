@@ -100,9 +100,10 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   `s4s_build` re-exports its names (`TODAY`, `WK`, `SECTIONS`, `HALLS`, `alive`, `tot`, `CL`, `GL`, `TR`, `n`, …); `s4s_build.S`
   (the superseded sample) is a lazy legacy alias for rows not yet ported only.
 - `literal_scan.py $R [--row S4R …] [FILE …]`: lists file:line of old literals (H1.x/H3.x/H4.x and Hîrbovăț H1/H3/H4, 16.11.2026,
-  SAPT 40/41, 10.02.2026, the sample's figures, sample file, cycle_week, age − 18, "47 săpt."); exit 1 on a hit in a PORTED row
+  SAPT 40/41, 10.02.2026, the sample's figures, sample file, cycle_week, age − 18, "47 săpt."; RF14: the RealGhid lay guide
+  53,3/54,5/55,7/56,9 %, deviations −12,2/−8,0/−18,4 pct, "sub ghid din 02.11", paste typo "605"); exit 1 on a hit in a PORTED row
   (or in any row/file named). Allowed: Telița codes, Seria 2025 weeks, script lines marked `literal-ok`, its ALLOW list. Each
-  RF job adds its row to PORTED.
+  RF job adds its row to PORTED. SYS rows also scan their previews/READMEs as markup (RF14; SYS14 = PeriodTable).
 - `sex_scan.py $R [FILE …]` (SX01): lists every ♀/♂ on the boards and system previews not drawn as the §72 icon (outside the `ip-sex` hook, or a standalone hook holding other text); exit 1 if any.
 - `canvas_rows.py relayout $R [--canvas]`: see Rules. `s4s_render.py [--heights] [--w 1280] [stem …]`: re-measures the S4
   Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2944).

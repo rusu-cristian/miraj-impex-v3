@@ -46,7 +46,7 @@ icon = B.icon
 
 # ---------- data (realdata, 18.11.2026) ----------
 HALLS = R.HHALLS                                     # H5 H6 H7
-LAYG = R.guide_lay(WEEK)                             # guide lay % of the age week (RealGhid; 53,3 at SAPT 59)
+LAYG = R.guide_lay(WEEK)                             # guide lay % of the age week (Productivitate col I, D184; 57,6 at SAPT 59)
 assert LAYG is not None and WEEK == R.sapt(TODAY)
 def secs_with_birds(h, d=TODAY):
     """the compartments of hall h with birds at the start of day d (the cards of that day)."""

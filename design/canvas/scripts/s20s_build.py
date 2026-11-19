@@ -2,7 +2,7 @@
 s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S20 states on the same row (y 35552).
 Desktops first (a Setări page, as S17S–S19S): the new desktops follow the eight S20 desktops; the S20 phone moves right
 (x only). Today = realdata.TODAY (18.11.2026, SAPT 59, S20N). Real: the guide figures by age week (guide-growth.json,
-guide-laying.json: RealGhid, D151), which cycles use
+guide-laying.json: ouat % Productivitate col I, D184; mortality RealGhid; D151), which cycles use
 each guide; guide names illustrative (D22). Every file, name or edit not in the extracts is a D39 example, said in the
 board title. The import states are SYS11's GuideImportPreview (additions.css §29), composed from its helpers.
 Boards
@@ -139,7 +139,7 @@ EMPTY_IMPORT = wrap(S.DROP_P + G['foot'](P, False, NEW_FOOT))
 TAKEN = GUIDE['g-laying']
 NEWN = 'Ross 308 ouat 2027'; NEWF = f'{NEWN}.xlsx'
 lr = S.lr; NL = len(lr)
-INFO_LF = G['info_text']('laying', lr, 'fișierul')   # the new guide's file: the rows as stored (60,5 read), all valid
+INFO_LF = G['info_text']('laying', lr, 'fișierul')   # the new guide's file: the rows as stored (wk 53 64,5), all valid
 NEW_NOTE = 'Un ghid nou nu e folosit de nicio fermă: după salvare îl alegi la o fermă de ouat, în Ferme și secțiuni.'
 NEW_FLDS = flds(T.tfield('gi-name', 'Nume', NEWN, touch=False), S.tip_seg(sel='laying'))
 def new_read(extra=''):

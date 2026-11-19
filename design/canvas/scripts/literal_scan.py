@@ -6,7 +6,8 @@ A row = its boards (design/canvas/project/<prefix>*.dc.html) + its generators (R
 D152 (H1.x/H3.x/H4.x, hall H1/H3/H4 next to "Hîrbovăț"), 16.11.2026 as today, SAPT 40 / sapt. 40 as the current week, the
 cycle start 10.02.2026, the superseded sample's figures RF00 lists (25 252, 25 257, 2 685, 26 765, 29 825, 28 252, 3 967, 18 688, 3 691,
 31 450, 4 121/4 119/4 130, 8 475),
-the sample file, cycle_week, "age − 18" and "47 săpt." (Seria 2025 is SAPT 19–65 now, D151).
+the sample file, cycle_week, "age − 18" and "47 săpt." (Seria 2025 is SAPT 19–65 now, D151); RF14: the RealGhid lay guide
+(53,3 / 54,5 / 55,7 / 56,9 %, deviations −12,2 / −8,0 / −18,4 pct, "sub ghid din 02.11", the paste typo "605"; D184/D185).
 Allowed: Telița codes (H1/H3 with "Telița" in reach), Seria 2025 weeks (SAPT 40/41 with "Seria 2025" in reach), a script line
 marked `literal-ok` (say why on the line), and the ALLOW entries below (board stem prefix, pattern id, context regex) for
 what RF00 keeps (D39 examples, Telița replays). When a row's RF job lands, add it to PORTED."""
@@ -26,6 +27,14 @@ PATTERNS = [  # id, regex, applies to ('dc' board, 'py' script)
     ('cycle-week', re.compile(r'cycle_week|data_start_cycle_week|week_today'), 'py'),
     ('age-18', re.compile(r'(?i)(?:age|vârst\w*)\s?[−-]\s?18\b'), 'dc py'),
     ('weeks-47', re.compile(rf'\b47{SP}?(?:săpt|săptămâni)'), 'dc py'),
+    # RF14 (D184): the RealGhid lay guide before Productivitate col I: SAPT 56–59 guide 56,9 / 55,7 / 54,5 / 53,3 %, the 18.11
+    # deviations farm −12,2 · H5 −8,0 · H6 −18,4 pts (SAPT 59's old −12,9 is a real hall figure now), the H5 alert "sub ghid din
+    # 02.11", the S20/SYS11 guide cells and the RealGhid paste typo "605" (D185: "645")
+    ('guide-lay-old', re.compile(rf'(?<![\d,\u202f])(?:53,3|54,5|55,7|56,9){SP}?%'), 'dc py'),
+    ('guide-cell-old', re.compile(r'(?:is-hen|ip-sex--hen)">(?:53,3|54,5|55,7|56,9|60,5)<'), 'dc'),
+    ('lay-dev-old', re.compile(rf'[−-](?:12,2|8,0|18,4)(?:</span>)?{SP}?(?:pct|puncte)'), 'dc py'),
+    ('below-since-old', re.compile(r'sub ghid din (?:<[^>]*>)?02\.11'), 'dc py'),
+    ('typo-605', re.compile(r'„605”|"605"'), 'dc py'),
 ]
 NEAR = 160  # chars around a board hit searched for context
 CTX_OK = {'old-hall': re.compile(r'Teli[țţt]a'), 'sapt-40': re.compile(r'Seria 2025'), 'sapt-41': re.compile(r'Seria 2025')}
@@ -65,6 +74,11 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     # S20N: the growth guide's real ♀ weight at SAPT 22 (2 685 g) in the guide tables, and a small-curve point ("9.4 130.7")
     ('S20-', 'sample-figure', r'(?:is-hen|ip-sex--hen)">2\u202f685<'),
     ('S20-', 'sample-figure', r'\d,\d+\.4 130\.\d,\d'),
+    # RF14: system previews scanned too; they keep what their boards keep (S20 growth guide ♀ 2 685 g; S4 PeriodTable's past
+    # SAPT 58 week key, Hrană ♀ 3 691,7 kg on 02.11.2026 and Hala 6 ♀ 8 475 on a SAPT 57 day)
+    ('GuideImportPreview/', 'sample-figure', r'is-hen">2\u202f685<'),
+    ('PeriodTable/', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    ('PeriodTable/', 'sample-figure', r'is-hen(?: ip-ptable__[\w-]+)*">(?:3\u202f691,7|8\u202f475)<'),
 ]
 # README order. (id, board stem prefixes, generator scripts)
 ROWS = [
@@ -101,14 +115,17 @@ ROWS = [
     ('SYS12', [], ['../../system/scripts/sys12_build.py', '../../system/components/UserRow/preview.html',
                    '../../system/components/OneTimePassword/preview.html']),
     ('SYS13', [], ['../../system/scripts/sys13_build.py', '../../system/components/LoginCard/preview.html']),
+    # RF14: the PeriodTable builder and preview (S4/S3/S14 Producție guide columns, D184)
+    ('SYS14', [], ['../../system/scripts/sys14_build.py', '../../system/components/PeriodTable/preview.html']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11', 'S22', 'S1', 'SYS12', 'SYS13'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11', 'S22', 'S1', 'SYS12', 'SYS13', 'SYS14'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
     """[(line, pattern id, snippet)] for one board or script."""
-    kind = 'dc' if path.name.endswith('.dc.html') else 'py'
-    stem = path.name[:-8] if kind == 'dc' else path.name
+    kind = 'py' if path.suffix == '.py' else 'dc'   # RF14: system previews and READMEs are scanned as markup too
+    stem = (path.name[:-8] if path.name.endswith('.dc.html') else path.name if kind == 'py'
+            else f'{path.parent.name}/{path.name}')   # a system file: 'PeriodTable/preview.html' (ALLOW by component)
     if path.name == 'literal_scan.py': return []
     hits = []
     for i, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
@@ -155,7 +172,7 @@ def main(argv):
     for r in rows:
         fails = bool(want) or r[0] in PORTED
         files = row_files(root, r)
-        nb = report(root, [f for f in files if f.name.endswith('.dc.html')], show=fails)
+        nb = report(root, [f for f in files if f.suffix != '.py'], show=fails)   # boards (+ system previews/READMEs, RF14)
         ns = report(root, [f for f in files if f.suffix == '.py'], show=fails)
         state = 'PORTED' if r[0] in PORTED else 'not ported'
         print(f'{r[0]:4} {state:10} boards {nb:4} · scripts {ns:4}' + ('  FAIL' if fails and nb + ns else ''))

@@ -472,7 +472,7 @@ ALERTS = R.alerts('hirbovat', TODAY)
 assert [(a['kind'], a.get('hall') or a.get('section')) for a in ALERTS] == [('lay', 'H5'), ('lay', 'H6'), ('missing', 'H7.1'), ('missing', 'H7.2'), ('unpriced', None)]
 def below_since(hall): return R.lay_below_since(hall, TODAY)
 LAY_ALERTS = [a['hall'] for a in ALERTS if a['kind'] == 'lay']
-assert all(lay_dev(h) for h in LAY_ALERTS) and (below_since('H5'), below_since('H6')) == (dt.date(2026, 11, 2), dt.date(2026, 11, 1))
+assert all(lay_dev(h) for h in LAY_ALERTS) and (below_since('H5'), below_since('H6')) == (dt.date(2026, 11, 1), dt.date(2026, 11, 1))  # D184 (RF14): H5 from 01.11 on the Productivitate guide
 LAY_SINCE = {h: below_since(h) for h in LAY_ALERTS}
 h3_since = LAY_SINCE['H6']  # literal-ok: s4t's old name for this hall (= H6, D152)
 _YDAY = R.D(TODAY) - dt.timedelta(days=1)

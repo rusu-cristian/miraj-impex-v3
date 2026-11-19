@@ -1,9 +1,9 @@
 """Build the SYS11 preview (GuideImportPreview, S20 Ghiduri import, spec B2): python3 sys11_build.py
 Guide figures come from design/data/extracts/guide-growth.json and guide-laying.json (real workbook guide values, both by
 the birds' age week, D151: SAPT = age week, no offset); guide and file names are illustrative (D22). The laying rows are
-RealGhid's (lay % and cumulative mortality % ♀, SAPT 23–62) with the feed g ♀/♂ (SAPT 19–65); pasted as the workbook has
-them, RealGhid's week 53 lay % "605" is refused (real, S20N; the extract reads it as 60,5). The three refused rows of the
-growth error state are state examples (D39)."""
+the guide the app uses: lay % ♀ from Productivitate col I (SAPT 23–62, D184), cumulative mortality % ♀ from RealGhid, feed
+g ♀/♂ (SAPT 19–65). Pasted, they carry one illustrative typed error (D185): week 53's lay % typed "645" (guide 64,5), refused
+(D180). The three refused rows of the growth error state are state examples (D39)."""
 import json, pathlib
 import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts')); import sexsign as SXS  # SX01: every ♀/♂ of the preview = the §72 hook
 REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
@@ -29,7 +29,7 @@ def cap(text):
 
 def fmt(v, unit='', dec=1):
     """Thin no-break thousands, true minus, decimal comma; a percentage keeps one decimal (89,0, as the guide detail),
-    a cumulative mortality % two (7,25, as RealGhid and S4)."""
+    a cumulative mortality % two (7,25, as the guide's RealGhid column and S4)."""
     if v is None:
         return None
     if unit == '%':
@@ -48,8 +48,8 @@ COLS = {'growth': [('feed_g', 'Hrană g'), ('body_weight_g', 'Greutate g')],
         'laying': [('feed_g', 'Hrană g'), ('mortality_cum_pct', 'Mortalitate %'), ('lay_pct', 'Ouat %')]}
 NAME = {'feed_g': 'hrana', 'body_weight_g': 'greutatea', 'mortality_cum_pct': 'mortalitatea', 'lay_pct': 'ouat %'}
 UNIT = {'feed_g': 'g', 'body_weight_g': 'g', 'mortality_cum_pct': '%', 'lay_pct': '%'}
-DEC = {'mortality_cum_pct': 2}           # RealGhid's cumulative mortality keeps its two decimals (7,25)
-HEN_ONLY = {'mortality_cum_pct', 'lay_pct'}   # RealGhid columns typed on the ♀ rows only
+DEC = {'mortality_cum_pct': 2}           # the cumulative mortality (RealGhid) keeps its two decimals (7,25)
+HEN_ONLY = {'mortality_cum_pct', 'lay_pct'}   # guide columns given on the ♀ rows only
 FILE_COLS = [('feed_g', 'Hrană g'), ('body_weight_g', 'Greutate g'), ('mortality_cum_pct', 'Mortalitate %'), ('lay_pct', 'Ouat %'),
              ('hatching_pct', 'Incubabile %'), ('egg_weight_g', 'Masă ou g')]   # the guide columns a file can carry (B2), in DROP_NOTE order
 def fmtk(key, v): return fmt(v, UNIT[key], DEC.get(key, 1))
@@ -61,20 +61,21 @@ def growth_rows():
     return rows
 
 def laying_rows():
-    """By age week (D151), as the guide stores them: SAPT 19–65, feed ♀/♂, RealGhid's lay % and cumulative mortality % on ♀."""
+    """By age week (D151), as the guide stores them: SAPT 19–65, feed ♀/♂, lay % (Productivitate col I, D184) and cumulative
+    mortality % (RealGhid) on ♀."""
     return [dict(week=r['age_week'], sex=r['sex'], v={k: r[k] for k, _ in COLS['laying']}) for r in LAY]
 
 def laying_typed_rows():
-    """The laying rows as the workbook has them: RealGhid typed week 53's lay % as "605" (the extract reads 60,5), so that
-    cell is refused when the table is pasted (real, not a D39 example)."""
+    """The laying rows pasted with one illustrative typed error (D185): week 53's lay % typed "645" for the guide's 64,5, so
+    that cell is refused when the table is pasted (D180)."""
     out = number(laying_rows())
     for r in out:
         if r['sex'] == 'F' and r['v']['lay_pct'] == TYPO_READ and r['week'] == TYPO_WEEK:
             r.update(bad={'lay_pct': TYPO_RAW}, kind='range')
     assert sum(1 for r in out if r.get('kind')) == 1
     return out
-TYPO_WEEK, TYPO_RAW, TYPO_READ = 53, '605', 60.5
-assert any('"605"' in a and '60.5' in a for a in json.loads((EXT / 'guide-laying.json').read_text(encoding='utf-8'))['meta']['anomalies'])
+TYPO_WEEK, TYPO_RAW, TYPO_READ = 53, '645', 64.5   # D185: the guide's 64,5 typed without its comma (illustrative)
+assert next(r['lay_pct'] for r in LAY if r['age_week'] == TYPO_WEEK and r['sex'] == 'F') == TYPO_READ   # Productivitate col I (D184)
 
 def number(rows):
     for i, r in enumerate(rows):
@@ -156,7 +157,7 @@ def row_html(p, kind, r, focus_cell=None):
             continue
         v = fmtk(key, r['v'][key])
         if v is None:
-            if key in HEN_ONLY and r['sex'] == 'M':   # RealGhid gives these for hens only: no note on every ♂ row
+            if key in HEN_ONLY and r['sex'] == 'M':   # the guide gives these for hens only: no note on every ♂ row
                 why = 'nu se aplică la cocoși' if key == 'lay_pct' else 'ghidul nu o dă la cocoși'
                 cells.append(f'<td class="num ip-gimp__none">–<span class="ip-sr"> {why}</span></td>')
             else:
@@ -353,16 +354,16 @@ B.append(('Filtru Refuzate · focus pe celula „#REF!” (după linkul din rezu
     seg('d', len(er), nbad, 'bad') + table('d', 'growth', [r for r in er if reason(r)], GF, focus={7: 'body_weight_g'}, sum_=False)
     + foot('d', False, NOTE_E), 'Import ghid')))
 
-# 5 laying, pasted as the workbook has it (real): by age week (D151), RealGhid's week 53 lay % "605" refused
-lr = number(laying_rows())        # the rows as the guide stores them (60,5 read): S20's new-guide file, all valid
-lt = laying_typed_rows()          # the same rows as typed in RealGhid: one cell refused
+# 5 laying, pasted: the guide the app uses (D184) by age week (D151), week 53 lay % typed "645" (D185, illustrative) refused
+lr = number(laying_rows())        # the rows as the guide stores them (64,5): S20's new-guide file, all valid
+lt = laying_typed_rows()          # the same rows pasted with week 53 typed "645": one cell refused
 tb = next(r for r in lt if r.get('kind'))
 LF = 'Ross 308 ouat'
 LW = sorted({r['week'] for r in lr})
 INFO_L = info_text('laying', lt, 'tabelul')
 NOTE_L = f'{refused_words(1)}: corectează tabelul și lipește-l din nou.'
-B.append((f'Ouat · tabel lipit din registru (real, {len(lt)} de rânduri, SAPT {LW[0]}–{LW[-1]}): rândul {tb["line"]} refuzat, '
-          f'ouat % „{TYPO_RAW}” la SAPT {TYPO_WEEK} ♀', wrap('e',
+B.append((f'Ouat · tabel lipit (ghidul din aplicație, real, {len(lt)} de rânduri, SAPT {LW[0]}–{LW[-1]}): rândul {tb["line"]} refuzat, '
+          f'ouat % „{TYPO_RAW}” la SAPT {TYPO_WEEK} ♀ (greșeală de tastare ilustrativă, D185)', wrap('e',
     src_line('e', 'Tabel lipit', 'din clipboard · tip ouat', counts(len(lt), len(lt) - 1, 1), 'Lipește alt tabel')
     + err_banner('e', lt) + info_banner(INFO_L)
     + seg('e', len(lt), 1, 'all') + table('e', 'laying', lt, 'tabel lipit')
@@ -407,9 +408,9 @@ html = ('<!-- @dsCard group="Data" height=3876 subtitle="SYS11" -->\n'
         f'<div style="display:grid;grid-template-columns:repeat(2,{col});gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'
         f'<p class="ip-note" style="margin:0;max-width:calc({col} * 2)">Reale: valorile ghidurilor din guide-growth.json '
         f'(creștere, sapt. {GW[0]}–{GW[-1]}, hrană g și greutate g ♀/♂, greutatea până la sapt. {min(GWT) - 1}) și guide-laying.json (ouat, '
-        f'sapt. {LW[0]}–{LW[-1]}, hrană g ♀/♂; ouat % și mortalitate cumulată % ♀ din RealGhid, sapt. {min(r["week"] for r in lr if r["v"]["lay_pct"] is not None)}–'
-        f'{max(r["week"] for r in lr if r["v"]["lay_pct"] is not None)}), pe săptămâna de vârstă (SAPT, D151). Real și refuzul: RealGhid are '
-        f'la sapt. {TYPO_WEEK} ouat % scris „{TYPO_RAW}” (ghidul salvat îl citește {fmt(TYPO_READ, "%")}). Ilustrative (D22): numele ghidurilor și ale fișierelor. '
+        f'sapt. {LW[0]}–{LW[-1]}, hrană g ♀/♂; ouat % ♀ din Productivitate col I (D184) și mortalitate cumulată % ♀ din RealGhid, sapt. {min(r["week"] for r in lr if r["v"]["lay_pct"] is not None)}–'
+        f'{max(r["week"] for r in lr if r["v"]["lay_pct"] is not None)}), pe săptămâna de vârstă (SAPT, D151). Ilustrative (D22): numele ghidurilor și ale fișierelor. '
+        f'Exemplu de stare (D185): în tabelul lipit, ouat % la sapt. {TYPO_WEEK} scris „{TYPO_RAW}” (în ghid {fmt(TYPO_READ, "%")}), refuzat. '
         f'Exemple de stare (D39): rândul 7 cu greutatea „#REF!” (în ghid {fmt(next(r["v"]["body_weight_g"] for r in gr if r["week"] == 3 and r["sex"] == "M"))}), '
         'rândul 10 copia rândului 8 (SAPT 4 ♀), rândul 12 fără sex (SAPT 5 ♂); '
         'fișierul .pdf, cel fără antet și cel gol; fișierul de ouat numărat de la transfer (SAPT 1, D180).</p>\n'

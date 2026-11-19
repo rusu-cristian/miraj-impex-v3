@@ -5,7 +5,7 @@ Page order (screens S14): filters (Perioadă, Pas Zi / Săpt., Fermă, Exportă)
 days, D166; per week the farm week row → its daily farm rows → the hall week rows H5 · H6 · H7, spec D3 rowGroups; foot
 "Total perioadă") → the % ouat Readout and the cycle Stats (D92, after the table).
 Columns (spec D3, D167 order): Găini (hens at the start of the day / week, D162) · Ouat (ouă, % ouat, ghid, față de ghid, stare;
-D156/D159 start-of-day basis, RealGhid per age week) · Incubabile · Masă ou · Mortalitate (real deaths, D155) · Hrană ♀ g/pasăre ·
+D156/D159 start-of-day basis; guide = Productivitate col I per age week, D184) · Incubabile · Masă ou · Mortalitate (real deaths, D155) · Hrană ♀ g/pasăre ·
 Vânzare (the emptying sales, last group, D155/D167). Builders imported from design/system/scripts/sys14_build.py (through
 s4t_build → s4s_build): productie (farm and hall), farm_pasari / hall_pasari, hrana, ptable(rowgroups=…), block, never copied.
 Seria 2025 (closed): the previous flock's last 4 age weeks SAPT 62–65 on its own calendar (sys14 Cal, as S4 ciclu ales,

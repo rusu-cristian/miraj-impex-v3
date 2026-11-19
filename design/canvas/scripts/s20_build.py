@@ -5,11 +5,12 @@ Ghiduri (crumbs), not SidePanels (SYS11 needs ≥672px, D76); a guide used by a 
 S20N (RF00, D151/D157): today = realdata.TODAY (18.11.2026, SAPT 59); every guide is indexed by the birds' age week (SAPT, no
 offset; D26's laying offset is gone). Content, from the extracts only (realdata): guide-growth.json (Ross 308 creștere, SAPT 1–25,
 hrană g ♀/♂, greutate g ♀/♂ to SAPT 23; the weight is the end-of-week weight, a weighing in SAPT n is compared with row n − 1,
-D157) and guide-laying.json (Ross 308 ouat, SAPT 19–65, hrană g ♀/♂; RealGhid's ouat % and cumulative mortality % ♀, SAPT 23–62);
+D157) and guide-laying.json (Ross 308 ouat, SAPT 19–65, hrană g ♀/♂; ouat % ♀ from Productivitate col I (D184) and RealGhid's cumulative mortality % ♀, SAPT 23–62);
 which cycles use each guide, with their real SAPT spans (s18_build.cyc_span: Hîrbovăț Seria 2026 SAPT 20–59 open, Telița 1–21,
 Hîrbovăț Seria 2025 19–65). Guide and file names illustrative (D22). The import preview is SYS11's GuideImportPreview
 (additions.css §29): its helpers are read from design/system/scripts/sys11_build.py (the part above its preview blocks, so
-nothing is written there). The pasted laying table is RealGhid as typed: its week 53 "605" is refused (real).
+nothing is written there). The pasted laying table is the guide the app uses (D184) with one illustrative typed error (D185):
+week 53 "645" (guide 64,5) is refused (D180).
 Boards (the S20 row; x step w + 80; desktops first):
   S20-ghiduri                  list: PageHeader (Setări › Ghiduri, "Importă ghid"), DataTable of guides (Tip, Săptămâni,
                                Coloane + fără date în ghid, Folosit de, Deschide)
@@ -19,7 +20,7 @@ Boards (the S20 row; x step w + 80; desktops first):
   --importa-ghid               new import: Nume (focus), Tip unset, FileDrop (paste or file), Salvează ghidul aria-disabled
   --inlocuieste-fisier         D39 flow: Înlocuiește Ross 308 creștere with its own .xlsx (real 50 rows): all valid
   --inlocuieste-refuzate       D39: the same file with rows 7, 10, 12 refused (SYS11 state examples), save blocked
-  --inlocuieste-lipit          D39 flow: Înlocuiește Ross 308 ouat by paste (real 94 rows as typed: SAPT 53 ♀ "605" refused)
+  --inlocuieste-lipit          D39 flow: Înlocuiește Ross 308 ouat by paste (real 94 rows, SAPT 53 ♀ typed "645" refused, D185)
   --salvat                     D39: back on the Ross 308 creștere detail after the replace, Toast + Anulează
   --telefon                    phone, read-only list ("Ghidurile le imporți pe calculator", D76 desktop only)
 python3 -I s20_build.py <repo_root> [s20_heights.json] [--canvas]
@@ -69,11 +70,11 @@ assert all(W['g-laying'][k]['F'] is R.guide_row(k, 'F') for k in WKS['g-laying']
 assert (W['g-laying'][WK]['F']['lay_pct'], W['g-laying'][WK]['F']['mortality_cum_pct']) == (R.guide_lay(WK), R.guide_mort(WK))
 TYPE = {'g-growth': 'growth', 'g-laying': 'laying'}
 TYPE_RO, TYPE_LO = M.TYPE_RO, M.TYPE_LO
-# indicators of B2, in spec order; key in the extracts, label, unit, sexes that carry it (RealGhid's mortality is the
-# cumulative % of hens, as S4 compares it)
+# indicators of B2, in spec order; key in the extracts, label, unit, sexes that carry it (the guide's mortality, from RealGhid,
+# is the cumulative % of hens, as S4 compares it; ouat % from Productivitate col I, D184)
 IND = [('feed_g', 'Hrană', 'g', 'FM'), ('body_weight_g', 'Greutate', 'g', 'FM'), ('mortality_cum_pct', 'Mortalitate cumulată', '%', 'F'),
        ('lay_pct', 'Ouat', '%', 'F'), ('hatching_pct', 'Incubabile', '%', ''), ('egg_weight_g', 'Masă ou', 'g', '')]
-DEC = G['DEC']   # 7,25 (two decimals for the cumulative mortality, as RealGhid)
+DEC = G['DEC']   # 7,25 (two decimals for the cumulative mortality, as the guide)
 def fv(k, v, u): return fmt(v, u, DEC.get(k, 1))
 HAS = {g: [k for k, *_ in IND if any(W[g][w][s].get(k) is not None for w in W[g] for s in 'FM')] for g in GUIDE}
 assert HAS == {'g-growth': ['feed_g', 'body_weight_g'], 'g-laying': ['feed_g', 'mortality_cum_pct', 'lay_pct']}, HAS
@@ -219,7 +220,7 @@ def spark(g, k, s, last_wk):
     u = next(u for kk, _, u, _ in IND if kk == k)
     pk = [w for w, v in pts if v == hi]
     pkw = f'sapt. {pk[0]}' if len(pk) == 1 else f'sapt. {pk[0]}–{pk[-1]}'
-    wu = lambda v: f'{fv(k, v, u)}%' if u == '%' else f'{fv(k, v, u)} {u}'   # D46: 53,3%, but 158 g
+    wu = lambda v: f'{fv(k, v, u)}%' if u == '%' else f'{fv(k, v, u)} {u}'   # D46: 57,6%, but 158 g
     al = (f'{lbl.capitalize()} {SEXW[s][2]} în ghid, sapt. {pts[0][0]}–{w1}: de la {wu(pts[0][1])} la {wu(v1)}, '
           f'maxim {wu(hi)} în {pkw}')   # a sentence read aloud: "sapt." (craft §6)
     return (f'<svg class="ip-spark ip-spark--{SEXW[s][1]}" viewBox="0 0 160 48" role="img" aria-label="{al}">'
@@ -327,13 +328,13 @@ def import_page(cr, title, meta, flds, src_note, gimp):
     return shell(header(cr, title, meta), f'<div class="s20-col">{main}</div>')
 gr = G['number'](G['growth_rows']())
 lr = G['number'](G['laying_rows']())       # the laying rows as the guide stores them (S20S: the new guide's file, all valid)
-lt = G['laying_typed_rows']()              # the same rows as RealGhid has them typed: week 53's lay % "605" refused (real)
+lt = G['laying_typed_rows']()              # the same rows pasted with week 53's lay % typed "645" (D185, illustrative): refused
 er = G['error_rows']()
 assert len(gr) == NROWS['g-growth'] and len(lr) == len(lt) == NROWS['g-laying']
 assert [r['week'] for r in lr if r['sex'] == 'F'] == WKS['g-laying'] and [r['week'] for r in gr if r['sex'] == 'F'] == WKS['g-growth']
 nbad = sum(1 for r in er if G['reason'](r))
 lbad = [r for r in lt if G['reason'](r)]; assert len(lbad) == 1
-assert W['g-laying'][lbad[0]['week']]['F']['lay_pct'] == G['TYPO_READ']   # the stored guide holds the value read (60,5)
+assert W['g-laying'][lbad[0]['week']]['F']['lay_pct'] == G['TYPO_READ']   # the stored guide holds 64,5 (Productivitate col I, D184)
 GF = 'Ross 308 creștere.xlsx'
 INFO_G = G['info_text']('growth', gr)
 INFO_E = G['info_text']('growth', er)
@@ -369,7 +370,7 @@ def g_repl_bad():
 LIP_SCROLL = (f'<!-- Tabelul e derulat la rândul refuzat (rândul {lbad[0]["line"]}): cutia arată rândurile de la SAPT {lbad[0]["week"] - 3}; '
               'rândurile de deasupra sunt sus, în afara cutiei derulate. -->')
 def g_repl_paste():
-    """Înlocuiește Ross 308 ouat by pasting the workbook's table as typed: one cell refused (RealGhid week 53, "605")."""
+    """Înlocuiește Ross 308 ouat by pasting the guide's table with one typed error: week 53 "645" refused (D185, illustrative)."""
     g = 'g-laying'; p = 'gi'
     note = f'{G["refused_words"](1)}: corectează tabelul și lipește-l din nou.'
     gimp = G['wrap'](p, G['src_line'](p, 'Tabel lipit', 'din clipboard · tip ouat', G['counts'](len(lt), len(lt) - 1, 1), 'Lipește alt tabel')
@@ -461,7 +462,7 @@ desk('--ross-308-crestere', 'Ross 308 creștere · detaliu · ghid parțial', de
 desk('--importa-ghid', 'Importă ghid', g_new())
 desk('--inlocuieste-fisier', f'Înlocuiește Ross 308 creștere · fișier citit, toate valide · {D39}: fișierul', g_repl_file())
 desk('--inlocuieste-refuzate', f'Înlocuiește Ross 308 creștere · rânduri refuzate · {D39}: rândurile 7, 10, 12', g_repl_bad())
-desk('--inlocuieste-lipit', f'Înlocuiește Ross 308 ouat · tabel lipit, rândul {lbad[0]["line"]} refuzat (ouat % „{G["TYPO_RAW"]}” din registru, real), tabelul derulat la el · {D39}: lipirea', g_repl_paste())
+desk('--inlocuieste-lipit', f'Înlocuiește Ross 308 ouat · tabel lipit, rândul {lbad[0]["line"]} refuzat (ouat % „{G["TYPO_RAW"]}” în loc de {fmt(G["TYPO_READ"], "%")}%), tabelul derulat la el · {D39}: lipirea și greșeala (D185)', g_repl_paste())
 desk('--salvat', f'salvat · {D39}: Ross 308 creștere înlocuit cu același fișier', saved(), SC.SIDE_H)
 h = HEIGHTS.get(STEM + '--telefon', 844)
 out.append(write(STEM + '--telefon', f'{TT} · telefon · doar citire', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL, 390, h))
