@@ -43,7 +43,9 @@ for wk in w['weeks']:
         ok(fm['sold_' + x] == sum(r['sold_' + x] for r in days), f"week {wk['sapt']} sold {x}")
     ok(fm['lay_pct'] == (round(100 * fm['eggs'] / fm['hen_days'], 2) if fm['hen_days'] else None), f"week {wk['sapt']} lay")
     ok(fm['eggs'] == sum(r['eggs'] or 0 for r in days), f"week {wk['sapt']} eggs {fm['eggs']}")
-    ok(fm['hen_days'] == sum(r['alive_F'] for r in days), f"week {wk['sapt']} hen-days")
+    ok(fm['hen_days_prod'] == sum(r['alive_F'] for r in days), f"week {wk['sapt']} hen-days prod")
+    ok(fm['hen_days'] == sum(agg[r['date']]['start_F'] for r in days), f"week {wk['sapt']} hen-days start (D159)")
+    ok(fm['lay_pct_prod'] == (round(100 * fm['eggs'] / fm['hen_days_prod'], 2) if fm['hen_days_prod'] else None), f"week {wk['sapt']} lay prod")
     ok(abs(fm['kg_F'] - sum(r['kg_F'] or 0 for r in days)) < 1, f"week {wk['sapt']} kg_F")
 sc_ = d['sales']['cols']; SL = [dict(zip(sc_, r)) for r in d['sales']['rows']]
 for x in 'FM':

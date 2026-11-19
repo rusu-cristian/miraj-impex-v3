@@ -357,20 +357,21 @@ for w in sorted(Ht):
         startM = sum(state[wd[0]]['sec'][(s, 'M')]['start'] for s in secs)
         endF = sum(state[wd[-1]]['sec'][(s, 'F')]['alive'] for s in secs)
         endM = sum(state[wd[-1]]['sec'][(s, 'M')]['alive'] for s in secs)
-        hen_days = sum(state[ds]['sec'][(s, 'F')]['alive'] for ds in wd for s in secs)
+        hen_days = sum(state[ds]['sec'][(s, 'F')]['start'] for ds in wd for s in secs)        # D159: start-of-day hens
+        hen_days_prod = sum(state[ds]['sec'][(s, 'F')]['alive'] for ds in wd for s in secs)  # Productivitate: end of day
         kgF = sum(z(state[ds]['sec'][(s, 'F')]['kg']) for ds in wd for s in secs)
         kgM = sum(z(state[ds]['sec'][(s, 'M')]['kg']) for ds in wd for s in secs)
         bird_days_F = sum(state[ds]['sec'][(s, 'F')]['start'] for ds in wd for s in secs if state[ds]['sec'][(s, 'F')]['kg'])
         bird_days_M = sum(state[ds]['sec'][(s, 'M')]['start'] for ds in wd for s in secs if state[ds]['sec'][(s, 'M')]['kg'])
         o = dict(mort_F=mF, mort_M=mM, sold_F=dpF, sold_M=dpM, mort_F_sheet=mF + dpF, mort_M_sheet=mM + dpM, arr_F=arF, arr_M=arM, mv_F=mvF, mv_M=mvM, alive_F_start=startF,
-                 alive_M_start=startM, alive_F_end=endF, alive_M_end=endM, hen_days=hen_days,
+                 alive_M_start=startM, alive_F_end=endF, alive_M_end=endM, hen_days=hen_days, hen_days_prod=hen_days_prod,
                  kg_F=round(kgF, 1), kg_M=round(kgM, 1),
                  g_F=r1(1000 * kgF / bird_days_F) if bird_days_F else None,
                  g_M=r1(1000 * kgM / bird_days_M) if bird_days_M else None)
         return o
     farm = scope(SECTIONS)
     farm.update(eggs=C(tr, 'H'), inc=C(tr, 'J'), jos=C(tr, 'L'),
-                lay_pct=pct(z(C(tr, 'H')), farm['hen_days']), lay_pct_sheet=r2(lay_sheet),
+                lay_pct=pct(z(C(tr, 'H')), farm['hen_days']), lay_pct_prod=pct(z(C(tr, 'H')), farm['hen_days_prod']), lay_pct_sheet=r2(lay_sheet),
                 inc_pct=pct(z(C(tr, 'J')), C(tr, 'H')), jos_pct_sheet=r2(C(tr, 'M')),
                 egg_g=r2(C(Mt[w], 'D')) if w in Mt else None,
                 cum_mort_pct_F_sheet=r2(C(tr, 'G')), cum_mort_pct_M_sheet=r2(C(tr, 'E')),
@@ -383,7 +384,7 @@ for w in sorted(Ht):
         secs = [s for s in SECTIONS if HALL_OF[s] == h]
         o = scope(secs)
         ce, cl, cinc, cincp, cj, cjp = HHALL[h]
-        o.update(eggs=C(tr, ce), inc=C(tr, cinc), jos=C(tr, cj), lay_pct=pct(z(C(tr, ce)), o['hen_days']),
+        o.update(eggs=C(tr, ce), inc=C(tr, cinc), jos=C(tr, cj), lay_pct=pct(z(C(tr, ce)), o['hen_days']), lay_pct_prod=pct(z(C(tr, ce)), o['hen_days_prod']),
                  lay_pct_sheet=r2(C(tr, cl)), inc_pct=pct(z(C(tr, cinc)), C(tr, ce)), jos_pct_sheet=r2(C(tr, cjp)),
                  egg_g=r2(C(Mt[w], MASA_HALL[h][0])) if w in Mt and C(Mt[w], MASA_HALL[h][0]) else None)
         o['sections'] = {}
@@ -411,7 +412,7 @@ for w in sorted(Ht):
                 halls[h]['lay_vs_guide_pts'] = round(halls[h]['lay_pct'] - guide['lay_pct'], 2)
     # cross-check with Productivitate / RealGhid
     if w in prod and prod[w]['hen_days'] is not None:
-        if prod[w]['hen_days'] != farm['hen_days']: mismatch.append((w, 'Productivitate hen-days', farm['hen_days'], prod[w]['hen_days']))
+        if prod[w]['hen_days'] != farm['hen_days_prod']: mismatch.append((w, 'Productivitate hen-days', farm['hen_days_prod'], prod[w]['hen_days']))
         if prod[w]['eggs'] != farm['eggs']: mismatch.append((w, 'Productivitate eggs', farm['eggs'], prod[w]['eggs']))
     if w in plan and plan[w]['eggs_real'] is not None and plan[w]['eggs_real'] != farm['eggs']:
         mismatch.append((w, 'RealGhid real eggs', farm['eggs'], plan[w]['eggs_real']))
@@ -452,6 +453,7 @@ dump('hirbovat-daily.json', {
                          'RealGhid': 'guide lay % by age week (col B)'},
                  conventions=[
                      'Rows are arrays; column names in each block\'s "cols". Sex F = ♀, M = ♂. Dates ISO. null = not in the sheet.',
+                     'age_days is the UI column "Vârstă (zile)" (D159): bird age per D151, 407 on 18.11.2026 (the workbook\'s Zile = age_days + 1 = 408 is not used).',
                      'age_days = date − 2025-10-07 (age 0 on placement day); sapt = floor(age_days/7)+1 (D151). Sheet "Zile" = age_days + 1, "Sapt" = sapt.',
                      'mort = real deaths that day; sold = emptying removals that the sheet books as mortality, which are Vânzare (sale) events in the app (D155); mort_sheet = the sheet\'s raw cell (deaths + sales, arrivals and moves negative) = mort + sold − arr − mv. arr = arrivals (negative cells 22–28.02).',
                      'alive = birds at the end of the day as typed in the sheet (= previous alive − mort − sold + arr + mv, checked on every row).',
@@ -486,8 +488,8 @@ dump('hirbovat-weekly.json', {
                  definitions=[
                      'mort_* = real deaths that week (D155: sales excluded); sold_* = birds sold (emptying removals the sheet books as mortality); mort_*_sheet = mort + sold (what the sheet books); arrivals split out as arr_*, moves as mv_*.',
                      'Farm totals use compartment sums (D156): the sheet\'s farm ♂ mortality is wrong on 22 Tuesdays (see total_row_check).',
-                     'hen_days = Σ hens alive at the end of each day (= Productivitate col B); lay_pct = eggs / hen_days × 100 (D156; = Productivitate "de facto", wk 58 32,58).',
-                     'lay_pct_sheet = the sheet Total row = plain mean of the daily % (differs from lay_pct when the flock changes, e.g. wk 58 33,55 vs 32,58).',
+                     'hen_days = Σ hens alive at the START of each day (D159, same basis as the daily lay %); lay_pct = eggs / hen_days × 100 (D156/D159). hen_days_prod = Σ hens at the end of each day (= Productivitate col B, checked) and lay_pct_prod = eggs / hen_days_prod (= Productivitate "de facto", wk 58 32,58), kept for reference.',
+                     'lay_pct_sheet = the sheet Total row = plain mean of the daily % (wk 58 33,55).',
                      'inc_pct = inc / eggs × 100; jos_pct_sheet as in the Total row; hall egg_g = Masa Total row; farm egg_g = egg-weighted mean of the halls (egg_g_sheet = Masa col D Total, a plain mean of three halls that counts an empty H7 as 0 from 14.11).',
                      'cum_mort_pct_*_sheet = the Total row\'s % under the "în viață" columns = cumulative deaths since 10.03.2026 (start of SAPT 24, lay start) ÷ birds alive at the end of 09.03.2026 (♀ 26 845 = RealGhid "intrat în ouat"; ♂ 2 931) — reproduced to ±0,05 pt; from 12.11 it includes the sales (D155). Compare with guide.mort_cum_pct.',
                      'kg_* = Σ daily kg; g_* = kg / bird-days on fed days (bird-weighted g/bird).',
@@ -860,7 +862,7 @@ def n(x):
         s = f'{x:,}'
     return s.replace(',', ' ').replace('.', ',')
 lines = ['# Key figures · Hîrbovăț Seria 2026 · today 18.11.2026 (real, Raport_NOU_2026.xlsx)', '',
-         f"- Age {age_days(TODAY)} days · **SAPT {sapt(TODAY)}** (D151; placed 07.10.2025, age 0). Week 59 = 17–23.11; weeks run Tue–Mon.",
+         f"- Age {age_days(TODAY)} days (UI \"Vârstă (zile)\" = age_days; workbook Zile 408) · **SAPT {sapt(TODAY)}** (D151; placed 07.10.2025, age 0). Week 59 = 17–23.11; weeks run Tue–Mon.",
          '- Cycles: Telița 07.10.2025–28.02.2026 (SAPT 1–21, closed) · Hîrbovăț from 22.02.2026 (SAPT 20; ♂ 22.02, ♀ 25–28.02), open, emptying since 12.11.',
          f"- Arrived: ♀ {n(arr_tot['F'])} · ♂ {n(arr_tot['M'])}.",
          f"- **Alive end 18.11: ♀ {n(f['aF'])} · ♂ {n(f['aM'])} · total {n(f['aF'] + f['aM'])}** (17.11: ♀ {n(fy['aF'])} · ♂ {n(fy['aM'])}).",
@@ -878,12 +880,12 @@ lines += [f"- Mortality 18.11 (real deaths, D155): ♀ {n(f['mF'])} · ♂ {n(f[
           f"- Feed 18.11: ♀ {n(f['kgF'])} kg · ♂ {n(f['kgM'])} kg; norm ♀ {gr('F')} g · ♂ {gr('M')} g vs guide SAPT 59 ♀ {feed_guide[59][0]} · ♂ {feed_guide[59][1]} g.",
           f"- Stock end 18.11: ♀ feed {n(f['stF'])} kg · ♂ feed {n(f['stM'])} kg. Last deliveries 12.11 9 000 kg ♀ (fără preț) · 13.11 25 640 kg ♀ ({n([r for r in hir_rows if r['date'] == '2026-11-13'][0]['total_lei'])} lei).",
           f"- Deliveries Hîrbovăț 17.02–13.11: {len(hir_rows)} · ♀ {n(hk['F'])} kg · ♂ {n(hk['M'])} kg · {n(hl)} lei · {len(unpriced)} unpriced.",
-          '- Last weeks (farm; lay = eggs ÷ hen-days, D156; sheet mean of daily % in brackets; SAPT 59 = 17–18.11 only):',
-          '  | SAPT | dates | eggs | inc % | lay % (sheet) | guide | deaths ♀/♂ | sold ♀/♂ | alive end ♀/♂ | feed kg ♀/♂ |',
+          '- Last weeks (farm; lay = eggs ÷ start-of-day hen-days, D159; Productivitate end-of-day basis in brackets; SAPT 59 = 17–18.11 only):',
+          '  | SAPT | dates | eggs | inc % | lay % (prod) | guide | deaths ♀/♂ | sold ♀/♂ | alive end ♀/♂ | feed kg ♀/♂ |',
           '  |---|---|---|---|---|---|---|---|---|---|']
 for wk in [x for x in weeks if x['sapt'] in (56, 57, 58, 59)]:
     fm = wk['farm']; g = wk['guide']
-    lines.append(f"  | {wk['sapt']} | {wk['from'][8:10]}.{wk['from'][5:7]}–{wk['to'][8:10]}.{wk['to'][5:7]} | {n(fm['eggs'])} | {n(pct(fm['inc'], fm['eggs'], 1))} | {n(r1(fm['lay_pct']))} ({n(r1(fm.get('lay_pct_sheet')))}) | {n(g['lay_pct'])} | {n(fm['mort_F'])}/{n(fm['mort_M'])} | {n(fm['sold_F'])}/{n(fm['sold_M'])} | {n(fm['alive_F_end'])}/{n(fm['alive_M_end'])} | {n(fm['kg_F'])}/{n(fm['kg_M'])} |")
+    lines.append(f"  | {wk['sapt']} | {wk['from'][8:10]}.{wk['from'][5:7]}–{wk['to'][8:10]}.{wk['to'][5:7]} | {n(fm['eggs'])} | {n(pct(fm['inc'], fm['eggs'], 1))} | {n(r1(fm['lay_pct']))} ({n(r1(fm.get('lay_pct_prod')))}) | {n(g['lay_pct'])} | {n(fm['mort_F'])}/{n(fm['mort_M'])} | {n(fm['sold_F'])}/{n(fm['sold_M'])} | {n(fm['alive_F_end'])}/{n(fm['alive_M_end'])} | {n(fm['kg_F'])}/{n(fm['kg_M'])} |")
 pk = max((x for x in weeks if x['farm']['lay_pct']), key=lambda x: x['farm']['lay_pct'])
 wl = {x['sapt']: x['farm']['lay_pct'] for x in weeks}
 lines += [f"- Peak lay: SAPT {pk['sapt']} ({n(r1(pk['farm']['lay_pct']))} %, {pk['from'][8:10]}.{pk['from'][5:7]}–{pk['to'][8:10]}.{pk['to'][5:7]}); then SAPT 55 {n(r1(wl[55]))} % → 56 {n(r1(wl[56]))} % → 57 {n(r1(wl[57]))} % → 58 {n(r1(wl[58]))} %.",
