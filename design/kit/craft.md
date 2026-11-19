@@ -13,7 +13,7 @@ Do:
 - Lead every record (event row, entry card, alert, sheet entry) with its RecordTile.
 - Colour every ♀ figure `rec-hen` and every ♂ figure `rec-rooster`: rows, inputs, chart lines, legends.
 - Pair every lamp with a word. Put every number, week and readout in IBM Plex Mono.
-- Write the guide week from the cycle start (`SAPT 41`). Show unpriced feed as "fără preț".
+- Write the week as the birds' age week (`SAPT 59` on 18.11.2026; D151: age 0 on the placement day, never restarted by a cycle or a transfer). In tables the day's age goes in the "Vârstă (zile)" column (407 on 18.11.2026, D159). Show unpriced feed as "fără preț".
 Don't:
 - Use a record colour for status, or a status colour for a record type. Use green for primary buttons.
 - Use more than one Readout per page section (feed stock readouts excepted). Use dark panels outside Readouts.
@@ -58,10 +58,10 @@ Don't:
 - Buttons are verbs: Salvează, Mută, Înregistrează vânzarea, Salvează prețurile, Începe ciclu nou. Dialog titles name the action and the object.
 - Errors name the section, the number and the fix (refusals also the day). No exclamation marks, emoji, hype or greetings; no period on labels and buttons.
 - Counts: ♀ before ♂, joined by `·`; thin no-break space for thousands (`14 080`); true minus (`−82`); decimal comma (`2,41 kg`, `−1,4%`); units as suffixes (g, kg, lei/kg, %).
-- Dates `dd.mm.yyyy`. Week: `SAPT 41` in Mono context lines and Readouts; `sapt. 41` inside running text and toasts.
+- Dates `dd.mm.yyyy`. Week: `SAPT 59` in Mono context lines and Readouts; `sapt. 59` inside running text and toasts.
 - Unknown is `–` with its reason (never 0, never blank). Unpriced feed is "fără preț"; totals say what they exclude ("8 000 kg fără preț").
 
 ## 7. Content honesty
-- Sample figures come only from the kit and the Seria 2026 workbook extracts (e.g. placement 07.10.2025: H1 ♀ 14 080, H2 ♀ 14 000, H5-1 ♂ 3 510; delivery 8 000 kg; Hîrbovăț sections H1.1, H1.2, H3.1, H3.2, H4.1, H4.2). Anything else is labelled sample.
+- Sample figures come only from the kit and the workbook extracts (design/data/extracts; real to 18.11.2026 = "today" on every board, D152), e.g. placement 07.10.2025: H1 ♀ 14 080, H2 ♀ 14 000, H5-1 ♂ 3 510; Hîrbovăț halls H5, H6, H7 with sections H5.1, H5.2, H6.1, H6.2, H7.1, H7.2; alive 18.11.2026 ♀ 12 561 · ♂ 794; delivery 13.11.2026 25 640 kg (see key-figures-18-11.md). The old codes H1.1…H4.2, "16.11.2026" as today, "SAPT 40/41" and ♀ 25 252 are stale. Anything else is labelled sample.
 - Names of people (Dr. Ceban, Ion Rusu), guide names ("Ross 308 ouat") and figures dated after the workbook are illustrative.
 - Never invent missing data. Show the waiting or missing state instead: `–` with a reason, the "lipsă" lamp, an EmptyState, a pending guide.

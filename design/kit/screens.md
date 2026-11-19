@@ -47,7 +47,7 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
 
 ### S2 · Acasă
 - **Vet:**
-  1. header (today, farm, guide week)
+  1. header (today, farm, the birds' week; round 2: "18.11.2026 · Hîrbovăț · SAPT 59", D151/D152)
   2. Lipsesc date (per section, with the record icon for Zilnic or Hrană)
   3. entry keys: Zilnic, Hrană zilnică, Cântărire
   4. Introdus azi
@@ -70,41 +70,45 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
    - one lane per farm, with each cycle as a block
    - transfer links between lanes
    - the "azi" line
-   - the guide-week readout per open cycle
+   - the SAPT readout per open cycle (the birds' age week, round 2, D151: "SAPT 59")
    - clicking a block opens that farm at that cycle
-3. **Farm summaries:** one panel per farm with its type, guide, cycle (sapt. N), alive ♀ · ♂ and key figures vs the guide.
-4. **Tabs:** Păsări · Hrană · Greutate · Producție, aggregated per farm.
+3. **Farm summaries:** one panel per farm with its type, guide, cycle (round 2: its SAPT span, "SAPT 1–21" / "SAPT 20–59"), alive ♀ · ♂ and key figures vs the guide.
+4. **Tabs:** Păsări · Hrană · Greutate · Producție, aggregated per farm. Round 2 (D154, spec D1 › Series page), each tab in this order:
+   1. ⭐ **Table** (PeriodTable, no Detaliu switch): the last 4 weeks, SAPT 59–56 (newest first, D159/D160), with their days behind the expand key, a "Fermă" column, one "Total serie" group; no FilterBar (D63), Exportă in the header; under the table the key "Arată toate săptămânile" (SAPT 59 → 1, D160)
+   2. the tab's charts
 
 ### S4 · Scope page · farm level (Hîrbovăț · ciclu Seria 2026) ← first build
 1. **Page header:**
    - breadcrumbs, title "Hîrbovăț"
    - type and guide tags
-   - meta: ♀ · ♂ alive · sapt. 41 · from 10.02.2026
+   - meta: ♀ · ♂ alive · SAPT 59 · from 22.02.2026 (round 2: ♀ 12 561 · ♂ 794, the birds' age week, D151)
    - actions: Mută păsări, Vânzare, and "Ciclu ▾" (Începe ciclu nou, Schimbă ghidul ciclului)
 2. **Cycle selector + compact cycle track for this farm:** past cycles of any series. Selecting one rescopes the page.
-3. **Filter bar:** period, grain, record-type chips, export.
-4. **Tabs.**
-5. **Rezumat contents:**
-   - ⭐ **a. Key readout:** a dark display with the farm's key figure for the cycle type (laying: % lay vs guide; growth: weight ♀ vs guide), plus a small guide chart.
-   - **b. Stats vs guide:**
+3. **Filter bar:** period (default 4 săpt., D159), grain, record-type chips, export.
+4. **Tabs** (Rezumat · Păsări · Hrană · Greutate · Producție; every tab opens on its table, round 2, D154).
+5. **Rezumat contents** (round 2 order):
+   - ⭐ **a. Table** (PeriodTable, "Total fermă" columns, no Detaliu switch): week rows newest first with their days (Data · Vârstă (zile) · SAPT), last 4 weeks, foot "Total perioadă" (spec D1 › Rezumat, D159).
+   - ⭐ **b. Key readout:** a dark display with the farm's key figure for the cycle type (laying: % lay vs guide; growth: weight ♀ vs guide), plus a small guide chart.
+   - **c. Stats vs guide:**
      - alive ♀ · ♂
      - cumulative mortality %
      - weight ♀ / ♂
      - feed g/bird today
      - feed days left
      - % lay (laying)
-   - **c. Section overview:**
+   - **d. Section overview:**
      - one tile per section (SectionTile): code, ♀ · ♂ alive, mortality this week, grams today, weight vs guide, % lay
      - a missing-data lamp
      - grouped by hall when compartments exist
      - clicking a tile opens the section
      - a totals row
-   - **d. De verificat:** alerts for this farm.
-   - **e. Latest records:** the event log with record icons.
-- **Other tabs:** as in spec D1.
+   - **e. De verificat:** alerts for this farm.
+   - **f. Latest records:** the event log with record icons.
+- **Other tabs** (round 2): 1. the Detaliu switch (Fermă · Hale · Compartimente, default Fermă, D159) and the table (PeriodTable: Total fermă, + hall or compartment groups; chips choose column groups; newest week first, last 4 weeks by default); 2. the tab's charts; 3. Păsări only: the event log with the type chips. Contents as in spec D1.
 
 ### S5 · Scope page · section level
 Same template. Rezumat shows the section's stats, the latest records and the guide charts. There are no child tiles.
+Round 2 (D154): every tab opens on its table (PeriodTable, one group = this section ♀ · ♂); Rezumat order = table · Stats · guide charts · latest records; other tabs = table · charts (· event log on Păsări).
 
 ### S6 · Zilnic (phone first)
 1. **Form header:** "Zilnic", farm, date, sapt.
@@ -128,7 +132,7 @@ Same template. Rezumat shows the section's stats, the latest records and the gui
    - the guide figure
    - a deviation tag
 4. **Totals per feed type:** kg today, stock after, days left.
-5. **Save bar:** "8 secțiuni · 3 412 kg", Salvează.
+5. **Save bar:** "8 rânduri · 2 457,9 kg", Salvează (round 2: 18.11.2026, the 4 compartments with birds H5.1 H5.2 H6.1 H6.2 × ♀ · ♂, H7 empty; ♀ 2 303,2 + ♂ 154,7 kg; rows, never "secțiuni", D40).
 
 ### S8 · Cântărire
 Section, sex, values, live guide comparison, Salvează.
@@ -146,7 +150,7 @@ Farm, date, rows per section with ♀/♂ counts (Toate), buyer, note, effect pr
    - date, farm, type, kg, lei/kg, total, priced by
    - unpriced rows show the info tag "fără preț"
    - the owner edits inline
-4. **Consum:** a weekly table per section with g/bird vs guide.
+4. **Consum:** a weekly table per section with g/bird vs guide. Round 2 (D154): week row (farm) → its 7 daily farm rows when open → section week rows; grain and order as spec D1.
 5. **Cost:** per cycle, per bird and per egg from priced deliveries, plus a line for the unpriced kg.
 
 ### S12 · Prețuri hrană (owner)
@@ -156,7 +160,8 @@ A list of unpriced deliveries, lei/kg ↔ total inputs, Salvează prețurile, an
 Farm, date, feed type, kg, note, the stock-after line, Adaugă.
 
 ### S14 · Producție report
-A weekly table by guide week, per section, vs the guide. Export.
+A weekly table by the birds' age week (SAPT), per section, vs the guide. Export.
+Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (newest week first, last 4 weeks by default, D159): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total perioadă"; 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen.
 
 ### S15 · Introdus azi
 Today's entries grouped by record type; edit or delete.
@@ -169,6 +174,7 @@ Filters (user, farm, record type, period), then the change list with record icon
 
 ### S18 · Serii (+ Serie nouă)
 The series list with each series' cycles. The new-series form: name, year, growth farm, date, placement rows per section ♀ · ♂, Creează seria.
+Round 2 (D151, spec B3): the list shows each series' SAPT span and today's age ("SAPT 1–59 · azi 407 zile") and each cycle's span ("Hîrbovăț · din 22.02.2026 · SAPT 20–59 · deschis"), plus a "Vârstă la populare" column. Form order: name, year, growth farm, date, **Vârstă la populare (zile)** (default 0, hint, live line "La populare: vârstă 0 zile · SAPT 1."), placement rows, Creează seria.
 
 ### S19 · Ferme și secțiuni
 - Farm list with type and guide.
@@ -176,6 +182,7 @@ The series list with each series' cycles. The new-series form: name, year, growt
 
 ### S20 · Ghiduri
 Guide list with type. Import panel (paste or file, then a preview with row errors). Guide detail as a weekly table plus small curves.
+Round 2 (D151, spec B2): weeks are age weeks: the list shows each guide's span ("Ross 308 ouat · SAPT 19–65", "Ross 308 creștere · SAPT 1–25"); the detail table's SAPT column is the age week (no "SAPT = vârstă − 18" note); the weight foot note names the SAPT − 1 comparison (D157); the import preview warns on a laying guide that starts at week 1.
 
 ### S21 · Tipuri de hrană
 List (name, for sex, active). Add or edit.
