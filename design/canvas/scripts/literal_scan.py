@@ -7,7 +7,8 @@ D152 (H1.x/H3.x/H4.x, hall H1/H3/H4 next to "Hîrbovăț"), 16.11.2026 as today,
 cycle start 10.02.2026, the superseded sample's figures RF00 lists (25 252, 25 257, 2 685, 26 765, 29 825, 28 252, 3 967, 18 688, 3 691,
 31 450, 4 121/4 119/4 130, 8 475),
 the sample file, cycle_week, "age − 18" and "47 săpt." (Seria 2025 is SAPT 19–65 now, D151); RF14: the RealGhid lay guide
-(53,3 / 54,5 / 55,7 / 56,9 %, deviations −12,2 / −8,0 / −18,4 pct, "sub ghid din 02.11", the paste typo "605"; D184/D185).
+(53,3 / 54,5 / 55,7 / 56,9 %, deviations −12,2 / −8,0 / −18,4 pct, "sub ghid din 02.11", the paste typo "605"; D184/D185);
+S6C: the D164 Cat. 1 placeholder on the Zilnic Ouă group (457 / 149 / 133, and `'ec1': e['eggs'] -`; D183).
 Allowed: Telița codes (H1/H3 with "Telița" in reach), Seria 2025 weeks (SAPT 40/41 with "Seria 2025" in reach), a script line
 marked `literal-ok` (say why on the line), and the ALLOW entries below (board stem prefix, pattern id, context regex) for
 what RF00 keeps (D39 examples, Telița replays). When a row's RF job lands, add it to PORTED."""
@@ -35,6 +36,10 @@ PATTERNS = [  # id, regex, applies to ('dc' board, 'py' script)
     ('lay-dev-old', re.compile(rf'[−-](?:12,2|8,0|18,4)(?:</span>)?{SP}?(?:pct|puncte)'), 'dc py'),
     ('below-since-old', re.compile(r'sub ghid din (?:<[^>]*>)?02\.11'), 'dc py'),
     ('typo-605', re.compile(r'„605”|"605"'), 'dc py'),
+    # S6C (D183): the D164 Zilnic placeholder Cat. 1 = eggs − incubabile (18.11 H5 457 · H6 149; 17.11 H5 133 · H6 149) in the
+    # Ouă group's Cat. 1 input, and the rule that computed it; Cat. 1–3 are the day's real counts now
+    ('cat1-placeholder', re.compile(r'id="ec1-H\d"[^>]*value="(?:457|149|133)"'), 'dc'),
+    ('cat1-rule-d164', re.compile(r"'ec1':\s*e\['eggs'\]\s*-"), 'py'),
 ]
 NEAR = 160  # chars around a board hit searched for context
 CTX_OK = {'old-hall': re.compile(r'Teli[țţt]a'), 'sapt-40': re.compile(r'Seria 2025'), 'sapt-41': re.compile(r'Seria 2025')}

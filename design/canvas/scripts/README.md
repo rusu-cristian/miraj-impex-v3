@@ -62,7 +62,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 - Scripts from older commits, and `s3_canvas.py` (removed: wrote canvas.json on every run; now `s3_build.py --canvas`).
 
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
-- realdata (RF01) ← s4s_build (and every row through it). s4s_build (desktop shell) ← s4, s4t, s3, s11, s2, s9, s10. s7_build ← s7s, s6; s7s ← s2, s8, s9, s10, s13; s6 ← s6s.
+- realdata (RF01) ← s4s_build (and every row through it). s4s_build (desktop shell) ← s4, s4t, s3, s11, s2, s9, s10. s7_build ← s7s, s6; s7s ← s2, s8, s9, s10, s13; s6 ← s6s, s16 (D172: its EntryCards; S16 boards rewritten byte-identical).
 - S4N: s4t_build ← s4s_build + design/system/scripts/sys14_build.py (PeriodTable builders, imported; it writes its preview only when run itself); s4_build ← s4t_build (Rezumat table).
 - S4NS: s4ns_build ← s4t_build (→ s4s_build, sys14) + s2_build (phone screen/tab bar/write_phone; rewrites the S2/S7 default boards byte-identical). Phone boards whose table is wider than 390 are drawn wider too (board_widths.json, page 390, `.s4ns-wide`, D167).
 - S4NG: s4s_build loads sys14_build itself and draws the Rezumat PeriodTable (period, record types, FilterBar `filterbar4`, `ptable`, `rezumat_groups`, `tb_rezumat`, loading table) in `panel_default` / `main_page`, so the S4 state boards and the S9/S10 desktop backdrops show the same table; s4t_build re-exports these names (`P = s4.P`).
@@ -101,7 +101,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   (the superseded sample) is a lazy legacy alias for rows not yet ported only.
 - `literal_scan.py $R [--row S4R …] [FILE …]`: lists file:line of old literals (H1.x/H3.x/H4.x and Hîrbovăț H1/H3/H4, 16.11.2026,
   SAPT 40/41, 10.02.2026, the sample's figures, sample file, cycle_week, age − 18, "47 săpt."; RF14: the RealGhid lay guide
-  53,3/54,5/55,7/56,9 %, deviations −12,2/−8,0/−18,4 pct, "sub ghid din 02.11", paste typo "605"); exit 1 on a hit in a PORTED row
+  53,3/54,5/55,7/56,9 %, deviations −12,2/−8,0/−18,4 pct, "sub ghid din 02.11", paste typo "605"; S6C: the D164 Cat. 1 placeholder 457/149/133 in the Zilnic Ouă group and its rule); exit 1 on a hit in a PORTED row
   (or in any row/file named). Allowed: Telița codes, Seria 2025 weeks, script lines marked `literal-ok`, its ALLOW list. Each
   RF job adds its row to PORTED. SYS rows also scan their previews/READMEs as markup (RF14; SYS14 = PeriodTable).
 - `sex_scan.py $R [FILE …]` (SX01): lists every ♀/♂ on the boards and system previews not drawn as the §72 icon (outside the `ip-sex` hook, or a standalone hook holding other text); exit 1 if any.

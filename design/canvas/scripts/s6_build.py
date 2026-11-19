@@ -6,8 +6,8 @@ compartments with birds at the start of the day (H5.1 H5.2 H6.1 H6.2); H7, empty
 line "goală din 14.11.2026" (D158d, as S7). Alive on a card = start of the day (D53); yesterday hint = 17.11 and the mean of the
 7 days before (SYS05); illustrative culls / sexing errors (illustrative-events) are carved out of the real deaths, as in S15/S16.
 Compartments with no death that day carry "Fără pierderi azi" checked. Lay % = eggs ÷ hens at the start of the day (D156) vs the
-guide of the age week; Cat. 1–3 are not in the extracts (D153): Cat. 1 holds the real non-incubable count (eggs − incubabile),
-Cat. 2/3 stay empty (null), so Total ouă = the real total (RF04, to review).
+guide of the age week; Cat. 1, Cat. 2, Cat. 3 = the hall's real counts of the day (D183, DATA06 `cat1–cat3`; 18.11 H5 13 · 417 · 27,
+H6 8 · 110 · 31), with Incubabile; Total ouă = Cat. 1–3 + Incubabile = the day's real eggs (D18; S6C supersedes D164's placeholder).
 Composed from system classes only: FormHeader, DateField (s7_build shell), HallCard, EntryCard + SYS05 additions,
 CountInput, Checkbox, Lamp, SexCount, SaveBar (s7_build.savebar, two-line summary). No screen-only CSS beyond S7's: "din ♀ …"
 stays on one line through HallCard's span.ip-eggs__base (S6P, system since FIN15). Field names = section heading + label via aria-labelledby (S6P).
@@ -158,11 +158,12 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
 # ---------- Ouă group (HallCard) ----------
 def eggs(h, secs, hens, d=TODAY, ro=False):
     """the hall's Ouă group of day d (realdata hall row): Jos, Cat. 1–3, Incubabile, Masa medie; Total ouă = Cat. 1 + 2 + 3 +
-    Incubabile (D18, Jos separate). Cat. 1–3 are not extracted (D153): Cat. 1 = eggs − incubabile, Cat. 2/3 empty (null)."""
+    Incubabile (D18, Jos separate). Cat. 1–3 = the hall's real counts of day d (D183, realdata day()['cat1'..'cat3']; S6C)."""
     e = R.day(d, h); u = h
     assert hens == R.alive_hall(h, 'F', d - dt.timedelta(days=1))  # hens at the start of the day (D156)
-    cat = {'ec1': e['eggs'] - e['inc'], 'ec2': None, 'ec3': None}
-    tot = sum(v or 0 for v in cat.values()) + e['inc']; assert tot == e['eggs']  # D18, Jos separate
+    cat = {'ec1': e['cat1'], 'ec2': e['cat2'], 'ec3': e['cat3']}  # D183: the day's real counts (DATA06), no placeholder
+    assert None not in cat.values(), (d, h)  # a board's day with eggs has its Cat. 1–3 (Raspunsuri, 10.03–18.11.2026)
+    tot = sum(cat.values()) + e['inc']; assert tot == e['eggs'], (d, h)  # D18: Total ouă = Cat. 1–3 + Incubabile, Jos separate
     lay = R.rnd(tot / hens * 100, 1); assert lay == R.rnd(R.lay_day(d, h), 1)
     diff = R.rnd(lay - LAYG, 1); ok = abs(diff) <= 3  # D19 ±3 points
     def f(fid, lbl, v):
