@@ -1,6 +1,7 @@
 # Design canvas: Impex Line Panel · Ecrane
 
-- Slug `e44dd7fb-2990-41f9-a791-2841f1b1dcd1` · URL https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv
+- Slug `e5d5275e-4850-45ce-afa4-d035b0a5bd2b` · URL https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi (created 19.11.2026 by a design-loop session and filled from `design/canvas/project/`; version after the full publish `1795075243-a466`).
+- Old canvas (16–17.11.2026, stale since 16.11, read-only from later sessions): slug `e44dd7fb-2990-41f9-a791-2841f1b1dcd1`, https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv. Do not publish there.
 - Type: Design (canvas), `bcd2878f-a88d-4094-a616-8e39d8a5fd8a`. Version at setup: `1794844216-3062` (always re-fetch: `get_artifact`).
 - Design system installed: Impex Line Panel (`95f22f4a-…`, v `1794843774-ade9`) as folder `impexlinepanel`.
 - Setup sub-agent could call publish_files and copy_file: **yes**. Caveat: the server only lets a session change artifacts it made
@@ -9,7 +10,7 @@
 ## File layout (only files under `project/` show; local mirror: `design/canvas/project/`)
 - `project/canvas.json` — index (content.index). `boards` keyed by file name, `order`, `designSystems` (leave as is).
 - `project/Main.dc.html` — artboard "00 · Index" at x 0, y 0, 880×560.
-- `project/ds/impexlinepanel/tokens.css` (CSS vars + type classes with `.ip-t-` aliases; published from the repo's `design/system/tokens.css`, the single source), `tokens.json` (Theme menu), `components/bundle.css` (`ip-` classes; @imports Plex fonts).
+- `project/ds/impexlinepanel/tokens.json` (copied from the system artifact's `project/tokens.json`), `project/ds/impexlinepanel/tokens.css` (CSS vars + type classes with `.ip-t-` aliases; published from the repo's `design/system/tokens.css`, the single source), `tokens.json` (Theme menu), `components/bundle.css` (`ip-` classes; @imports Plex fonts).
 - `project/additions.css`: the project's additions (D32: interaction states, motion vars, new components), published from `design/system/components/additions.css`. Kept outside `ds/` because the type reserves `project/ds/<folder>/` for the system install.
 - One screen = one file `project/<stem>.dc.html`, flat (no subfolders). Stem: ASCII, letters/digits/`_`/`-`/`.`, unique.
   "S4 · Fermă · Rezumat" → `S4-ferma-rezumat.dc.html`; state "S4 · Fermă · Rezumat · se încarcă" → `S4-ferma-rezumat--se-incarca.dc.html`.
@@ -63,7 +64,7 @@ States on artboards: real `:hover`/`:active`/`:disabled` come from additions.css
    Optionally update Main.dc.html's list.
 3. publish_files:
 ```json
-{"slug":"e44dd7fb-2990-41f9-a791-2841f1b1dcd1","base_version":"<live version>","mode":"patch",
+{"slug":"e5d5275e-4850-45ce-afa4-d035b0a5bd2b","base_version":"<live version>","mode":"patch",
  "files":[{"as":"project/S4-ferma-rezumat.dc.html","path":"/home/claude/miraj-impex-v3/design/canvas/project/S4-ferma-rezumat.dc.html"},
           {"as":"project/canvas.json","path":"/home/claude/miraj-impex-v3/design/canvas/project/canvas.json"}]}
 ```

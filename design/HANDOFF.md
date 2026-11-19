@@ -1,11 +1,12 @@
 # Handoff
-Updated: 2026-11-19 · Last commit: e6ce7ea
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv, slug e44dd7fb-2990-41f9-a791-2841f1b1dcd1, live version 1794856515-f4a7) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode (canvas read-only from this session, see below)
+Updated: 2026-11-19 · Last commit: e6ce7ea (+ canvas move)
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane" (NEW 19.11.2026: https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi, slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b, version 1795075243-a466; old canvas VC8kqksPgxxYo9kPpK14yv is stale, do not use) built from the Impex Line Panel design system (https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd) · Setup: full, canvas mode
 
 ## Progress
 Complete · 114 / 114 jobs done (screens, FIN01–FIN16, FX01–FX07, FY01–FY04, FZ01); closing check clean · Screens done: S1 + 9 states (polished), S22 + 25 states (polished), S21 + 16 states (polished), S20 + 22 states (polished), S19 + 21 states (polished), S15 + 7 states (polished), S16 + 9 states (polished), S17 + 10 states (polished), S18 + 10 states (polished), S4, S7, S3, S11 (+S11M), S12, S13 (all polished), S6 + 9 states, S4 tabs (polished), S9 (polished), S10 (polished), S2 + 12 states (polished) + Observator (S2V), S14 + 4 states + filter sheet (polished), S8 + 6 states (polished) · Building: none · COMPLETE (19.11.2026); all SYS jobs done
 
 ## Just finished
+- 19.11.2026: new canvas created and filled with every repo file (257 boards, canvas.json, tokens.css/json, bundle.css, additions.css); the canvas now matches the repo
 - COMPLETE: closing check (FINAL3) clean after FZ01 (S22 reset-failed Banner per D147; 7 stale shots retaken) (e6ce7ea)
 - FY04 Banner paragraphs (D147): 29 failure Banners (24 boards, 5 previews) = lead ¶ + retry + kept ¶, text word for word; S22 Dialog Banner too (sys12 banner() takes a list); S18 telefon eroare-la-salvare h 1632; rows S19–S1 moved +8 by hand (user approved); passed review (d3ee0e6)
 - FY03: S2 observator phone FarmSummary `ip-fsum--touch` (s2s copies gone), §9 touch min-width 44 (`calc(var(--control-h-touch) - var(--space-1))`), observator h 2172→2140; rows S14–S1 moved −32 by hand (user approved), docstrings follow; 1 fix round (756841b)
@@ -96,8 +97,7 @@ Complete · 114 / 114 jobs done (screens, FIN01–FIN16, FX01–FX07, FY01–FY0
 - S13 merged from design-loop/s13-session-0139 (D73, D74)
 
 ## Next up
-- Nothing queued. Publish the repo's canvas files to the live canvas (see "Unpublished on the canvas"); review the "to review" decisions.
-- FX01 → FX07 in order, then one more final pass, then Complete (in order; FIN02–FIN05 share generators)
+- Nothing queued. Review the "to review" decisions.
 
 ## Waiting on the user
 - To review (non-blocking, taken per standing instruction): D146 S16 page-end scroll; D147 Banner paragraphs; D141 save-error Banner at form end, D142 Înregistrează as parent of Introdus azi + entry forms, D143 object-first Toasts.
@@ -105,85 +105,8 @@ Complete · 114 / 114 jobs done (screens, FIN01–FIN16, FX01–FX07, FY01–FY0
 - Non-blocking: D95 guide week — app formula D02 puts 24.02.2026 in SAPT 21 (2 525 g, în normă); the workbook compares with week 20 (abatere). Confirm D02.
 - None blocking otherwise. 17.11.2026 11:03: user said "go on with what you recommend, I will review later": take helpers' recommended options, log them as decisions "to review", no gates. 16.11.2026 resume: user chose to keep defaults and continue without screen gates; review everything later (flagged: D24, D25, D27, D53, D59, D63, D64; D78 departs from spec A2).
 
-## Unpublished on the canvas (publish with publish_files, mode patch, "as" = project/<file>)
-- Since 16.11.2026 sessions have network access off and did not make the canvas, so no tool here can write to it (get_artifact → network_off_limit). Publish from a chat opened from the canvas page, or from a session with network access on.
-- project/additions.css (§23–25 SYS08, §26–27 SYS09, §28 SYS10, §29 SYS11, §30 SYS12, §31 SYS13, §32 S4T, §33 S9P); project/canvas.json
-- project/S11-rapoarte-hrana{,--se-incarca,--manager,--observator,--fara-livrari-in-perioada,--modifica-pret,--modifica-pret--eroare}.dc.html (all 7 rebuilt by S11M)
-- project/S12-preturi-hrana{,--se-incarca,--in-lucru,--toate-livrarile-au-pret,--eroare}.dc.html (S12 row now y 10303)
-- project/S13-livrare-hrana{,--salvat,--cantitate-lipsa,--eroare-la-salvare,--desktop}.dc.html (row y 11447; S13P rebuilt all but --cantitate-lipsa; S11X rebuilt all S11, S12 boards and S13 --desktop)
-- project/S6-zilnic.dc.html (row y 12591, x 0, 390×4284) + S6-zilnic--{se-incarca,deja-introdus,zi-trecuta,abatere,refuzat,eroare-la-salvare,ferma-fara-pasari,salvat,motiv-lipsa}.dc.html (x 470…4230)
-- project/S4-ferma--{pasari,hrana,greutate,productie}.dc.html (y 800, x 13680/15200/16720/18240) + project/S4-ferma-rezumat{,--*}.dc.html (all 9 rebuilt by S4TP; fără ghid h 1938) + project/canvas.json: every row below S4 moved +595 (redo on the live canvas.json, then add the 4 boards)
-- project/S9-transfer{,--salvat,--refuzat,--eroare-la-salvare,--alege-sectiunea,--ciclu-nou,--desktop}.dc.html (row y 17590, phones x 0…2350, desktop x 2820) + canvas.json + additions.css (§33)
-- project/S10-vanzare{,--confirmare,--refuzat,--salvat,--eroare-la-salvare,--desktop}.dc.html (row y 18734, x 0…2350) + canvas.json
-- S10P: project/additions.css (§34) + project/S10-vanzare{,--confirmare,--refuzat,--salvat,--eroare-la-salvare,--partiala,--desktop}.dc.html (desktop now x 2820) + canvas.json
-- S2: project/S2-acasa{,--manager,--manager-desktop,--proprietar-desktop}.dc.html (row y 20922) + canvas.json + S2S: S2-acasa--{se-incarca,inainte-de-12,zi-trecuta-blocat,sterge-confirmare,dupa-2359,ferma-goala,fara-acces,eroare-la-incarcare,manager-desktop--se-incarca,manager-desktop--zi-trecuta-stoc-sub-0,proprietar-desktop--se-incarca,proprietar-desktop--toate-cu-pret}.dc.html (manager + owner defaults rebuilt)
-- S2P: project/additions.css (§35) + all 16 S2-acasa*.dc.html + canvas.json (heights)
-- S2V: project/S2-acasa--observator{,-desktop}.dc.html + canvas.json
-- S14: project/S14-rapoarte-productie{,--se-incarca,--fara-date-in-perioada,--fara-ghid,--seria-2025}.dc.html + canvas.json
-- S14S: project/S14-rapoarte-productie--{observator-se-exporta,eroare-la-incarcare,fara-ferma-de-ouat,telefon}.dc.html + canvas.json
-- S14P: project/additions.css (§36–37) + all 10 S14-rapoarte-productie*.dc.html (incl. new --telefon-filtre) + canvas.json
-- S8: project/S8-cantarire{,--gol,--in-norma,--abatere,--valoare-refuzata,--salvat,--eroare-la-salvare}.dc.html + canvas.json
-- S8S: project/S8-cantarire--{se-incarca,alege-sectiunea,zi-trecuta,ferma-fara-pasari,deja-introdus,gol-telita}.dc.html + canvas.json
-- S8P: project/additions.css (§38) + all 13 S8-cantarire*.dc.html + canvas.json (heights)
-- S15: project/S15-introdus-azi{,--gol,--sterge-confirmare}.dc.html + canvas.json
-- S15S: project/S15-introdus-azi--{se-incarca,eroare-la-incarcare,actiuni-deschis,dupa-stergere,dupa-2359,manager-10-11,desktop}.dc.html + canvas.json
-- S15P: the 6 changed S15 boards (S15-introdus-azi, --sterge-confirmare, --actiuni-deschis, --dupa-stergere, --dupa-2359, --desktop) + S2-acasa--manager{,-desktop,-desktop--zi-trecuta-stoc-sub-0}.dc.html + canvas.json
-- S16: project/additions.css (§39) + project/S16-corecteaza{,--motiv-lipsa,--refuzat,--sterge-confirmare,--desktop}.dc.html + canvas.json
-- S16S: project/S16-corecteaza--{salvat,eroare-la-salvare,se-incarca,vet-blocat,ciclu-transfer,desktop-scris,desktop-refuzat,desktop-sterge-confirmare,desktop-dupa-stergere}.dc.html + canvas.json (S16 desktop x 1880 → 4230)
-- S16P: all 14 project/S16-corecteaza*.dc.html (canvas.json and additions.css unchanged)
-- S17: project/S17-istoric-modificari{,--filtre-fara-rezultate,--se-incarca,--eroare-la-incarcare,--observator-fara-acces,--telefon}.dc.html + canvas.json
-- S17S: project/additions.css (§40) + project/S17-istoric-modificari--{din-modificat-de,manager-interval-gresit,exemple-randuri,observator-marcaj-text,telefon-filtre}.dc.html + canvas.json (S17 --telefon x 7600 → 13680)
-- S17P: the 10 changed project/S17-istoric-modificari*.dc.html (all but --observator-marcaj-text; canvas.json unchanged)
-- S18: project/S18-serii{,--serie-noua,--telefon,--telefon-serie-noua,--telefon-refuzat}.dc.html + canvas.json
-- S18S: project/S18-serii--{se-incarca,eroare-la-incarcare,fara-acces,desktop-scris,desktop-erori,desktop-refuzat,salvat,inchide-seria,telefon-eroare-la-salvare,telefon-alege-sectiunea}.dc.html + canvas.json (S18 phones x 3040… → 15200/15670/16140)
-- S18P: 11 changed project/S18-serii*.dc.html (all but se-incarca, eroare-la-incarcare, fara-acces, desktop-scris… see notes/S18P.md) + canvas.json (3 phone heights)
-- S19: project/S19-ferme-sectiuni{,--hirbovat,--telita,--retragere-blocata,--retrage-sectiunea,--fara-ghid,--ghid-nepotrivit,--fara-ferme,--ferma-noua,--telefon}.dc.html + canvas.json
-- S19S: project/S19-ferme-sectiuni--{se-incarca,eroare-la-incarcare,fara-acces,salvat,eroare-la-salvare,nume-gol,nume-folosit,ghid-lista,adauga-compartiment,cod-duplicat,redenumeste-cod-gol,retrasa-mutata}.dc.html + --ferma-noua (rebuilt) + canvas.json (phone x 31920)
-- S19P: project/additions.css (§41–42) + all 22 project/S19-ferme-sectiuni*.dc.html (canvas.json unchanged)
-- S20: project/S20-ghiduri{,--ross-308-ouat,--ross-308-crestere,--importa-ghid,--inlocuieste-fisier,--inlocuieste-refuzate,--inlocuieste-lipit,--salvat,--telefon}.dc.html + canvas.json
-- S20S: project/S20-ghiduri--{se-incarca,eroare-la-incarcare,fara-acces,niciun-ghid,se-citeste,format-gresit,necitibil,gol,refuzate-filtru,nume-gol,nume-folosit,ghid-nou,eroare-la-salvare,sterge}.dc.html + canvas.json (phone x 33440)
-- S20P: project/additions.css (§29 amended, §43) + 17 changed project/S20-ghiduri*.dc.html + canvas.json (3 heights); GuideImportPreview preview.html
-- S21: project/S21-tipuri-hrana*.dc.html (15 boards) + canvas.json
-- S21P: project/additions.css (§44) + all 17 project/S21-tipuri-hrana*.dc.html (new --retras-stoc-0, --reactivat) + canvas.json (phone x 24320)
-- S22: project/S22-utilizatori*.dc.html (17 boards) + canvas.json
-- S22S: project/S22-utilizatori--{meniu-deschis,meniu-contul-tau,reseteaza-parola,resetare-esuata,parola-copiata,copiere-esuata,meniu-dezactivat,reactivat,editeaza-dezactivat}.dc.html + canvas.json (phone x 38000)
-- S22P: project/additions.css (§45) + all 26 project/S22-utilizatori*.dc.html (canvas.json unchanged); UserRow + OneTimePassword previews
-- S1: project/S1-autentificare*.dc.html (10 boards) + canvas.json
-- S1P: project/additions.css (§46) + project/S1-autentificare--se-intra.dc.html (S1 boards otherwise unchanged; desktop card top comes from §46)
-- FIN01: project/additions.css (§46 trimmed, §47)
-- FIN02: project/additions.css (§48) + 143 boards on S6–S10, S12, S13, S15, S16, S18–S22 (canvas.json unchanged)
-- FIN03: project/additions.css (§46 header, §49) + 235 boards (25 Banner boards + dead-CSS removal; canvas.json unchanged)
-- FIN04: project/additions.css (§50) + 156 boards (14 Dialog boards + dead-CSS removal; canvas.json unchanged)
-- FIN05: project/additions.css (§51) + 21 boards on S16, S19, S21
-- FIN06: project/additions.css (§52) + 9 phone boards (S14, S17 ×2 each; S18–S22 telefon)
-- FIN07: S18 (10), S19 (19), S21 (14), S22 (24) boards; UserRow preview
-- FIN08: project/additions.css (§29) + 33 boards on S7, S14, S17, S18, S20 (+ all 23 S20 boards for the shared .s20-clip line); FeedTotals + GuideImportPreview previews
-- FIN09: 65 boards (S2, S3, S4/S4S/S4T, S7/S7S, S9, S10, S11, S13, S14/S14S, S16S, S17, S18, S20) + canvas.json (S14 telefon h)
-- FIN10: project/additions.css (§53) + 180 boards (every desktop board via the Sidebar series selector; S8, S9, S10, S16–S19)
-- FIN11: project/additions.css (§29, §35, §42) + 23 boards (S11 ×7, S12 ×5, S13, S18 ×8, S20, S22) + canvas.json (S11 se-incarca h)
-- FIN11G: project/additions.css (§54) + 163 boards + canvas.json (S4 se-incarca 1520, S8 se-incarca 911, S11 se-incarca 1246)
-- FIN12: 23 boards (S8 ×10, S13 ×4, S14 ×8, S19 --nume-gol)
-- FIN13: project/additions.css (§29, §34, §55, removed §6/§18 select rules + ip-users__bnrow) + 140 boards (18 changed pixels: S4, S9, S10, S17, S20)
-- FIN13B: project/additions.css (§9; boards unchanged)
-- FIN14: project/additions.css (§11, §32, §36, §42) + 24 boards (S3, S4 Producție, S11–S14, S18, S20) + canvas.json (S3 h)
-- FIN14B: project/additions.css (§11, §32) + 146 boards (31 with markup changes: S3, S4T, S11, S12, S17-9)
-- FIN15: project/additions.css (§20, §56–60) + 245 boards
-- FIN15B: project/additions.css (§61–65) + 245 boards
-- FIN16: project/additions.css (§1, §65) + 168 boards (new S2-acasa manager fermă goală board) + canvas.json (S2 row)
-- FX01: project/additions.css (§62) + 8 S18S boards (CSS only)
-- FX02: project/additions.css (§66) + 31 boards (8 desktops markup, 23 S20 CSS) + canvas.json (4 heights)
-- FX03: 18 boards (S9, S10, S13 phones, S14/S17 telefon-filtre) + canvas.json (S10 telefon h, 190 boards y +20)
-- FX04: 31 boards (23 Banner, 8 Toast)
-- FX05: project/additions.css (§1, §42, §63) + 212 boards (style only)
-- FX06: project/additions.css (§35) + 24 boards
-- FX07: 41 boards (S6/S7/S8 back key, S15 crumbs) + canvas.json (S15 telefon h, 138 boards y +12)
-- FINAL2: canvas.json (rows from S3 down moved up: S3 −124, S11–S14 −141, S8–S1 −157)
-- FY01: project/additions.css (§30) + 7 S22 boards
-- FY02: 8 S18 boards
-- FY03: project/additions.css (§9) + S2-acasa--observator + canvas.json (observator h, 171 boards y −32)
-- FY04: 15 boards + 4 previews + canvas.json (S18 telefon eroare h, 98 boards y +8)
-- FZ01: S22-utilizatori--resetare-esuata
-- Add every later board and each additions.css / canvas.json change here.
+## Unpublished on the canvas
+- None: the new canvas (19.11.2026) holds every file in design/canvas/project/. Later changes: publish per design/kit/canvas.md to slug e5d5275e-4850-45ce-afa4-d035b0a5bd2b and list them here until published.
 
 ## Things to remember
 - 17–18.11.2026 session (S19 → FIN08): each job = fresh builder → fresh reviewer → fix round via SendMessage to the same builder (then a short re-review via SendMessage to the same reviewer when the fix touches system CSS). FIN jobs: builders diff every changed board with a normalising script (strip <style>, map old→new classes) and rebuild per design/canvas/scripts/README.md.

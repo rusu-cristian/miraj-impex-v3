@@ -2,7 +2,7 @@
   "v": 3,
   "createdOnFiles": {
     "v": 1,
-    "at": "2026-11-16T15:50:30Z"
+    "at": "2026-11-19T07:57:00Z"
   },
   "title": "Impex Line Panel · Ecrane",
   "launch": {
@@ -2234,7 +2234,7 @@
       "namespace": "impexlinepanel",
       "artifact": "https://claude.ai/artifact/KWvk2DHkGgVsDKdhwybfgd",
       "version": "1794843774-ade9",
-      "copiedAt": "2026-11-16T15:50:00Z"
+      "copiedAt": "2026-11-19T07:57:00Z"
     }
   ]
 }
