@@ -85,6 +85,10 @@ def cum(s, h=None):
     return f
 CUM_GROUP = lambda h=None: {'name': f'{ico("mortality")}% cumulat', 'leaves': [(sx('F'), 'is-hen', cum('F', h)), (sx('M'), 'is-rooster', cum('M', h))]}
 
+# SYS17 (D189): phone group heads stay on one line; a group whose full word is wider than its two figure columns (so the tag
+# would not fit 358 beside the sticky column, D171) shows the system's short word, the full word hidden (ip-sr), as Rezumat's
+# short leaves (s4s_build.rezumat_groups). "Morți" = the record's deaths (Mortalitate's own word on Rezumat, spec D1).
+PHONE_SHORT = {'Mortalitate': 'Morți'}
 def stacked(main, sub, sub_word='% cumulat'):
     """Phone variant (S4NS fix 2, Claude, to review): a group whose companion rate rides in the same cell, as a second small Mono
     line under the count (Mortalitate ♀ "10" / "5,7%"), so the tag keeps 2 figure columns and the row stays 48. Group head:
@@ -96,7 +100,10 @@ def stacked(main, sub, sub_word='% cumulat'):
             bb = f'{DASH}<span class="ip-sr"> {b[1]}</span>' if isinstance(b, tuple) else b
             return f'{a}<span class="ip-ptable__pct"><span class="ip-sr">, {sub_word} </span>{bb}</span>'
         return f
-    return {'name': f'{main["name"]}<span class="ip-ptable__note">cu {sub_word.replace(" ", chr(160))}</span>',
+    name = main['name']; icon, word = name.rsplit('</span>', 1) if '</span>' in name else ('', name)
+    if word in PHONE_SHORT:   # SYS17 (D189): the head stays on one line; where the full word would not fit 358, the short word shows
+        name = (icon + '</span>' if icon else '') + f'<span aria-hidden="true">{PHONE_SHORT[word]}</span><span class="ip-sr">{word}</span>'
+    return {'name': f'{name}<span class="ip-ptable__note">cu {sub_word.replace(" ", chr(160))}</span>',
             'leaves': [(lab, c, wrap(fa, fb)) for (lab, c, fa), (_, _, fb) in zip(main['leaves'], sub['leaves'])]}
 
 def farm_pasari():
@@ -315,7 +322,9 @@ def head(sections, spine, show_sec, colw=None, fcol=None):
     (default: spine 's3'; S3N: also after the phone's sticky first column)."""
     if fcol is None: fcol = spine == 's3'
     nrows = (1 if show_sec else 0) + 2
-    data_h = 'Data · Vârstă (zile)' if spine == 'phone' else 'Data'
+    # SYS17 (D189): the phone spine head on one line in the sticky column: the short "Data · Vârstă", "(zile)" hidden (ip-sr),
+    # so the head is no wider than "Ma 17.11 · 406" / "SAPT 58" and one tag's group still fits 358 (D171)
+    data_h = 'Data · Vârstă<span class="ip-sr"> (zile)</span>' if spine == 'phone' else 'Data'
     r0 = f'<th scope="col" class="ip-ptable__data" rowspan="{nrows}">{data_h}</th>'
     cw = list(colw or [])
     def st():
@@ -488,7 +497,7 @@ SER = 'Hîrbovăț · Seria 2026 · SAPT 56–59'
 # loaded column shares of the Păsări · Fermă table at 1440 (section 54: both copies declare them; px / 1126): only the
 # columns whose figures are wider than their head (SAPT "56–59", "34,7%", Vânzare, În viață; Mortalitate ♀ · ♂ as wide as their group head); the others are sized by the head.
 COLW = [None, round(63.2 / 1126 * 100, 2)] + [round(x / 1126 * 100, 2) for x in (71, 63.1, 71, 62, 60, 64, 71, 63.1)]   # D167 order: În viață, Mortalitate, % cumulat, Vânzare
-html = '<!-- @dsCard group="Data" height=11502 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
+html = '<!-- @dsCard group="Data" height=11488 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
 
 # 1 Păsări · Fermă: default (D166: every week open), SAPT 58 key focused
 c1 = f'Păsări · {SER}'

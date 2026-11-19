@@ -113,7 +113,7 @@
 .s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */
 .s18-foot{justify-content:flex-end}
 .s18-age .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* "140" + "zile": 120 px, as the year */
-.s18-agehead > span{display:inline-block;white-space:normal;max-width:calc(var(--space-12) * 2)} /* D179: the head on two lines (VÂRSTĂ LA / POPULARE) */</style>
+.s18-agehead > span{white-space:nowrap} /* SYS17 (D189): the head on one line (was two, D179); the table runs past 1280 under its sticky column (D179 note 2) */</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="ip-shell" inert="inert"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">
 <div class="ip-wordmark">Impex Line</div>

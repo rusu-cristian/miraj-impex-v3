@@ -1,4 +1,5 @@
-"""python3 s11_render.py <out_heights.json> <stem>... : render design/canvas/project/<stem>.dc.html at 1440 (repo mirror), shot design/shots/S11[-n].png, record main height."""
+"""python3 s11_render.py <out_heights.json> <stem>... : render /tmp/s4s/<stem>.html (s4s_build.write's wrapper) at its canvas
+width (SYS17, D167: board_widths.json, else 1440), shot design/shots/S11[-n].png, record main height."""
 import sys, json, asyncio, pathlib
 from playwright.async_api import async_playwright
 R = pathlib.Path(__file__).resolve().parents[3]
@@ -7,8 +8,9 @@ async def main():
     hp = pathlib.Path(sys.argv[1]); hs = json.loads(hp.read_text()) if hp.exists() else {}
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome')
+        sys.path.insert(0, str(R / 'design/canvas/scripts')); import canvas_rows as CR
         for st in sys.argv[2:]:
-            pg = await b.new_page(viewport={'width': 1440, 'height': 1000})
+            pg = await b.new_page(viewport={'width': CR.width(st, 1440), 'height': 1000})
             await pg.goto(f'file:///tmp/s4s/{st}.html'); await pg.wait_for_timeout(1200)
             mh = await pg.evaluate("Math.ceil(document.querySelector('.ip-shell__main').lastElementChild.getBoundingClientRect().bottom + 24)")
             clip = await pg.evaluate("""[...document.querySelectorAll('.ip-table *,.ip-pagehead *,.ip-readout *,.ip-filterbar *')].filter(e=>e.scrollWidth>e.clientWidth+1 && getComputedStyle(e).overflow!='visible').map(e=>e.className+':'+e.textContent.slice(0,40)).slice(0,8)""")

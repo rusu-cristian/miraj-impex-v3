@@ -534,7 +534,7 @@ CSS_DESK = X_CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DA
 # S18N: the age field's width; kept out of CSS18/CSS_DESK/CSS_PL, which S19–S22 reuse (their boards stay byte-identical)
 CSS_AGE = '''
 .s18-age .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* "140" + "zile": 120 px, as the year */
-.s18-agehead > span{display:inline-block;white-space:normal;max-width:calc(var(--space-12) * 2)} /* D179: the head on two lines (VÂRSTĂ LA / POPULARE) */'''
+.s18-agehead > span{white-space:nowrap} /* SYS17 (D189): the head on one line (was two, D179); the table runs past 1280 under its sticky column (D179 note 2) */'''
 CSS_D18 = CSS_DESK + CSS_AGE   # the S18 desktops (s18s too)
 Z_CSS = '\n'.join(l for l in Z.CSS_PHONE.split('\n') if '.s11-select' not in l)   # FIN10 fix 1: no native select on S18–S22 phones
 CSS_PL = Z_CSS + CSS18 + '''

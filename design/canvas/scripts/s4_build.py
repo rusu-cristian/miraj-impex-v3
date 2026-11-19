@@ -8,7 +8,7 @@ Secțiuni, De verificat, Ultimele înregistrări). Writes design/canvas/project/
 import sys, pathlib, importlib.util
 
 A = [a for a in sys.argv[1:] if a != '--canvas']  # --canvas: refresh the entry's h/title in place (x, y kept; RF01)
-H = int(A[1]) if len(A) > 1 else 2944  # S4NF (D166): every week open, 2272 → 2944
+H = int(A[1]) if len(A) > 1 else 2930  # S4NF (D166): every week open, 2272 → 2944; SYS17 (D189): one-line heads, 2944 → 2930
 spec = importlib.util.spec_from_file_location('s4t_build', pathlib.Path(__file__).resolve().with_name('s4t_build.py'))
 T = importlib.util.module_from_spec(spec); spec.loader.exec_module(T)  # loads s4s_build (reads sys.argv[1], the repo root)
 s4s = T.s4

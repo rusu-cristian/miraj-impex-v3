@@ -113,7 +113,7 @@
 .s18-vp .s18-table th{width:auto} .s18-vp .s18-table th::after{content:none} /* FIN11G: beside the panel the columns stay content-sized (the §54 shares and minimums are the list alone's) */
 .s18-foot{justify-content:flex-end}
 .s18-age .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* "140" + "zile": 120 px, as the year */
-.s18-agehead > span{display:inline-block;white-space:normal;max-width:calc(var(--space-12) * 2)} /* D179: the head on two lines (VÂRSTĂ LA / POPULARE) */
+.s18-agehead > span{white-space:nowrap} /* SYS17 (D189): the head on one line (was two, D179); the table runs past 1280 under its sticky column (D179 note 2) */
 .s4s-wide > .ip-shell{width:var(--board-page-w)}
 .s4s-wide > .ip-dockpage > .ip-shell{width:calc(var(--board-page-w) - var(--panel-w))}
 .s4s-wide .ip-tablescroll{width:min-content;min-width:100%;max-width:none;overflow:visible}</style>
@@ -144,7 +144,7 @@
 <div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button><button type="button" class="ip-btn ip-btn--primary">Creează seria</button></div></div>
 </aside></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1848,"height":1024}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1880,"height":1024}}'>
 class Component extends DCLogic { renderVals() { return {}; } }
 </script>
 </body>

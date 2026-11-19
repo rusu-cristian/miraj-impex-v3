@@ -355,8 +355,8 @@ def cons_table(skel=False):
     t, _ = P.ptable('cs', CONS_CAP, [('Total fermă', '', cons_groups())], weeks=WEEKS, rowgroups=cons_rows(), skel=CONS_SKEL if skel else False)
     if not skel: assert t.count(s4.PART[0]) == 1; t = t.replace(s4.PART[0], s4.PART[1])   # "17–18.11 · 2 din 7 zile" (D165)
     assert t.count('aria-expanded="true"') == (0 if skel else len(WEEKS))   # D166: every week open
-    a = 'class="ip-table ip-table--rowheads ip-ptable"'; assert t.count(a) == 1   # D165: dense + wrapping figure heads so the table fits the 1440 page
-    return t.replace(a, 'class="ip-table ip-table--rowheads ip-table--wraphead ip-ptable ip-ptable--dense"')
+    a = 'class="ip-table ip-table--rowheads ip-ptable"'; assert t.count(a) == 1   # dense figure cells; SYS17 (D189): heads on one line, no wraphead
+    return t.replace(a, 'class="ip-table ip-table--rowheads ip-ptable ip-ptable--dense"')
 def sec_consum():
     span = f'{R.SAPT(WEEKS[-1])}–{WEEKS[0]}'
     foot = (f'<div class="s11-foot"><span class="ip-note">g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre ({F} după găini, {M} după cocoși). Toleranță <span class="ip-num">±10%</span>. '

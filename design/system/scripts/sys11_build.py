@@ -178,9 +178,8 @@ def row_html(p, kind, r, focus_cell=None):
     cls = ' class="is-refused"' if rs else ''
     return f'<tr{cls}>{"".join(cells)}<td class="ip-gimp__chk">{chk}</td></tr>{detail}'
 
-# the laying table has three guide columns: its figure heads may wrap between words (additions §32, FIN14), so Verificare keeps
-# the room for "fără date în ghid: mortalitatea, ouat %" on one line at 672 (one row height, FW04)
-WRAP = {'growth': '', 'laying': ' ip-table--wraphead'}
+# SYS17 (D189): every head on one line; the FIN14 wrapping heads of the laying table are retired
+WRAP = {'growth': '', 'laying': ''}
 def table(p, kind, rows, label, focus=None, busy=False, body=None, sum_=True):
     b = ' aria-busy="true"' if busy else ''
     d = f' aria-describedby="{p}-sum"' if sum_ else ''

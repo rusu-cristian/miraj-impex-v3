@@ -4,7 +4,7 @@ Each `sNN_build.py` writes one screen row of boards into `design/canvas/project/
 as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scripts; python3 -I sNN_build.py $R [--canvas]`.
 
 ## Rules (FIN02G, `canvas_rows.py`)
-- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2944/2466).
+- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2930/2466).
 - canvas.json is written only with `--canvas` (scripts with no canvas step accept and ignore it). Imported builds never write it.
 - Under `--canvas` every existing entry keeps its x and y (w/h/title refreshed in place). A row with no entry yet goes below the
   lowest row (row y + tallest h + 120). A run that adds a board lays the row out again (80 px gaps). Overlapping boards stop the save.
@@ -26,7 +26,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S4  | `s4s_build.py --canvas`, `s4_build.py --canvas` (Rezumat: h/title refreshed in place), `s4t_build.py --canvas` (the 4 tabs: h/title in place, S4N), `s4ns_build.py --canvas` (S4NS: 2 desktop + 3 phone state boards after the row; heights `s4ns_render.py --heights` → s4ns_heights.json) |
 | S7  | `s7_build.py --canvas`, `s7s_build.py --canvas` (h/title refreshed in place, RF02) |
 | S3  | `s3_build.py --canvas` (S3N: 4 desktops + the phone board after them; h from `s3_render.py --heights`, the phone's width from `s3_render.py --widths` → board_widths.json; when the row grows it re-stacks the rows below itself, as `canvas_rows.py relayout`) |
-| S11 | `s11_build.py --canvas` (h/title refreshed in place, RF03) |
+| S11 | `s11_build.py --canvas` (h/title refreshed in place, RF03; SYS17: the Consum table runs past 1440, boards wide through `s4s_build.write` + board_widths.json; heights `s11_render.py s11_heights.json <stems>` at the canvas width) |
 | S12 | `s12_build.py --canvas` (h/title refreshed in place, RF03) |
 | S13 | `s13_build.py --canvas` (h/title refreshed in place, RF03; rewrites the S7 boards byte-identical) |
 | S6  | `s6_build.py --canvas`, `s6s_build.py --canvas` (h/title refreshed in place, RF04) |
@@ -58,7 +58,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 ## Never run for a row
 - `sNN_render.py` / `s4s_render.py` (any flag) as part of a rebuild: it re-measures in Chrome (fallback fonts) and rewrites `sNN_heights.json`
   (s3/s4t/s8/s11/s12/s14 always, the rest with `--heights`/`--measure`). Run it only to re-measure, then rebuild with `--canvas`.
-- A heights file of another screen as 2nd argument, or a height other than 2944 (s4) / 2466 (s7).
+- A heights file of another screen as 2nd argument, or a height other than 2930 (s4) / 2466 (s7).
 - Scripts from older commits, and `s3_canvas.py` (removed: wrote canvas.json on every run; now `s3_build.py --canvas`).
 
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
@@ -105,5 +105,6 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   (or in any row/file named). Allowed: Telița codes, Seria 2025 weeks, script lines marked `literal-ok`, its ALLOW list. Each
   RF job adds its row to PORTED. SYS rows also scan their previews/READMEs as markup (RF14; SYS14 = PeriodTable).
 - `sex_scan.py $R [FILE …]` (SX01): lists every ♀/♂ on the boards and system previews not drawn as the §72 icon (outside the `ip-sex` hook, or a standalone hook holding other text); exit 1 if any.
+- `head_scan.py $R [--w 1280] [FILE|STEM …]` (SYS17, D189): renders every board with a table (canvas w × h; `--w 1280` for the desktops) and every system preview with one (1440) in headless Chrome and lists each `th` whose text runs over more than one line (a designed note / sub-line box counts as its own line; the phone CostBlock row heads, §11, excluded); exit 1 if any.
 - `canvas_rows.py relayout $R [--canvas]`: see Rules. `s4s_render.py [--heights] [--w 1280] [stem …]`: re-measures the S4
-  Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2944).
+  Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2930).

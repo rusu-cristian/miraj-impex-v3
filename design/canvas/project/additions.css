@@ -1150,8 +1150,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-gimp__t td.ip-gimp__bad{background:var(--fault-bg);color:var(--fault);outline:var(--ip-hair) solid var(--fault);outline-offset:calc(-1 * var(--ip-hair))}
 .ip-gimp__t td.ip-gimp__bad:focus-visible,.ip-gimp__t td.ip-gimp__bad.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
 /* Verificare: fault Lamp "refuzat" (the row keeps row-h; FW03, D150: the reason naming the value and the fix is the error
- * line, alert icon, in the detail row right under the refused row, section 69); or the guide line "fără date în ghid: …". */
-.ip-gimp__t td.ip-gimp__chk{white-space:normal;height:auto;padding-block:var(--space-1)}
+ * line, alert icon, in the detail row right under the refused row, section 69); or the guide line "fără date în ghid: …".
+ * SYS17 (D189, D150): one line, as the heads; a box narrower than the table scrolls sideways (the 672 preview's laying table). */
+.ip-gimp__t td.ip-gimp__chk{white-space:nowrap;height:auto;padding-block:var(--space-1)}
 .ip-gimp__why{display:block;font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink)}
 .ip-gimp__gap{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
 /* Loading line and skeleton rows (aria-busy on the table): six section 42 rows (tr.ip-table__skel, aria-hidden) under the
@@ -1283,9 +1284,9 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * FIN14: a totals row in tfoot names itself the same way (S12); the CostBlock table, the small-curve table (.ip-sparktable)
  * and the S3, S11 and S12 tables use these rules (their copies are gone).
  * FIN14B: one totals edge for every table; head icons (span.ip-table__ico); S3's framed table is the framed region below.
- * Opt-in .ip-table--wraphead (FIN14): figure-column caption heads (thead th.num) may wrap between words, so a table fits
- * its box before it scrolls (S3 at 1280, S4 Producție Pe hale at 1280); every head sits at the bottom of the head row.
- * Not for tables whose heads carry measured --ip-colmin struts (section 54): the strut holds the one-line width. */
+ * SYS17 (D189): every head cell stays on one line (group, leaf and section heads, their notes included): columns get as
+ * wide as their head needs and a table wider than its box scrolls under the sticky first column (on the canvas the board
+ * grows wider, D167 4). The FIN14 opt-in .ip-table--wraphead (figure heads wrapping between words) is retired. */
 .ip-table--rowheads :is(tbody,tfoot) th{font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;background:var(--raised);padding:var(--space-1) var(--space-3);height:var(--row-h);border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-table--rowheads tr.is-group > th{background:var(--sunken);font-weight:500}
 .ip-table--rowheads tr.is-total > th{font-weight:500;background:var(--panel);border-top:var(--ip-hair) solid var(--line-strong);border-bottom:0}
@@ -1298,8 +1299,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table--rowheads thead th[rowspan]{vertical-align:bottom}
 .ip-table--rowheads thead th[scope=colgroup]{text-align:right;border-bottom:var(--ip-hair) solid var(--rule)}
 .ip-tablescroll > .ip-table--rowheads thead tr + tr > th:first-child{position:static;border-right:0}
-.ip-table--wraphead thead th{vertical-align:bottom}
-.ip-table--wraphead thead th.num{white-space:normal}
+.ip-table thead th{white-space:nowrap} /* SYS17 (D189): heads never wrap, whatever a screen sets */
 /* Head icon (FIN14B, replaces the S3, S4 Fermă tabs, S11/S12 screen copies): span.ip-table__ico before a caption head's
  * words holds a 14px icon on the 14px caption line (top-aligned, space-1 before the words; bundle.css keeps its 2px on the
  * svg). With ip-rec ip-rec--<type> it is the record icon in its colour (DataTable: record-type columns); without, the
@@ -2165,8 +2165,8 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  *   (its day rows are hidden, so the week row is the block's last drawn row); the first week under the head keeps only
  *   the head's own bottom line (no double edge).
  * - Column groups (D167): the spine Data · Vârstă (zile) · SAPT, then "În viață" first, the record groups, "Vânzare" always last.
- * - Columns: every column but the Data column is as narrow as its content (width 1%), so the Data column takes the slack
- *   and nothing wraps; cells stay one line (one row height, D150).
+ * - Columns: every column but the Data column is as narrow as its content (width 1%: its one-line head or its widest
+ *   figure, SYS17/D189), so the Data column takes the slack and nothing wraps; heads and cells stay one line (D150, D189).
  * - Sticky: the first column sticks (section 36) and the head sticks to the region's top; the page caps the region at
  *   --ip-ptable-max-h (from its own sizes: viewport less its sticky header). Unset (boards, D42) the region is uncapped.
  * - Density ip-ptable--dense: figure cells one spacing step narrower (S3 at 1280); same row height.
@@ -2174,8 +2174,9 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  *   one column group): every body and foot row control-h-touch (48), the key 44; the week's dates sit on a second line
  *   under "SAPT 58" (span.ip-ptable__sub, small, ink-secondary: "10.11–16.11"; a partial week's line is its day count
  *   "2 din 7 zile", its dates are its open day rows), cells are tighter (figures space-1 | space-2, row heads and head
- *   cells space-2 at the side, head words wrap), so one tag's group fits
- *   358 px beside the sticky column with no sideways scroll (D171). A group's companion rate rides in its cells as a second
+ *   cells space-2 at the side; heads stay on one line, SYS17/D189: where a group's full words would not fit, the head shows
+ *   the system's short word with the full word in .ip-sr), so one tag's group fits
+ *   358 px beside the sticky column with no sideways scroll (D171; S14 "Incubabile · Cat." scrolls ~40 px, D188). A group's companion rate rides in its cells as a second
  *   small Mono line (span.ip-ptable__pct, ink-secondary: Păsări Mortalitate "10" / "5,7%" cumulat; group head note "cu % cumulat").
  * - Loading: the same table, tr.ip-table__skel rows (section 42), the week rows' bars in rule on panel; both copies
  *   declare the loaded column shares on their leaf heads (section 54, --ip-colw), so the columns do not move.
@@ -2240,7 +2241,6 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable--phone :is(tbody,tfoot) td.num{padding-inline:var(--space-1) var(--space-2)} /* D171: figure cells tighter than dense (figures right-aligned, so the left side only spaces columns), so one tag's group fits 358 beside the sticky column */
 .ip-ptable--phone :is(tbody,tfoot) th,.ip-ptable--phone tr.ip-ptable__wk > th{padding-right:var(--space-2)}
 .ip-ptable--phone thead th{padding-inline:var(--space-2)}
-.ip-ptable--phone thead th{white-space:normal} /* phone: head words wrap (Data · Vârstă (zile), group notes) so the head never sets a column wider than its figures */
 .ip-ptable__pct{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);color:var(--ink-secondary)} /* phone: a companion rate under the count in the same cell (Mortalitate "10" / "5,7%"), the row stays 48 */
 
 /* ---------- 72. Sex signs as icons (S4NG, D167, D170) ---------- */

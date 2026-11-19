@@ -116,7 +116,7 @@ body{margin:0}
 .s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */
 .s18-table tbody > tr:not(.is-group) > :is(th,td){height:calc(var(--control-h-touch) + var(--space-2))} /* FW04 (D150): every cycle row as tall as a row with its 48 px farm link (the "fără date" row was 32 beside 57) */
 .s18-age .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* "140" + "zile": 120 px, as the year */
-.s18-agehead > span{display:inline-block;white-space:normal;max-width:calc(var(--space-12) * 2)} /* D179: the head on two lines (VÂRSTĂ LA / POPULARE) */
+.s18-agehead > span{white-space:nowrap} /* SYS17 (D189): the head on one line (was two, D179); the table runs past 1280 under its sticky column (D179 note 2) */
 .s4ns-wide > .ip-screen{width:390px}
 .s4ns-wide .ip-tablescroll{width:min-content;min-width:100%;max-width:none;overflow:visible}</style>
 </helmet>

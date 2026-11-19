@@ -589,12 +589,11 @@ PW0, PW1 = R.week_dates(WK)[0], R.TODAY
 PART = (f'<span class="ip-num">{R.ddm(PW0)}–{R.ddm(PW1)}</span> · {(PW1 - PW0).days + 1} din 7 zile',      # SYS14 label
         f'<span class="ip-num">{PW0.day:02d}–{R.ddm(PW1)}</span> · {(PW1 - PW0).days + 1} din 7 zile')    # D165: "17–18.11"
 assert PW0.month == PW1.month
-FIT = {'rz': (True, True), 'hr': (False, True), 'gr': (True, True), 'pr': (True, True)}  # uid → (dense, wrap), measured at 1440 (S4N fix 1, S4NG)
+FIT = {'rz': (True, False), 'hr': (False, False), 'gr': (True, False), 'pr': (True, False)}  # uid → (dense, wrap), S4N fix 1, S4NG; SYS17 (D189): no wrapping heads, the board grows wider instead
 def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None, weighings=False, after='', dense=False, wrap=False, skel=None, colw=None):
-    """D165: a Fermă table fits the 1440 page; density and wrapping heads only where a table needs them to fit:
-    dense = ip-ptable--dense (SYS14: figure cells one spacing step narrower, same row height), wrap = FIN14 .ip-table--wraphead
-    (figure heads may wrap between words). Hale / Compartimente and every table at 1280 may scroll under the sticky column;
-    on the canvas the board grows wider instead (D167). open_weeks None = every week of the period open (D166, SYS14 default).
+    """dense = ip-ptable--dense (SYS14: figure cells one spacing step narrower, same row height). SYS17 (D189, supersedes D165's
+    "fits at 1440"): heads stay on one line, wrap is never set (the FIN14 .ip-table--wraphead is retired); a table wider than
+    its page scrolls under the sticky column, on the canvas the board grows wider instead (D167). open_weeks None = every week of the period open (D166, SYS14 default).
     skel = the loading state (§42/§71): the same table, every week open, bars of skel[i] ch per leaf (D132)."""
     cap = f'{tab} · {SER}' + (f' · {scope}' if scope else '')
     dense, wrap = FIT.get(uid, (dense, wrap))
@@ -634,9 +633,9 @@ RZ_NOTE = 'Morți = morții din registru, sacrificările incluse (Păsări le ar
 RZ_SKEL = [4, 4, 2, 1, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 3]   # ch1–ch4 exist (§42); the columns keep the loaded widths through RZ_COLW
 # §54 --ip-colw on the loading table's heads (Vârstă, SAPT, then the 15 leaves: În viață ♀ ♂, Morți ♀ ♂, ouă … % jos,
 # Hrană ♀ ♂, Vânzare ♀ ♂): the loaded columns' px (S4NG, measured) as shares of the 1158 px region at 1440, so every figure
-# column keeps its loaded width; the loaded table is 89 px wider than the page (D167), the skeleton fits it, the Data column
-# takes the difference
-RZ_COLW = [round(x / 1158 * 100, 2) for x in (71, 56, 64, 55, 44, 40, 71, 57, 55, 71, 66, 55, 48, 63, 55, 63, 55)]
+# column keeps its loaded width; the loaded table is wider than the page (D167; 173 px since SYS17's one-line heads, D189:
+# Vârstă (zile), % ouat, % incub., % jos re-measured), the skeleton fits it, the Data column takes the difference
+RZ_COLW = [round(x / 1158 * 100, 2) for x in (110, 56, 64, 55, 44, 40, 71, 72, 55, 71, 81, 55, 63, 63, 55, 63, 55)]
 def tb_rezumat(ng=False, skel=False):
     g = rezumat_groups(ng)
     if skel: assert not ng and len(RZ_SKEL) == sum(len(r['leaves']) for r in g)
