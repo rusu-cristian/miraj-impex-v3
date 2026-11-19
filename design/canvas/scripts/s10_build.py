@@ -100,10 +100,13 @@ def head(day):
 HEAD, HEAD14 = head(DT), head(D14)
 
 NSEC = len(R.HSECS)  # the farm's compartments (6), with or without birds
+assert NSEC == 6 and len(REAL.rows) == len(END) == 4 and len(HALL.rows) == 6  # D168 hint: "6 secțiuni · 4 cu păsări" (14.11: toate)
 def farm(sc, state='set', u='', touch=True):
     t = ' ip-input--touch' if touch else ''
     # saved: the counts are from before the sale (as the rows)
-    hint = f'<span class="ip-note" id="{u}farm-h">ouat · {num(NSEC)} secțiuni · în viață{" înainte" if state == "ro" else ""} {pair(*sc.before)}</span>'
+    # D168 (DATA04): the farm's compartments and how many hold birds before the sale (18.11: 6 · 4; 14.11 replay: all 6)
+    withb = 'toate' if len(sc.rows) == NSEC else num(len(sc.rows))
+    hint = f'<span class="ip-note" id="{u}farm-h">ouat · {num(NSEC)} secțiuni · {withb} cu păsări · în viață{" înainte" if state == "ro" else ""} {pair(*sc.before)}</span>'
     if state == 'ro':
         return f'<div class="ip-field"><label class="ip-label" for="{u}farm">Fermă</label><span class="ip-input{t} is-readonly"><input id="{u}farm" type="text" value="Hîrbovăț" readonly aria-describedby="{u}farm-h"/></span>{hint}</div>'
     # FIN10: options carry state (alive ♀ · ♂, Telița disabled "goală"), so Fermă is the section 53 Select: phone opens

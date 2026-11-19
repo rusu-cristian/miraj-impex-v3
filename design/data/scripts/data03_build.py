@@ -823,10 +823,28 @@ for ds in log_days:
                        scope='Hîrbovăț · ' + ', '.join(halls_w), summary=f"Ouă · {f['eggs']} total · {f['inc']} incubabile · {f['jos']} jos"))
     events.append(dict(at=f'{ds}T{t[2]}', user='Dr. Ceban', role='vet', record='feed', action='create', scope='Hîrbovăț · alocare zilnică',
                        summary=f"Hrană · ♀ {f['kgF']} kg · ♂ {f['kgM']} kg"))
+# DATA04 (D168): one sale form = one record (one farm, one time). A day's sales in one hall are one form (18.11 H6.1 + H6.2);
+# a day with sales in two halls has two forms in hall order (14.11: H6.2, then H7.1 + H7.2 — S10 parțială's "before"
+# ♀ 23 625 · ♂ 1 924 already lacks H6.2's sale). Quantities real (D155); the time (illustrative) = the latest old per-row
+# slot of its rows (14.11 H7 13:34 after H6.2 12:17; 18.11 13:16), so times rise within a day.
+def _slot(i): return f"{11 + i % 3:02d}:{(i * 17) % 60:02d}"
+sale_forms = []
 for i_, (ds, ad, sp, sec, sF, sM) in enumerate(sales_rows):
-    events.append(dict(at=f"{ds}T{11 + i_ % 3:02d}:{(i_ * 17) % 60:02d}", user='Ion Rusu', role='manager', record='sale', action='create',
-                       scope=f'Hîrbovăț · {sec}', summary=f"Vânzare · {sec}" + (f" · ♀ {sF}" if sF else '') + (f" · ♂ {sM}" if sM else ''),
-                       real_figures=True))
+    if sale_forms and sale_forms[-1]['date'] == ds and sale_forms[-1]['hall'] == HALL_OF[sec]:
+        fm_ = sale_forms[-1]
+    else:
+        fm_ = dict(date=ds, hall=HALL_OF[sec], rows=[]); sale_forms.append(fm_)
+    fm_['rows'].append(dict(section=sec, F=sF, M=sM)); fm_['time'] = max(fm_.get('time', ''), _slot(i_))
+for d_ in sorted({f_['date'] for f_ in sale_forms}):
+    ts = [f_['time'] for f_ in sale_forms if f_['date'] == d_]
+    assert ts == sorted(ts) and len(set(ts)) == len(ts), (d_, ts)   # forms of one day: hall order = time order
+assert [[r['section'] for r in f_['rows']] for f_ in sale_forms if f_['date'] in ('2026-11-14', '2026-11-18')] == [['H6.2'], ['H7.1', 'H7.2'], ['H6.1', 'H6.2']]
+for f_ in sale_forms:
+    secs_ = [r['section'] for r in f_['rows']]; tF = sum(r['F'] for r in f_['rows']); tM = sum(r['M'] for r in f_['rows'])
+    events.append(dict(at=f"{f_['date']}T{f_['time']}", user='Ion Rusu', role='manager', record='sale', action='create',
+                       scope='Hîrbovăț · ' + ', '.join(secs_), summary='Vânzare · ' + ', '.join(secs_) + (f" · ♀ {tF}" if tF else '') + (f" · ♂ {tM}" if tM else ''),
+                       real_figures=True, sections=f_['rows'], F=tF, M=tM))
+log('sale records (D168)', len(sale_forms), '·', '; '.join(f"{f_['date'][5:]} {f_['time']} " + '+'.join(r['section'] for r in f_['rows']) for f_ in sale_forms))
 dl = [r for r in hir_rows if r['date'] >= '2026-11-12']
 for r in dl:
     events.append(dict(at=f"{r['date']}T10:30", user='Ion Rusu', role='manager', record='feed_delivery', action='create',
@@ -835,7 +853,8 @@ for m in internal_moves:
     events.append(dict(at=f"{m['date']}T09:20", user='Ion Rusu', role='manager', record='transfer', action='create',
                        scope=f"Hîrbovăț · {m['from']} → {m['to']}", summary=f"Transfer · {m['qty']} {'găini' if m['sex'] == 'F' else 'cocoși'} · {m['from']} → {m['to']}"))
 events.sort(key=lambda e: e['at'])
-sales_ev = [dict(date=r[0], sapt=r[2], section=r[3], F=r[4], M=r[5], real=True, created_by='Ion Rusu', created_at=f"{r[0]}T{11 + i % 3:02d}:{(i * 17) % 60:02d}") for i, r in enumerate(sales_rows)]
+_form_at = {(f_['date'], r['section']): f"{f_['date']}T{f_['time']}" for f_ in sale_forms for r in f_['rows']}
+sales_ev = [dict(date=r[0], sapt=r[2], section=r[3], F=r[4], M=r[5], real=True, created_by='Ion Rusu', created_at=_form_at[(r[0], r[3])]) for r in sales_rows]  # created_at = its record's `at` (D168)
 weighings = [dict(date='2026-11-10', sapt=sapt('2026-11-10'), section='H5.1', sex='F', avg_weight_g=3960, cv_pct=8.1, uniformity_pct=79.0,
                   sample_size=60, guide_weight_g=None, guide_state='fără date în ghid', created_by='Dr. Ceban', created_at='2026-11-10T09:15'),
              dict(date='2026-11-10', sapt=sapt('2026-11-10'), section='H5.1', sex='M', avg_weight_g=4870, cv_pct=9.4, uniformity_pct=74.0,
@@ -843,7 +862,7 @@ weighings = [dict(date='2026-11-10', sapt=sapt('2026-11-10'), section='H5.1', se
 dump('illustrative-events-hirbovat.json', dict(
     meta=dict(generated_by='DATA03', script=GEN['script'], illustrative=True,
               label='ILLUSTRATIVE — records the workbook does not hold (D152): culls with reasons, a sexing error, event authors/times, weighings. Not workbook data.',
-              consistency='Every cull / sexing error is carved out of the real deaths of that compartment-day (carved_from_mortality_of_day); daily totals and alive counts stay the real ones. Event-log figures are the real daily totals of hirbovat-daily.json. sales = the real Vânzare quantities (D155, hirbovat-daily sales); only their author/time are illustrative.',
+              consistency='Every cull / sexing error is carved out of the real deaths of that compartment-day (carved_from_mortality_of_day); daily totals and alive counts stay the real ones. Event-log figures are the real daily totals of hirbovat-daily.json. sales = the real Vânzare quantities (D155, hirbovat-daily sales) per compartment; only their author/time are illustrative. One sale form = one event_log record (D168, DATA04): record=sale lists its compartments in `sections` [{section, F, M}] with totals F/M (= Σ its sales rows); the compartments of one hall sold on one day are one form, created_at of each sales row = its record\'s at; 14.11 has two forms (H6.2, then H7.1 + H7.2).',
               not_included='No transfer between Hîrbovăț halls: the sheet has none (not invented); the one real move between compartments (22.10.2026 H7.2 → H7.1 ♂ 19) is in transfers-seria2026.json, its event_log entry below gives it an illustrative author/time. Sales 12–18.11 are real quantities (D155), listed under sales with illustrative author/time.',
               names='Dr. Ceban (vet), Ion Rusu (manager) — illustrative, as before (D27 sample).',
               replaces='sample-hirbovat-2026.json (superseded; kept for reference)'),
