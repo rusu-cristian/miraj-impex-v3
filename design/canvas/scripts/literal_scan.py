@@ -88,8 +88,11 @@ ROWS = [
     ('S22', ['S22-'], ['s22_build.py', 's22s_build.py', 's22_render.py']),
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
+    # RF11: system previews/READMEs a row's job ports (no boards); paths from this folder
+    ('SYS10', [], ['../../system/scripts/sys10_build.py', '../../system/components/SectionTree/README.md',
+                   '../../system/components/SectionTree/preview.html']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
@@ -118,7 +121,7 @@ def row_files(root, row):
     _, prefixes, scripts = row
     proj = root / 'design/canvas/project'
     boards = sorted(p for p in proj.glob('*.dc.html') if any(p.name.startswith(x) for x in prefixes))
-    return boards + [HERE / s for s in scripts if (HERE / s).exists()]
+    return boards + [(HERE / s).resolve() for s in scripts if (HERE / s).exists()]
 
 
 def report(root, files, show=True):

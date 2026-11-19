@@ -8,8 +8,9 @@ Content (realdata: cycles, placement, farms-sections, counts-latest, transfers; 
   (SAPT 19–65 from the inferred placement 01.11.2024, D151), no flock count, no Telița data. Each series row names its SAPT
   span (open: + today's age, spec B3 round 2); each cycle row its SAPT span in the Săpt. column.
 - Serie nouă (B3 flow): Nume, An, Ferma de creștere (growth farms only: Telița), Data populării (DateField, SAPT 1 of
-  the new cycle at the default age 0), Populare pe secțiuni (SexCountRow `ip-sexrows--add`, SYS07, as its preview),
-  EffectPreview (the new cycle, CycleTrack mark vocabulary), Creează seria. (The "Vârstă la populare" field is S18N.)
+  the new cycle at the default age 0), Vârstă la populare (zile) (S18N), Populare pe secțiuni (SexCountRow `ip-sexrows--add`, SYS07, as its preview),
+  EffectPreview (the new cycle, CycleTrack mark vocabulary), Creează seria. S18N: the age field = CountInput + suffix
+  "zile", 0–140, spec hint + live line "La populare: vârstă 0 zile · SAPT 1."; its SAPT also drives the head and EffectPreview.
 - Refusal (B3 rule) "Telița are încă … păsări din Seria 2026": Telița is empty in counts-latest (closed 28.02.2026), so
   the board is a D39 state example, labelled in its title: as if the move had not been entered, Telița would hold the
   birds that arrived at Hîrbovăț (♀ 26 883 · ♂ 3 024 = 29 907, D28, RF00). Spec sample "Seria 2027 · 2027".
@@ -95,8 +96,15 @@ def ser_span(sid, day=None):
     a = min(c['sapt_start'] for c in cs) if SER[sid].get('placement_inferred') else R.sapt(SER[sid]['placement_date'], sid)
     if day is not None: return sapt_span(a, R.sapt(day, sid))
     return sapt_span(a, WK if any(c['end_date'] is None for c in cs) else max(c['sapt_end'] for c in cs))
-AGE0 = SER['seria-2026']['age_at_placement_days']       # default 0 (D151: day-old chicks); the field itself is S18N
-NEW_WK = AGE0 // 7 + 1                                   # a new series placed at age 0 starts in SAPT 1
+AGE0 = SER['seria-2026']['age_at_placement_days']       # default 0 (D151: day-old chicks); S18N: the "Vârstă la populare (zile)" field
+AGE_MAX = 140                                            # spec B3 round 2 (KIT02): 0–140 whole days (the age Seria 2026 left the growth farm)
+def age_wk(age): return age // 7 + 1                     # D151: the placement day's week (13 days → SAPT 2, 14 → SAPT 3)
+assert (age_wk(0), age_wk(13), age_wk(14), age_wk(21)) == (1, 2, 3, 4)
+NEW_WK = age_wk(AGE0)                                    # a new series placed at age 0 starts in SAPT 1
+def zile(k):
+    """'0 zile', '14 zile', '21 de zile', '160 de zile' (Romanian: 'de' after 20–99 in the last two digits, and 100, 200…)."""
+    r = k % 100
+    return f'{num(k)} {"de " if r >= 20 or (k >= 100 and r == 0) else ""}zile'
 # D39 refusal: Telița as if the move had not been entered = the birds counted at arrival (D28, RF00)
 R39 = {'F': ARR['F'], 'M': ARR['M']}; R39ALL = R39['F'] + R39['M']
 REPLAY = R.PLACEMENT                                    # phone replay of the real creation: "today" = 07.10.2025
@@ -198,12 +206,12 @@ def track(phone=False):
 # ================================================================= DataTable: series (group rows) and their cycles
 def ico(k):
     return f'<span class="ip-rec ip-rec--{k} s4-ico">{icon(k, 14)}</span>'
-def crow(fid, cyc=None, start='', st=None, dedus=False, week=None):
+def crow(fid, cyc=None, start='', st=None, dedus=False, week=None, agecol=True):
     """one cycle row; Săpt. = the cycle's SAPT span (D151, spec B3 round 2), an open cycle's up to `week` (default today's)."""
     f = FARM[fid]
     if cyc is None:  # a farm the series has no cycle at
         return (f'<tr><th scope="row" class="ip-table__child">{f["name"]}</th>'
-                f'<td colspan="6" class="ip-muted">– fără date pentru Seria 2025 la {f["name"]} (registrul începe cu Seria 2026)</td></tr>')
+                f'<td colspan="{7 if agecol else 6}" class="ip-muted">– fără date pentru Seria 2025 la {f["name"]} (registrul începe cu Seria 2026)</td></tr>')
     href = f'#/ferme/{fid}?ciclu={cyc["id"]}'
     end = dd(cyc['end_date']) if cyc['end_date'] else None
     # FIN09/FY02: "start–end" unspaced. FW04 (D150): every cell on one line, so "· început dedus" moves from after the range
@@ -216,7 +224,7 @@ def crow(fid, cyc=None, start='', st=None, dedus=False, week=None):
     wk = num(cyc_span(cyc, week))
     stt = lamp('off', 'închis') if end else lamp('ok', 'deschis')
     return (f'<tr><th scope="row" class="ip-table__child"><a class="s18-rlink" href="{href}" aria-label="{f["name"]}, ciclul {"din " + dd(cyc["start_date"]) if not end else dd(cyc["start_date"]) + "–" + end}">{f["name"]}</a></th>'
-            f'<td>{TYPE_RO[f["type"]]}</td><td>{GUIDE[cyc["guide_id"]]}</td><td>{per}</td><td class="num">{wk}</td><td>{start}</td><td>{stt}</td></tr>')
+            f'<td>{TYPE_RO[f["type"]]}</td><td>{GUIDE[cyc["guide_id"]]}</td><td>{per}</td><td class="num">{wk}</td>{'<td class="num s18-agecell"></td>' if agecol else ''}<td>{start}</td><td>{stt}</td></tr>')   # S18N (D179): the age column is the series row's
 START_T = f'<span class="s18-start">{ico("placement")}<span>populare</span>{pair(PLC["F"], PLC["M"])}</span>'
 START_H = f'<span class="s18-start">{ico("transfer")}<span>transfer de la Telița</span>{pair(ARR["F"], ARR["M"])}</span>'
 START_P = f'<span class="ip-muted">– {s4.NOFLOCK}</span>'
@@ -234,20 +242,34 @@ def gnote(sid, day=None, lead=None):
         return f'{y} · {lead} · {num(ser_span(sid, d))} · azi {num(R.age_days(d, sid))} zile'
     last = max(c['end_date'] for c in (cT, cH, cP) if c['series_id'] == sid)
     return f'{y} · {num(ser_span(sid))} · doar citire · ultimul ciclu încheiat {num(dd(last))}'
+def agecell(sid):
+    """S18N (D179, spec B3 round 2): the series' age at placement in the "Vârstă la populare" column, on its series row
+    ("0 zile"; an inferred placement adds "· dedus")."""
+    s = SER[sid]; d = '<span class="ip-note"> · dedus</span>' if s.get('placement_inferred') else ''
+    return f'<td class="num s18-agecell">{zile(s["age_at_placement_days"])}{d}</td>'
+def agefold(sid):
+    """the same value for the series note (phones; desktop when the region is narrower than the table, D179 note)."""
+    s = SER[sid]
+    return f' · vârstă la populare {zile(s["age_at_placement_days"])}{" · dedus" if s.get("placement_inferred") else ""}'
 def grow(sid, touch=False, keys=True):  # keys=False (phone): the series keys sit under the table, outside the scroll area
     s = SER[sid]
     if s['status'] == 'active':
         st, note = lamp('ok', 'deschisă'), gnote(sid)
     else:
         st, note = lamp('off', 'închisă'), gnote(sid)
-    head = (f'<tr class="is-group"><th scope="rowgroup" colspan="{5 if keys else 7}" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{s["name"]}</span>{st}'
-            f'<span class="ip-note">{note}</span></span></th>')
-    return head + (f'<td colspan="2" class="s18-gact"><span class="s18-acts">{acts(sid, touch)}</span></td></tr>' if keys else '</tr>')
+    if not keys:   # phone (D179): no column room, so the age folds into the series row's note, which spans the row as before
+        return (f'<tr class="is-group"><th scope="rowgroup" colspan="7" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{s["name"]}</span>{st}'
+                f'<span class="ip-note">{note}{agefold(sid)}</span></span></th></tr>')
+    head = (f'<tr class="is-group"><th scope="rowgroup" colspan="5" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{s["name"]}</span>{st}'
+            f'<span class="ip-note">{note}</span></span></th>{agecell(sid)}')
+    return head + f'<td colspan="2" class="s18-gact"><span class="s18-acts">{acts(sid, touch)}</span></td></tr>'
 COLS = ('<thead><tr><th scope="col">Serie · fermă</th><th scope="col">Tip</th><th scope="col">Ghid</th><th scope="col">Ciclu</th>'
-        '<th scope="col" class="num">Săpt.</th><th scope="col">Început</th><th scope="col">Stare</th></tr></thead>')
+        '<th scope="col" class="num">Săpt.</th><th scope="col" class="num s18-agehead"><span>Vârstă la populare</span></th><th scope="col">Început</th><th scope="col">Stare</th></tr></thead>')
+COLS_P = COLS.replace('<th scope="col" class="num s18-agehead"><span>Vârstă la populare</span></th>', '')   # phone: the age is in the series note (D179)
+assert COLS_P != COLS
 # FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
 # None = the column that takes the rest
-DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 16.5, 7.8, None, 8.1], [87.36, 52.58, 111.8, 164.38, 78.28, 273.69, 58.56])  # + loaded min-content px (fix 1; FW04: one-line cells, Ciclu without "început dedus"; RF10: Săpt. = the cycle's SAPT span, re-measured)   # desktop (the phone tables scroll at content width)
+DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 16.5, 7.8, 9.0, None, 8.1], [87.36, 52.58, 111.8, 164.38, 78.28, 105.0, 273.69, 58.56])  # + loaded min-content px (fix 1; FW04: one-line cells, Ciclu without "început dedus"; RF10: Săpt. = the cycle's SAPT span, re-measured)   # desktop (the phone tables scroll at content width)
 def acts(sid, touch):
     t = ' ip-btn--touch' if touch else ''
     a = f'<a class="ip-btn ip-btn--ghost{t}" href="#/serii/{sid}">Deschide seria<span class="ip-sr"> {SER[sid]["name"]}</span></a>'
@@ -262,11 +284,11 @@ def ptable():
     """Phone (fix 1): one framed scroll table per series (group row + its cycles); the series keys sit under it, outside the
     scroll area, with Închide seria's reason right under its key."""
     out = ''
-    for sid, rows in (('seria-2026', crow('telita', cT, START_T) + crow('hirbovat', cH, START_H)),
-                      ('seria-2025', crow('hirbovat', cP, START_P, dedus=True) + crow('telita'))):
+    for sid, rows in (('seria-2026', crow('telita', cT, START_T, agecol=False) + crow('hirbovat', cH, START_H, agecol=False)),
+                      ('seria-2025', crow('hirbovat', cP, START_P, dedus=True, agecol=False) + crow('telita', agecol=False))):
         g = grow(sid, keys=False)
         out += (f'<div class="s18-pser"><div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="g-{sid}">'
-                f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">{SER[sid]["name"]}: ciclurile pe ferme</caption>{COLS}<tbody>{g}{rows}</tbody></table></div>'
+                f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">{SER[sid]["name"]}: ciclurile pe ferme</caption>{COLS_P}<tbody>{g}{rows}</tbody></table></div>'
                 f'<div class="s18-pacts">{acts(sid, True)}</div>{WHY26 if sid == "seria-2026" else ""}</div>')
     return (f'<section class="ip-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
             f'<span class="ip-note">{num(2)} serii · cele mai noi întâi</span></div>{out}<div class="s18-notes">{RO_NOTE}</div></section>')
@@ -346,9 +368,41 @@ def date_field(day, touch=True):
     return (f'<div class="ip-field"><span class="ip-label" id="d-lbl">Data populării</span><div class="s7-date">'
             f'<span class="ip-seg{t}" role="radiogroup" aria-labelledby="d-lbl"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span>'
             f'<span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span>'
-            f'<span class="ip-input{ti} ip-num">{icon("cal", 16)}<input id="d-val" type="text" inputmode="numeric" value="{dd(day)}" aria-labelledby="d-lbl" aria-describedby="d-wk"/></span></div>'
-            f'<span class="ip-note ip-num" id="d-wk">SAPT {NEW_WK} · ciclu nou din {dd(day)}</span></div>')
+            f'<span class="ip-input{ti} ip-num">{icon("cal", 16)}<input id="d-val" type="text" inputmode="numeric" value="{dd(day)}" aria-labelledby="d-lbl"/></span></div></div>')
+    # S18N: the date's own "SAPT 1 · ciclu nou din …" note is gone: the age field right under it says the SAPT from both
 assert 'class="s7-date"' in B7.DATE and 'ip-seg ip-seg--touch' in B7.DATE   # the S7 DateField markup, relabelled
+AGE_HINT = '0 pentru pui de o zi. Săptămâna păsărilor (SAPT) se numără de la această vârstă.'   # spec B3 round 2, word for word
+def age_err_txt(v):
+    """spec B3 round 2 errors (on blur and on save; each a refusal): emptied, out of range, not a whole number."""
+    if v == '': return 'Scrie vârsta la populare în zile, 0 pentru pui de o zi.'
+    if not v.isdigit(): return f'Scrie un număr întreg de zile, de exemplu {num(0)}.'
+    return f'Vârsta la populare e {zile(int(v))}. Scrie o valoare între {num(0)} și {num(AGE_MAX)}.'
+assert re.sub('<[^>]+>', '', age_err_txt('160')) == 'Vârsta la populare e 160 de zile. Scrie o valoare între 0 și 140.'   # the spec's example
+def age_ok(v): return v.isdigit() and int(v) <= AGE_MAX
+def age_field(v=str(AGE0), touch=True, focus=False):
+    """S18N · Vârstă la populare (zile) (spec B3 round 2, D151): a CountInput (whole days; desktop md, phone large, as the
+    placement rows; no sex bar) with the unit suffix "zile", 0 by default; the spec hint, then the live line from the date
+    and the age (Mono figures, polite live region): "La populare: vârstă 0 zile · SAPT 1.". Out of range / empty / not
+    whole: fault border + the spec's error line in place of the live line (the hint stays), aria-invalid + errormessage."""
+    md = '' if touch else ' ip-count--md'
+    ok = age_ok(v); st = (' is-focus' if focus else '') + ('' if ok else ' is-error')
+    af = ' autofocus="autofocus"' if focus else ''
+    # review (b): ONE persistent polite live region right under the field; its content switches between the live line and
+    # the error, so a change either way is announced (the hint stays under it)
+    if ok:
+        k = int(v)
+        msg = f'<span class="ip-hint" id="sn-age-l">La populare: vârstă {zile(k)} · {num(f"SAPT {age_wk(k)}")}.</span>'
+        aria = ' aria-describedby="sn-age-l sn-age-h"'
+    else:
+        msg = f'<p class="ip-err ip-fieldmsg" id="sn-age-e">{icon("alert", 14)}<span>{age_err_txt(v)}</span></p>'
+        aria = ' aria-invalid="true" aria-errormessage="sn-age-e" aria-describedby="sn-age-e sn-age-h"'
+    return (f'<div class="ip-field s18-age"><label class="ip-label" for="sn-age">Vârstă la populare (zile)</label>'
+            f'<span class="ip-input ip-count{md}{st}"><input id="sn-age" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="{v}"{aria}{af}/>'
+            f'<span class="suffix">zile</span></span><div class="s18-agelive" aria-live="polite" aria-atomic="true">{msg}</div>'
+            f'<span class="ip-hint" id="sn-age-h">{AGE_HINT}</span></div>')
+def ctx_line(day, v=str(AGE0)):
+    """the panel/sheet head's Mono context line: farm · date · the new series' SAPT (from the age; none while the age is invalid)."""
+    return f'TELIȚA · {dd(day)}' + (f' · SAPT {age_wk(int(v))}' if age_ok(v) else '')
 
 CHEV16 = icon('chev', 16)
 def prow(u, i, code, f=None, m=None, touch=True):
@@ -388,7 +442,7 @@ def cmark(kind, cls, text):  # SYS06 cycle mark (as s10_build): record bar + min
     return f'<span class="ip-cmark ip-cmark--{kind}{(" " + cls) if cls else ""}"><span class="ip-cmark__g" aria-hidden="true">{bar}<i class="ip-cmark__blk"></i></span>{text}</span>'
 REC = f'<span class="ip-rec ip-rec--placement s13-rec">{icon("placement", 16)}</span>'
 ARROW = '<span class="s9-to" aria-hidden="true">→</span><span class="ip-sr">după populare</span>'
-def effect(state, day, name='', year='', rows=()):
+def effect(state, day, name='', year='', rows=(), wk=NEW_WK):   # wk None: no valid age, no SAPT (as the head)
     if state == 'empty':
         return (f'<div class="ip-effect s13-effect" id="fx" role="status">{REC}<div class="s9-fxbody"><span class="ip-cap">Efect</span>'
                 f'<span>Alege secțiunile Teliței și scrie câte găini și cocoși intră în fiecare. Aici vezi seria nouă și ciclul nou de la Telița.</span></div></div>')
@@ -406,26 +460,26 @@ def effect(state, day, name='', year='', rows=()):
             f'<span class="s9-fxline"><b class="s9-strong">{name} · an {year}</b><span>serie nouă, deschisă</span></span>'
             f'<span class="s9-fxline"><b class="s9-strong">Telița · {dd(day)}</b><span class="s9-fxval">{pair(0, 0)}{ARROW}{pair(sf, sm)}</span></span>'
             f'<span class="s9-fxsub">{num(len(rows))} secțiuni · {codes}</span>'
-            f'<span class="s9-fxcyc">{cmark("start", "place", f"Ciclu nou la Telița, sapt. {NEW_WK}")}</span>'
+            f'<span class="s9-fxcyc">{cmark("start", "place", "Ciclu nou la Telița" + (f", sapt. {wk}" if wk else ""))}</span>'
             f'<span class="s9-fxsub">ghid {GUIDE["g-growth"]}</span></div></div>')   # S18P: the guide line (it names the type); mark wording as C3/S9
 
-def form(day, touch, name='', year='', rows=((None, None, None),), state='empty', focus=False):
+def form(day, touch, name='', year='', rows=((None, None, None),), state='empty', focus=False, age=str(AGE0), age_focus=False):
     u = 'p' if touch else 'd'
     parts = [tfield('sn-name', 'Nume', name, 'Apare în selectorul de serii, pe pagini și în rapoarte.', touch, focus=focus),
              tfield('sn-year', 'An', year, '', touch, mono=True, numeric=True, cls=' s18-year'),
-             farm_field(day, touch, refused=state == 'refuz'), date_field(day, touch)]
+             farm_field(day, touch, refused=state == 'refuz'), date_field(day, touch), age_field(age, touch, age_focus)]   # S18N: the age after the date (spec B3 flow 2)
     if state == 'refuz':
         parts.append(effect('refuz', day))
     parts.append(prows(u, day, list(rows), touch))
     if state != 'refuz':
-        parts.append(effect(state, day, name, year, [r for r in rows if r[0]]))
+        parts.append(effect(state, day, name, year, [r for r in rows if r[0]], age_wk(int(age)) if age_ok(age) else None))
     return parts
 CREATE = 'Creează seria'
-def sheet(body, day, key):
-    return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">{p_head(f"TELIȚA · {dd(day)} · SAPT {NEW_WK}", True)}'
+def sheet(body, day, key, age=str(AGE0)):
+    return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">{p_head(ctx_line(day, age), True)}'
             f'<div class="ip-sidepanel__body ip-sidepanel__body--form">{"".join(body)}</div><div class="ip-sidepanel__foot">{key}</div></aside>')
-def panel(body, day, key):
-    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="sn" aria-labelledby="sn-t">\n{p_head(f"TELIȚA · {dd(day)} · SAPT {NEW_WK}", False)}\n'
+def panel(body, day, key, age=str(AGE0)):
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="sn" aria-labelledby="sn-t">\n{p_head(ctx_line(day, age), False)}\n'
             f'<div class="ip-sidepanel__body ip-sidepanel__body--form">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 
@@ -476,6 +530,11 @@ X_CSS = '\n'.join(l for l in X.CSS.split('\n') if not l.startswith('.s11-select{
 assert X_CSS != X.CSS
 CSS_DESK = X_CSS + SC.SIDE + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
 .s18-foot{justify-content:flex-end}'''
+# S18N: the age field's width; kept out of CSS18/CSS_DESK/CSS_PL, which S19–S22 reuse (their boards stay byte-identical)
+CSS_AGE = '''
+.s18-age .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* "140" + "zile": 120 px, as the year */
+.s18-agehead > span{display:inline-block;white-space:normal;max-width:calc(var(--space-12) * 2)} /* D179: the head on two lines (VÂRSTĂ LA / POPULARE) */'''
+CSS_D18 = CSS_DESK + CSS_AGE   # the S18 desktops (s18s too)
 Z_CSS = '\n'.join(l for l in Z.CSS_PHONE.split('\n') if '.s11-select' not in l)   # FIN10 fix 1: no native select on S18–S22 phones
 CSS_PL = Z_CSS + CSS18 + '''
 .s18-pkey{display:flex;flex-direction:column}
@@ -486,8 +545,9 @@ CSS_PL = Z_CSS + CSS18 + '''
 .s18-ways .ip-link{min-height:var(--control-h-touch)}
 .s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */
 .s18-table tbody > tr:not(.is-group) > :is(th,td){height:calc(var(--control-h-touch) + var(--space-2))} /* FW04 (D150): every cycle row as tall as a row with its 48 px farm link (the "fără date" row was 32 beside 57) */'''
+CSS_PL18 = CSS_PL + CSS_AGE    # S18N: the S18 phone list (CSS_PL itself is S19–S22's too)
 SHEET = ''  # FIN15B: the sheet's scrolling form body is additions.css §62 ip-sidepanel__body--form
-CSS_SH = ('body{margin:0}\n.s18-screen{height:100%;display:flex}' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
+CSS_SH = ('body{margin:0}\n.s18-screen{height:100%;display:flex}' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + CSS_AGE + '''
 .s18-ways .ip-link{min-height:var(--control-h-touch)} /* touch: each way out is a 48 px target */''')
 
 # ================================================================= write
@@ -533,15 +593,16 @@ STEM, T = 'S18-serii', 'S18 · Serii'
 out = []
 # 1 · desktop list
 h = HEIGHTS.get(STEM, 1024)
-out.append(write(STEM, T, f'<div class="ip-root s4s-rel" style="padding:0; min-height:{h}px">{page()}</div>', CSS_DESK, 1440, h))
+out.append(write(STEM, T, f'<div class="ip-root s4s-rel" style="padding:0; min-height:{h}px">{page()}</div>', CSS_D18, 1440, h))
 # 2 · desktop, the SidePanel open beside the list: nothing typed, Telița + Azi preset, focus on Nume (fields validate on save)
 DKEY = f'<button type="button" class="ip-btn ip-btn--primary">{CREATE}</button>'
 PAN = panel(form(TODAY, False, focus=True), TODAY, DKEY)
 VP = f'<div class="ip-dockpage s18-vp">{page(pressed=True)}</div>'
-out.append(write(STEM + '--serie-noua', f'{T} · Serie nouă · desktop', f'<div class="ip-root s4s-rel" style="padding:0; min-height:{SC.SIDE_H}px">{VP}{PAN}</div>', CSS_DESK, 1440, SC.SIDE_H))
+h = HEIGHTS.get(STEM + '--serie-noua', SC.SIDE_H)   # S18N: natural height (the panel body never scrolls on the board)
+out.append(write(STEM + '--serie-noua', f'{T} · Serie nouă · desktop', f'<div class="ip-root s4s-rel" style="padding:0; min-height:{h}px">{VP}{PAN}</div>', CSS_D18, 1440, h))
 # 3 · phone list
 h = HEIGHTS.get(STEM + '--telefon', 844)
-out.append(write(STEM + '--telefon', f'{T} · telefon', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL, 390, h))
+out.append(write(STEM + '--telefon', f'{T} · telefon', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL18, 390, h))
 # 4 · phone sheet, replay 07.10.2025: the real creation of Seria 2026
 ROWS = [(c, q if sx == 'F' else None, q if sx == 'M' else None) for c, sx, q in PROWS]
 assert sum(r[1] or 0 for r in ROWS) == PLC['F'] and sum(r[2] or 0 for r in ROWS) == PLC['M']

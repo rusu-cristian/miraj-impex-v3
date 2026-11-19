@@ -25,6 +25,10 @@ Boards
   --telefon-alege-sectiunea     replay 07.10.2025: the two Telița ♀ placement rows filled, a third row's SectionSelect open
                                 as the §33 sheet: those two "în listă" disabled, the other Telița sections "goală" enabled,
                                 the first of them active (over the inert form)
+  S18N (spec B3 round 2, D151; every form board now has "Vârstă la populare (zile)", default 0 → SAPT 1):
+  --desktop-varsta              today, D39 (Seria 2027 · 2027, as --desktop-erori): 14 typed → "vârstă 14 zile · SAPT 3",
+                                head and EffectPreview SAPT 3, focus on the field (after --desktop-erori)
+  --telefon-varsta-eroare       today, D39: 200 typed, the spec error line, Creează seria disabled (last phone)
 No new system class: the skeletons are additions.css §54 `ip-trackskel` (full, 120 as the drawn track; FIN11G) and §42 `tr.ip-table__skel` under the §54 column shares (FIN11; were `.s18s-trackskel`/`.s18s-skt`); screen CSS: one panel-body rule (the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
 python3 -I s18s_build.py <repo_root> [--canvas]   (heights from s18_heights.json; renders: s18_render.py <stems>)"""
 import sys, re, json, pathlib, importlib.util, datetime as dt
@@ -140,7 +144,7 @@ def why(sid, farm, week):
     return f'<p class="ip-note ip-m0" id="why-{sid}">{SER[sid]["name"]} se poate închide după ce se încheie ciclul de la {farm} (deschis, sapt. {week}).</p>'
 def gro(sid, st, note, acts):
     return (f'<tr class="is-group"><th scope="rowgroup" colspan="5" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{SER[sid]["name"]}</span>{st}'
-            f'<span class="ip-note">{note}</span></span></th><td colspan="2" class="s18-gact"><span class="s18-acts">{acts}</span></td></tr>')
+            f'<span class="ip-note">{note}</span></span></th>{T.agecell(sid)}<td colspan="2" class="s18-gact"><span class="s18-acts">{acts}</span></td></tr>')   # S18N: + the age column (D179)
 def acts(sid, close=''):
     a = f'<a class="ip-btn ip-btn--ghost" href="#/serii/{sid}">Deschide seria<span class="ip-sr"> {SER[sid]["name"]}</span></a>'
     if close == 'off':
@@ -199,8 +203,8 @@ assert page(T.track(), T.table()) == T.page()
 
 # ================================================================= loading / load error / no access
 def skel(w): return f'<span class="ip-skel ip-skel--{w}"></span>'
-SK_G = f'<tr class="is-group ip-table__skel"><th scope="rowgroup" colspan="5">{skel("w2")}</th><td colspan="2">{skel("w3")}</td></tr>'
-SK_R = '<tr class="ip-table__skel">' + ''.join(f'<td>{skel(w)}</td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', 'w2', 'w3')) + '</tr>'
+SK_G = f'<tr class="is-group ip-table__skel"><th scope="rowgroup" colspan="5">{skel("w2")}</th><td class="s18-agecell">{skel("w3")}</td><td colspan="2">{skel("w3")}</td></tr>'   # S18N: + the age cell
+SK_R = '<tr class="ip-table__skel">' + ''.join(f'<td>{skel(w)}</td>' if w else '<td class="s18-agecell"></td>' for w in ('w3', 'w3', 'w3', 'w2', 'w3', None, 'w2', 'w3')) + '</tr>'   # the age column is empty on cycle rows (D179)
 LOADING = (f'<p class="ip-sr" role="status">Se încarcă seriile și ciclurile lor pe ferme.</p>'
            f'<section class="ip-block" aria-labelledby="h-track" aria-busy="true"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-track">Cicluri pe ferme</h2></div>'
            f'<div class="s4-tight">{SKL.track()}{SKL.legend()}</div></section>\n'  # fix 1: + the legend line, as loaded
@@ -240,11 +244,11 @@ def date_err(typed):
     f = T.date_field(TODAY, False)
     a = '<span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span>'; assert f.count(a) == 1
     f = f.replace(a, '<span class="ip-seg__item" role="radio" aria-checked="false" tabindex="0">Azi</span>')
-    a = f'<span class="ip-input ip-num">{icon("cal", 16)}<input id="d-val" type="text" inputmode="numeric" value="{dd(TODAY)}" aria-labelledby="d-lbl" aria-describedby="d-wk"/></span>'
+    a = f'<span class="ip-input ip-num">{icon("cal", 16)}<input id="d-val" type="text" inputmode="numeric" value="{dd(TODAY)}" aria-labelledby="d-lbl"/></span>'
     assert f.count(a) == 1, f
     f = f.replace(a, f'<span class="ip-input ip-num is-error">{icon("cal", 16)}<input id="d-val" type="text" inputmode="numeric" value="{dd(typed)}" aria-labelledby="d-lbl" aria-invalid="true" aria-describedby="d-err"/></span>')
-    a = f'<span class="ip-note ip-num" id="d-wk">SAPT 1 · ciclu nou din {dd(TODAY)}</span>'; assert f.count(a) == 1
-    return f.replace(a, err('d-err', f'{num(dd(typed))} e în viitor. Alege Azi, {num(dd(TODAY))}, sau o zi trecută.'))
+    assert f.endswith('</div></div>')   # S18N: the date has no note of its own now; the error goes under the field
+    return f[:-len('</div>')] + err('d-err', f'{num(dd(typed))} e în viitor. Alege Azi, {num(dd(TODAY))}, sau o zi trecută.') + '</div>'
 def rows_err():
     """Two rows, both Telița's first section, no count: the second row's duplicate error (SYS07 words) and the list's
     'niciun rând completat'."""
@@ -267,7 +271,7 @@ def rows_err():
     assert s.endswith('</div></section>')
     return s[:-len('</section>')] + err('rows-e', 'Niciun rând completat. Scrie câte găini sau cocoși intră în cel puțin o secțiune a Teliței.') + '</section>'
 def form_errors():
-    return [name_err(), year_err(YEAR26), T.farm_field(TODAY, False), date_err(TODAY + dt.timedelta(days=1)), rows_err(), T.effect('empty', TODAY)]
+    return [name_err(), year_err(YEAR26), T.farm_field(TODAY, False), date_err(TODAY + dt.timedelta(days=1)), T.age_field(touch=False), rows_err(), T.effect('empty', TODAY)]
 SAVE_ERR = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert" id="sn-err">{icon("alert", 16)}<div class="ip-banner__body">'
             f'<p class="ip-m0">{NAME26} nu s-a creat: conexiunea s-a întrerupt.</p><p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne aici.</p>'
             '</div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus">Reîncearcă</button></div>')
@@ -309,7 +313,7 @@ def rows_picking():
     return s   # the other rows' comboboxes open the sheet too (phone: aria-haspopup=dialog, no listbox; s18_build since FIN10)
 
 # ================================================================= CSS (screen only, tokens only)
-CSS_D = T.CSS_DESK   # FX01: the docked panel body's position:relative (was fix 1 here) is additions.css §62
+CSS_D = T.CSS_D18   # S18N: + the age field width (S18 only). FX01: the docked panel body's position:relative (was fix 1 here) is additions.css §62
 CSS_SH = T.CSS_SH + SC.MODAL
 
 # ================================================================= write
@@ -330,15 +334,20 @@ desk('--fara-acces', 'observator · fără acces', noaccess(), hd('--fara-acces'
 # 4 · desktop, values typed: replay 07.10.2025, the list as it stood before the creation
 body = T.form(REPLAY, False, NAME26, YEAR26, ROWS, state='set')
 desk('--desktop-scris', f'Serie nouă · desktop · scris · reluare {dd(REPLAY)}',
-     vp(scene_track(SC_BEFORE), TBL_BEFORE, 'before') + T.panel(body, REPLAY, DKEY), SC.SIDE_H)
+     vp(scene_track(SC_BEFORE), TBL_BEFORE, 'before') + T.panel(body, REPLAY, DKEY), hd('--desktop-scris', SC.SIDE_H))
 # 5 · desktop, field errors after Creează seria (today, D39 values), focus on the first error (Nume)
 desk('--desktop-erori', 'Serie nouă · desktop · erori în câmpuri · exemplu de stare (D39)',
-     vp(T.track(), T.table()) + T.panel(form_errors(), TODAY, DKEY), SC.SIDE_H)
+     vp(T.track(), T.table()) + T.panel(form_errors(), TODAY, DKEY), hd('--desktop-erori', SC.SIDE_H))
+# S18N · the age typed (spec B3 round 2): Seria 2027 on 18.11.2026 (D39, the B3 sample name, as --desktop-erori), placed at
+# 14 days → "La populare: vârstă 14 zile · SAPT 3." (D151: 14 days = SAPT 3); head and EffectPreview follow; no rows typed
+AGE_T = '14'; assert T.age_wk(int(AGE_T)) == 3
+desk('--desktop-varsta', f'Serie nouă · desktop · vârstă la populare {AGE_T} zile → SAPT {T.age_wk(int(AGE_T))} · exemplu de stare (D39)',
+     vp(T.track(), T.table()) + T.panel(T.form(TODAY, False, T.NEWNAME, T.NEWYEAR, age=AGE_T, age_focus=True), TODAY, DKEY, AGE_T), hd('--desktop-varsta', SC.SIDE_H))
 # 6 · desktop refusal (D39, as the phone board): the list drawn on the same premise
 RKEY = f'<button type="button" class="ip-btn ip-btn--primary" disabled="disabled" aria-describedby="sn-ref">{T.CREATE}</button>'
 body = T.form(TODAY, False, T.NEWNAME, T.NEWYEAR, state='refuz')
 desk('--desktop-refuzat', 'Serie nouă · desktop · refuzat: Telița are încă păsări · exemplu de stare (D39): transferul la Hîrbovăț neintrodus',
-     vp(scene_track(SC_D39), TBL_D39) + T.panel(body, TODAY, RKEY), SC.SIDE_H)
+     vp(scene_track(SC_D39), TBL_D39) + T.panel(body, TODAY, RKEY), hd('--desktop-refuzat', SC.SIDE_H))
 # 7 · salvat: replay 07.10.2025, panel closed, the new series in the list, Toast
 TOAST = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">{NAME26} creată · '
          f'ciclu nou la Telița · sapt. {num(WK_T0)} de la {num(dd(REPLAY))} · ghid {GUIDE["g-growth"]}</span>'
@@ -368,13 +377,20 @@ phone('--telefon-eroare-la-salvare', f'Serie nouă · telefon · eroare la salva
       f'<div class="s18-screen">{T.sheet(body, REPLAY, PKEY)}</div>', hd('--telefon-eroare-la-salvare', 844))
 # 10 · section sheet open: replay 07.10.2025, H1 and H2 typed, the third row picking (390×844, as S9P)
 body = T.form(REPLAY, True, NAME26, YEAR26, state='set')
-assert body[4].startswith('<section class="ip-panel ip-sexrows') and body[5].startswith('<div class="ip-effect')
-body[4] = rows_picking(); body[5] = T.effect('set', REPLAY, NAME26, YEAR26, [ROWS[0], ROWS[1]])
+assert body[5].startswith('<section class="ip-panel ip-sexrows') and body[6].startswith('<div class="ip-effect')   # S18N: + the age field (4)
+body[5] = rows_picking(); body[6] = T.effect('set', REPLAY, NAME26, YEAR26, [ROWS[0], ROWS[1]])
 SH = T.sheet(body, REPLAY, PKEY).replace('<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">',
                                           '<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t" inert="inert">', 1)
 assert 'inert="inert"' in SH and 'autofocus' not in SH   # focus is in the section sheet
 phone('--telefon-alege-sectiunea', f'Serie nouă · telefon · alege secțiunea · reluare {dd(REPLAY)}',
       f'<div class="s18-screen ip-scrimhost">{SH}{sheet_select("p2", (ROWS[0][0], ROWS[1][0]))}</div>', 844)
+# 11 · S18N · the age out of range (spec B3 round 2: a refusal on blur and on save): Seria 2027 on 18.11.2026 (D39), 200 typed,
+# the spec's error line, Creează seria disabled and described by it; the head drops the SAPT (no valid age); focus on the field
+AGE_E = '200'; assert not T.age_ok(AGE_E)
+EKEY = f'<button type="button" class="ip-btn ip-btn--primary ip-btn--touch" disabled="disabled" aria-describedby="sn-age-e">{T.CREATE}</button>'
+body = T.form(TODAY, True, T.NEWNAME, T.NEWYEAR, age=AGE_E, age_focus=True)
+phone('--telefon-varsta-eroare', f'Serie nouă · telefon · vârstă la populare {AGE_E} de zile, în afara intervalului 0–{T.AGE_MAX} · exemplu de stare (D39)',
+      f'<div class="s18-screen">{T.sheet(body, TODAY, EKEY, AGE_E)}</div>', hd('--telefon-varsta-eroare', 844))
 
 S18_OUT = json.loads(pathlib.Path('/tmp/s18/boards.json').read_text())
 assert [b['stem'] for b in S18_OUT] == [STEM, STEM + '--serie-noua', STEM + '--telefon', STEM + '--telefon-serie-noua', STEM + '--telefon-refuzat']

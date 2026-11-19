@@ -1,16 +1,19 @@
 {
  "S18-serii": 1024,
  "S18-serii--telefon": 1068,
- "S18-serii--telefon-serie-noua": 1476,
- "S18-serii--telefon-refuzat": 1200,
+ "S18-serii--telefon-serie-noua": 1608,
+ "S18-serii--telefon-refuzat": 1332,
  "S18-serii--se-incarca": 1024,
  "S18-serii--eroare-la-incarcare": 1024,
  "S18-serii--fara-acces": 1024,
- "S18-serii--desktop-scris": 1024,
- "S18-serii--desktop-erori": 1024,
- "S18-serii--desktop-refuzat": 1024,
+ "S18-serii--desktop-scris": 1360,
+ "S18-serii--desktop-erori": 1268,
+ "S18-serii--desktop-refuzat": 1072,
  "S18-serii--salvat": 1024,
  "S18-serii--inchide-seria": 1024,
- "S18-serii--telefon-eroare-la-salvare": 1632,
- "S18-serii--telefon-alege-sectiunea": 844
+ "S18-serii--telefon-eroare-la-salvare": 1764,
+ "S18-serii--telefon-alege-sectiunea": 844,
+ "S18-serii--serie-noua": 1024,
+ "S18-serii--desktop-varsta": 1024,
+ "S18-serii--telefon-varsta-eroare": 1208
 }

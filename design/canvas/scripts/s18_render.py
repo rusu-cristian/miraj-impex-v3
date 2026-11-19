@@ -3,7 +3,8 @@ at their board width and height (from /tmp/s18/<stem>.html) to design/shots/S18.
 s2_render.py's checks (ids, ARIA refs, names, contrast, targets, overflow). --measure writes each board's natural height
 (rounded up to 4; desktop min 1024, phone min 844) into s18_heights.json, then rebuild with --canvas: the desktop list and
 the phone list by their page height; the phone sheets by the height their body needs so the whole form shows (a long
-scrolling form, canvas.md); the SidePanel board keeps 1024 (its page is clipped beside the panel, the panel body scrolls).
+scrolling form, canvas.md); S18N: the SidePanel boards likewise grow to the height their panel body needs (the page beside
+is clipped, nothing on the board scrolls).
 --w 1280 renders the desktops at 1280 as S18-<i>-1280.png (no heights written). RF10: the render wrappers keep only the
 viewport floor (1024 / 844), so the measure is the natural height; each shot is then taken at the board's stored h."""
 import asyncio, json, pathlib, sys, re
@@ -15,7 +16,7 @@ CHECK = re.search(r'CHECK = r"""(.*?)"""', src, re.S).group(1)
 A = sys.argv[1:]
 W = int(A[A.index('--w') + 1]) if '--w' in A else None
 ONLY = [a for i, a in enumerate(A) if not a.startswith('--') and not (i and A[i - 1] == '--w')]
-NAT = '''() => { const r = document.querySelector('.ip-root'); const b = document.querySelector('.ip-sidepanel--sheet .ip-sidepanel__body');
+NAT = '''() => { const r = document.querySelector('.ip-root'); const b = document.querySelector('.ip-sidepanel--sheet .ip-sidepanel__body, .ip-sidepanel--dock .ip-sidepanel__body');
   if (b) return r.clientHeight + (b.scrollHeight - b.clientHeight); return r.scrollHeight; }'''
 async def main():
     boards = json.loads(pathlib.Path('/tmp/s18/boards.json').read_text())
@@ -31,7 +32,7 @@ async def main():
             pg = await b.new_page(viewport={'width': vw, 'height': h})
             await pg.goto(f'file:///tmp/s18/{st}.html'); await pg.wait_for_timeout(800)
             r = await pg.evaluate(CHECK); r.pop('order', None); print(st, vw, json.dumps(r, ensure_ascii=False))
-            if not W and not st.endswith(('--serie-noua', '--telefon-alege-sectiunea')):   # RF10: the section sheet board is a fixed 390×844 (as S9P)
+            if not W and not st.endswith("--telefon-alege-sectiunea"):   # RF10: the section sheet board is a fixed 390×844 (as S9P); S18N: the panel boards are measured too
                 nat = await pg.evaluate(NAT)
                 new[st] = max(1024 if w == 1440 else 844, int(-(-nat // 4) * 4))
             # RF10: the wrapper holds only the viewport floor (s18_build.write); the shot shows the board at its stored h
