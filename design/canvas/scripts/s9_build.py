@@ -5,17 +5,19 @@ SaveBar shell + 2-line summary, viewport/Toast/Banner CSS from sstate_css, and S
 with the s13- class names); the Din row is the system SexCountRow
 `ip-sexrows--pick` (SYS07), the preview the system EffectPreview with the CycleTrack cycle marks (`ip-cmark`, SYS06).
 The desktop board reuses the S4 Hîrbovăț farm page (s4s_build shell, sidebar, writer) with the system SidePanel beside it.
-Content: the phone boards replay the real last Telița → Hîrbovăț move (transfers-seria2026.json, link of H2 dated
-28.02.2026, arrivals as recorded at Hîrbovăț, D28): H2 → H4.2 ♀ 4 383, the H2 → H4.1 ♀ 2 500 move entered first that
-day, so H2 holds ♀ 4 383 and Toate moves them all. Telița then has 0 birds (workbook residuals are data errors, D25/D35):
-its cycle closes on 28.02.2026, sapt. 21 (cycles.json); Hîrbovăț's open cycle (from 10.02.2026, D25) continues, sapt. 3.
-"Today" on the phone boards = 28.02.2026 (as S13 replays its delivery, D73). The refusal value ♀ 4 500 is a D39 state
-example. The desktop board is 16.11.2026 (D23) over the S4 page: the Din menu open, alive from counts-latest (sample, D27).
-S9P: two more phone boards on 16.11.2026 (D23), a D39 example from counts-latest (sample, D27): Toate from Hîrbovăț H4.2 into
+Content (RF05, realdata; D151–D158): the phone boards replay the real last Telița → Hîrbovăț move (transfers-seria2026.json,
+the H2 link, arrivals as recorded at Hîrbovăț on 28.02.2026, D28): H2 → H7.2 ♀ 4 383, the H2 → H7.1 ♀ 2 618 move entered
+first that day, so H2 holds ♀ 4 383 and Toate moves them all; H7.2 holds the ♂ 534 that came on 22.02. Telița then has 0
+birds (workbook residuals are data errors, D25/D35): its cycle closes on 28.02.2026, sapt. 21 (cycles.json); Hîrbovăț's open
+cycle (from 22.02.2026) continues, sapt. 21 (the birds' age week, D151: both farms share it). "Today" on the phone boards =
+28.02.2026 (as S13 replays its delivery, D73). The refusal value ♀ 4 500 is a D39 state example. The desktop board is
+18.11.2026 (D152) over the S4 page: the Din menu open, alive at the end of the day (realdata; H7 empty since 14.11).
+S9P: two more phone boards on 18.11.2026, a D39 example on the real counts: Toate from Hîrbovăț H6.2 (♀ 475 · ♂ 5) into
 Telița (empty since its cycle closed on 28.02.2026): "alege secțiunea" (the phone SectionSelect BottomSheet, additions.css §33)
-and "ciclu nou" (EffectPreview "Ciclu nou la Telița, sapt. 1" with the CycleTrack open mark).
-python3 -I s9_build.py <repo_root> [heights.json, default s9_heights.json]
-Writes design/canvas/project/S9-transfer[--<state>].dc.html, /tmp/s9/<stem>.html and /tmp/s4s/<stem>.html (renders)."""
+and "ciclu nou" (EffectPreview "Ciclu nou la Telița, sapt. 59", the age week (D151), with the CycleTrack open mark).
+python3 -I s9_build.py <repo_root> [heights.json, default s9_heights.json] [--canvas]
+Writes design/canvas/project/S9-transfer[--<state>].dc.html, /tmp/s9/<stem>.html and /tmp/s4s/<stem>.html (renders);
+--canvas refreshes the S9 entries' h/title in canvas.json in place (hand-placed row: x and y kept, RF05)."""
 import sys, re, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
@@ -27,6 +29,7 @@ sys.argv = ['s7s_build.py', str(ROOT)]
 sys.path.insert(0, str(HERE))
 P = importlib.import_module('s7s_build'); B = P.B
 import sstate_css as SC  # SidePanel-beside-the-page, record icon, EffectPreview CSS (s13- names, shared with s13_build)
+import realdata as R  # RF05: every figure, date, week and code from realdata (DATA03 extracts)
 # desktop shell: the S4 farm page (s4s_build writes nothing on import)
 sys.argv = ['s4s_build.py', str(ROOT)]
 s4 = importlib.import_module('s4s_build')
@@ -35,35 +38,30 @@ n, dd, lamp, NB, MINUS = B.n, B.dd, B.lamp, B.NB, B.MINUS
 B.IC.update({'transfer': s4.IC['transfer'], 'x': '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', 'chevup': '<path d="m18 15-6-6-6 6"/>'})
 icon = B.icon
 
-# ---------- data ----------
-EX = ROOT / 'design/data/extracts'
-TR = json.load(open(EX / 'transfers-seria2026.json', encoding='utf-8'))
-CY = json.load(open(EX / 'cycles.json', encoding='utf-8'))
-FS = json.load(open(EX / 'farms-sections.json', encoding='utf-8'))
-CL = json.load(open(EX / 'counts-latest.json', encoding='utf-8'))
-LINK = next(l for l in TR['links_inferred_by_date'] if l['from'] == ['H2'])
-DAY = dt.date.fromisoformat(LINK['arrival_date'])
-QTY = LINK['to']['H4.2']; FIRST = LINK['to']['H4.1']
-SRC_F = LINK['qty_in'] - FIRST           # H2 after the H4.1 move the same day (arrivals, D28)
-assert (dd(DAY), QTY, FIRST, SRC_F) == ('28.02.2026', 4383, 2500, 4383)
-# destination H4.2 before the move: what arrived there before 28.02 (♂ 534 on 22.02, no ♀ yet)
-DST = {sx: sum(a['qty'] for a in TR['arrivals'] if a['section'] == 'H4.2' and a['sex'] == sx and a['date'] < LINK['arrival_date']) for sx in 'FM'}
+# ---------- data (realdata, RF05) ----------
+# the last Telița → Hîrbovăț link: H2's hens, recorded at Hîrbovăț on 28.02.2026 in two compartments (D28 arrivals)
+LINK = R.TR['links_inferred_by_date'][-1]
+assert LINK['arrival_date'] == max(l['arrival_date'] for l in R.TR['links_inferred_by_date']) and len(LINK['from']) == 1 and LINK['sex'] == 'F'
+DAY = R.D(LINK['arrival_date'])
+(FIRST_SEC, FIRST), (DST_SEC, QTY) = list(LINK['to'].items())  # the first move entered that day, then the replayed one (Toate)
+SRC_F = LINK['qty_in'] - FIRST           # H2 after the first move the same day (arrivals, D28)
+assert (dd(DAY), FIRST_SEC, FIRST, DST_SEC, QTY, SRC_F) == ('28.02.2026', 'H7.1', 2618, 'H7.2', 4383, 4383)
+# destination before the move: what arrived there before 28.02 (♂ 534 on 22.02, no ♀ yet)
+DST = {sx: sum(a['qty'] for a in R.TR['arrivals'] if a['section'] == DST_SEC and a['sex'] == sx and a['date'] < LINK['arrival_date']) for sx in 'FM'}
 assert DST == {'F': 0, 'M': 534}
-cyc = {c['id']: c for c in CY['cycles']}
-TEL, HIR = cyc['cyc-telita-2026'], cyc['cyc-hirbovat-2026']
-TSTART, HSTART = dt.date.fromisoformat(TEL['start_date']), dt.date.fromisoformat(HIR['start_date'])
+TEL, HIR = R.CTEL, R.C26
+HSTART = R.CYCLE_START                   # 22.02.2026 (SAPT 20)
 assert TEL['end_date'] == LINK['arrival_date'] and TEL['status'] == 'closed'  # D25: Telița closes 28.02.2026
-TWK = (DAY - TSTART).days // 7 + 1; HWK = (DAY - HSTART).days // 7 + 1
-assert (TWK, HWK) == (21, 3) == (TEL['weeks'], 3)
+WK1 = R.sapt(DAY)                        # D151: the birds' age week, the same at both farms (transfer keeps age)
+assert WK1 == TEL['sapt_end'] == 21 and HIR['status'] == 'open'
 TRY = 4500  # D39 state example (typed value over the alive count)
 OVER = SRC_F - TRY; assert OVER == -117
 USER = 'Ion Rusu'  # illustrative manager name (craft §7)
-# desktop: 16.11.2026 (D23), alive per section from counts-latest (Hîrbovăț sample, Telița 0, cycle closed)
-farms = {f['farm_id']: f for f in CL['farms']}
-HSEC = [(s['section'], s['F'], s['M']) for s in farms['hirbovat']['sections']]
-TSEC = [s['code'] for s in FS['sections'] if s['farm_id'] == 'telita']
-assert farms['telita']['totals']['all'] == 0 and TSEC == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
-DT = dt.date.fromisoformat(s4.TODAY); DWK = (DT - HSTART).days // 7 + 1; assert DWK == 40
+# desktop + S9P: 18.11.2026 (D152), alive per compartment at the end of the day (Telița 0, cycle closed)
+HSEC = [(s, R.alive(s, 'F'), R.alive(s, 'M')) for s in R.HSECS]
+TSEC = R.SECTIONS['telita']
+assert R.COUNTS_TELITA['totals']['all'] == 0 and len(TSEC) == 6
+DT = R.TODAY; DWK = R.WK; assert dd(DT) == s4.ddate(s4.TODAY) and DWK == 59
 
 def pair(f, m, sr=''): return B.pair(n(f) if isinstance(f, int) else f, n(m) if isinstance(m, int) else m, sr)
 def hen(v): return f'<span class="ip-sex ip-sex--hen">♀ <b>{n(v) if isinstance(v, int) else v}</b></span>'
@@ -78,7 +76,7 @@ assert 'href="#inregistreaza" aria-label="Înapoi la Înregistrează"' in B.HEAD
 HEAD = B.HEAD.replace('ip-rec--feed', 'ip-rec--transfer').replace(icon('feed'), icon('transfer')).replace('Hrană zilnică', 'Transfer') \
     .replace(f'{B.FARM} · {dd(B.TODAY)} · SAPT {B.WEEK}', f'SERIA 2026 · {dd(DAY)}')
 assert HEAD.count('Transfer') == 1 and dd(DAY) in HEAD and 'ip-rec--transfer' in HEAD and 'SAPT' not in HEAD
-WKLINE = f'Telița SAPT {TWK} · Hîrbovăț SAPT {HWK}'
+WKLINE = f'SAPT {WK1} · ciclu Hîrbovăț din {dd(HSTART)}'  # D151: one age week for both farms
 DATE = B.DATE.replace(dd(B.TODAY), dd(DAY)).replace(f'SAPT {B.WEEK} · ciclu din {dd(B.START)}', WKLINE)
 assert DATE.count(dd(DAY)) == 1 and WKLINE in DATE
 DATE_RO = f'''<div class="ip-field"><label class="ip-label" for="d-val">Data</label><span class="ip-input ip-input--touch ip-num is-readonly"><input id="d-val" type="text" value="{dd(DAY)}" readonly aria-describedby="d-wk"/></span><span class="ip-note ip-num" id="d-wk">{WKLINE}</span></div>'''
@@ -91,12 +89,14 @@ class Mv:  # one move: day, Din farm/section + alive, În farm/section + alive, 
         s.src, s.dst = f'{sfarm} › {ssec}', f'{dfarm} › {dsec}'
         s.sid, s.did = sid, did  # farm ids (counts-latest), for the farm totals after the move
 # 1 · the real 28.02.2026 move (replay, D83)
-M1 = Mv(DAY, 'Telița', SRC_SEC, SRC_F, 0, 'Hîrbovăț', 'H4.2', DST['F'], DST['M'], QTY, 0, 'telita', 'hirbovat')
-# 2 · ciclu nou (D39 state example, D83): 16.11.2026 (D23), Toate from Hîrbovăț H4.2 (counts-latest, sample D27) into
-#   Telița H1; Telița is empty since its cycle closed on 28.02.2026 (cycles.json), so a new cycle opens there, sapt. 1
-H42 = next(x for x in HSEC if x[0] == 'H4.2'); assert H42 == ('H4.2', 4107, 476)
-M2 = Mv(DT, 'Hîrbovăț', 'H4.2', H42[1], H42[2], 'Telița', TSEC[0], 0, 0, H42[1], H42[2], 'hirbovat', 'telita')
-HTOT = farms['hirbovat']['totals']; HLEFT = (HTOT['F'] - M2.qf, HTOT['M'] - M2.qm); assert HLEFT == (21145, 2209)
+M1 = Mv(DAY, 'Telița', SRC_SEC, SRC_F, 0, 'Hîrbovăț', DST_SEC, DST['F'], DST['M'], QTY, 0, 'telita', 'hirbovat')
+# 2 · ciclu nou (D39 state example, D83): 18.11.2026, Toate from Hîrbovăț H6.2 (the nearly emptied compartment, end-of-day
+#   counts) into Telița's first section; Telița is empty since its cycle closed on 28.02.2026 (cycles.json), so a new cycle
+#   opens there in the birds' age week, sapt. 59 (D151: a transfer keeps age)
+XSRC = 'H6.2'; X = next(x for x in HSEC if x[0] == XSRC); assert X[1:] == (475, 5)
+M2 = Mv(DT, 'Hîrbovăț', XSRC, X[1], X[2], 'Telița', TSEC[0], 0, 0, X[1], X[2], 'hirbovat', 'telita')
+HLEFT = (R.alive_farm('F') - M2.qf, R.alive_farm('M') - M2.qm); assert HLEFT == (12086, 789)
+HEMPTY = {s for s, f, m in HSEC if not f + m}; assert HEMPTY == {'H7.1', 'H7.2'}  # H7 empty since 14.11.2026
 SRC, DSTN = M1.src, M1.dst
 
 def combo(i, label, name, touch=True, expanded=False, menu='', active='', desc=''):
@@ -121,11 +121,16 @@ def pick(state='toate', touch=True, date=None, mv=M1):
     date = date or mv.day
     sname = f'{mv.sfarm} {mv.ssec}'  # accessible names put the section first (S6P)
     if state == 'empty':
-        menu = '<li class="ip-menu__group" role="presentation">Hîrbovăț · ouat</li>' + ''.join(
-            f'<li class="ip-menu__item ip-select__opt{" is-active" if k == 0 else ""}" role="option" id="so-din-{s.replace(".", "-")}" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><span><span class="ip-sr">Hîrbovăț </span>{s}</span> {pair(f, m)}</span></span></li>' for k, (s, f, m) in enumerate(HSEC)) \
-            + '<li class="ip-menu__group" role="presentation">Telița · creștere</li>' + ''.join(
-            f'<li class="ip-menu__item ip-select__opt" role="option" id="so-din-t{s}" aria-selected="false" aria-disabled="true"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><span><span class="ip-sr">Telița </span>{s}</span> <span class="ip-note">goală</span></span></span></li>' for s in TSEC)
-        sel = combo('din', 'Din', '', touch, True, menu, 'so-din-H1-1')
+        # Din lists every section; an empty one (Hîrbovăț H7 since 14.11, all of Telița) is disabled "goală" (nothing to move)
+        def dopt(farm, s, f, m, act):
+            dis = ' aria-disabled="true"' if not f + m else ''
+            body = pair(f, m) if f + m else '<span class="ip-note">goală</span>'
+            return (f'<li class="ip-menu__item ip-select__opt{" is-active" if act else ""}" role="option" id="so-din-{"t" if farm == "Telița" else ""}{s.replace(".", "-")}" aria-selected="false"{dis}>'
+                    f'<span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top"><span><span class="ip-sr">{farm} </span>{s}</span> {body}</span></span></li>')
+        first = next(s for s, f, m in HSEC if f + m)
+        menu = '<li class="ip-menu__group" role="presentation">Hîrbovăț · ouat</li>' + ''.join(dopt('Hîrbovăț', s, f, m, s == first) for s, f, m in HSEC) \
+            + '<li class="ip-menu__group" role="presentation">Telița · creștere</li>' + ''.join(dopt('Telița', s, 0, 0, False) for s in TSEC)
+        sel = combo('din', 'Din', '', touch, True, menu, f'so-din-{first.replace(".", "-")}')
         alive = '<span class="ip-sexrow__alive" id="a-din"><span class="ip-sexrow__k">în viață</span> <span class="ip-num">–</span> alege secțiunea</span>'
     elif state == 'ro':
         sel = f'<div class="ip-field ip-sexrow__sel"><label class="ip-label ip-sexrow__lbl" for="sc-din">Din</label><span class="ip-input ip-input--touch is-readonly"><input id="sc-din" type="text" value="{mv.src}" readonly/></span></div>'
@@ -146,8 +151,8 @@ def pick(state='toate', touch=True, date=None, mv=M1):
     elif state == 'refuz':
         f_in = f'<span class="ip-input ip-count ip-count--hen{md} is-error"><input id="f-din" inputmode="numeric" placeholder="–" autocomplete="off" value="{n(TRY)}" aria-invalid="true" aria-describedby="a-din e-din"/></span>'
         m_in = f'<span class="ip-input ip-count ip-count--rooster{md}"><input id="m-din" inputmode="numeric" placeholder="–" autocomplete="off" aria-describedby="a-din"/></span>'
-        msg = (f'<p class="ip-err ip-sexrow__msg" id="e-din">{icon("alert", 14)}<span>{SRC_SEC}: <span class="ip-num">{n(TRY)}</span> depășește cele '
-               f'<span class="ip-num">{n(SRC_F)}</span> găini în viață la Telița pe <span class="ip-num">{dd(date)}</span>. Introdu cel mult <span class="ip-num">{n(SRC_F)}</span>.</span></p>')
+        msg = (f'<p class="ip-err ip-sexrow__msg" id="e-din">{icon("alert", 14)}<span>{mv.ssec}: <span class="ip-num">{n(TRY)}</span> depășește cele '
+               f'<span class="ip-num">{n(mv.sf)}</span> găini în viață la {mv.sfarm} pe <span class="ip-num">{dd(date)}</span>. Introdu cel mult <span class="ip-num">{n(mv.sf)}</span>.</span></p>')
     else:
         f_in = f'<span class="ip-input ip-count ip-count--hen{md}"><input id="f-din" inputmode="numeric" placeholder="–" autocomplete="off" aria-describedby="a-din"/></span>'
         m_in = f'<span class="ip-input ip-count ip-count--rooster{md}"><input id="m-din" inputmode="numeric" placeholder="–" autocomplete="off" aria-describedby="a-din"/></span>'
@@ -174,14 +179,14 @@ def effect(state='set', mv=M1):
                 '<span>Alege Din, În și câte păsări muți. Aici vezi ce rămâne în fiecare secțiune și ciclul care se deschide sau se închide.</span></div></div>')
     if state == 'refuz':  # EffectPreview: refused becomes a fault Banner
         return (f'<div class="ip-banner ip-banner--fault s7s-banner" role="alert" id="fx">{icon("alert", 16)}<div class="s7s-banner__body"><p class="ip-m0">'
-                f'Transfer refuzat: Telița › H2 ar ajunge la {hen(n(OVER))} pe <span class="ip-num">{dd(DAY)}</span>. Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
+                f'Transfer refuzat: {mv.src} ar ajunge la {hen(n(OVER))} pe <span class="ip-num">{dd(mv.day)}</span>. Nicio secțiune nu poate scădea sub{NB}0.</p></div></div>')
     arrow = '<span class="s9-to" aria-hidden="true">→</span><span class="ip-sr">după transfer</span>'
     if mv is M1:
-        cyc = (f'<span class="s9-fxcyc">{cmark("end", "xfer", f"Ciclu închis la Telița, sapt. {TWK}")}<span class="s9-fxsub">ferma ajunge la 0 păsări</span></span>\n'
-               f'<span class="s9-fxcyc">{cmark("start", "", f"Ciclul la Hîrbovăț continuă, sapt. {HWK}")}</span>')
-    else:  # M2: the source farm keeps birds (its cycle continues), the empty destination farm opens a new cycle, sapt. 1
-        cyc = (f'<span class="s9-fxcyc">{cmark("start", "", f"Ciclul la Hîrbovăț continuă, sapt. {DWK}")}<span class="s9-fxsub">rămân {pair(*HLEFT)}</span></span>\n'
-               f'<span class="s9-fxcyc">{cmark("start", "xfer", "Ciclu nou la Telița, sapt. 1")}<span class="s9-fxsub">ferma e goală</span></span>')
+        cyc = (f'<span class="s9-fxcyc">{cmark("end", "xfer", f"Ciclu închis la {mv.sfarm}, sapt. {WK1}")}<span class="s9-fxsub">ferma ajunge la 0 păsări</span></span>\n'
+               f'<span class="s9-fxcyc">{cmark("start", "", f"Ciclul la {mv.dfarm} continuă, sapt. {WK1}")}</span>')
+    else:  # M2: the source farm keeps birds (its cycle continues), the empty destination farm opens a new cycle in the age week (D151)
+        cyc = (f'<span class="s9-fxcyc">{cmark("start", "", f"Ciclul la {mv.sfarm} continuă, sapt. {DWK}")}<span class="s9-fxsub">rămân {pair(*HLEFT)}</span></span>\n'
+               f'<span class="s9-fxcyc">{cmark("start", "xfer", f"Ciclu nou la {mv.dfarm}, sapt. {DWK}")}<span class="s9-fxsub">ferma e goală</span></span>')
     return f'''<div class="ip-effect s13-effect" id="fx" role="status">{rec("transfer", 16)}<div class="s9-fxbody"><span class="ip-cap">Efect</span>
 <span class="s9-fxline"><b class="s9-strong">{mv.src}</b><span class="s9-fxval">{pair(mv.sf, mv.sm)}{arrow}{pair(mv.sf - mv.qf, mv.sm - mv.qm)}</span></span>
 <span class="s9-fxline"><b class="s9-strong">{mv.dst}</b><span class="s9-fxval">{pair(mv.df, mv.dm)}{arrow}{pair(mv.df + mv.qf, mv.dm + mv.qm)}</span></span>
@@ -221,11 +226,11 @@ boards = []
 boards.append(('', 'telefon · reluare 28.02.2026', screen(FORM(), B.savebar(sum1(), SUM2, MUTA))))
 # 2 · salvat — read-only form, Toast with Anulează (undo the same day), Transfer nou
 toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Transfer salvat · '
-         f'♀ <span class="ip-num">{n(QTY)}</span> · Telița H2 → Hîrbovăț H4.2 · ciclul Telița închis</span>'
+         f'♀ <span class="ip-num">{n(QTY)}</span> · Telița {SRC_SEC} → Hîrbovăț {DST_SEC} · ciclul Telița închis</span>'
          f'<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
 saved = [DATE_RO, pick('ro'), dest('ro'), effect()]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='mutat'), f'<span>{USER} ·</span><span>poți anula până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Transfer nou</button>'), overlay=toast)))
-# 3 · refuzat — ♀ 4 500 typed over the 4 383 alive (D39 state example): row error, preview = fault Banner, Mută disabled;
+# 3 · refuzat — ♀ 4 500 typed over the ♀ 4 383 alive (D39 state example): row error, preview = fault Banner, Mută disabled;
 #   the refused value is left out of the SaveBar totals (D77, as S6S/S7S: ♀ – · ♂ –), its figure only on line 2
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([DATE, pick('refuz'), dest(), effect('refuz')],
               B.savebar(sum1('–', '–'), f'{lamp("fault", "refuzat")}<span>{SRC_SEC} {hen(TRY)} ·</span><span>cel mult <span class="ip-num">{n(SRC_F)}</span></span>', MUTA_OFF))))
@@ -233,26 +238,27 @@ boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare 
 #   right above the EffectPreview and the form is scrolled to its end, so the Banner and the move it names both show above
 #   the SaveBar (S9P; at 390 the Banner at the top would push the preview under the SaveBar)
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Transferul nu s-a salvat: '
-       f'♀ <span class="ip-num">{n(QTY)}</span>, Telița H2 → Hîrbovăț H4.2, <span class="ip-num">{dd(DAY)}</span>.</p>'
+       f'♀ <span class="ip-num">{n(QTY)}</span>, Telița {SRC_SEC} → Hîrbovăț {DST_SEC}, <span class="ip-num">{dd(DAY)}</span>.</p>'
        f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
 boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), ban, effect()], B.savebar(sum1(), SUM2, MUTA), view=' ip-screen__view--end')))
 
-# ---------- 16.11.2026 example flow (D39): Hîrbovăț H4.2 → Telița (empty since 28.02.2026) ----------
+# ---------- 18.11.2026 example flow (D39, real end-of-day counts): Hîrbovăț H6.2 → Telița (empty since 28.02.2026) ----------
 HEAD2 = HEAD.replace(f'SERIA 2026 · {dd(DAY)}', f'SERIA 2026 · {dd(DT)}'); assert dd(DT) in HEAD2
-WK2 = f'Hîrbovăț SAPT {DWK} · Telița goală din {TEMPTY}'
+WK2 = f'SAPT {DWK} · Telița goală din {TEMPTY}'
 DATE2 = B.DATE.replace(f'SAPT {B.WEEK} · ciclu din {dd(B.START)}', WK2); assert B.TODAY == DT and WK2 in DATE2
 # 5 · alege secțiunea — the phone SectionSelect as a BottomSheet (modal dialog + listbox), opened from În with Din chosen:
-#   Hîrbovăț sections with ♀ · ♂ alive (counts-latest, sample D27), the Din section disabled with its reason "sursa",
-#   Telița's empty sections say "goală" and stay enabled (a move onto an empty farm opens a cycle, C3)
+#   Hîrbovăț sections with ♀ · ♂ alive (end of 18.11), the Din section disabled with its reason "sursa", empty sections
+#   (Hîrbovăț H7.1/H7.2, all of Telița) say "goală" and stay enabled (a move onto an empty farm opens a cycle, C3)
 def oid(i, farm, code): return f'so-{i}-{"t" if farm == "Telița" else ""}{code.replace(".", "-")}'
 def opt(i, farm, code, body, dis=False, act=False):
     a = ' aria-disabled="true"' if dis else ''
     return f'<div class="ip-menu__item{" is-active" if act else ""}" role="option" id="{oid(i, farm, code)}" aria-selected="false"{a}><span class="ip-sheet__code"><span class="ip-sr">{farm} </span>{code}</span>{body}</div>'
 def sheet(i='in', src=M2):
     # the listbox has focus on open (ip-focus = the ring on the board) and its first option is the active one
-    # (aria-activedescendant + is-active, as the desktop Din menu): Hîrbovăț H1.1
-    act = oid(i, 'Hîrbovăț', HSEC[0][0]); assert act == f'so-{i}-H1-1'
-    hg = ''.join(opt(i, 'Hîrbovăț', s, '<span class="ip-note">sursa</span>' if s == src.ssec else pair(f, m), dis=(s == src.ssec), act=(k == 0)) for k, (s, f, m) in enumerate(HSEC))
+    # (aria-activedescendant + is-active, as the desktop Din menu): Hîrbovăț's first section
+    act = oid(i, 'Hîrbovăț', HSEC[0][0]); assert HSEC[0][0] != src.ssec
+    def body(s, f, m): return '<span class="ip-note">sursa</span>' if s == src.ssec else pair(f, m) if f + m else '<span class="ip-note">goală</span>'
+    hg = ''.join(opt(i, 'Hîrbovăț', s, body(s, f, m), dis=(s == src.ssec), act=(k == 0)) for k, (s, f, m) in enumerate(HSEC))
     tg = ''.join(opt(i, 'Telița', s, '<span class="ip-note">goală</span>') for s in TSEC)
     return f'''
 <!-- BottomSheet (modal): focus moves to the listbox on open, its first enabled option active (aria-activedescendant; arrow keys move it, Enter or a tap picks it and
@@ -270,8 +276,8 @@ def sheet(i='in', src=M2):
 </div>'''
 boards.append(('alege-sectiunea', 'alege secțiunea · exemplu de stare (D39)', screen([DATE2, pick('toate', mv=M2), dest('open', mv=M2), effect('empty')],
               B.savebar(f'{TR14}<span>{pair(M2.qf, M2.qm)} ·</span><span>{M2.sfarm} → –</span>', '<span>alege secțiunea În</span>', MUTA_OFF), head=HEAD2, sheet=sheet())))
-# 6 · ciclu nou — the same move with Telița H1 chosen: the EffectPreview opens a cycle at Telița, sapt. 1 (CycleTrack open
-#   mark with the transfer bar), Hîrbovăț keeps birds and its cycle continues, sapt. 40
+# 6 · ciclu nou — the same move with Telița's first section chosen: the EffectPreview opens a cycle at Telița in the birds'
+#   age week, sapt. 59 (D151; CycleTrack open mark with the transfer bar), Hîrbovăț keeps birds and its cycle continues, sapt. 59
 boards.append(('ciclu-nou', 'ciclu nou · exemplu de stare (D39)', screen([DATE2, pick('toate', mv=M2), dest(mv=M2), effect(mv=M2)],
               B.savebar(sum1(M2.qf, M2.qm, mv=M2), SUM2_NEW, MUTA), head=HEAD2)))
 
@@ -280,7 +286,7 @@ SCSS = '''
 .s9-alive .ip-pair{font-size:var(--ip-fs-figure);line-height:var(--ip-lh-small)}''' + SC.FX + SC.MODAL  # EffectPreview lines + modal anchor: shared with s10_build (s9- names kept)
 CSS = P.CSS + SC.MAIN + SC.REC + SC.EFFECT + SCSS
 
-# ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 16.11.2026 ----------
+# ---------- desktop: SidePanel beside S4 · Hîrbovăț (manager), 18.11.2026 ----------
 DDATE = f'''<div class="ip-field"><label class="ip-label" for="p-date">Data</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="p-date" type="text" inputmode="numeric" value="{dd(DT)}" placeholder="zz.ll.aaaa" aria-describedby="p-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data transferului din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="p-date-h">Hîrbovăț SAPT {DWK} · ciclu din {dd(HSTART)}</span></div>'''
 PANEL = f'''<aside class="ip-sidepanel ip-sidepanel--dock" id="tp" aria-labelledby="tp-t">
 <div class="ip-sidepanel__head"><div class="ip-row ip-sidepanel__title"><span class="ip-tile ip-rec ip-rec--transfer" aria-hidden="true">{icon("transfer")}</span><div><h2 class="ip-t-heading ip-m0" id="tp-t">Transfer</h2><p class="ip-note ip-num ip-m0">SERIA 2026 · {dd(DT)}</p></div></div><button type="button" class="ip-iconbtn" aria-label="Închide Transfer">{icon("x")}</button></div>
@@ -347,3 +353,7 @@ s4.write(STEM0 + '--desktop', TITLE0 + ' · desktop', DESK, PANEL, H=DH, css=CSS
 out.append((STEM0 + '--desktop', TITLE0 + ' · desktop', DH))
 if HP:
     HP.write_text(json.dumps({s: h for s, _, h in out}, indent=1))
+if CANVAS:  # RF05: refresh the S9 entries' h/title in place (hand-placed row: x and y kept, canvas_rows.place)
+    c = CR.load(ROOT)
+    CR.place(c, STEM0, [(s, 1440 if s.endswith('--desktop') else 390, h, t) for s, t, h in out])
+    CR.save(ROOT, c)
