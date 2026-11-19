@@ -173,8 +173,7 @@ boards = [(s, t, k, Q.nav_here(b) if k == 'p' else b) for s, t, k, b in boards]
 CSS_ADD = '''
 .s15s-busy{gap:var(--space-6)} /* the two skeleton lists sit as the groups do (s2-main gap) */'''
 CSS_P = Q.CSS_VP + CSS_ADD
-CSS_D = A.CSS_D + Q.CSS_ADD + SC.REC + '''
-.s15s-desk > *{max-width:calc(var(--space-12) * 20)} /* one reading column: figures and their keys stay within reach (960px) */'''
+CSS_D = A.CSS_D + Q.CSS_ADD + SC.REC  # FW01 (D148): the groups span the page (the 960px reading column is gone)
 
 # ---------- write ----------
 STEM0, TITLE0 = Q.STEM0, Q.TITLE0

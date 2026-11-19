@@ -73,9 +73,10 @@ THS = ('<th scope="col" class="num">Data</th><th scope="col">Fermă</th>'
        f'<th scope="col"><span class="ip-rec ip-rec--feed ip-table__ico">{icon("delivery", 14)}</span>Tip hrană</th><th scope="col" class="num">Kg</th>'
        f'<th scope="col" class="num s11-thedit"><span class="ip-rec ip-rec--feed ip-table__ico">{ico(s11.COINS, 14)}</span>Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th>')
 
-# FIN11G (§54): the four content columns declare their loaded shares (1440) next to the two fixed edit columns, so the
-# loading table (same colgroup) keeps every column where the loaded one has it
-COLS = ('<colgroup><col style="width:16.7%"/><col style="width:12.4%"/><col style="width:20.7%"/><col style="width:11.6%"/>'
+# FIN11G (§54): the loaded and the loading table declare the same colgroup, so every column sits where the loaded one has
+# it. FW01 (D148): the table spans the page; Data, Fermă and Kg keep fixed widths next to the two fixed edit columns and
+# Tip hrană (the text column, no width) takes the rest
+COLS = ('<colgroup><col class="s12-col-date"/><col class="s12-col-farm"/><col/><col class="s12-col-kg"/>'
         '<col class="s12-col-pk"/><col class="s12-col-tot"/></colgroup>')
 
 def form(mode='default'):
@@ -104,7 +105,7 @@ def form(mode='default'):
 # ---------- state: loading (static sunken skeletons in the same 6 columns; nothing to save yet) ----------
 def loading():
     sk = s11.sk
-    cells = (f'<td class="num">{sk("s4s-w70")}</td><td>{sk("s4s-w70")}</td><td>{sk("s4s-w70")}</td><td class="num">{sk("s4s-w70")}</td>'
+    cells = (f'<td class="num">{sk("s4s-w70")}</td><td>{sk("s4s-w70")}</td><td>{sk("s4s-w25")}</td><td class="num">{sk("s4s-w70")}</td>'  # FW01: Tip hrană takes the slack; its bar stays near the loaded name's length
              f'<td class="edit">{sk()}</td><td class="edit">{sk()}</td>')  # input-sized bars: rows as tall as the default's
     rows = f'<tr>{cells}</tr>' * len(UNP)
     return f'''<form class="s12-form" aria-labelledby="h-unp" aria-busy="true" novalidate="novalidate">
@@ -139,14 +140,16 @@ def page(mode='default'):
 CSS = s11.CSS + '''
 .s12-meta{align-items:center;gap:var(--space-2)}
 .s12-table td.edit > .ip-skel{height:var(--control-h);border-radius:var(--radius-sm)} /* loading: the inputs' footprint, no row jump */
-.s12-form{display:flex;flex-direction:column;gap:var(--space-3);width:fit-content;min-width:calc(var(--space-12) * 16);max-width:100%;margin:0}
-.s12-help{margin:0;max-width:calc(var(--space-12) * 14)}
+.s12-form{display:flex;flex-direction:column;gap:var(--space-3);margin:0} /* FW01 (D148): spans the page (was fit-content, 768 at 1440) */
+.s12-help{margin:0;max-width:calc(var(--space-12) * 14)} /* running prose keeps its reading measure inside the full-width form */
 .s12-why{font-family:var(--font-sans);font-weight:400}
 .s12-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4)}
 .s12-foot > .ip-btn{flex:none}
 .s12-table tr.s12-haserr > td{border-bottom:0} /* the field error row belongs to the row above */
 .s12-table tr.s12-errrow > td{height:auto;padding-top:0;padding-bottom:var(--space-2)}
 .s12-errrow .ip-err{contain:inline-size} /* s11-err line; wraps inside Lei/kg + Total lei, never widens them */
+.s12-col-date,.s12-col-farm{width:calc(var(--space-12) * 2 + var(--space-6))} /* FW01: 120, a dd.mm.yyyy date or a farm name + cell padding */
+.s12-col-kg{width:calc(var(--space-12) * 2)} /* FW01: 96, a 5-digit kg figure + cell padding */
 .s12-col-pk{width:calc(var(--space-12) * 2 + var(--space-6) + var(--space-4))} /* s11-in + td.edit padding: input fills the cell */
 .s12-col-tot{width:calc(var(--space-12) * 3 + var(--space-4))}'''
 

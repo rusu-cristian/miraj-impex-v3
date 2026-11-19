@@ -133,8 +133,8 @@
 .s20-table:not(.s19-ptable) .s20-use{white-space:nowrap} /* desktop list: each cycle on one line (the phone breaks at "·") */
 .s20-keys{display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-1)}
 .s20-keyrow{display:flex;gap:var(--space-2);align-items:center}
-.s20-wkcol{max-width:calc(var(--space-12) * 12)}
-.s20-col{display:flex;flex-direction:column;gap:var(--space-6);max-width:calc(var(--space-12) * 18);min-width:0}
+.s20-wkcol{display:flex;flex-direction:column;min-width:0} /* FW01 (D148): the week table spans the page (was capped at 576) */
+.s20-col{display:flex;flex-direction:column;gap:var(--space-6);min-width:0} /* FW01: the form column spans the page (was capped at 864); its fields keep 384 */
 .s20-fields{display:flex;flex-direction:column;gap:var(--space-4);max-width:calc(var(--space-12) * 8)}
 .s20-fields .ip-seg{align-self:flex-start}
 .s20-wk{display:flex;flex-direction:column}

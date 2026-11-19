@@ -1960,3 +1960,37 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  * grew the head from 64 to 76 while the title held focus. */
 :is(h1,h2,h3)[tabindex="-1"]:is(:focus-visible,.ip-focus){position:relative;outline:none}
 :is(h1,h2,h3)[tabindex="-1"]:is(:focus-visible,.ip-focus)::after{content:"";position:absolute;inset:calc(-1 * var(--ip-focus-w)) calc(-1 * (var(--ip-focus-w) + var(--ip-focus-offset)));border:var(--ip-focus-w) solid var(--focus);border-radius:var(--radius-xs);pointer-events:none}
+
+/* =====================================================================================================
+ * FW01 · Desktop content fills the page (D148, user 19.11.2026), system-wide. Spec: decisions D148.
+ * ===================================================================================================== */
+
+/* ---------- 67. Desktop page fills its frame: width and height (FW01) ---------- */
+/* Width: every page block spans main.ip-shell__main inside its space-6 padding (blocks, tables, Banners, lists,
+ * EmptyStates, panels); no screen caps a block or sizes a table to its content. Readouts in a row (div.ip-readouts,
+ * section 10) share the row (auto-fit: three Readouts take a third each instead of leaving a fourth track empty).
+ * Running prose keeps its own measure inside a full block (S12 help, S17 foot note); fields, keys, Selects, Dialogs,
+ * Toasts and the docked SidePanel keep their own widths.
+ * Height: the shell (Sidebar + page) is at least as tall as its frame (the board's .ip-root, or the docked page frame
+ * .ip-dockpage, section 62). Where the page is shorter, its last block takes the rest down to the frame's foot (less the
+ * page's space-6 padding); a column wrapper (S4 tab panel, S11/S14 page, S20 form column) hands that on to its own last
+ * block. Inside it, the last framed region grows: the DataTable scroll region (on the table's raised ground), the
+ * EmptyState box, the EventRow/ChangeRow list, the user list box, the GuideImportPreview (its FileDrop or its row box,
+ * up to the box's 13-row cap). Rows keep row-h (the frame grows, not the rows); the EmptyState
+ * stays at the top of its box, the FileDrop prompt is centred in it (the whole box is the drop target); notes and key
+ * rows after the region sit at the foot. S12's colgroup:
+ * fixed Data, Fermă, Kg and edit columns, Tip hrană takes the rest (both tables, section 54).
+ * A Banner is never stretched (it is never the grown block's grown child): a failure Banner alone keeps its height
+ * and leaves the page's ground under it. Where the page is taller than
+ * the frame nothing changes (no free space). Phones (ip-screen, section 57) are not affected. */
+.ip-root > .ip-shell{min-height:inherit}
+.ip-dockpage > .ip-shell{min-height:100%}
+.ip-readouts{grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(var(--space-12) * 5)),1fr))}
+.ip-shell__main > :not(.ip-sr,.ip-toastwrap):not(:has(~ :not(.ip-sr,.ip-toastwrap))),
+.ip-shell__main > :not(.ip-sr,.ip-toastwrap):not(:has(~ :not(.ip-sr,.ip-toastwrap))):not(:has(> :is(.ip-tablescroll--framed,.ip-emptybox,.ip-list,.ip-users__box,.ip-gimp))) > :not(.ip-sr,.ip-banner):not(:has(~ :not(.ip-sr))){flex-grow:1}
+:is(.ip-shell__main > :not(.ip-sr,.ip-toastwrap):not(:has(~ :not(.ip-sr,.ip-toastwrap))),
+.ip-shell__main > :not(.ip-sr,.ip-toastwrap):not(:has(~ :not(.ip-sr,.ip-toastwrap))):not(:has(> :is(.ip-tablescroll--framed,.ip-emptybox,.ip-list,.ip-users__box,.ip-gimp))) > :not(.ip-sr,.ip-banner):not(:has(~ :not(.ip-sr))))
+ > :is(.ip-tablescroll--framed,.ip-emptybox,.ip-list,.ip-users__box,.ip-gimp):not(:has(~ :is(.ip-tablescroll--framed,.ip-emptybox,.ip-list,.ip-users__box,.ip-gimp))){flex-grow:1}
+.ip-shell__main .ip-tablescroll--framed{background:var(--raised)}
+.ip-shell__main .ip-gimp > :is(.ip-drop,.ip-gimp__box):not(:has(~ :is(.ip-drop,.ip-gimp__box))){flex-grow:1}
+.ip-shell__main .ip-gimp > .ip-drop{justify-content:center}

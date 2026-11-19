@@ -203,10 +203,12 @@ def del_ths(role):
     if role != 'Observator': ths += '<th scope="col" class="num s11-thedit">Lei/kg</th><th scope="col" class="num s11-thedit">Total lei</th><th scope="col">Preț adăugat</th>'
     if role == 'Proprietar': ths += '<th scope="col"><span class="ip-sr">Acțiuni</span></th>'
     if role == 'Proprietar': ths = SKL.widths(ths, W_DEL, M_DEL)  # FIN11G: the loaded column shares, shared with the loading table
+    if role == 'Observator': ths = SKL.widths(ths, W_DEL_RO)  # FW01 (D148): the 4-column table spans the block, Tip hrană takes the rest
     return ths
 # FIN11G (§54): column shares of the owner's tables at 1440 (as content-sized before), declared on the head the loading
 # skeleton reuses, so its columns sit where the loaded ones do
 W_DEL = [11.0, 8.2, 13.7, 7.7, 14.7, 17.3, None, 8.6]   # None: the column that takes the rest
+W_DEL_RO = [11.0, 11.0, None, 9.0]   # FW01: viewer Livrări (no prices) at the block's full width, was fit-content (576)
 W_CONS = [None, 6.4, 8.5, 5.8, 10.5, 8.5, 5.8, 10.5, 19.6]
 W_COST = [None, 13.6, 14.7, 13.4, 17.9]
 # FIN11G fix 1: each column's loaded min-content (px, without padding; measured with the table at its narrowest), so at
@@ -231,11 +233,11 @@ def sec_deliveries(role, mode='default'):
         help_ = (f'<p class="ip-hint ip-m0" id="mp-sample">Valoare de exemplu: <span class="ip-num">{d2(MOD_NEW)}{NBSP}lei/kg</span> la <span class="ip-num">{ddate(MOD["date"])}</span> '
                  f'(prețul livrării Breeder 2 din <span class="ip-num">{ddate(MOD_PREV["date"])}</span>); totalul <span class="ip-num">{n(MOD_NEW_TOT)}{NBSP}lei</span> e calculat din <span class="ip-num">{n(MOD["qty_kg"])}{NBSP}kg</span>.</p>')
     unp = '' if viewer else f' · fără preț: <span class="ip-num">{unp_dates}.2026</span> · <span class="ip-num">{n(UNP_KG)} kg</span>'
-    foot = f'<div class="s11-foot{' s11-tablebox--fit' if viewer else ''}"><span class="ip-note">Afișate <span class="ip-num">{len(SHOWN)}</span> din <span class="ip-num">{N_ALL}</span>{unp}</span><a class="ip-link s11-lk" href="#livrari-toate">Vezi toate (<span class="ip-num">{N_ALL}</span>)</a></div>'
+    foot = f'<div class="s11-foot"><span class="ip-note">Afișate <span class="ip-num">{len(SHOWN)}</span> din <span class="ip-num">{N_ALL}</span>{unp}</span><a class="ip-link s11-lk" href="#livrari-toate">Vezi toate (<span class="ip-num">{N_ALL}</span>)</a></div>'
     ro = ' · prețuri doar de citit' if role == 'Manager' else ''
     return f'''<section class="ip-block" aria-labelledby="h-livrari">
 {sec_head("h-livrari", "Livrări", f'<span class="ip-num">{N_ALL}</span> livrări în Seria 2026 (Hîrbovăț <span class="ip-num">{N_HIR}</span> · Telița <span class="ip-num">{N_TEL}</span>) · cele mai noi întâi{ro}', right)}
-{tscroll(f'Livrări hrană, cele mai noi {len(SHOWN)} din {N_ALL}', f'<thead><tr>{ths}</tr></thead><tbody>{rows}</tbody>', viewer)}
+{tscroll(f'Livrări hrană, cele mai noi {len(SHOWN)} din {N_ALL}', f'<thead><tr>{ths}</tr></thead><tbody>{rows}</tbody>')}
 {help_}{foot}
 </section>'''
 
@@ -353,8 +355,6 @@ CSS = s4.CSS + '\n' + s4.CSS_STATES + '''
 .s11-farm .ip-label{margin:0}
 .s11-select{width:calc(var(--space-12) * 4);cursor:pointer}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
-.s11-tablebox--fit{width:fit-content;min-width:calc(var(--space-12) * 12);max-width:100%} /* viewer Livrări: 4 columns stay together (craft §5) */
-.s11-tablebox--fit > .ip-table{width:100%}
 .s11-gsub{color:var(--ink-secondary);font-weight:400;font-family:var(--font-mono);font-size:var(--ip-fs-small)}
 .s11-ico{color:var(--c);display:inline-flex;flex:none}
 .s11-type{display:inline-flex;align-items:center;gap:var(--space-2)}
