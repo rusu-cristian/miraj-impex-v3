@@ -104,7 +104,7 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
      - a totals row
    - **e. De verificat:** alerts for this farm.
    - **f. Latest records:** the event log with record icons.
-- **Other tabs** (round 2): 1. the Detaliu switch (Fermă · Hale · Compartimente, default Fermă, D159) and the table (PeriodTable: Total fermă, + hall or compartment groups; chips choose column groups; newest week first, last 4 weeks by default); 2. the tab's charts; 3. Păsări only: the event log with the type chips. Contents as in spec D1.
+- **Other tabs** (round 2): 1. the Detaliu switch (Fermă · Hale · Compartimente, default Fermă, D159) and the table (PeriodTable: Total fermă, + hall or compartment groups; chips choose column groups; newest week first, last 4 weeks by default); 2. the tab's charts; 3. Păsări only: the event log with the type chips. Contents as in spec D1. Producție (D183): the Ouat group adds % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs) after "stare", on week and day rows, Total fermă and each hall; ghid = Productivitate col I (D184).
 
 ### S5 · Scope page · section level
 Same template. Rezumat shows the section's stats, the latest records and the guide charts. There are no child tiles.
@@ -116,7 +116,7 @@ Round 2 (D154): every tab opens on its table (PeriodTable, one group = this sect
    - alive ♀ · ♂
    - count inputs coloured by sex for Mortalitate and Sacrificare (with a reason)
    - "Mai mult": Eroare sexare
-   - Ouă group (laying, on the hall card)
+   - Ouă group (laying, on the hall card): Jos, Cat. 1, Cat. 2, Cat. 3, Incubabile as counts per hall, Masa medie; Total ouă = Cat. 1–3 + Incubabile (D18, D183; 18.11.2026 H5 13 · 417 · 27 · 3 415 = 3 872, replacing D164's Cat. 1 placeholder)
    - "Fără pierderi azi"
 3. **Save bar:** a summary with record icons, then Salvează.
 
@@ -161,7 +161,7 @@ Farm, date, feed type, kg, note, the stock-after line, Adaugă.
 
 ### S14 · Producție report
 A weekly table by the birds' age week (SAPT), per section, vs the guide. Export.
-Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (newest week first, last 4 weeks by default, D159): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total perioadă"; 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen.
+Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (newest week first, last 4 weeks by default, D159): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total perioadă"; 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen. Columns add % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs, D183) on farm week and day rows and hall week rows; ghid = Productivitate col I (D184).
 
 ### S15 · Introdus azi
 Today's entries grouped by record type; edit or delete.
@@ -182,7 +182,7 @@ Round 2 (D151, spec B3): the list shows each series' SAPT span and today's age (
 
 ### S20 · Ghiduri
 Guide list with type. Import panel (paste or file, then a preview with row errors). Guide detail as a weekly table plus small curves.
-Round 2 (D151, spec B2): weeks are age weeks: the list shows each guide's span ("Ross 308 ouat · SAPT 19–65", "Ross 308 creștere · SAPT 1–25"); the detail table's SAPT column is the age week (no "SAPT = vârstă − 18" note); the weight foot note names the SAPT − 1 comparison (D157); the import preview warns on a laying guide that starts at week 1.
+Round 2 (D151, spec B2): weeks are age weeks: the list shows each guide's span ("Ross 308 ouat · SAPT 19–65", "Ross 308 creștere · SAPT 1–25"); the detail table's SAPT column is the age week (no "SAPT = vârstă − 18" note); the weight foot note names the SAPT − 1 comparison (D157); the import preview warns on a laying guide that starts at week 1. The laying guide's Ouat % = Productivitate col I, SAPT 23–62 (D184). The paste example is that guide with week 53 typed "645" (64,5%), a refused row (D180, D185).
 
 ### S21 · Tipuri de hrană
 List (name, for sex, active). Add or edit.

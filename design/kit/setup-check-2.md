@@ -43,7 +43,7 @@ Read-only audit (scripts in /tmp/audit, `python3 -I`, openpyxl read_only/data_on
 - **(c) Excel mirror on S4 Tabel:** halls as column groups (Total fermă | Hala 5 | 6 | 7) with daily rows and inline weekly Total rows, hall chips + record chips; closest to the habit, wide scroll; ~8–10 boards.
 
 ## 5. Doesn't fit data-model.md
-- Incubation batches (`Incubare`, `BD Incubator`): set/hatch dates, eggs set, chicks, hatch % vs guide, egg age per hall — no table.
+- Incubation batches (`Incubare`, `BD Incubator`): set/hatch dates, eggs set, chicks, hatch % vs guide, egg age per hall — no table. *Out of scope (D182).*
 - Age at placement / age-week guides (see 3); GUIDE_WEEK lacks eggs/hen (week, cumul), hatching eggs/hen, hatchability; `hatching_pct` is ambiguous.
-- Two lay% guides disagree (RealGhid col B wk 56 56,9% vs Productivitate col I 61,1%; RealGhid wk 53 typo "605"). The extract's "illustrative lay_pct" (D29) is the hatchability guide shifted one week (Incubare wk 55 76,5 · 57 74,1).
-- Deliveries carry total lei and a ♀/♂ feed split, not a feed type or lei/kg; depopulation booked as mortality (needs sale/transfer mapping); egg categories Cat 1–3 come as counts (form) and % (Masa).
+- Two lay% guides disagree (RealGhid col B wk 56 56,9% vs Productivitate col I 61,1%; RealGhid wk 53 typo "605"). *Resolved: Productivitate col I (D184).* The extract's "illustrative lay_pct" (D29) is the hatchability guide shifted one week (Incubare wk 55 76,5 · 57 74,1).
+- Deliveries carry total lei and a ♀/♂ feed split, not a feed type or lei/kg; depopulation booked as mortality (needs sale/transfer mapping); egg categories Cat 1–3 come as counts (form) and % (Masa). *Categories resolved: counts on Zilnic, % in reports (D183).*
