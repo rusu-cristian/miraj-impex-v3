@@ -40,7 +40,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S17 | `s17_build.py --canvas`, `s17s_build.py --canvas` |
 | S18 | `s18_build.py --canvas`, `s18s_build.py --canvas` |
 | S19 | `s19_build.py --canvas`, `s19s_build.py --canvas` |
-| S20 | `s20_build.py --canvas`, `s20s_build.py --canvas` |
+| S20 | `s20_build.py --canvas`, `s20s_build.py --canvas` (S20N: realdata guides by age week, SYS11 helpers; h/title in place; heights `s20_render.py --measure` → s20_heights.json, render wrapper keeps only the 1024/844 floor) |
 | S21 | `s21_build.py --canvas` (RF12: realdata; h/title in place; heights `s21_render.py --measure` → s21_heights.json, render wrapper keeps only the 1024/844 floor) |
 | S22 | `s22_build.py --canvas`, `s22s_build.py --canvas` |
 | S1  | `s1_build.py --canvas` |

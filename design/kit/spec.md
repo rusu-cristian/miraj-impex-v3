@@ -92,7 +92,7 @@ Status: 16.11.2026, round 2 updates 19.11.2026 (today on the boards = 18.11.2026
 - **Rules:**
   - Duplicate week + sex rows are refused.
   - A guide used by a cycle can be replaced but not deleted.
-  - A laying guide whose first row is week 1 imports with a warning (saveable) on that row: "Săptămâna 1 e prima săptămână de viață. Ghidurile de ouat încep de obicei la SAPT 19–23; verifică dacă fișierul numără săptămânile de la transfer." (round 2)
+  - A laying guide whose first row is week 1 imports with one file-level warn Banner in the import preview, saveable (D180): "Ghidul de ouat începe la SAPT 1. Săptămâna 1 e prima săptămână de viață. Ghidurile de ouat încep de obicei la SAPT 19–23; verifică dacă fișierul numără săptămânile de la transfer." (round 2)
 - **States:** parse errors per row; a partial guide shows `–` with "fără date în ghid" for every SAPT outside its rows (Hîrbovăț's laying guide has no body weight; growth weights end at SAPT 25).
 
 ### B3 · Series — MVP

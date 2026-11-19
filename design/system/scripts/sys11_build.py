@@ -1,6 +1,9 @@
 """Build the SYS11 preview (GuideImportPreview, S20 Ghiduri import, spec B2): python3 sys11_build.py
-Guide figures come from design/data/extracts/guide-growth.json and guide-laying.json (real workbook guide values);
-guide and file names are illustrative (D22). The three refused rows of the error state are state examples (D39)."""
+Guide figures come from design/data/extracts/guide-growth.json and guide-laying.json (real workbook guide values, both by
+the birds' age week, D151: SAPT = age week, no offset); guide and file names are illustrative (D22). The laying rows are
+RealGhid's (lay % and cumulative mortality % ♀, SAPT 23–62) with the feed g ♀/♂ (SAPT 19–65); pasted as the workbook has
+them, RealGhid's week 53 lay % "605" is refused (real, S20N; the extract reads it as 60,5). The three refused rows of the
+growth error state are state examples (D39)."""
 import json, pathlib
 REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
@@ -16,18 +19,20 @@ IC = {  # Banner and FileDrop previews (Lucide)
     'fault': '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
     'info': '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
     'ok': '<path d="M20 6 9 17l-5-5"/>',
+    'warn': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
     'upload': '<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/>',
 }
 
 def cap(text):
     return f'<span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">{text}</span>'
 
-def fmt(v, unit=''):
-    """Thin no-break thousands, true minus, decimal comma; a percentage keeps one decimal (89,0, as the guide detail)."""
+def fmt(v, unit='', dec=1):
+    """Thin no-break thousands, true minus, decimal comma; a percentage keeps one decimal (89,0, as the guide detail),
+    a cumulative mortality % two (7,25, as RealGhid and S4)."""
     if v is None:
         return None
     if unit == '%':
-        return f'{float(v):.1f}'.replace('.', ',')
+        return f'{float(v):.{dec}f}'.replace('.', ',')
     if isinstance(v, float) and not v.is_integer():
         return f'{v:.1f}'.replace('.', ',')
     n = int(v)
@@ -39,9 +44,14 @@ def num(n):
 
 SEX = {'F': ('♀', 'hen', 'găini'), 'M': ('♂', 'rooster', 'cocoși')}
 COLS = {'growth': [('feed_g', 'Hrană g'), ('body_weight_g', 'Greutate g')],
-        'laying': [('feed_g', 'Hrană g'), ('lay_pct', 'Ouat %')]}
-NAME = {'feed_g': 'hrana', 'body_weight_g': 'greutatea', 'lay_pct': 'ouat %'}
-UNIT = {'feed_g': 'g', 'body_weight_g': 'g', 'lay_pct': '%'}
+        'laying': [('feed_g', 'Hrană g'), ('mortality_cum_pct', 'Mortalitate %'), ('lay_pct', 'Ouat %')]}
+NAME = {'feed_g': 'hrana', 'body_weight_g': 'greutatea', 'mortality_cum_pct': 'mortalitatea', 'lay_pct': 'ouat %'}
+UNIT = {'feed_g': 'g', 'body_weight_g': 'g', 'mortality_cum_pct': '%', 'lay_pct': '%'}
+DEC = {'mortality_cum_pct': 2}           # RealGhid's cumulative mortality keeps its two decimals (7,25)
+HEN_ONLY = {'mortality_cum_pct', 'lay_pct'}   # RealGhid columns typed on the ♀ rows only
+FILE_COLS = [('feed_g', 'Hrană g'), ('body_weight_g', 'Greutate g'), ('mortality_cum_pct', 'Mortalitate %'), ('lay_pct', 'Ouat %'),
+             ('hatching_pct', 'Incubabile %'), ('egg_weight_g', 'Masă ou g')]   # the guide columns a file can carry (B2), in DROP_NOTE order
+def fmtk(key, v): return fmt(v, UNIT[key], DEC.get(key, 1))
 
 # ------------------------------------------------------------------ rows (as read from the file; line 1 = header)
 def growth_rows():
@@ -50,8 +60,20 @@ def growth_rows():
     return rows
 
 def laying_rows():
-    return [dict(week=r['cycle_week'], age=r['age_week'], sex=r['sex'], v={'feed_g': r['feed_g'], 'lay_pct': r['lay_pct']})
-            for r in LAY]
+    """By age week (D151), as the guide stores them: SAPT 19–65, feed ♀/♂, RealGhid's lay % and cumulative mortality % on ♀."""
+    return [dict(week=r['age_week'], sex=r['sex'], v={k: r[k] for k, _ in COLS['laying']}) for r in LAY]
+
+def laying_typed_rows():
+    """The laying rows as the workbook has them: RealGhid typed week 53's lay % as "605" (the extract reads 60,5), so that
+    cell is refused when the table is pasted (real, not a D39 example)."""
+    out = number(laying_rows())
+    for r in out:
+        if r['sex'] == 'F' and r['v']['lay_pct'] == TYPO_READ and r['week'] == TYPO_WEEK:
+            r.update(bad={'lay_pct': TYPO_RAW}, kind='range')
+    assert sum(1 for r in out if r.get('kind')) == 1
+    return out
+TYPO_WEEK, TYPO_RAW, TYPO_READ = 53, '605', 60.5
+assert any('"605"' in a and '60.5' in a for a in json.loads((EXT / 'guide-laying.json').read_text(encoding='utf-8'))['meta']['anomalies'])
 
 def number(rows):
     for i, r in enumerate(rows):
@@ -86,6 +108,9 @@ def sexg(code, sr=None):
 
 def reason(r):
     k = r.get('kind')
+    if k == 'range':
+        return (f'SAPT {r["week"]} {sexg("F")}', f'ouat % „{r["bad"]["lay_pct"]}” e peste 100',
+                f'Ouat % „{r["bad"]["lay_pct"]}” e peste 100. Scrie procentul cu virgulă, între 0 și 100.', 'lay_pct')
     if k == 'nan':
         return (f'SAPT {r["week"]} {sexg("M")}', 'greutatea „#REF!” nu e număr', 'Greutatea „#REF!” nu e număr. Scrie greutatea în grame.', 'body_weight_g')
     if k == 'dup':
@@ -98,8 +123,6 @@ def reason(r):
 # ------------------------------------------------------------------ table
 def head(kind):
     th = '<th scope="col" class="num">Rând</th>'
-    if kind == 'laying':
-        th += '<th scope="col" class="num">Vârstă</th>'
     th += '<th scope="col" class="num">SAPT</th><th scope="col">Sex</th>'
     th += ''.join(f'<th scope="col" class="num">{lbl}</th>' for _, lbl in COLS[kind])
     th += '<th scope="col" class="ip-gimp__chkh">Verificare</th>'
@@ -118,8 +141,6 @@ def row_html(p, kind, r, focus_cell=None):
     sx = SEX.get(r['sex'])
     tone = f' is-{sx[1]}' if sx else ''
     cells = [f'<td class="num ip-gimp__ln">{r["line"]}</td>']
-    if kind == 'laying':
-        cells.append(f'<td class="num">{r["age"]}</td>')
     fc = lambda k: focus_cell == k
     cells.append(bad_td(p, r, 'week', bad['week'], focus=fc('week')) if 'week' in bad else f'<td class="num">{r["week"]}</td>')
     if 'sex' in bad:
@@ -132,10 +153,11 @@ def row_html(p, kind, r, focus_cell=None):
         if key in bad:
             cells.append(bad_td(p, r, key, bad[key], focus=fc(key)))
             continue
-        v = fmt(r['v'][key], UNIT[key])
+        v = fmtk(key, r['v'][key])
         if v is None:
-            if key == 'lay_pct' and r['sex'] == 'M':
-                cells.append('<td class="num ip-gimp__none">–<span class="ip-sr"> nu se aplică la cocoși</span></td>')
+            if key in HEN_ONLY and r['sex'] == 'M':   # RealGhid gives these for hens only: no note on every ♂ row
+                why = 'nu se aplică la cocoși' if key == 'lay_pct' else 'ghidul nu o dă la cocoși'
+                cells.append(f'<td class="num ip-gimp__none">–<span class="ip-sr"> {why}</span></td>')
             else:
                 cells.append('<td class="num ip-gimp__none">–<span class="ip-sr"> fără date în ghid</span></td>')
                 gaps.append(NAME[key])
@@ -154,34 +176,40 @@ def row_html(p, kind, r, focus_cell=None):
     cls = ' class="is-refused"' if rs else ''
     return f'<tr{cls}>{"".join(cells)}<td class="ip-gimp__chk">{chk}</td></tr>{detail}'
 
+# the laying table has three guide columns: its figure heads may wrap between words (additions §32, FIN14), so Verificare keeps
+# the room for "fără date în ghid: mortalitatea, ouat %" on one line at 672 (one row height, FW04)
+WRAP = {'growth': '', 'laying': ' ip-table--wraphead'}
 def table(p, kind, rows, label, focus=None, busy=False, body=None, sum_=True):
     b = ' aria-busy="true"' if busy else ''
     d = f' aria-describedby="{p}-sum"' if sum_ else ''
     tb = body if body is not None else ''.join(row_html(p, kind, r, focus.get(r['line']) if focus else None) for r in rows)
     return (f'<div class="ip-gimp__box" tabindex="0" role="region" aria-label="Rânduri citite, {label}">'
-            f'<table class="ip-table ip-gimp__t"{d}{b}>{head(kind)}<tbody>{tb}</tbody></table></div>')
+            f'<table class="ip-table ip-gimp__t{WRAP[kind]}"{d}{b}>{head(kind)}<tbody>{tb}</tbody></table></div>')
 
 # loading: six section 42 skeleton rows (tr.ip-table__skel, aria-hidden) under the real head; each bar is as wide as the
 # column's figures will be (ch of the Mono cell: Rând, SAPT, Vârstă 2; Sex 1; hrană 3; greutate, ouat % 4) and sits where
 # they will sit (numbers at the right edge, sex at the left); Verificare stays empty (a valid row has no text there).
-CH = {'line': 2, 'age': 2, 'week': 2, 'sex': 1, 'feed_g': 3, 'body_weight_g': 4, 'lay_pct': 4}
+CH = {'line': 2, 'week': 2, 'sex': 1, 'feed_g': 3, 'body_weight_g': 4, 'mortality_cum_pct': 4, 'lay_pct': 4}
 def skel_body(kind, n=6):
-    keys = ['line'] + (['age'] if kind == 'laying' else []) + ['week', 'sex'] + [k for k, _ in COLS[kind]]
+    keys = ['line', 'week', 'sex'] + [k for k, _ in COLS[kind]]
     bar = lambda k: f'<span class="ip-skel ip-skel--ch{CH[k]}{"" if k == "sex" else " ip-skel--end"}"></span>'  # §42 ch widths (FIN11)
     tds = ''.join(f'<td class="{"ip-gimp__sex" if k == "sex" else "num"}">{bar(k)}</td>' for k in keys)
     return ''.join(f'<tr class="ip-table__skel" aria-hidden="true">{tds}<td class="ip-gimp__chk"></td></tr>' for _ in range(n))
 
 # ------------------------------------------------------------------ parts
+p_src = {}   # prefix → the source named on its line (a pasted table's fault Banner says "lipește-l din nou")
 def src_line(p, name, note, counts, key='Alege alt fișier'):
     """key='' leaves the key out (the empty file: the EmptyState holds the one "Alege alt fișier")."""
+    p_src[p] = name
     c = f'<p class="ip-gimp__counts" id="{p}-sum">{counts}</p>' if counts else f'<p class="ip-gimp__counts" id="{p}-sum"></p>'
     k = f'<button type="button" class="ip-btn ip-btn--ghost">{key}</button>' if key else ''
     return (f'<div class="ip-gimp__src"><span class="ip-gimp__file"><b>{name}</b><span class="ip-note">{note}</span></span>'
             f'{c}{k}</div>')
 
+def refused_words(n): return f'{num(n)} {"rând refuzat" if n == 1 else "rânduri refuzate"}'
 def counts(read, valid, refused):
     s = f'{num(read)} rânduri citite · {num(valid)} valide'
-    return s + (f' · {num(refused)} refuzate' if refused else '')
+    return s + (f' · {num(refused)} {"refuzat" if refused == 1 else "refuzate"}' if refused else '')
 
 def banner(kind, body, bid=''):
     i = f' id="{bid}"' if bid else ''
@@ -192,11 +220,13 @@ def err_banner(p, rows):
     li = ''.join(f'<li><a class="ip-link" href="#{p}-r{r["line"]}-{reason(r)[3]}">Rândul {r["line"]} · {reason(r)[0]}</a>: '
                  f'{reason(r)[1]}.</li>' for r in bad)
     n = len(bad)
-    return banner('fault', f'<p><b>{n} rânduri refuzate.</b> Corectează-le în fișier și încarcă-l din nou; '
+    fix = 'Corectează-l' if n == 1 else 'Corectează-le'
+    src = 'în tabel și lipește-l' if 'Tabel lipit' in p_src.get(p, '') else 'în fișier și încarcă-l'
+    return banner('fault', f'<p><b>{refused_words(n)}.</b> {fix} {src} din nou; '
                            f'până atunci ghidul nu se poate salva.</p><ul class="ip-gimp__errs">{li}</ul>', f'{p}-errs')
 
 def info_banner(text):
-    return banner('info', f'<p><b>Nu blochează salvarea.</b> {text}</p>')
+    return banner('info', f'<p><b>Lipsurile nu blochează salvarea.</b> {text}</p>')
 
 def seg(p, total, refused, on='all'):
     a = ('is-selected', 'true') if on == 'all' else ('', 'false')
@@ -220,6 +250,48 @@ def live(text):
 
 def wrap(p, inner, label):
     return f'<section class="ip-gimp" aria-label="{label}">{inner}</section>'
+
+def gap_weeks(ws):
+    """[24, 25] → '24–25'; runs joined with ' și '."""
+    out = []
+    for w in sorted(ws):
+        if out and out[-1][1] == w - 1: out[-1][1] = w
+        else: out.append([w, w])
+    return ' și '.join(f'{a}–{b}' if a != b else f'{a}' for a, b in out)
+def info_text(kind, rows, src='fișierul'):
+    """The info Banner's text (doesn't block saving), from the rows read: the weeks each column leaves blank (♀ only for the
+    hen-only columns), the file rows they sit on (growth: one run) and the guide columns the file lacks."""
+    parts = {}   # weeks text → [column names] (columns blank on the same weeks share one clause)
+    for key, lbl in COLS[kind]:
+        sexes = 'F' if key in HEN_ONLY else 'FM'
+        ws = sorted({r['week'] for r in rows if r['sex'] and r['sex'] in sexes and r['v'][key] is None and key not in r.get('bad', {})})
+        if not ws: continue
+        lines = [r['line'] for r in rows if r['sex'] and r['sex'] in sexes and r['v'][key] is None]
+        where = f' (rândurile {lines[0]}–{lines[-1]})' if lines[-1] - lines[0] == len(lines) - 1 else ''
+        parts.setdefault(f'sapt. {gap_weeks(ws)}{where}', []).append(NAME[key])
+    parts = [f'{" și ".join(ns)} {"lipsește" if len(ns) == 1 else "lipsesc"} la {w}' for w, ns in parts.items()]
+    absent = [lbl for k, lbl in FILE_COLS if k not in dict(COLS[kind])]
+    t = (', '.join(parts[:-1]) + ' și ' + parts[-1] if len(parts) > 1 else ''.join(parts))
+    t = t[0].upper() + t[1:] if t else ''
+    nu = f'{src} nu are coloanele {", ".join(absent[:-1])} și {absent[-1]}'
+    s = (f'{t}, iar {nu}.' if t else f'{nu[0].upper()}{nu[1:]}.') + ' În ghid apar ca „–” fără date în ghid.'
+    if kind == 'laying':
+        s += (' Mortalitate % și Ouat % se citesc doar pe rândurile <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span>'
+              '<span class="ip-sr">de găini</span>.')
+    return s
+
+def from_transfer_rows():
+    """D180 state example (D39 file): the real laying rows in a file that counts its weeks from the transfer, so its first row
+    is SAPT 1 (the guide's first age week becomes 1). Same figures, other week numbers."""
+    k0 = min(r['age_week'] for r in LAY) - 1
+    out = [dict(r, week=r['week'] - k0) for r in laying_rows()]
+    assert min(r['week'] for r in out) == 1
+    return number(out)
+WEEK1 = ('<p><b>Ghidul de ouat începe la SAPT 1.</b> Săptămâna 1 e prima săptămână de viață. Ghidurile de ouat încep de obicei la '
+         'SAPT 19–23; verifică dacă fișierul numără săptămânile de la transfer.</p>')   # spec B2 round 2; D180: file level, Save allowed
+def week1_banner(p):
+    """D180: a laying file whose first row is week 1: one file-level warn Banner (role=status); the guide can still be saved."""
+    return banner('warn', WEEK1, f'{p}-wk1').replace(f'id="{p}-wk1"', f'id="{p}-wk1" role="status"', 1)
 
 DROP_NOTE = 'sapt · sex · hrană g · greutate g · mortalitate % · ouat % · incubabile % · masă ou g'
 # FileDrop as the paste target (additions section 43): focusable group, Ctrl+V pastes into it; the file button inside
@@ -249,10 +321,9 @@ B.append(('Se citește fișierul (skeleton, aria-busy)', wrap('a',
 
 # 2 all valid, growth
 gr = number(growth_rows())
-gap_lines = [r['line'] for r in gr if r['v']['body_weight_g'] is None]
-INFO_G = (f'Greutatea lipsește la sapt. 24–25 (rândurile {gap_lines[0]}–{gap_lines[-1]}), iar fișierul nu are coloanele '
-          'Mortalitate %, Ouat %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid.')
-B.append(('Toate valide · creștere (real, 50 de rânduri; cutia derulează)', wrap('b',
+INFO_G = info_text('growth', gr)
+GW = sorted({r['week'] for r in gr}); GWT = [r['week'] for r in gr if r['v']['body_weight_g'] is None]
+B.append((f'Toate valide · creștere (real, {len(gr)} de rânduri; cutia derulează)', wrap('b',
     src_line('b', GF, 'fișier .xlsx · tip creștere', counts(len(gr), len(gr), 0))
     + banner('ok', f'<p><b>Toate cele {len(gr)} de rânduri sunt valide.</b> Verifică cifrele și salvează ghidul.</p>')
     + info_banner(INFO_G)
@@ -261,15 +332,13 @@ B.append(('Toate valide · creștere (real, 50 de rânduri; cutia derulează)', 
     + live(f'Fișier citit: {len(gr)} de rânduri, toate valide.'), 'Import ghid')))
 
 # 2b all valid, end of the box (the partial weeks)
-B.append(('Toate valide · capătul tabelului (derulat): SAPT 24–25 fără greutate', wrap('b2',
-    bar('b2') + table('b2', 'growth', [r for r in gr if r['week'] >= 20], GF, sum_=False), 'Import ghid')))
+B.append((f'Toate valide · capătul tabelului (derulat): SAPT {gap_weeks(GWT)} fără greutate', wrap('b2',
+    bar('b2') + table('b2', 'growth', [r for r in gr if r['week'] >= GW[-1] - 5], GF, sum_=False), 'Import ghid')))
 
 # 3 refused rows
 er = error_rows()
 nbad = sum(1 for r in er if reason(r))
-gl = [r['line'] for r in er if r['v']['body_weight_g'] is None]
-INFO_E = (f'Greutatea lipsește la sapt. 24–25 (rândurile {gl[0]}–{gl[-1]}), iar fișierul nu are coloanele '
-          'Mortalitate %, Ouat %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid.')
+INFO_E = info_text('growth', er)
 NOTE_E = f'{nbad} rânduri refuzate: corectează fișierul și încarcă-l din nou.'
 B.append((f'Rânduri refuzate · Toate (exemple de stare D39: rândurile 7, 10, 12)', wrap('c',
     src_line('c', GF, 'fișier .xlsx · tip creștere', counts(len(er), len(er) - nbad, nbad))
@@ -283,18 +352,36 @@ B.append(('Filtru Refuzate · focus pe celula „#REF!” (după linkul din rezu
     seg('d', len(er), nbad, 'bad') + table('d', 'growth', [r for r in er if reason(r)], GF, focus={7: 'body_weight_g'}, sum_=False)
     + foot('d', False, NOTE_E), 'Import ghid')))
 
-# 5 laying, pasted: age + SAPT, lay % partial
-lr = number(laying_rows())
+# 5 laying, pasted as the workbook has it (real): by age week (D151), RealGhid's week 53 lay % "605" refused
+lr = number(laying_rows())        # the rows as the guide stores them (60,5 read): S20's new-guide file, all valid
+lt = laying_typed_rows()          # the same rows as typed in RealGhid: one cell refused
+tb = next(r for r in lt if r.get('kind'))
 LF = 'Ross 308 ouat'
-INFO_L = ('Ouat % lipsește la vârsta 19–24 și 64–65 (sapt. 1–6 și 46–47), iar tabelul nu are coloanele Greutate g, '
-          'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">de găini</span>.')
-B.append(('Ouat · tabel lipit (real, 94 de rânduri): vârstă și SAPT (SAPT = vârstă − 18, D26)', wrap('e',
-    src_line('e', 'Tabel lipit', 'din clipboard · tip ouat', counts(len(lr), len(lr), 0), 'Lipește alt tabel')
-    + banner('ok', f'<p><b>Toate cele {len(lr)} de rânduri sunt valide.</b> Verifică cifrele și salvează ghidul.</p>')
-    + info_banner(INFO_L)
-    + bar('e') + table('e', 'laying', lr, 'tabel lipit')
-    + foot('e', True, f'Se salvează {len(lr)} de rânduri în ghidul {LF}.')
-    + live(f'Tabel citit: {len(lr)} de rânduri, toate valide.'), 'Import ghid')))
+LW = sorted({r['week'] for r in lr})
+INFO_L = info_text('laying', lt, 'tabelul')
+NOTE_L = f'{refused_words(1)}: corectează tabelul și lipește-l din nou.'
+B.append((f'Ouat · tabel lipit din registru (real, {len(lt)} de rânduri, SAPT {LW[0]}–{LW[-1]}): rândul {tb["line"]} refuzat, '
+          f'ouat % „{TYPO_RAW}” la SAPT {TYPO_WEEK} ♀', wrap('e',
+    src_line('e', 'Tabel lipit', 'din clipboard · tip ouat', counts(len(lt), len(lt) - 1, 1), 'Lipește alt tabel')
+    + err_banner('e', lt) + info_banner(INFO_L)
+    + seg('e', len(lt), 1, 'all') + table('e', 'laying', lt, 'tabel lipit')
+    + foot('e', False, NOTE_L)
+    + live(f'Tabel citit: {len(lt)} de rânduri, 1 refuzat.'), 'Import ghid')))
+
+# 5b the same, scrolled to the refused row (focus on its cell, reached from the Banner link)
+B.append((f'Ouat · derulat la rândul {tb["line"]} · focus pe celula „{TYPO_RAW}” (după linkul din rezumat)', wrap('e2',
+    bar('e2') + table('e2', 'laying', [r for r in lt if TYPO_WEEK - 3 <= r['week'] <= TYPO_WEEK + 2], 'tabel lipit',
+                      focus={tb['line']: 'lay_pct'}, sum_=False), 'Import ghid')))
+
+# 5c laying file numbered from the transfer (D39 file, real figures): file-level warn Banner, Save allowed (D180)
+wr = from_transfer_rows()
+WF = 'Ross 308 ouat.xlsx'
+B.append(('Ouat · fișier numărat de la transfer (exemplu de stare D39, cifre reale): începe la SAPT 1, avertisment, se poate salva', wrap('e3',
+    src_line('e3', WF, 'fișier .xlsx · tip ouat', counts(len(wr), len(wr), 0))
+    + week1_banner('e3') + info_banner(info_text('laying', wr))
+    + bar('e3') + table('e3', 'laying', wr, WF)
+    + foot('e3', True, f'Se salvează {len(wr)} de rânduri în ghidul {LF}, de la SAPT 1.')
+    + live(f'Fișier citit: {len(wr)} de rânduri, toate valide; ghidul începe la SAPT 1.'), 'Import ghid')))
 
 # 6 wrong format
 B.append(('Format greșit (.pdf)', wrap('f',
@@ -313,16 +400,19 @@ B.append(('Gol: doar antetul', wrap('h',
 
 col = 'calc(var(--space-12) * 14)'  # 672px: two previews side by side at 1440
 grid = ''.join(f'<div style="width:{col}">{cap(t)}{h}</div>' for t, h in B)
-html = ('<!-- @dsCard group="Data" height=3032 subtitle="SYS11" -->\n'
+html = ('<!-- @dsCard group="Data" height=3876 subtitle="SYS11" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-8)">\n'
         f'<div>{cap("S20 · Ghiduri · import · desktop (lățime 672 px)")}'
         f'<div style="display:grid;grid-template-columns:repeat(2,{col});gap:var(--space-8) var(--space-6);align-items:start">{grid}</div></div>\n'
         f'<p class="ip-note" style="margin:0;max-width:calc({col} * 2)">Reale: valorile ghidurilor din guide-growth.json '
-        '(creștere, sapt. 1–25, hrană g și greutate g ♀/♂, greutatea până la sapt. 23) și guide-laying.json (ouat, vârsta 19–65, '
-        'hrană g ♀/♂; ouat % ♀ ilustrativ, D29). Ilustrative (D22): numele ghidurilor și ale fișierelor. Exemple de stare (D39): '
-        'rândul 7 cu greutatea „#REF!” (în ghid 550), rândul 10 copia rândului 8 (SAPT 4 ♀), rândul 12 fără sex (SAPT 5 ♂); '
-        'fișierul .pdf, cel fără antet și cel gol.</p>\n'
+        f'(creștere, sapt. {GW[0]}–{GW[-1]}, hrană g și greutate g ♀/♂, greutatea până la sapt. {min(GWT) - 1}) și guide-laying.json (ouat, '
+        f'sapt. {LW[0]}–{LW[-1]}, hrană g ♀/♂; ouat % și mortalitate cumulată % ♀ din RealGhid, sapt. {min(r["week"] for r in lr if r["v"]["lay_pct"] is not None)}–'
+        f'{max(r["week"] for r in lr if r["v"]["lay_pct"] is not None)}), pe săptămâna de vârstă (SAPT, D151). Real și refuzul: RealGhid are '
+        f'la sapt. {TYPO_WEEK} ouat % scris „{TYPO_RAW}” (ghidul salvat îl citește {fmt(TYPO_READ, "%")}). Ilustrative (D22): numele ghidurilor și ale fișierelor. '
+        f'Exemple de stare (D39): rândul 7 cu greutatea „#REF!” (în ghid {fmt(next(r["v"]["body_weight_g"] for r in gr if r["week"] == 3 and r["sex"] == "M"))}), '
+        'rândul 10 copia rândului 8 (SAPT 4 ♀), rândul 12 fără sex (SAPT 5 ♂); '
+        'fișierul .pdf, cel fără antet și cel gol; fișierul de ouat numărat de la transfer (SAPT 1, D180).</p>\n'
         '</div>\n')
 (ROOT / 'GuideImportPreview').mkdir(exist_ok=True)
 (ROOT / 'GuideImportPreview' / 'preview.html').write_text(html, encoding='utf-8')
-print('ok', len(gr), len(er), nbad, len(lr))
+print('ok', len(gr), len(er), nbad, len(lr), tb['line'])

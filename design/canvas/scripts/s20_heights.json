@@ -3,11 +3,11 @@
  "S20-ghiduri--salvat": 1024,
  "S20-ghiduri--telefon": 844,
  "S20-ghiduri--ross-308-ouat": 2440,
- "S20-ghiduri--ross-308-crestere": 1760,
+ "S20-ghiduri--ross-308-crestere": 1756,
  "S20-ghiduri--importa-ghid": 1024,
  "S20-ghiduri--inlocuieste-fisier": 1084,
- "S20-ghiduri--inlocuieste-refuzate": 1140,
- "S20-ghiduri--inlocuieste-lipit": 1084,
+ "S20-ghiduri--inlocuieste-refuzate": 1144,
+ "S20-ghiduri--inlocuieste-lipit": 1108,
  "S20-ghiduri--se-incarca": 1024,
  "S20-ghiduri--eroare-la-incarcare": 1024,
  "S20-ghiduri--fara-acces": 1024,
@@ -20,6 +20,7 @@
  "S20-ghiduri--nume-gol": 1024,
  "S20-ghiduri--nume-folosit": 1024,
  "S20-ghiduri--ghid-nou": 1100,
- "S20-ghiduri--eroare-la-salvare": 1208,
- "S20-ghiduri--sterge": 1024
+ "S20-ghiduri--eroare-la-salvare": 1172,
+ "S20-ghiduri--sterge": 1024,
+ "S20-ghiduri--ouat-de-la-sapt-1": 1084
 }

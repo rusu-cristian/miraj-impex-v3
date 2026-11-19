@@ -1,22 +1,25 @@
 """S20 · Ghiduri (spec B2, screens.md S20; nav map: Setări › Ghiduri, owner). Desktop-led like S17–S19 (a Setări page):
-desktops first, then the phone. Today = 16.11.2026 (D23/D24). D113: the guide detail and the import are sub-pages of
+desktops first, then the phone. Today = realdata.TODAY (18.11.2026, SAPT 59). D113: the guide detail and the import are sub-pages of
 Ghiduri (crumbs), not SidePanels (SYS11 needs ≥672px, D76); a guide used by a cycle is replaced from its detail page
 (re-import into the same guide, Tip locked), never deleted.
-Content, from the extracts only: guide-growth.json (Ross 308 creștere, SAPT 1–25, hrană g ♀/♂, greutate g ♀/♂ to SAPT 23)
-and guide-laying.json (Ross 308 ouat, vârsta 19–65 = SAPT 1–47, hrană g ♀/♂, ouat % ♀ SAPT 7–45 illustrative, D29);
-which cycles use each guide from cycles.json + farms-sections.json (through s18_build). Guide and file names illustrative
-(D22). The import preview is SYS11's GuideImportPreview (additions.css §29): its helpers are read from
-design/system/scripts/sys11_build.py (the part above its preview blocks, so nothing is written there).
-Boards (row below S19: y 34408 + 1024 + 120 = 35552; x step w + 80; desktops first):
+S20N (RF00, D151/D157): today = realdata.TODAY (18.11.2026, SAPT 59); every guide is indexed by the birds' age week (SAPT, no
+offset; D26's laying offset is gone). Content, from the extracts only (realdata): guide-growth.json (Ross 308 creștere, SAPT 1–25,
+hrană g ♀/♂, greutate g ♀/♂ to SAPT 23; the weight is the end-of-week weight, a weighing in SAPT n is compared with row n − 1,
+D157) and guide-laying.json (Ross 308 ouat, SAPT 19–65, hrană g ♀/♂; RealGhid's ouat % and cumulative mortality % ♀, SAPT 23–62);
+which cycles use each guide, with their real SAPT spans (s18_build.cyc_span: Hîrbovăț Seria 2026 SAPT 20–59 open, Telița 1–21,
+Hîrbovăț Seria 2025 19–65). Guide and file names illustrative (D22). The import preview is SYS11's GuideImportPreview
+(additions.css §29): its helpers are read from design/system/scripts/sys11_build.py (the part above its preview blocks, so
+nothing is written there). The pasted laying table is RealGhid as typed: its week 53 "605" is refused (real).
+Boards (the S20 row; x step w + 80; desktops first):
   S20-ghiduri                  list: PageHeader (Setări › Ghiduri, "Importă ghid"), DataTable of guides (Tip, Săptămâni,
                                Coloane + fără date în ghid, Folosit de, Deschide)
-  --ross-308-ouat              guide detail (laying): Folosit de (Hîrbovăț 2026 open SAPT 40, Hîrbovăț 2025 closed), small
-                               curves (ip-sparktable), weekly table SAPT × ♀/♂ with Vârstă; Șterge aria-disabled + reason
-  --ross-308-crestere          guide detail (growth): partial weight (SAPT 24–25 "–" fără date în ghid)
+  --ross-308-ouat              guide detail (laying): Folosit de (Hîrbovăț 2026 open SAPT 20–59, Hîrbovăț 2025 closed 19–65), small
+                               curves (ip-sparktable), weekly table SAPT 19–65 × ♀/♂ (Hîrbovăț azi SAPT 59); Șterge aria-disabled + reason
+  --ross-308-crestere          guide detail (growth): partial weight (SAPT 24–25 "–" fără date în ghid), D157 weight note
   --importa-ghid               new import: Nume (focus), Tip unset, FileDrop (paste or file), Salvează ghidul aria-disabled
   --inlocuieste-fisier         D39 flow: Înlocuiește Ross 308 creștere with its own .xlsx (real 50 rows): all valid
   --inlocuieste-refuzate       D39: the same file with rows 7, 10, 12 refused (SYS11 state examples), save blocked
-  --inlocuieste-lipit          D39 flow: Înlocuiește Ross 308 ouat by paste (real 94 rows, vârstă + SAPT)
+  --inlocuieste-lipit          D39 flow: Înlocuiește Ross 308 ouat by paste (real 94 rows as typed: SAPT 53 ♀ "605" refused)
   --salvat                     D39: back on the Ross 308 creștere detail after the replace, Toast + Anulează
   --telefon                    phone, read-only list ("Ghidurile le imporți pe calculator", D76 desktop only)
 python3 -I s20_build.py <repo_root> [s20_heights.json] [--canvas]
@@ -36,7 +39,7 @@ sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
 M = importlib.util.module_from_spec(sp)
 with contextlib.redirect_stdout(io.StringIO()):
     sp.loader.exec_module(M)   # rewrites the S19 boards (and through s18_build S18/S17/S14S/S2/S7) byte-identical
-T, SC, Q, s4, A = M.T, M.SC, M.Q, M.s4, M.A
+T, SC, Q, s4, A, R = M.T, M.SC, M.Q, M.s4, M.A, M.R
 icon, lamp, num, dd, NB = M.icon, M.lamp, M.num, M.dd, M.NB
 FARM, GUIDE, WK, cH, cT = M.FARM, M.GUIDE, M.WK, M.cH, M.cT
 cP = T.cP
@@ -48,36 +51,34 @@ assert SRC.count(CUT) == 1
 G = {'__name__': 'sys11_parts', '__file__': str(ROOT / 'design/system/scripts/sys11_build.py')}  # sys11 finds the repo from its own path
 exec(compile(SRC.split(CUT)[0], 'sys11_build.py', 'exec'), G)
 
-# ================================================================= data (extracts only)
-EX = ROOT / 'design/data/extracts'
-GROW = json.loads((EX / 'guide-growth.json').read_text(encoding='utf-8'))
-LAY = json.loads((EX / 'guide-laying.json').read_text(encoding='utf-8'))
+# ================================================================= data (extracts only, through realdata: D151 age weeks)
+GROW, LAY = R.GG, R.GL
 assert GUIDE == {'g-growth': 'Ross 308 creștere', 'g-laying': 'Ross 308 ouat'}
-assert len(GROW['rows']) == 50 and len(LAY['rows']) == 94
 assert cH['guide_id'] == cP['guide_id'] == 'g-laying' and cT['guide_id'] == 'g-growth'
 assert FARM['telita']['guide_id'] == 'g-growth' and FARM['hirbovat']['guide_id'] == 'g-laying'
 fmt = G['fmt']   # SYS11's fmt: thin no-break thousands, true minus, a percentage keeps one decimal (89,0), as the preview
 def wk_rows(gid):
-    """{week: {'F': row, 'M': row}} and the (week, age) list, by guide week (laying: cycle week, age beside, D26)."""
+    """{SAPT: {'F': row, 'M': row}}: both guides by the birds' age week (D151), as stored."""
     out = {}
-    if gid == 'g-growth':
-        for r in GROW['rows']: out.setdefault(r['week'], {'age': None})[r['sex']] = r
-    else:
-        for r in LAY['rows']: out.setdefault(r['cycle_week'], {'age': r['age_week']})[r['sex']] = r
+    for r in (GROW if gid == 'g-growth' else LAY)['rows']: out.setdefault(r['age_week'], {})[r['sex']] = r
     return out
 W = {g: wk_rows(g) for g in GUIDE}
-assert sorted(W['g-growth']) == list(range(1, 26)) and sorted(W['g-laying']) == list(range(1, 48))
-assert W['g-laying'][40]['age'] == 58 and W['g-laying'][40]['F']['feed_g'] == 158 and W['g-laying'][40]['M']['feed_g'] == 155
+WKS = {g: sorted(W[g]) for g in GUIDE}
+assert all(WKS[g] == list(range(WKS[g][0], WKS[g][-1] + 1)) for g in GUIDE)   # no week missing inside a guide
+assert all(W['g-laying'][k]['F'] is R.guide_row(k, 'F') for k in WKS['g-laying'])
+assert (W['g-laying'][WK]['F']['lay_pct'], W['g-laying'][WK]['F']['mortality_cum_pct']) == (R.guide_lay(WK), R.guide_mort(WK))
 TYPE = {'g-growth': 'growth', 'g-laying': 'laying'}
 TYPE_RO, TYPE_LO = M.TYPE_RO, M.TYPE_LO
-# indicators of B2, in spec order; key in the extracts, label, unit, sexes that carry it
-IND = [('feed_g', 'Hrană', 'g', 'FM'), ('body_weight_g', 'Greutate', 'g', 'FM'), ('mortality_pct', 'Mortalitate', '%', ''),
+# indicators of B2, in spec order; key in the extracts, label, unit, sexes that carry it (RealGhid's mortality is the
+# cumulative % of hens, as S4 compares it)
+IND = [('feed_g', 'Hrană', 'g', 'FM'), ('body_weight_g', 'Greutate', 'g', 'FM'), ('mortality_cum_pct', 'Mortalitate cumulată', '%', 'F'),
        ('lay_pct', 'Ouat', '%', 'F'), ('hatching_pct', 'Incubabile', '%', ''), ('egg_weight_g', 'Masă ou', 'g', '')]
-HAS = {'g-growth': ['feed_g', 'body_weight_g'], 'g-laying': ['feed_g', 'lay_pct']}
-for g, ks in HAS.items():   # columns present = indicators with at least one figure
-    assert ks == [k for k, *_ in IND if any(W[g][w][s].get(k) is not None for w in W[g] for s in 'FM')], g
+DEC = G['DEC']   # 7,25 (two decimals for the cumulative mortality, as RealGhid)
+def fv(k, v, u): return fmt(v, u, DEC.get(k, 1))
+HAS = {g: [k for k, *_ in IND if any(W[g][w][s].get(k) is not None for w in W[g] for s in 'FM')] for g in GUIDE}
+assert HAS == {'g-growth': ['feed_g', 'body_weight_g'], 'g-laying': ['feed_g', 'mortality_cum_pct', 'lay_pct']}, HAS
 def series(g, k, s):
-    return [(w, W[g][w][s].get(k)) for w in sorted(W[g])]
+    return [(w, W[g][w][s].get(k)) for w in WKS[g]]
 def span(g, k, s):
     pts = [(w, v) for w, v in series(g, k, s) if v is not None]
     return pts[0][0], pts[-1][0]
@@ -88,12 +89,15 @@ def gaps(g, k, s):
         if out and out[-1][1] == w - 1: out[-1][1] = w
         else: out.append([w, w])
     return ['–'.join(str(x) for x in sorted(set(r))) for r in out]
-assert gaps('g-growth', 'body_weight_g', 'F') == ['24–25'] and gaps('g-laying', 'lay_pct', 'F') == ['1–6', '46–47']
+assert gaps('g-growth', 'body_weight_g', 'F') == ['24–25'] and gaps('g-laying', 'lay_pct', 'F') == ['19–22', '63–65']
 NWK = {g: len(W[g]) for g in GUIDE}
 NROWS = {'g-growth': len(GROW['rows']), 'g-laying': len(LAY['rows'])}
+def wspan(g): return f'SAPT {WKS[g][0]}–{WKS[g][-1]}'
 
 # cycles that use each guide (cycles.json), newest first
 CYC = {'g-laying': [cH, cP], 'g-growth': [cT]}
+cyc_span = T.cyc_span   # a cycle's own SAPT span (S18, D151): open → to today's week (Hîrbovăț SAPT 20–59)
+assert [cyc_span(c) for c in (cH, cT, cP)] == [f'SAPT {cH["sapt_start"]}–{WK}', f'SAPT {cT["sapt_start"]}–{cT["sapt_end"]}', f'SAPT {cP["sapt_start"]}–{cP["sapt_end"]}']
 SER = {'seria-2026': 'Seria 2026', 'seria-2025': 'Seria 2025'}
 def cyc_words(k): return f'{num(k)} {"ciclu" if k == 1 else "cicluri"}'
 
@@ -133,13 +137,13 @@ def framed(label_id, table):  # FX06: every scroll region is focusable (Folosit 
 
 # ---- what a guide holds (list and detail)
 def weeks_txt(g):
-    if g == 'g-laying':
-        return (f'<span class="ip-nowrap">SAPT 1–{NWK[g]}</span> <span class="ip-note ip-nowrap">vârsta {W[g][1]["age"]}–{W[g][NWK[g]]["age"]}</span>')
-    return f'<span class="ip-nowrap">SAPT 1–{NWK[g]}</span>'
+    return f'<span class="ip-nowrap">{wspan(g)}</span>'
+SHORT = {'mortality_cum_pct': 'Mortalitate'}   # the list (Coloane and its "fără date" line) names the columns by their short name,
+                                              # so every guide's row keeps one height (FW04: 48 at 1440, 63 at 1280); the detail says "cumulată"
 def cols_txt(g):
-    return ' · '.join(f'<span class="ip-nowrap">{lbl} {u}</span>' for k, lbl, u, _ in IND if k in HAS[g])
+    return ' · '.join(f'<span class="ip-nowrap">{SHORT.get(k, lbl)} {u}</span>' for k, lbl, u, _ in IND if k in HAS[g])
 def missing(g):
-    return [f'{lbl.lower()} {u}' for k, lbl, u, _ in IND if k not in HAS[g]]
+    return [f'{SHORT.get(k, lbl).lower()} {u}' for k, lbl, u, _ in IND if k not in HAS[g]]
 def missing_txt(g): return ', '.join(missing(g))
 def used_txt(g, short=False):
     out = []
@@ -147,9 +151,10 @@ def used_txt(g, short=False):
         f = FARM[c['farm_id']]['name']
         if c['status'] == 'open':
             out.append(f'<span class="s20-use"><span class="ip-nowrap">{lamp("ok", "deschis")} {f}</span> · <span class="ip-nowrap">{SER[c["series_id"]]}</span>'
-                       f' · <span class="ip-note ip-num ip-nowrap">SAPT {WK}</span></span>')
+                       f' · <span class="ip-note ip-num ip-nowrap">{cyc_span(c)}</span></span>')
         else:
-            out.append(f'<span class="s20-use"><span class="ip-nowrap">{lamp("off", "închis")} {f}</span> · <span class="ip-nowrap">{SER[c["series_id"]]}</span></span>')
+            out.append(f'<span class="s20-use"><span class="ip-nowrap">{lamp("off", "închis")} {f}</span> · <span class="ip-nowrap">{SER[c["series_id"]]}</span>'
+                       f' · <span class="ip-note ip-num ip-nowrap">{cyc_span(c)}</span></span>')
     return ''.join(out)
 
 # ================================================================= list
@@ -172,7 +177,8 @@ def glist():
     tb = (f'<table class="ip-table ip-table--rowheads s20-table"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, coloanele și ciclurile '
           f'care le folosesc</caption>{LCOLS}<tbody>{"".join(lrow(g) for g in ORDER)}</tbody></table>')
     return block('h-gh', 'Ghiduri', framed('h-gh', tb),
-                 'Un ghid folosit de un ciclu se poate înlocui, dar nu șterge. Comparațiile se fac pe săptămâna ghidului și pe sex.',
+                 'Un ghid folosit de un ciclu se poate înlocui, dar nu șterge. Comparațiile se fac pe săptămâna de vârstă a păsărilor (SAPT) '
+                 'și pe sex; o cântărire din SAPT n se compară cu rândul n\u00a0−\u00a01 al ghidului.',   # no-break: "n − 1" never splits (1280)
                  f'{num(len(ORDER))} ghiduri')
 LIST_META = f'Ghidurile de creștere și de ouat, pe săptămâni și sexe{NB}·{NB}Ross 308 creștere, Ross 308 ouat'
 def list_page():
@@ -188,10 +194,7 @@ def used_block(g, name, cyc):
         f = FARM[c['farm_id']]['name']
         a, b = dd(c['start_date']), (dd(c['end_date']) if c['end_date'] else 'azi')
         ded = '<span class="ip-note"> · început dedus</span>' if c.get('start_inferred') else ''
-        if c['status'] == 'open':
-            st, wk = lamp('ok', 'deschis'), f'SAPT {WK}'
-        else:
-            st, wk = lamp('off', 'închis'), f'{c["weeks"]} săpt.'
+        st, wk = (lamp('ok', 'deschis') if c['status'] == 'open' else lamp('off', 'închis')), cyc_span(c)
         rows += (f'<tr><th scope="row"><a class="ip-link s20-flink" href="#ferma-{c["farm_id"]}">{f}</a></th><td>{SER[c["series_id"]]}</td><td class="ip-num"><span class="ip-nowrap">{a}–{b}</span>{ded}</td>'
                  f'<td class="num">{wk}</td><td>{st}</td></tr>')
     tb = (f'<table class="ip-table ip-table--rowheads s20-table"><caption class="ip-sr">Ciclurile care folosesc {name}</caption>'
@@ -208,7 +211,7 @@ def spark(g, k, s, last_wk):
     actuals, the guide is the subject."""
     pts = [(w, v) for w, v in series(g, k, s) if v is not None]
     lo, hi = min(v for _, v in pts), max(v for _, v in pts)
-    X = lambda w: 4 + (w - 1) * 152 / (NWK[g] - 1)
+    X = lambda w: 4 + (w - WKS[g][0]) * 152 / (WKS[g][-1] - WKS[g][0])
     Y = lambda v: 44 - (v - lo) * 40 / (hi - lo)
     pl = ' '.join(f'{X(w):.1f},{Y(v):.1f}' for w, v in pts)
     w1, v1 = pts[-1]
@@ -216,7 +219,7 @@ def spark(g, k, s, last_wk):
     u = next(u for kk, _, u, _ in IND if kk == k)
     pk = [w for w, v in pts if v == hi]
     pkw = f'sapt. {pk[0]}' if len(pk) == 1 else f'sapt. {pk[0]}–{pk[-1]}'
-    wu = lambda v: f'{fmt(v, u)}%' if u == '%' else f'{fmt(v, u)} {u}'   # D46: 70,5%, but 158 g
+    wu = lambda v: f'{fv(k, v, u)}%' if u == '%' else f'{fv(k, v, u)} {u}'   # D46: 53,3%, but 158 g
     al = (f'{lbl.capitalize()} {SEXW[s][2]} în ghid, sapt. {pts[0][0]}–{w1}: de la {wu(pts[0][1])} la {wu(v1)}, '
           f'maxim {wu(hi)} în {pkw}')   # a sentence read aloud: "sapt." (craft §6)
     return (f'<svg class="ip-spark ip-spark--{SEXW[s][1]}" viewBox="0 0 160 48" role="img" aria-label="{al}">'
@@ -233,37 +236,37 @@ def curves_block(g, name):
                 first = next(v for _, v in series(g, k, s) if v is not None)
                 rows += (f'<tr><th scope="row"><span class="ip-sparktable__key">{lbl} {u} {sx(s)}</span></th>'
                          f'<td class="ip-num"><span class="s20-wk"><span class="ip-nowrap">SAPT {a}–{b}</span>{gtxt}</span></td>'
-                         f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(first, u)}</span></td>'
-                         f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(max(vs), u)}</span></td>'
-                         f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(vs[-1], u)}</span></td>'
+                         f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fv(k, first, u)}</span></td>'
+                         f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fv(k, max(vs), u)}</span></td>'
+                         f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fv(k, vs[-1], u)}</span></td>'
                          f'<td class="ip-sparktable__curve">{spark(g, k, s, b)}</td></tr>')
         else:
             rows += (f'<tr><th scope="row"><span class="ip-sparktable__key">{lbl} {u}</span></th>'
                      f'<td colspan="5" class="ip-muted">– fără date în ghid</td></tr>')
     tb = (f'<table class="ip-table ip-table--rowheads ip-sparktable"><caption class="ip-sr">{name} pe indicatori: săptămânile cu cifre, prima, maximul, '
           f'ultima și curba</caption><thead><tr><th scope="col">Indicator</th><th scope="col">Săptămâni</th><th scope="col" class="num">Prima</th>'
-          f'<th scope="col" class="num">Maxim</th><th scope="col" class="num">Ultima</th><th scope="col">Curba · SAPT 1–{NWK[g]}</th></tr></thead>'
+          f'<th scope="col" class="num">Maxim</th><th scope="col" class="num">Ultima</th><th scope="col">Curba · {wspan(g)}</th></tr></thead>'
           f'<tbody>{rows}</tbody></table>')
     return block('h-cur', 'Pe indicatori', framed('h-cur', tb), '', f'{num(len(HAS[g]))} din {num(len(IND))} indicatori în ghid')
 
 def weekly_block(g, name, cyc):
     lay = g == 'g-laying'
     opn = [c for c in cyc if c['status'] == 'open']
-    today = FARM[opn[0]['farm_id']]['name'] if lay and opn else None   # the laying farm's week today, shaded (Hîrbovăț SAPT 40)
+    today = FARM[opn[0]['farm_id']]['name'] if opn and WK in W[g] else None   # an open cycle's week today, shaded (Hîrbovăț SAPT 59)
     cols = [(k, lbl, u, sexes) for k, lbl, u, sexes in IND if k in HAS[g]]
-    h1 = '<th scope="col" rowspan="2">SAPT</th>' + ('<th scope="col" rowspan="2" class="num">Vârstă</th>' if lay else '')
+    h1 = '<th scope="col" rowspan="2">SAPT</th>'
     h1 += ''.join(f'<th scope="colgroup" colspan="{len(sexes)}">{lbl} {u}</th>' for k, lbl, u, sexes in cols)
     h2 = ''.join(f'<th scope="col" class="num">{sx(s)}</th>' for k, lbl, u, sexes in cols for s in sexes)
     body = ''
-    for w in sorted(W[g]):
+    for w in WKS[g]:
         r = W[g][w]
         now = today and w == WK
         rh = f'<th scope="row" class="ip-num">{w}{f"<span class=\"ip-note s20-now\">{today} azi</span>" if now else ""}</th>'
-        cells = f'<td class="num">{r["age"]}</td>' if lay else ''
+        cells = ''
         for k, lbl, u, sexes in cols:
             for s in sexes:
                 v = r[s].get(k)
-                cells += (f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fmt(v, u)}</span></td>' if v is not None else
+                cells += (f'<td class="num"><span class="ip-sex ip-sex--{SEXW[s][1]}">{fv(k, v, u)}</span></td>' if v is not None else
                           '<td class="num ip-muted">–<span class="ip-sr"> fără date în ghid</span></td>')
         body += f'<tr{" class=\"s20-today\"" if now else ""}>{rh}{cells}</tr>'
     tb = (f'<table class="ip-table ip-table--rowheads s20-table s20-week"><caption class="ip-sr">{name} pe săptămâni și sexe</caption>'
@@ -274,8 +277,10 @@ def weekly_block(g, name, cyc):
             gp = gaps(g, k, s)
             if gp: gl.append(f'{lbl.lower()} <span class="ip-sex ip-sex--{SEXW[s][1]}" aria-hidden="true">{SEXW[s][0]}</span><span class="ip-sr">{SEXW[s][2]}</span> la sapt. {", ".join(gp)}')
     note = f'„–” = fără date în ghid: {"; ".join(gl)}.' if gl else ''
+    if 'body_weight_g' in HAS[g]:   # D157 (spec B2 round 2): the weight row a weighing is compared with
+        note += ' Greutatea din ghid = la sfârșitul săptămânii. O cântărire din SAPT n se compară cu rândul n\u00a0−\u00a01.'
     if lay:
-        note += ' Ghidul e pe vârstă; SAPT = vârstă − 18 (ciclul de ouat începe la vârsta 19).'
+        note += ' Mortalitatea cumulată se numără de la intrarea în ouat.'
     if today:
         note += f' {today} e azi în sapt. {WK}.'
     return f'<div class="s20-wkcol">{block("h-wk", "Pe săptămâni", framed("h-wk", tb), note.strip(), f"{num(NWK[g])} de săptămâni · {num(NROWS[g])} de rânduri")}</div>'
@@ -291,8 +296,7 @@ def detail_keys(g, cyc, pressed=False):
             f'<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="del-why">Șterge ghidul</button></div>'
             f'<p class="ip-note ip-m0" id="del-why">{why}</p>')
 def detail_meta(g):
-    ag = f' · vârsta {W[g][1]["age"]}–{W[g][NWK[g]]["age"]}' if g == 'g-laying' else ''
-    return f'{TYPE_RO[TYPE[g]]}{NB}·{NB}SAPT 1–{NWK[g]}{ag}{NB}·{NB}{NROWS[g]} de rânduri, câte unul pe săptămână și sex'
+    return f'{TYPE_RO[TYPE[g]]}{NB}·{NB}{wspan(g)}{NB}·{NB}{NROWS[g]} de rânduri, câte unul pe săptămână și sex'
 def detail_page(g, focus_h1=False, name=None, cycles=None, pressed=False):
     """The guide detail. name/cycles default to the guide's own (GUIDE, CYC); S20S passes a new guide's name and no cycles
     (the unused-guide detail: compact Folosit de, Șterge ghidul live)."""
@@ -306,8 +310,8 @@ def tip_seg(sel=None):
     f = M.tip_field(sel=sel)
     a = 'aria-required="true">'; assert f.count(a) == 1
     f = f.replace(a, 'aria-required="true" aria-describedby="gi-tip-h">')
-    return f[:-6] + ('<span class="ip-hint" id="gi-tip-h">Tipul alege coloanele citite: creștere pe SAPT, ouat pe vârstă '
-                     '(SAPT = vârstă − 18).</span></div>')
+    return f[:-6] + ('<span class="ip-hint" id="gi-tip-h">Tipul alege coloanele citite. SAPT e săptămâna de vârstă a păsărilor, '
+                     'la ambele tipuri.</span></div>')
 def tip_ro(g):
     used = ', '.join(sorted({FARM[c['farm_id']]['name'] for c in CYC[g]}))
     return (f'<div class="ip-field"><label class="ip-label" for="gi-tip">Tip</label><span class="ip-input is-readonly">'
@@ -322,20 +326,21 @@ def import_page(cr, title, meta, flds, src_note, gimp):
             block('h-tab', 'Tabelul ghidului', (f'<p class="ip-note ip-m0">{src_note}</p>' if src_note else '') + gimp))
     return shell(header(cr, title, meta), f'<div class="s20-col">{main}</div>')
 gr = G['number'](G['growth_rows']())
-lr = G['number'](G['laying_rows']())
+lr = G['number'](G['laying_rows']())       # the laying rows as the guide stores them (S20S: the new guide's file, all valid)
+lt = G['laying_typed_rows']()              # the same rows as RealGhid has them typed: week 53's lay % "605" refused (real)
 er = G['error_rows']()
-assert len(gr) == 50 and len(lr) == 94
+assert len(gr) == NROWS['g-growth'] and len(lr) == len(lt) == NROWS['g-laying']
+assert [r['week'] for r in lr if r['sex'] == 'F'] == WKS['g-laying'] and [r['week'] for r in gr if r['sex'] == 'F'] == WKS['g-growth']
 nbad = sum(1 for r in er if G['reason'](r))
+lbad = [r for r in lt if G['reason'](r)]; assert len(lbad) == 1
+assert W['g-laying'][lbad[0]['week']]['F']['lay_pct'] == G['TYPO_READ']   # the stored guide holds the value read (60,5)
 GF = 'Ross 308 creștere.xlsx'
-gl = [r['line'] for r in gr if r['v']['body_weight_g'] is None]
-INFO_G = (f'Greutatea lipsește la sapt. 24–25 (rândurile {gl[0]}–{gl[-1]}), iar fișierul nu are coloanele '
-          'Mortalitate %, Ouat %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid.')
-gle = [r['line'] for r in er if r['v']['body_weight_g'] is None]
-INFO_E = INFO_G.replace(f'{gl[0]}–{gl[-1]}', f'{gle[0]}–{gle[-1]}')
-INFO_L = ('Ouat % lipsește la vârsta 19–24 și 64–65 (sapt. 1–6 și 46–47), iar tabelul nu are coloanele Greutate g, '
-          'Mortalitate %, Incubabile % și Masă ou g. În ghid apar ca „–” fără date în ghid. Ouat % se citește doar pe rândurile <span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">de găini</span>.')
+INFO_G = G['info_text']('growth', gr)
+INFO_E = G['info_text']('growth', er)
+INFO_L = G['info_text']('laying', lt, 'tabelul')
+USERS = {g: ', '.join(f'{FARM[c["farm_id"]]["name"]} · {SER[c["series_id"]]}' for c in CYC[g]) for g in GUIDE}
 def repl_note(g, n_new):
-    cs = ', '.join(f'{FARM[c["farm_id"]]["name"]} · {SER[c["series_id"]]}' for c in CYC[g])
+    cs = USERS[g]
     return (f'Rândurile citite înlocuiesc toate cele {NROWS[g]} de rânduri de acum ale ghidului. '
             f'Se compară apoi cu ele: {cs}.')
 def g_new():
@@ -359,15 +364,20 @@ def g_repl_bad():
                      + G['foot'](p, False, note) + G['live'](f'Fișier citit: {len(er)} de rânduri, {nbad} refuzate.'), 'Import ghid')
     return import_page(crumbs(GH, (slug(g), GUIDE[g]), 'Înlocuiește'), f'Înlocuiește {GUIDE[g]}', detail_meta(g),
                        fields(GUIDE[g], tip_ro(g)), repl_note(g, len(er)), gimp)
+# the board shows the box scrolled to the refused row (SAPT 53 ♀, row 70), as SYS11's preview block 5b: a still picture can't
+# scroll, so the box is drawn from three weeks before it (the rows above sit above the scroll edge)
+LIP_SCROLL = (f'<!-- Tabelul e derulat la rândul refuzat (rândul {lbad[0]["line"]}): cutia arată rândurile de la SAPT {lbad[0]["week"] - 3}; '
+              'rândurile de deasupra sunt sus, în afara cutiei derulate. -->')
 def g_repl_paste():
+    """Înlocuiește Ross 308 ouat by pasting the workbook's table as typed: one cell refused (RealGhid week 53, "605")."""
     g = 'g-laying'; p = 'gi'
-    gimp = G['wrap'](p, G['src_line'](p, 'Tabel lipit', 'din clipboard · tip ouat', G['counts'](len(lr), len(lr), 0), 'Lipește alt tabel')
-                     + G['banner']('ok', f'<p><b>Toate cele {len(lr)} de rânduri sunt valide.</b> Verifică cifrele și salvează ghidul.</p>')
-                     + G['info_banner'](INFO_L) + G['bar'](p) + G['table'](p, 'laying', lr, 'tabel lipit')
-                     + G['foot'](p, True, f'Se salvează {len(lr)} de rânduri în ghidul {GUIDE[g]}.')
-                     + G['live'](f'Tabel citit: {len(lr)} de rânduri, toate valide.'), 'Import ghid')
+    note = f'{G["refused_words"](1)}: corectează tabelul și lipește-l din nou.'
+    gimp = G['wrap'](p, G['src_line'](p, 'Tabel lipit', 'din clipboard · tip ouat', G['counts'](len(lt), len(lt) - 1, 1), 'Lipește alt tabel')
+                     + G['err_banner'](p, lt) + G['info_banner'](INFO_L) + G['seg'](p, len(lt), 1, 'all')
+                     + LIP_SCROLL + G['table'](p, 'laying', [r for r in lt if r['week'] >= lbad[0]['week'] - 3], 'tabel lipit')
+                     + G['foot'](p, False, note) + G['live'](f'Tabel citit: {len(lt)} de rânduri, 1 refuzat.'), 'Import ghid')
     return import_page(crumbs(GH, (slug(g), GUIDE[g]), 'Înlocuiește'), f'Înlocuiește {GUIDE[g]}', detail_meta(g),
-                       fields(GUIDE[g], tip_ro(g)), repl_note(g, len(lr)), gimp)
+                       fields(GUIDE[g], tip_ro(g)), repl_note(g, len(lt)), gimp)
 
 # ================================================================= saved (back on the detail, Toast)
 FOCUS_NOTE = ('<!-- Focus after Salvează ghidul: the guide detail opens with focus on its title (h1 tabindex=-1); the Toast '
@@ -375,7 +385,7 @@ FOCUS_NOTE = ('<!-- Focus after Salvează ghidul: the guide detail opens with fo
 def saved():
     g = 'g-growth'
     toast = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">'
-             f'{GUIDE[g]} salvat · {NROWS[g]} de rânduri înlocuite · Telița · Seria 2026 se compară cu ele</span>'
+             f'{GUIDE[g]} salvat · {NROWS[g]} de rânduri înlocuite · {USERS[g]} se compară cu ele</span>'
              '<button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
     pg = detail_page(g, focus_h1=True)
     a = '<h1 id="g-h1" tabindex="-1">'; assert pg.count(a) == 1
@@ -421,7 +431,7 @@ CSS20 = '''
 .s20-gap{white-space:nowrap;font-family:var(--font-sans)}
 .s20-week th[scope=row]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s20-now{margin-left:var(--space-2);font-family:var(--font-sans);white-space:nowrap}
-.s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */
+.s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* an open cycle's week today (Hîrbovăț); th beats the row-head raised */
 .s20-clip{position:relative;height:''' + str(SC.SIDE_H) + '''px;overflow:hidden}'''
 CSS_DESK = M.CSS_DESK + CSS20
 CSS_PL = M.CSS_PL + CSS20
@@ -430,7 +440,13 @@ CSS_PL = M.CSS_PL + CSS20
 pathlib.Path('/tmp/s20').mkdir(exist_ok=True)
 def write(stem, title, root, css, w, h):
     r = M.write(stem, title, root, css, w, h)   # S19's writer: the .dc.html + /tmp/s19/<stem>.html; mirror into /tmp/s20
-    src = pathlib.Path(f'/tmp/s19/{stem}.html'); (pathlib.Path('/tmp/s20') / src.name).write_text(src.read_text(encoding='utf-8'), encoding='utf-8'); src.unlink()
+    src = pathlib.Path(f'/tmp/s19/{stem}.html'); txt = src.read_text(encoding='utf-8')
+    # S20N: the render wrapper keeps only the viewport floor (1024 / 844), not the stored h, so s20_render --measure reads
+    # the content's natural height (as s4s_build.write, RF03); the .dc.html keeps its min-height = h
+    floor = 1024 if w == 1440 else 844
+    for a in (f'style="padding:0; min-height:{h}px"', f'style="padding:0; width:390px; min-height:{h}px"'):
+        txt = txt.replace(a, a.replace(f'min-height:{h}px', f'min-height:{floor}px'), 1)
+    (pathlib.Path('/tmp/s20') / src.name).write_text(txt, encoding='utf-8'); src.unlink()
     return r
 STEM, TT = 'S20-ghiduri', 'S20 · Ghiduri'
 D39 = 'exemplu de stare (D39)'
@@ -445,7 +461,7 @@ desk('--ross-308-crestere', 'Ross 308 creștere · detaliu · ghid parțial', de
 desk('--importa-ghid', 'Importă ghid', g_new())
 desk('--inlocuieste-fisier', f'Înlocuiește Ross 308 creștere · fișier citit, toate valide · {D39}: fișierul', g_repl_file())
 desk('--inlocuieste-refuzate', f'Înlocuiește Ross 308 creștere · rânduri refuzate · {D39}: rândurile 7, 10, 12', g_repl_bad())
-desk('--inlocuieste-lipit', f'Înlocuiește Ross 308 ouat · tabel lipit · {D39}: lipirea', g_repl_paste())
+desk('--inlocuieste-lipit', f'Înlocuiește Ross 308 ouat · tabel lipit, rândul {lbad[0]["line"]} refuzat (ouat % „{G["TYPO_RAW"]}” din registru, real), tabelul derulat la el · {D39}: lipirea', g_repl_paste())
 desk('--salvat', f'salvat · {D39}: Ross 308 creștere înlocuit cu același fișier', saved(), SC.SIDE_H)
 h = HEIGHTS.get(STEM + '--telefon', 844)
 out.append(write(STEM + '--telefon', f'{TT} · telefon · doar citire', f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{phone_list()}</div>', CSS_PL, 390, h))

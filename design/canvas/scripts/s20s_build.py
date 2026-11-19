@@ -1,7 +1,8 @@
 """S20S · Ghiduri · state boards (spec B2; D76, D113, D114). Imports s20_build (which rewrites the 9 S20 boards, and through
 s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the S20 states on the same row (y 35552).
 Desktops first (a Setări page, as S17S–S19S): the new desktops follow the eight S20 desktops; the S20 phone moves right
-(x only). Today = 16.11.2026 (D23/D24). Real: the guide figures (guide-growth.json, guide-laying.json), which cycles use
+(x only). Today = realdata.TODAY (18.11.2026, SAPT 59, S20N). Real: the guide figures by age week (guide-growth.json,
+guide-laying.json: RealGhid, D151), which cycles use
 each guide; guide names illustrative (D22). Every file, name or edit not in the extracts is a D39 example, said in the
 board title. The import states are SYS11's GuideImportPreview (additions.css §29), composed from its helpers.
 Boards
@@ -17,10 +18,12 @@ Boards
   --refuzate-filtru       D39 rows 7/10/12: filter Refuzate, focus on row 7's "#REF!" cell (reached from the Banner link)
   --nume-gol              Importă ghid, Salvează ghidul pressed with nothing filled: Nume (focus) + Tip errors (§41)
   --nume-folosit          D39: "ross 308 ouat" typed: the name is taken by Ross 308 ouat (case and diacritics ignored, D114)
-  --ghid-nou              D39 name + file: "Ross 308 ouat 2027" (Tip Ouat), the real 94 laying rows read, all valid
+  --ghid-nou              D39 name + file: "Ross 308 ouat 2027" (Tip Ouat), the real 94 laying rows (SAPT 19–65) read, all valid
   --eroare-la-salvare     D39: the same new guide, save failed: draft kept, fault Banner + Reîncearcă (focus) above the keys
   --sterge                D39: Ross 308 ouat 2027 saved and used by no cycle (s20_build detail_page(name=, cycles=[])):
                           compact Folosit de line, Șterge ghidul Dialog, focus on Anulează
+  --ouat-de-la-sapt-1     D180, D39 file: Înlocuiește Ross 308 ouat with a .xlsx that counts its weeks from the transfer (the real
+                          laying rows, first row SAPT 1): file-level warn Banner (spec B2 week-1 text), Save allowed
 No phone detail (D114). No screen CSS of its own (the load-error Banner with Reîncearcă is additions.css §49, FIN03).
 python3 -I s20s_build.py <repo_root> [--canvas]   after `s20_build --canvas` (canvas_rows.py)
 Renders: s20_render.py <stems> (the new boards are appended to /tmp/s20/boards.json: shots S20-9 … S20-22)."""
@@ -136,7 +139,7 @@ EMPTY_IMPORT = wrap(S.DROP_P + G['foot'](P, False, NEW_FOOT))
 TAKEN = GUIDE['g-laying']
 NEWN = 'Ross 308 ouat 2027'; NEWF = f'{NEWN}.xlsx'
 lr = S.lr; NL = len(lr)
-INFO_LF = one(S.INFO_L, 'iar tabelul nu are', 'iar fișierul nu are')
+INFO_LF = G['info_text']('laying', lr, 'fișierul')   # the new guide's file: the rows as stored (60,5 read), all valid
 NEW_NOTE = 'Un ghid nou nu e folosit de nicio fermă: după salvare îl alegi la o fermă de ouat, în Ferme și secțiuni.'
 NEW_FLDS = flds(T.tfield('gi-name', 'Nume', NEWN, touch=False), S.tip_seg(sel='laying'))
 def new_read(extra=''):
@@ -163,6 +166,18 @@ DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alert
        f'nu se schimbă. Dacă îl vrei înapoi, îl imporți din nou din {NEWF}.</p>'
        f'<div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button>'
        f'<button type="button" class="ip-btn ip-btn--destructive">Șterge ghidul</button></div></div></div>')
+
+# ---- D180: a laying file whose rows start at SAPT 1 (D39 file; the real rows numbered from the transfer): warn Banner, Save allowed
+WR = G['from_transfer_rows'](); WF = f'{GUIDE["g-laying"]}.xlsx'
+assert min(r['week'] for r in WR) == 1 and len(WR) == len(S.lr)
+def week1():
+    gl = 'g-laying'
+    gimp = wrap(G['src_line'](P, WF, 'fișier .xlsx · tip ouat', G['counts'](len(WR), len(WR), 0))
+                + G['week1_banner'](P) + G['info_banner'](G['info_text']('laying', WR)) + G['bar'](P) + G['table'](P, 'laying', WR, WF)
+                + G['foot'](P, True, f'Se salvează {len(WR)} de rânduri în ghidul {GUIDE[gl]}, de la SAPT 1.')
+                + G['live'](f'Fișier citit: {len(WR)} de rânduri, toate valide; ghidul începe la SAPT 1.'))
+    return S.import_page(S.crumbs(S.GH, (S.slug(gl), GUIDE[gl]), 'Înlocuiește'), f'Înlocuiește {GUIDE[gl]}', S.detail_meta(gl),
+                         S.fields(GUIDE[gl], S.tip_ro(gl)), S.repl_note(gl, len(WR)), gimp)
 
 # ================================================================= CSS (screen only, tokens only)
 CSS20S = ''   # FIN03: the Banner action key is additions.css §49 (.ip-banner__key); no screen CSS left
@@ -195,6 +210,8 @@ desk('--eroare-la-salvare', f'Importă ghid · eroare la salvare · {D39}: ghidu
      new_page(NEW_FLDS, new_read(SAVE_FOCUS + SAVE_ERR), NEW_NOTE))
 desk('--sterge', f'Șterge ghidul nefolosit · {D39}: „{NEWN}”, salvat și nefolosit',
      f'<div class="s20-clip">{unused_detail()}</div>' + DLG, M.SC.SIDE_H)
+desk('--ouat-de-la-sapt-1', f'Înlocuiește Ross 308 ouat · fișier care începe la SAPT 1, avertisment, se poate salva · {D39}: „{WF}” numărat de la transfer',
+     week1())
 
 p = pathlib.Path('/tmp/s20/boards.json')
 p.write_text(json.dumps(S20_OUT + [{k: b[k] for k in ('stem', 'w', 'h')} for b in out]))

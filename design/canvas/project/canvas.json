@@ -1376,7 +1376,7 @@
       "x": 3040,
       "y": 40407,
       "w": 1440,
-      "h": 1760,
+      "h": 1756,
       "expand": "fill",
       "title": "S20 · Ghiduri · Ross 308 creștere · detaliu · ghid parțial"
     },
@@ -1400,7 +1400,7 @@
       "x": 7600,
       "y": 40407,
       "w": 1440,
-      "h": 1140,
+      "h": 1144,
       "expand": "fill",
       "title": "S20 · Ghiduri · Înlocuiește Ross 308 creștere · rânduri refuzate · exemplu de stare (D39): rândurile 7, 10, 12"
     },
@@ -1408,9 +1408,9 @@
       "x": 9120,
       "y": 40407,
       "w": 1440,
-      "h": 1084,
+      "h": 1108,
       "expand": "fill",
-      "title": "S20 · Ghiduri · Înlocuiește Ross 308 ouat · tabel lipit · exemplu de stare (D39): lipirea"
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 ouat · tabel lipit, rândul 70 refuzat (ouat % „605” din registru, real) · exemplu de stare (D39): lipirea"
     },
     "S20-ghiduri--salvat.dc.html": {
       "x": 10640,
@@ -1421,7 +1421,7 @@
       "title": "S20 · Ghiduri · salvat · exemplu de stare (D39): Ross 308 creștere înlocuit cu același fișier"
     },
     "S20-ghiduri--telefon.dc.html": {
-      "x": 33440,
+      "x": 34960,
       "y": 40407,
       "w": 390,
       "h": 844,
@@ -1527,7 +1527,7 @@
       "x": 30400,
       "y": 40407,
       "w": 1440,
-      "h": 1208,
+      "h": 1172,
       "expand": "fill",
       "title": "S20 · Ghiduri · Importă ghid · eroare la salvare · exemplu de stare (D39): ghidul nou „Ross 308 ouat 2027”"
     },
@@ -2033,6 +2033,14 @@
       "w": 390,
       "h": 1208,
       "title": "S18 · Serii · Serie nouă · telefon · vârstă la populare 200 de zile, în afara intervalului 0–140 · exemplu de stare (D39)"
+    },
+    "S20-ghiduri--ouat-de-la-sapt-1.dc.html": {
+      "x": 33440,
+      "y": 40407,
+      "w": 1440,
+      "h": 1084,
+      "expand": "fill",
+      "title": "S20 · Ghiduri · Înlocuiește Ross 308 ouat · fișier care începe la SAPT 1, avertisment, se poate salva · exemplu de stare (D39): „Ross 308 ouat.xlsx” numărat de la transfer"
     }
   },
   "order": [
@@ -2301,7 +2309,8 @@
     "S4-ferma--pasari--telefon.dc.html",
     "S4-ferma--pasari--telefon-filtre.dc.html",
     "S18-serii--desktop-varsta.dc.html",
-    "S18-serii--telefon-varsta-eroare.dc.html"
+    "S18-serii--telefon-varsta-eroare.dc.html",
+    "S20-ghiduri--ouat-de-la-sapt-1.dc.html"
   ],
   "notes": {},
   "designSystems": [

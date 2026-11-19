@@ -54,7 +54,10 @@
 .s4s-date{flex:1;gap:var(--space-1);padding-right:var(--space-1)}
 .s4s-date > input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s4s-date .ip-iconbtn{width:var(--space-6);height:var(--space-6)}
-.s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start}
+.s4t-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:stretch}
+.s4t-split > section{display:flex;flex-direction:column;min-width:0}
+.s4t-split > section > .ip-readout{flex:1}
+.s4t-top--start{align-items:start}
 .s4-panel .ip-table .ip-lamp{white-space:nowrap}
 .s4t-hen{color:var(--rec-hen)}
 .s4t-roo{color:var(--rec-rooster)}
@@ -68,6 +71,7 @@
 .s11-farm .ip-label{margin:0}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s14-page{display:flex;flex-direction:column;gap:var(--space-6)}
+.s14-skel .ip-ptable{width:max-content}.s14-skel .ip-ptable.ip-ptable :is(thead th:not([style*="--ip-colw"]),:is(tbody,tfoot) > tr > td){width:auto} /* S14N: the loading table keeps the loaded px its heads declare (section 54) */
 .s13-rec{color:var(--c);display:inline-flex;flex:none}
 .s13-effect{align-items:flex-start}
 .s13-effect > .s13-rec{margin-top:var(--ip-hair)}
@@ -148,7 +152,7 @@
 .s20-gap{white-space:nowrap;font-family:var(--font-sans)}
 .s20-week th[scope=row]{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .s20-now{margin-left:var(--space-2);font-family:var(--font-sans);white-space:nowrap}
-.s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* the farm's week today (Hîrbovăț SAPT 40); th beats the row-head raised */
+.s20-week .s20-today > th,.s20-week .s20-today > td{background:var(--sunken)} /* an open cycle's week today (Hîrbovăț); th beats the row-head raised */
 .s20-clip{position:relative;height:1024px;overflow:hidden}</style>
 </helmet>
 <div class="ip-root s4s-rel" style="padding:0; min-height:1024px"><div class="ip-shell"><nav class="ip-sidebar ip-shell__side" aria-label="Navigare">

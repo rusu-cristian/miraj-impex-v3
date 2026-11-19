@@ -62,6 +62,9 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     ('S3-seria-2026', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     # RF07: Telița's real weighing of 10.02.2026 (H2 ♀, SAPT 19) is last week's on the S8 zi trecută replay (17.02.2026)
     ('S8-cantarire--zi-trecuta', 'start-10.02', r'Săpt\. trecută · 10\.02\.2026'),
+    # S20N: the growth guide's real ♀ weight at SAPT 22 (2 685 g) in the guide tables, and a small-curve point ("9.4 130.7")
+    ('S20-', 'sample-figure', r'(?:is-hen|ip-sex--hen)">2\u202f685<'),
+    ('S20-', 'sample-figure', r'\d,\d+\.4 130\.\d,\d'),
 ]
 # README order. (id, board stem prefixes, generator scripts)
 ROWS = [
@@ -91,8 +94,11 @@ ROWS = [
     # RF11: system previews/READMEs a row's job ports (no boards); paths from this folder
     ('SYS10', [], ['../../system/scripts/sys10_build.py', '../../system/components/SectionTree/README.md',
                    '../../system/components/SectionTree/preview.html']),
+    # S20N: the GuideImportPreview builder, README and preview (its helpers are exec'd by s20_build)
+    ('SYS11', [], ['../../system/scripts/sys11_build.py', '../../system/scripts/sys11_render.py',
+                   '../../system/components/GuideImportPreview/README.md', '../../system/components/GuideImportPreview/preview.html']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
