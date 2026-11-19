@@ -1,26 +1,27 @@
 """S18 · Serii (+ Serie nouă) (spec B3, screens.md S18; nav map: Setări › Serii, owner). Desktop-led like S17 (a Setări
-page): desktops first, then the phones. Today = 16.11.2026 (D23/D24).
-Content, from the extracts only (cycles, placement-seria2026, farms-sections, counts-latest; transfer days and arrivals
-through s3_build, which asserts them against transfers-seria2026):
-- Seria 2026 (year 2026, open): Telița creștere 07.10.2025–28.02.2026 (21 săpt., closed, started by the placement
-  ♀ 28 080 · ♂ 3 510), the move to Hîrbovăț 22–28.02.2026 (♀ 26 765 · ♂ 3 060 at arrival, D28), Hîrbovăț ouat from
-  10.02.2026 (open, SAPT 40, D25). Seria 2025 (year 2025, closed, illustrative name): Hîrbovăț ouat, inferred start
-  07.03.2025 – emptied 28.01.2026 (47 săpt., D36/D54), no flock count, no Telița data.
+page): desktops first, then the phones. RF10: every figure, date, code and week from realdata (D151–D159; today 18.11.2026).
+Content (realdata: cycles, placement, farms-sections, counts-latest, transfers; arrival days through s3_build):
+- Seria 2026 (year 2026, open, placed 07.10.2025 at age 0, D151): Telița creștere 07.10.2025–28.02.2026 (SAPT 1–21,
+  closed, started by the placement ♀ 28 080 · ♂ 3 510), the move to Hîrbovăț 22–28.02.2026 (♀ 26 883 · ♂ 3 024 at arrival,
+  D28), Hîrbovăț ouat from 22.02.2026 (SAPT 20–59, open, emptying by sale since 12.11, D155; alive ♀ 12 561 · ♂ 794).
+  Seria 2025 (year 2025, closed, illustrative name): Hîrbovăț ouat, inferred start 07.03.2025 – emptied 28.01.2026
+  (SAPT 19–65 from the inferred placement 01.11.2024, D151), no flock count, no Telița data. Each series row names its SAPT
+  span (open: + today's age, spec B3 round 2); each cycle row its SAPT span in the Săpt. column.
 - Serie nouă (B3 flow): Nume, An, Ferma de creștere (growth farms only: Telița), Data populării (DateField, SAPT 1 of
-  the new cycle), Populare pe secțiuni (SexCountRow `ip-sexrows--add`, SYS07, as its preview), EffectPreview (the new
-  cycle, CycleTrack mark vocabulary), Creează seria.
+  the new cycle at the default age 0), Populare pe secțiuni (SexCountRow `ip-sexrows--add`, SYS07, as its preview),
+  EffectPreview (the new cycle, CycleTrack mark vocabulary), Creează seria. (The "Vârstă la populare" field is S18N.)
 - Refusal (B3 rule) "Telița are încă … păsări din Seria 2026": Telița is empty in counts-latest (closed 28.02.2026), so
-  the board is a D39 state example, labelled: as if the move had not been entered, Telița would hold the birds that
-  arrived at Hîrbovăț (♀ 26 765 · ♂ 3 060 = 29 825, D28 — replaces the kit's 26 881). Spec sample "Seria 2027 · 2027".
-Boards (row below S17: y 30007 + 2529 + 120 = 32656; x step w + 80):
+  the board is a D39 state example, labelled in its title: as if the move had not been entered, Telița would hold the
+  birds that arrived at Hîrbovăț (♀ 26 883 · ♂ 3 024 = 29 907, D28, RF00). Spec sample "Seria 2027 · 2027".
+Boards (S18 row; x step w + 80):
   S18-serii                       desktop, owner, the list: PageHeader (Setări › Serii, "Adaugă serie"), CycleTrack full
                                   with both series, DataTable of series (group rows) and their cycles, notes
   S18-serii--serie-noua           desktop, the list reflowed beside the non-modal SidePanel "Serie nouă" (D73), nothing typed,
                                   Telița and Azi preset, focus on Nume
   S18-serii--telefon              phone, owner, the list (track at 358 px, framed table scrolling sideways), tab bar Mai mult
   S18-serii--telefon-serie-noua   phone sheet (`ip-sidepanel--sheet`, §39), replay of 07.10.2025 (as D73/D83): Seria 2026 ·
-                                  2026 · Telița · 07.10.2025 · H1 ♀ 14 080 · H2 ♀ 14 000 · H5-1 ♂ 3 510, Creează seria live
-  S18-serii--telefon-refuzat      phone sheet, 16.11.2026, D39: the fault Banner with the B3 sentence and its three ways out,
+                                  2026 · Telița · 07.10.2025 · the real placement rows, Creează seria live
+  S18-serii--telefon-refuzat      phone sheet, today, D39: the fault Banner with the B3 sentence and its three ways out,
                                   Creează seria disabled
 Reuses by import: s17_build (Setări sidebar subs, phone header and FilterBar-free phone shell; it imports s14s_build →
 s14_build, s2_build, s4s_build and rewrites the S17/S14S/S2/S7 boards byte-identical), s3_build (series figures; no
@@ -55,35 +56,52 @@ s4.IC.update({'placement': PLACE, 'x': '<path d="M18 6 6 18"/><path d="m6 6 12 1
               'alert': '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>'})
 s4.REC.update({'placement': 'placement'})
 
-# ================================================================= data (extracts only)
-EX = ROOT / 'design/data/extracts'
-def J(f): return json.load(open(EX / f, encoding='utf-8'))
-CY, PL, FS, CL = J('cycles.json'), J('placement-seria2026.json'), J('farms-sections.json'), J('counts-latest.json')
-TODAY = dt.date(2026, 11, 16)
-SER = {s['id']: s for s in CY['series']}
-CYC = {c['id']: c for c in CY['cycles']}
-cT, cH, cP = CYC['cyc-telita-2026'], CYC['cyc-hirbovat-2026'], CYC['cyc-hirbovat-2025']
+# ================================================================= data (RF10: realdata only, D151–D159)
+import realdata as R
+FS = R.FS
+TODAY = R.TODAY                                         # 18.11.2026 (D152)
+SER, CYC = R.SERIES, R.CYCLES
+cT, cH, cP = R.CTEL, R.C26, R.C25
 assert (SER['seria-2026']['year'], SER['seria-2026']['status'], SER['seria-2025']['year'], SER['seria-2025']['status']) == (2026, 'active', 2025, 'closed')
 assert (cT, cH, cP) == (T3.cT, T3.cH, T3.cP)
-GUIDE = {g['id']: g['name'] for g in FS['guides']}
-FARM = {f['id']: f for f in FS['farms']}
+GUIDE = {g: v['name'] for g, v in R.GUIDES.items()}
+FARM = R.FARMS
 TYPE_RO = {'growth': 'Creștere', 'laying': 'Ouat'}
 GROWTH = [f for f in FS['farms'] if f['type'] == 'growth']; assert [f['name'] for f in GROWTH] == ['Telița']
 TEL_SECS = [s['code'] for s in FS['sections'] if s['farm_id'] == 'telita' and s['active']]
-assert TEL_SECS == ['H1', 'H2', 'H3', 'H6', 'H5-1', 'H5-2']
+assert TEL_SECS == R.SECTIONS['telita']
+PL = R.PLACEMENT_ROWS
 PLC = PL['totals']; PROWS = [(r['section'], r['sex'], r['qty']) for r in PL['rows']]
-assert PLC == {'F': 28080, 'M': 3510} and PL['meta']['date'] == cT['start_date'] == '2025-10-07' and cT['started_by'] == 'auto'
-assert PROWS == [('H1', 'F', 14080), ('H2', 'F', 14000), ('H5-1', 'M', 3510)]
+assert PL['meta']['date'] == cT['start_date'] == R.PLACEMENT.isoformat() and cT['started_by'] == 'auto'
+assert (sum(q for _, x, q in PROWS if x == 'F'), sum(q for _, x, q in PROWS if x == 'M')) == (PLC['F'], PLC['M'])
 ARR, X0D, X1D = T3.ARR, T3.X0D, T3.X1D
-farms_cl = {f['farm_id']: f for f in CL['farms']}
-TEL, HIR = farms_cl['telita'], farms_cl['hirbovat']
-assert TEL['totals']['all'] == 0 and TEL['cycle_end'] == cT['end_date'] == '2026-02-28'   # Telița is empty today (real)
-assert (HIR['cycle']['start_counts']['F'], HIR['cycle']['start_counts']['M']) == (ARR['F'], ARR['M']) == (26765, 3060)
-WK = (TODAY - dt.date.fromisoformat(cH['start_date'])).days // 7 + 1; assert WK == cH['week_today'] == 40
-# D39 refusal: Telița as if the move had not been entered = the birds counted at arrival (D28)
-R39 = {'F': ARR['F'], 'M': ARR['M']}; R39ALL = R39['F'] + R39['M']; assert R39ALL == 29825
-REPLAY = dt.date.fromisoformat(PL['meta']['date'])     # phone replay of the real creation: "today" = 07.10.2025
-NEWNAME, NEWYEAR = 'Seria 2027', '2027'                # spec B3 sample (refusal board only)
+TEL, HIR = R.COUNTS_TELITA, R.COUNTS
+assert TEL['totals']['all'] == 0 and TEL['cycle_end'] == cT['end_date']   # Telița is empty today (real)
+assert (HIR['cycle']['start_counts']['F'], HIR['cycle']['start_counts']['M']) == (ARR['F'], ARR['M']) == (R.ARRIVED['F'], R.ARRIVED['M'])
+WK, AGE = R.WK, R.age_days(TODAY)                       # SAPT 59, 407 days (D151)
+ALIVE = {x: R.alive_farm(x) for x in 'FM'}; assert ALIVE == {x: HIR['totals'][x] for x in 'FM'}   # ♀ 12 561 · ♂ 794
+# cycle and series SAPT spans by age week (D151): a cycle's own span; an open one runs to today's week
+for c in (cT, cH, cP):
+    assert c['sapt_start'] == R.sapt(c['start_date'], c['series_id']) and (c['end_date'] is None or c['sapt_end'] == R.sapt(c['end_date'], c['series_id']))
+assert cH['end_date'] is None and cH['sapt_today'] == WK
+def sapt_span(a, b): return f'SAPT {a}' if a == b else f'SAPT {a}–{b}'
+def cyc_span(c, week=None):
+    """the cycle's SAPT span; open (end_date None) → its start to `week` (default today's)."""
+    return sapt_span(c['sapt_start'], c['sapt_end'] if c['end_date'] else (week or WK))
+def ser_span(sid, day=None):
+    """a series' SAPT span: from its placement week (Seria 2025: its first cycle's, the placement being inferred) to the
+    last closed week or the day's week."""
+    cs = [c for c in (cT, cH, cP) if c['series_id'] == sid]
+    a = min(c['sapt_start'] for c in cs) if SER[sid].get('placement_inferred') else R.sapt(SER[sid]['placement_date'], sid)
+    if day is not None: return sapt_span(a, R.sapt(day, sid))
+    return sapt_span(a, WK if any(c['end_date'] is None for c in cs) else max(c['sapt_end'] for c in cs))
+AGE0 = SER['seria-2026']['age_at_placement_days']       # default 0 (D151: day-old chicks); the field itself is S18N
+NEW_WK = AGE0 // 7 + 1                                   # a new series placed at age 0 starts in SAPT 1
+# D39 refusal: Telița as if the move had not been entered = the birds counted at arrival (D28, RF00)
+R39 = {'F': ARR['F'], 'M': ARR['M']}; R39ALL = R39['F'] + R39['M']
+REPLAY = R.PLACEMENT                                    # phone replay of the real creation: "today" = 07.10.2025
+assert R.sapt(REPLAY) == NEW_WK and R.age_days(REPLAY) == AGE0
+NEWNAME, NEWYEAR = f'Seria {TODAY.year + 1}', str(TODAY.year + 1)   # spec B3 sample "Seria 2027 · 2027" (refusal board only)
 
 # ================================================================= CycleTrack · full, both series
 def months(d0, d1):
@@ -110,14 +128,14 @@ def month_axis(d0, d1, tx, LX, H, step):
     return ''.join(out)
 TWS = (1160, 1000, 720, 560)   # 1:1 for the content box at 1440, at 1280, and beside the SidePanel at 1440 (1160 − panel-w 440) and 1280 (1000 − 440)
 # block labels per drawing width (11px track text): long where the block is wide enough, short where not
+# RF10: closed blocks name their SAPT span (D151: age weeks), as the S4 farm track ("Seria 2026 · creștere · SAPT 1–21")
 TXT = {
-    1160: dict(tel='Seria 2026 · creștere · 21 săpt.', h25='Seria 2025 · ouat · 47 săpt.', h26=f'Seria 2026 · ouat · din {dd(cH["start_date"])}', no25='– fără date pentru Seria 2025 la Telița'),
-    1000: dict(tel='Seria 2026 · creștere', h25='Seria 2025 · ouat · 47 săpt.', h26=f'Seria 2026 · ouat · din {dd(cH["start_date"])}', no25='– fără date pentru Seria 2025'),
-    720: dict(tel='Seria 2026', h25='Seria 2025 · ouat · 47 săpt.', h26='Seria 2026 · ouat', no25='– fără date Seria 2025'),
+    1160: dict(tel=f'Seria 2026 · creștere · {cyc_span(cT)}', h25=f'Seria 2025 · ouat · {cyc_span(cP)}', h26=f'Seria 2026 · ouat · din {dd(cH["start_date"])}', no25='– fără date pentru Seria 2025 la Telița'),
+    1000: dict(tel='Seria 2026 · creștere', h25=f'Seria 2025 · ouat · {cyc_span(cP)}', h26=f'Seria 2026 · ouat · din {dd(cH["start_date"])}', no25='– fără date pentru Seria 2025'),
+    720: dict(tel='Seria 2026', h25=f'Seria 2025 · ouat · {cyc_span(cP)}', h26='Seria 2026 · ouat', no25='– fără date Seria 2025'),
     560: dict(tel='2026', h25='Seria 2025 · ouat', h26='Seria 2026 · ouat', no25='– fără date 2025'),
     358: dict(tel='2026', h25='2025 · ouat', h26='2026 · ouat', no25=''),
 }
-assert cT['weeks'] == 21 and cP['weeks'] == 47
 def track_svg(TW):
     phone = TW == 358
     LX = 72 if phone else 88
@@ -142,16 +160,16 @@ def track_svg(TW):
     xa = tx(cP['start_date'])
     ded = f'<line class="ded" x1="{round(xa - 3, 1)}" x2="{round(xa - 3, 1)}" y1="{ly["hirbovat"]}" y2="{ly["hirbovat"] + LH}"/>'
     g += block('hirbovat', cP['start_date'], cP['end_date'], t['h25'],
-               f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {cP["weeks"]} săptămâni, închis. Deschide ferma la acest ciclu.',
+               f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {cyc_span(cP).lower().replace("sapt", "sapt.")}, închis. Deschide ferma la acest ciclu.',
                '#/ferme/hirbovat?ciclu=cyc-hirbovat-2025', marks=ded)
     xa = tx(cT['start_date'])
     place = f'<rect class="place" x="{round(xa - 1, 1)}" y="{ly["telita"] + 3}" width="3" height="{BH}"/>'
     g += block('telita', cT['start_date'], cT['end_date'], t['tel'],
-               f'Telița, Seria 2026, creștere, {dd(cT["start_date"])}–{dd(cT["end_date"])}, {cT["weeks"]} săptămâni, închis. Început prin populare '
+               f'Telița, Seria 2026, creștere, {R.drange(cT["start_date"], cT["end_date"])}, {cyc_span(cT).lower().replace("sapt", "sapt.")}, închis. Început prin populare '
                f'(găini {n(PLC["F"])}, cocoși {n(PLC["M"])}), încheiat prin transfer la Hîrbovăț {dd(X0D)[:5]}–{dd(X1D)}. Deschide ferma la acest ciclu.',
                '#/ferme/telita?ciclu=cyc-telita-2026', marks=place)
     g += block('hirbovat', cH['start_date'], TODAY.isoformat(), t['h26'],
-               f'Hîrbovăț, Seria 2026, ouat, din {dd(cH["start_date"])}, deschis, azi sapt. {WK}. Păsări sosite prin transfer de la Telița '
+               f'Hîrbovăț, Seria 2026, ouat, din {dd(cH["start_date"])}, sapt. {cH["sapt_start"]}–{WK}, deschis, azi sapt. {WK}, în viață găini {n(ALIVE["F"])}, cocoși {n(ALIVE["M"])}. Păsări sosite prin transfer de la Telița '
                f'{dd(X0D)[:5]}–{dd(X1D)} (găini {n(ARR["F"])}, cocoși {n(ARR["M"])}). Deschide ferma la acest ciclu.',
                '#/ferme/hirbovat?ciclu=cyc-hirbovat-2026', open_=True)
     yt, yb = ly['telita'] + 3 + BH, ly['hirbovat'] + 3; ym = (yt + yb) / 2; xa, xb = tx(X0D), tx(X1D)
@@ -163,9 +181,9 @@ def track_svg(TW):
           f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{ro_w}" height="16" rx="2"/><text class="rotxt" x="{round(xt + 4 + ro_w / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {WK}</text>')
     tk = month_axis(d0, d1, tx, LX, H, 6 if phone else 3 if TW <= 720 else 2)   # every 2nd month, quarterly at 720 and 560, half-yearly on phone
     desc = (f'2 serii, 2 ferme, 3 cicluri. Seria 2025, închisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, '
-            f'{cP["weeks"]} săpt.; la Telița fără date. Seria 2026, deschisă: Telița creștere {dd(cT["start_date"])}–{dd(cT["end_date"])}, {cT["weeks"]} săpt., '
+            f'{cyc_span(cP).lower().replace("sapt", "sapt.")}; la Telița fără date. Seria 2026, deschisă: Telița creștere {R.drange(cT["start_date"], cT["end_date"])}, {cyc_span(cT).lower().replace("sapt", "sapt.")}, '
             f'început prin populare; transfer Telița → Hîrbovăț {dd(X0D)[:5]}–{dd(X1D)}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}; '
-            f'Hîrbovăț ouat din {dd(cH["start_date"])}, deschis, azi {dd(TODAY)}, sapt. {WK}.')
+            f'Hîrbovăț ouat din {dd(cH["start_date"])}, deschis, azi {dd(TODAY)}, sapt. {WK}, în viață găini {n(ALIVE["F"])}, cocoși {n(ALIVE["M"])}.')
     return (f'<svg class="ip-track s18-track {"ip" if TW in (1160, 1000, 720, 560) else "s18"}-track--{TW}" viewBox="0 0 {TW} {H + 24}" role="group" aria-label="Ciclurile seriilor pe ferme">'
             f'<desc>{desc}</desc>{g}{tk}</svg>')
 LEG = (f'<span><i class="ip-rec ip-rec--placement"></i>populare</span><span><i class="ip-rec ip-rec--transfer"></i>transfer '
@@ -180,7 +198,8 @@ def track(phone=False):
 # ================================================================= DataTable: series (group rows) and their cycles
 def ico(k):
     return f'<span class="ip-rec ip-rec--{k} s4-ico">{icon(k, 14)}</span>'
-def crow(fid, cyc=None, start='', st=None, dedus=False):
+def crow(fid, cyc=None, start='', st=None, dedus=False, week=None):
+    """one cycle row; Săpt. = the cycle's SAPT span (D151, spec B3 round 2), an open cycle's up to `week` (default today's)."""
     f = FARM[fid]
     if cyc is None:  # a farm the series has no cycle at
         return (f'<tr><th scope="row" class="ip-table__child">{f["name"]}</th>'
@@ -194,19 +213,33 @@ def crow(fid, cyc=None, start='', st=None, dedus=False):
            else f'din {num(dd(cyc["start_date"]))}')
     if dedus:
         start += '<span class="ip-note"> · început dedus</span>'
-    wk = num(cyc['weeks']) if end else num(f'SAPT {WK}')
+    wk = num(cyc_span(cyc, week))
     stt = lamp('off', 'închis') if end else lamp('ok', 'deschis')
     return (f'<tr><th scope="row" class="ip-table__child"><a class="s18-rlink" href="{href}" aria-label="{f["name"]}, ciclul {"din " + dd(cyc["start_date"]) if not end else dd(cyc["start_date"]) + "–" + end}">{f["name"]}</a></th>'
             f'<td>{TYPE_RO[f["type"]]}</td><td>{GUIDE[cyc["guide_id"]]}</td><td>{per}</td><td class="num">{wk}</td><td>{start}</td><td>{stt}</td></tr>')
 START_T = f'<span class="s18-start">{ico("placement")}<span>populare</span>{pair(PLC["F"], PLC["M"])}</span>'
 START_H = f'<span class="s18-start">{ico("transfer")}<span>transfer de la Telița</span>{pair(ARR["F"], ARR["M"])}</span>'
 START_P = f'<span class="ip-muted">– {s4.NOFLOCK}</span>'
+def gnote(sid, day=None, lead=None):
+    """the series row's note (spec B3 round 2): year, how it began, its SAPT span, and for an open series today's age
+    ("SAPT 1–59 · azi 407 zile"); a closed one "doar citire" and its last cycle's end. day: a replay's "today" (open)."""
+    s = SER[sid]; y = f'an {num(s["year"])}'
+    if lead is None:
+        lead = (f'populată {num(dd(s["placement_date"]))} la Telița' if not s.get('placement_inferred')
+                else f'început dedus {num(dd(min(c["start_date"] for c in (cT, cH, cP) if c["series_id"] == sid)))}')   # its one farm is the row below
+    if s['status'] == 'active' or day is not None:
+        d = day or TODAY
+        if s.get('placement_inferred'):   # Seria 2025 (replay, open): its placement is inferred, so no age; the span only
+            return f'{y} · {lead} · {num(ser_span(sid, d))}'
+        return f'{y} · {lead} · {num(ser_span(sid, d))} · azi {num(R.age_days(d, sid))} zile'
+    last = max(c['end_date'] for c in (cT, cH, cP) if c['series_id'] == sid)
+    return f'{y} · {num(ser_span(sid))} · doar citire · ultimul ciclu încheiat {num(dd(last))}'
 def grow(sid, touch=False, keys=True):  # keys=False (phone): the series keys sit under the table, outside the scroll area
     s = SER[sid]
     if s['status'] == 'active':
-        st, note = lamp('ok', 'deschisă'), f'an {num(s["year"])} · populată {num(dd(PL["meta"]["date"]))} la Telița'
+        st, note = lamp('ok', 'deschisă'), gnote(sid)
     else:
-        st, note = lamp('off', 'închisă'), f'an {num(s["year"])} · doar citire · ultimul ciclu încheiat {num(dd(cP["end_date"]))}'
+        st, note = lamp('off', 'închisă'), gnote(sid)
     head = (f'<tr class="is-group"><th scope="rowgroup" colspan="{5 if keys else 7}" id="g-{sid}"><span class="s18-g"><span class="s18-gname">{s["name"]}</span>{st}'
             f'<span class="ip-note">{note}</span></span></th>')
     return head + (f'<td colspan="2" class="s18-gact"><span class="s18-acts">{acts(sid, touch)}</span></td></tr>' if keys else '</tr>')
@@ -214,14 +247,16 @@ COLS = ('<thead><tr><th scope="col">Serie · fermă</th><th scope="col">Tip</th>
         '<th scope="col" class="num">Săpt.</th><th scope="col">Început</th><th scope="col">Stare</th></tr></thead>')
 # FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
 # None = the column that takes the rest
-DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 16.5, 7.8, None, 8.1], [86.36, 52.58, 111.8, 164.38, 54.8, 273.23, 58.56])  # + loaded min-content px (fix 1; FW04: one-line cells, Ciclu without "început dedus")   # desktop (the phone tables scroll at content width)
+DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 16.5, 7.8, None, 8.1], [87.36, 52.58, 111.8, 164.38, 78.28, 273.69, 58.56])  # + loaded min-content px (fix 1; FW04: one-line cells, Ciclu without "început dedus"; RF10: Săpt. = the cycle's SAPT span, re-measured)   # desktop (the phone tables scroll at content width)
 def acts(sid, touch):
     t = ' ip-btn--touch' if touch else ''
     a = f'<a class="ip-btn ip-btn--ghost{t}" href="#/serii/{sid}">Deschide seria<span class="ip-sr"> {SER[sid]["name"]}</span></a>'
     if SER[sid]['status'] == 'active':
         a += f'<button type="button" class="ip-btn ip-btn--secondary{t}" disabled="disabled" aria-describedby="why-{sid}">Închide seria<span class="ip-sr"> {SER[sid]["name"]}</span></button>'
     return a
-WHY26 = f'<p class="ip-note ip-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț (deschis, sapt. {WK}).</p>'
+# RF10: the reason with today's real figures: the Hîrbovăț cycle closes when the sales take the farm to 0 (B4, D155)
+WHY26 = (f'<p class="ip-note ip-m0" id="why-seria-2026">Seria 2026 se poate închide după ce se încheie ciclul de la Hîrbovăț '
+         f'(deschis, sapt. {num(WK)}, încă {pair(ALIVE["F"], ALIVE["M"])} în viață).</p>')
 RO_NOTE = '<p class="ip-note ip-m0">O serie închisă e doar citire.</p>'   # S18P: the cycle-start sentence cut (B4 rule, said by the EffectPreview)
 def ptable():
     """Phone (fix 1): one framed scroll table per series (group row + its cycles); the series keys sit under it, outside the
@@ -312,7 +347,7 @@ def date_field(day, touch=True):
             f'<span class="ip-seg{t}" role="radiogroup" aria-labelledby="d-lbl"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span>'
             f'<span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span>'
             f'<span class="ip-input{ti} ip-num">{icon("cal", 16)}<input id="d-val" type="text" inputmode="numeric" value="{dd(day)}" aria-labelledby="d-lbl" aria-describedby="d-wk"/></span></div>'
-            f'<span class="ip-note ip-num" id="d-wk">SAPT 1 · ciclu nou din {dd(day)}</span></div>')
+            f'<span class="ip-note ip-num" id="d-wk">SAPT {NEW_WK} · ciclu nou din {dd(day)}</span></div>')
 assert 'class="s7-date"' in B7.DATE and 'ip-seg ip-seg--touch' in B7.DATE   # the S7 DateField markup, relabelled
 
 CHEV16 = icon('chev', 16)
@@ -371,7 +406,7 @@ def effect(state, day, name='', year='', rows=()):
             f'<span class="s9-fxline"><b class="s9-strong">{name} · an {year}</b><span>serie nouă, deschisă</span></span>'
             f'<span class="s9-fxline"><b class="s9-strong">Telița · {dd(day)}</b><span class="s9-fxval">{pair(0, 0)}{ARROW}{pair(sf, sm)}</span></span>'
             f'<span class="s9-fxsub">{num(len(rows))} secțiuni · {codes}</span>'
-            f'<span class="s9-fxcyc">{cmark("start", "place", f"Ciclu nou la Telița, sapt. 1")}</span>'
+            f'<span class="s9-fxcyc">{cmark("start", "place", f"Ciclu nou la Telița, sapt. {NEW_WK}")}</span>'
             f'<span class="s9-fxsub">ghid {GUIDE["g-growth"]}</span></div></div>')   # S18P: the guide line (it names the type); mark wording as C3/S9
 
 def form(day, touch, name='', year='', rows=((None, None, None),), state='empty', focus=False):
@@ -387,10 +422,10 @@ def form(day, touch, name='', year='', rows=((None, None, None),), state='empty'
     return parts
 CREATE = 'Creează seria'
 def sheet(body, day, key):
-    return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">{p_head("TELIȚA · " + dd(day) + " · SAPT 1", True)}'
+    return (f'<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t">{p_head(f"TELIȚA · {dd(day)} · SAPT {NEW_WK}", True)}'
             f'<div class="ip-sidepanel__body ip-sidepanel__body--form">{"".join(body)}</div><div class="ip-sidepanel__foot">{key}</div></aside>')
 def panel(body, day, key):
-    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="sn" aria-labelledby="sn-t">\n{p_head("TELIȚA · " + dd(day) + " · SAPT 1", False)}\n'
+    return (f'<aside class="ip-sidepanel ip-sidepanel--dock" id="sn" aria-labelledby="sn-t">\n{p_head(f"TELIȚA · {dd(day)} · SAPT {NEW_WK}", False)}\n'
             f'<div class="ip-sidepanel__body ip-sidepanel__body--form">\n{"".join(body)}\n</div>\n'
             f'<div class="ip-sidepanel__foot s18-foot"><div class="ip-row ip-sidepanel__keys"><button type="button" class="ip-btn ip-btn--secondary">Anulează</button>{key}</div></div>\n</aside>')
 
@@ -484,6 +519,9 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 </html>
 '''
     (ROOT / f'design/canvas/project/{stem}.dc.html').write_text(dc, encoding='utf-8')
+    # RF10 (as RF03's s4s_build.write): the render wrapper keeps only the viewport floor (1024 / 844), not the stored h, so
+    # s18_render.py --measure reads the content's natural height instead of the stored one
+    root = re.sub(r'(?<![\w-])(min-height|height):\d+px', lambda m: f'{m.group(1)}:{1024 if w == 1440 else 844}px', root, count=1)
     wrap = f'''<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>{title}</title>
 <link rel="stylesheet" href="file://{SYS}/tokens.css"><link rel="stylesheet" href="file://{SYS}/components/bundle.css"><link rel="stylesheet" href="file://{SYS}/components/additions.css">
 {FONTS}<style>{css}</style></head><body>{root}</body></html>'''

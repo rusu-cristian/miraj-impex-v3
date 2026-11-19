@@ -4,7 +4,8 @@ s2_render.py's checks (ids, ARIA refs, names, contrast, targets, overflow). --me
 (rounded up to 4; desktop min 1024, phone min 844) into s18_heights.json, then rebuild with --canvas: the desktop list and
 the phone list by their page height; the phone sheets by the height their body needs so the whole form shows (a long
 scrolling form, canvas.md); the SidePanel board keeps 1024 (its page is clipped beside the panel, the panel body scrolls).
---w 1280 renders the desktops at 1280 as S18-<i>-1280.png (no heights written)."""
+--w 1280 renders the desktops at 1280 as S18-<i>-1280.png (no heights written). RF10: the render wrappers keep only the
+viewport floor (1024 / 844), so the measure is the natural height; each shot is then taken at the board's stored h."""
 import asyncio, json, pathlib, sys, re
 from playwright.async_api import async_playwright
 R = pathlib.Path(__file__).resolve().parents[3]
@@ -30,9 +31,11 @@ async def main():
             pg = await b.new_page(viewport={'width': vw, 'height': h})
             await pg.goto(f'file:///tmp/s18/{st}.html'); await pg.wait_for_timeout(800)
             r = await pg.evaluate(CHECK); r.pop('order', None); print(st, vw, json.dumps(r, ensure_ascii=False))
-            if not W and not st.endswith('--serie-noua'):
+            if not W and not st.endswith(('--serie-noua', '--telefon-alege-sectiunea')):   # RF10: the section sheet board is a fixed 390×844 (as S9P)
                 nat = await pg.evaluate(NAT)
                 new[st] = max(1024 if w == 1440 else 844, int(-(-nat // 4) * 4))
+            # RF10: the wrapper holds only the viewport floor (s18_build.write); the shot shows the board at its stored h
+            await pg.evaluate('''h => { const r = document.querySelector('.ip-root'); if (r.style.height) r.style.height = h + 'px'; else r.style.minHeight = h + 'px'; }''', h)
             name = 'S18' + (f'-{i}' if i else '') + (f'-{W}' if W else '') + '.png'
             await pg.screenshot(path=str(R / 'design/shots' / name), full_page=False)
             await pg.close()

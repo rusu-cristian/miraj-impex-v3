@@ -1,28 +1,30 @@
 """S18S · Serii · state boards (spec B3; D107). Imports s18_build (which rewrites the 5 S18 boards, and through s17_build
 the S17/S14S/S2/S7 boards, byte-identical) and draws the S18 states on the same row (y 32656). Desktops first (a Setări
 page, as S17): the new desktops follow the two S18 desktops; the S18 phones move right (x only, as S16S/S17S); the new
-phones follow them. Today = 16.11.2026 (D23/D24) unless the board is a replay of the real creation (07.10.2025, D73/D83).
+phones follow them. RF10: realdata (D151–D159); today = 18.11.2026 unless the board is a replay of the real creation
+(07.10.2025, D73/D83). Weeks are age weeks (D151): on 07.10.2025 Seria 2026 is SAPT 1 (age 0) and Seria 2025 SAPT 49.
 Boards
   --se-incarca                  header kept, CycleTrack skeleton (§54 ip-trackskel, track height) + framed table skeleton, hidden status
   --eroare-la-incarcare         header kept (Adaugă serie stays), fault Banner + Reîncearcă in place of track and table
   --fara-acces                  Observator Sidebar, title only, EmptyState "Nu ai acces la Serii." + "Înapoi la Acasă"
                                 (a manager or a vet: the same picture with their own nav and role sentence; not drawn, one board)
   --desktop-scris               replay 07.10.2025: the list as it was before the creation (Seria 2025 only, Hîrbovăț open
-                                SAPT 31) beside the SidePanel with the real creation typed (H1 ♀ 14 080 · H2 ♀ 14 000 ·
-                                H5-1 ♂ 3 510), Creează seria live
-  --desktop-erori               16.11.2026, D39 values: Nume lipsă (focus), An 2026 taken by Seria 2026, Data 17.11.2026 in
-                                the future, two rows H1 with no count (H1 de două ori + niciun rând completat): one form
-  --desktop-refuzat             16.11.2026, D39 (as the phone refusal): Telița still holds the 29 825 that arrived at
-                                Hîrbovăț, so the list beside it is drawn on the same premise (the move not entered: Telița
-                                open SAPT 58, no Hîrbovăț cycle in Seria 2026); fault Banner, Creează seria disabled
+                                SAPT 19–49) beside the SidePanel with the real creation typed (the real placement rows,
+                                ♀ 28 080 · ♂ 3 510), Creează seria live
+  --desktop-erori               today, D39 values: Nume lipsă (focus), An 2026 taken by Seria 2026, Data = tomorrow (in
+                                the future), two rows H1 with no count (H1 de două ori + niciun rând completat): one form
+  --desktop-refuzat             today, D39 (as the phone refusal): Telița still holds the birds that arrived at Hîrbovăț
+                                (♀ 26 883 · ♂ 3 024), so the list beside it is drawn on the same premise (the move not entered:
+                                Telița open SAPT 1–59, no Hîrbovăț cycle in Seria 2026); fault Banner, Creează seria disabled
   --salvat                      replay 07.10.2025 after Creează seria: panel closed, Seria 2026 in the list (Telița open,
                                 SAPT 1, populare), Toast in B4 words + Anulează, focus back on Adaugă serie
-  --inchide-seria               16.11.2026, D39: Seria 2025 as if not closed yet (its last cycle ended 28.01.2026), its
+  --inchide-seria               today, D39: Seria 2025 as if not closed yet (its last cycle ended 28.01.2026, sapt. 65), its
                                 Închide seria pressed, Dialog "Închide Seria 2025" over the inert page, focus on Anulează
   --telefon-eroare-la-salvare   replay 07.10.2025: the typed sheet kept, fault Banner + Reîncearcă right above the
                                 EffectPreview (S9P), Creează seria enabled
-  --telefon-alege-sectiunea     replay 07.10.2025: H1 and H2 filled, a third row's SectionSelect open as the §33 sheet:
-                                H1/H2 "în listă" disabled, H3 … H5-2 "goală" enabled, H3 active (over the inert form)
+  --telefon-alege-sectiunea     replay 07.10.2025: the two Telița ♀ placement rows filled, a third row's SectionSelect open
+                                as the §33 sheet: those two "în listă" disabled, the other Telița sections "goală" enabled,
+                                the first of them active (over the inert form)
 No new system class: the skeletons are additions.css §54 `ip-trackskel` (full, 120 as the drawn track; FIN11G) and §42 `tr.ip-table__skel` under the §54 column shares (FIN11; were `.s18s-trackskel`/`.s18s-skt`); screen CSS: one panel-body rule (the Dialog scrim is additions.css §50, FIN04; the Toast is additions.css §48, FIN02).
 python3 -I s18s_build.py <repo_root> [--canvas]   (heights from s18_heights.json; renders: s18_render.py <stems>)"""
 import sys, re, json, pathlib, importlib.util, datetime as dt
@@ -41,9 +43,11 @@ n, icon, lamp, num, dd, pair, NB = T.n, T.icon, T.lamp, T.num, T.dd, T.pair, T.N
 cT, cH, cP, SER, GUIDE, FARM = T.cT, T.cH, T.cP, T.SER, T.GUIDE, T.FARM
 TODAY, REPLAY, PLC, ARR = T.TODAY, T.REPLAY, T.PLC, T.ARR
 D = dt.date.fromisoformat
-def wk(start, day): return (day - D(start)).days // 7 + 1
-WK_P = wk(cP['start_date'], REPLAY); WK_T0 = wk(cT['start_date'], REPLAY); WK_T39 = wk(cT['start_date'], TODAY)
-assert (WK_P, WK_T0, WK_T39) == (31, 1, 58)
+R = T.R
+# D151: weeks are the birds' age weeks, whatever the cycle: on 07.10.2025 Seria 2025 (inferred placement) and Seria 2026
+WK_P = R.sapt(REPLAY, 'seria-2025'); WK_T0 = R.sapt(REPLAY); WK_T39 = R.sapt(TODAY)
+assert (WK_T0, WK_T39) == (T.NEW_WK, T.WK) and cP['sapt_start'] < WK_P < cP['sapt_end']
+def open_c(c): return dict(c, end_date=None)
 assert D(cP['start_date']) < REPLAY < D(cP['end_date'])       # on 07.10.2025 the Seria 2025 cycle at Hîrbovăț was still open
 assert REPLAY < D(cH['start_date'])                             # and Seria 2026 had no Hîrbovăț cycle yet
 ROWS = [(c, q if sx == 'F' else None, q if sx == 'M' else None) for c, sx, q in T.PROWS]
@@ -51,12 +55,13 @@ s26 = SER['seria-2026']; NAME26, YEAR26 = s26['name'], str(s26['year'])
 
 # ================================================================= CycleTrack for a scene (as s18_build.track_svg)
 # a scene: the day, the blocks per farm lane, the transfer link (or none), one SAPT readout per open block
+P0, T0 = dd(cP['start_date']), dd(cT['start_date'])
 TXT = {  # labels per drawing width (11px track text)
-    'h25open': {1160: 'Seria 2025 · ouat · din 07.03.2025', 1000: 'Seria 2025 · ouat · din 07.03.2025', 720: 'Seria 2025 · ouat', 560: 'Seria 2025 · ouat'},
-    'tel0': {1160: 'Seria 2026 · creștere · din 07.10.2025', 1000: 'Seria 2026 · creștere · din 07.10.2025', 720: 'Seria 2026 · din 07.10.2025', 560: 'Seria 2026'},
-    'tel39': {1160: 'Seria 2026 · creștere · din 07.10.2025', 1000: 'Seria 2026 · creștere · din 07.10.2025', 720: 'Seria 2026 · creștere', 560: 'Seria 2026'},
+    'h25open': {1160: f'Seria 2025 · ouat · din {P0}', 1000: f'Seria 2025 · ouat · din {P0}', 720: 'Seria 2025 · ouat', 560: 'Seria 2025 · ouat'},
+    'tel0': {1160: f'Seria 2026 · creștere · din {T0}', 1000: f'Seria 2026 · creștere · din {T0}', 720: f'Seria 2026 · din {T0}', 560: 'Seria 2026'},
+    'tel39': {1160: f'Seria 2026 · creștere · din {T0}', 1000: f'Seria 2026 · creștere · din {T0}', 720: 'Seria 2026 · creștere', 560: 'Seria 2026'},
 }
-assert dd(cP['start_date']) == '07.03.2025' and dd(cT['start_date']) == '07.10.2025'
+SP = lambda c, w=None: T.cyc_span(c, w).lower().replace('sapt', 'sapt.')   # "sapt. 19–65" in running text
 def scene_svg(TW, sc):
     LX, ro_w, d0 = 88, 56, dt.date(2025, 2, 1)
     day = sc['day']; d1 = sc['d1']
@@ -102,37 +107,34 @@ def scene_track(sc):
             f'<div class="s4-tight"><div class="ip-trackbox">{svgs}</div><div class="ip-tracklegend" aria-hidden="true">{sc.get("leg", LEG_NOTR)}</div></div></section>')
 
 B25_OPEN = dict(farm='hirbovat', a=cP['start_date'], b=None, open=True, label=TXT['h25open'], ded=True, href='#/ferme/hirbovat?ciclu=cyc-hirbovat-2025',
-                aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, deschis, azi sapt. {WK_P}. Deschide ferma la acest ciclu.')
+                aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, {SP(open_c(cP), WK_P)}, deschis, azi sapt. {WK_P}. Deschide ferma la acest ciclu.')
 B25_CLOSED = dict(farm='hirbovat', a=cP['start_date'], b=cP['end_date'], open=False, label='h25', ded=True, href='#/ferme/hirbovat?ciclu=cyc-hirbovat-2025',
-                  aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {cP["weeks"]} săptămâni, închis. Deschide ferma la acest ciclu.')
+                  aria=f'Hîrbovăț, Seria 2025, ouat, început dedus {dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {SP(cP)}, închis. Deschide ferma la acest ciclu.')
 PLACE_TXT = f'găini {n(PLC["F"])}, cocoși {n(PLC["M"])}'
 def b_tel(day, label, left=False):
     return dict(farm='telita', a=cT['start_date'], b=None, open=True, label=label, place=True, left=left, href='#/ferme/telita?ciclu=cyc-telita-2026',
-                aria=f'Telița, Seria 2026, creștere, din {dd(cT["start_date"])}, deschis, azi sapt. {wk(cT["start_date"], day)}. Început prin populare ({PLACE_TXT}). Deschide ferma la acest ciclu.')
+                aria=f'Telița, Seria 2026, creștere, din {dd(cT["start_date"])}, {SP(open_c(cT), R.sapt(day))}, deschis, azi sapt. {R.sapt(day)}. Început prin populare ({PLACE_TXT}). Deschide ferma la acest ciclu.')
 D1_REPLAY = dt.date(2026, 1, 1)   # the replay axis runs to the end of 2025 (then on by whole months until the readout fits)
 LEG_BEFORE = re.sub(r'<span><i class="ip-rec ip-rec--placement"></i>populare</span>', '', LEG_NOTR); assert LEG_BEFORE != LEG_NOTR   # S18P: no placement mark yet
 SC_BEFORE = dict(day=REPLAY, d1=D1_REPLAY, no25=True, blocks=[B25_OPEN], ro=[('hirbovat', WK_P)], leg=LEG_BEFORE,
                  sub=f'{num(1)} serie · {num(2)} ferme · {num(1)} ciclu',
                  desc=(f'1 serie, 2 ferme, 1 ciclu. Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, deschis, azi {dd(REPLAY)}, '
-                       f'sapt. {WK_P}; la Telița fără date.'))
+                       f'{SP(open_c(cP), WK_P)}; la Telița fără date.'))
 SC_AFTER = dict(SC_BEFORE, leg=LEG_NOTR, blocks=[B25_OPEN, b_tel(REPLAY, TXT['tel0'], left=True)], ro=[('telita', WK_T0), ('hirbovat', WK_P)],
                 sub=f'{num(2)} serii · {num(2)} ferme · {num(2)} cicluri',
                 desc=(f'2 serii, 2 ferme, 2 cicluri. Seria 2026, deschisă: Telița creștere din {dd(REPLAY)}, început prin populare ({PLACE_TXT}), azi sapt. {WK_T0}. '
-                      f'Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, azi sapt. {WK_P}; la Telița fără date.'))
+                      f'Seria 2025, deschisă: Hîrbovăț ouat, început dedus {dd(cP["start_date"])}, {SP(open_c(cP), WK_P)}, azi sapt. {WK_P}; la Telița fără date.'))
 SC_D39 = dict(day=TODAY, d1=dt.date(2027, 1, 1), no25=True, blocks=[B25_CLOSED, b_tel(TODAY, TXT['tel39'])], ro=[('telita', WK_T39)],
               sub=f'{num(2)} serii · {num(2)} ferme · {num(2)} cicluri',
               desc=(f'2 serii, 2 ferme, 2 cicluri. Seria 2026, deschisă: Telița creștere din {dd(cT["start_date"])}, '
                     f'început prin populare ({PLACE_TXT}), deschis, azi {dd(TODAY)}, sapt. {WK_T39}. Seria 2025, închisă: Hîrbovăț ouat, început dedus '
-                    f'{dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {cP["weeks"]} săpt.; la Telița fără date.'))
+                    f'{dd(cP["start_date"])}, încheiat prin golire {dd(cP["end_date"])}, {SP(cP)}; la Telița fără date.'))
 
 # ================================================================= the series table for a scene (s18_build.crow / grow / acts)
 def crow_at(fid, cyc, start, week, dedus=False):
     """s18_build.crow for a cycle as it stood on the scene's day: open cycles read SAPT <week>; an inferred start says
     "· început dedus" in the Început column, open or closed (FW04, D150: was after "din <start>", as the closed range)."""
-    keep = T.WK; T.WK = week
-    try: r = T.crow(fid, cyc, start, dedus=dedus)
-    finally: T.WK = keep
-    return r
+    return T.crow(fid, cyc, start, dedus=dedus, week=week)
 def open_(c): return dict(c, end_date=None)
 def why(sid, farm, week):
     return f'<p class="ip-note ip-m0" id="why-{sid}">{SER[sid]["name"]} se poate închide după ce se încheie ciclul de la {farm} (deschis, sapt. {week}).</p>'
@@ -146,8 +148,8 @@ def acts(sid, close=''):
     elif close == 'open':   # the Dialog is open: the key that opened it shows pressed
         a += f'<button type="button" class="ip-btn ip-btn--secondary is-pressed" aria-haspopup="dialog" aria-expanded="true">Închide seria<span class="ip-sr"> {SER[sid]["name"]}</span></button>'
     return a
-assert gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată {num(dd(REPLAY))} la Telița', acts('seria-2026', 'off')) == T.grow('seria-2026')
-assert gro('seria-2025', lamp('off', 'închisă'), f'an {num(2025)} · doar citire · ultimul ciclu încheiat {num(dd(cP["end_date"]))}', acts('seria-2025')) == T.grow('seria-2025')
+assert gro('seria-2026', lamp('ok', 'deschisă'), T.gnote('seria-2026'), acts('seria-2026', 'off')) == T.grow('seria-2026')
+assert gro('seria-2025', lamp('off', 'închisă'), T.gnote('seria-2025'), acts('seria-2025')) == T.grow('seria-2025')
 def stable(groups, notes, count):
     body = ''.join(f'<tbody>{g}</tbody>' for g in groups)
     return (f'<section class="ip-block" aria-labelledby="h-ser"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-ser">Serii</h2>'
@@ -155,19 +157,19 @@ def stable(groups, notes, count):
             f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-ser">'
             f'<table class="ip-table ip-table--rowheads s18-table"><caption class="ip-sr">Seriile și ciclurile lor pe ferme</caption>{T.DCOLS}{body}</table></div>'
             f'<div class="s18-notes">{"".join(notes)}</div></section>')
-NOTE25_OPEN = f'an {num(2025)} · început dedus {num(dd(cP["start_date"]))} la Hîrbovăț'
+NOTE25_OPEN = T.gnote('seria-2025', REPLAY)   # on 07.10.2025: "început dedus 07.03.2025 · SAPT 19–49" (inferred placement: no age; one line beside the panel)
 G25_OPEN = (gro('seria-2025', lamp('ok', 'deschisă'), NOTE25_OPEN, acts('seria-2025', 'off'))
             + crow_at('hirbovat', open_(cP), T.START_P, WK_P, dedus=True) + T.crow('telita'))
-G26_NEW = (gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată {num(dd(REPLAY))} la Telița', acts('seria-2026', 'off'))
+G26_NEW = (gro('seria-2026', lamp('ok', 'deschisă'), T.gnote('seria-2026', REPLAY), acts('seria-2026', 'off'))
            + crow_at('telita', open_(cT), T.START_T, WK_T0))
 TBL_BEFORE = stable([G25_OPEN], [why('seria-2025', 'Hîrbovăț', WK_P)], f'{num(1)} serie')   # S18P: no closed series, no read-only note
 TBL_AFTER = stable([G26_NEW, G25_OPEN], [why('seria-2026', 'Telița', WK_T0), why('seria-2025', 'Hîrbovăț', WK_P)], f'{num(2)} serii · cele mai noi întâi')
-G26_D39 = (gro('seria-2026', lamp('ok', 'deschisă'), f'an {num(2026)} · populată {num(dd(REPLAY))} la Telița', acts('seria-2026', 'off'))
+G26_D39 = (gro('seria-2026', lamp('ok', 'deschisă'), T.gnote('seria-2026'), acts('seria-2026', 'off'))
            + crow_at('telita', open_(cT), T.START_T, WK_T39))
 G25_REAL = T.grow('seria-2025') + T.crow('hirbovat', cP, T.START_P, dedus=True) + T.crow('telita')
 TBL_D39 = stable([G26_D39, G25_REAL], [why('seria-2026', 'Telița', WK_T39), T.RO_NOTE], f'{num(2)} serii · cele mai noi întâi')
 # Închide seria (D39): the real list with Seria 2025 not closed yet; its last cycle ended 28.01.2026, so the key is live
-G25_CLOSABLE = gro('seria-2025', lamp('ok', 'deschisă'), f'an {num(2025)} · ultimul ciclu încheiat {num(dd(cP["end_date"]))} · se poate închide', acts('seria-2025', 'open'))
+G25_CLOSABLE = gro('seria-2025', lamp('ok', 'deschisă'), f'an {num(2025)} · {num(T.ser_span("seria-2025"))} · ultimul ciclu încheiat {num(dd(cP["end_date"]))} · se poate închide', acts('seria-2025', 'open'))
 TBL_REAL = T.table(); assert TBL_REAL.count(T.grow('seria-2025')) == 1
 TBL_CLOSE = TBL_REAL.replace(T.grow('seria-2025'), G25_CLOSABLE)
 NEWNAME_TXT = 'O serie închisă e doar citire.'; assert NEWNAME_TXT in T.RO_NOTE
@@ -227,13 +229,13 @@ def name_err():
     a = '<span class="ip-input is-focus"><input id="sn-name" type="text" autocomplete="off" aria-describedby="sn-name-h" autofocus="autofocus"/></span><span class="ip-hint" id="sn-name-h">Apare în selectorul de serii, pe pagini și în rapoarte.</span>'
     assert f.count(a) == 1, f
     return f.replace(a, '<span class="ip-input is-focus is-error"><input id="sn-name" type="text" autocomplete="off" aria-invalid="true" aria-describedby="sn-name-e" autofocus="autofocus"/></span>'
-                     + err('sn-name-e', 'Scrie numele seriei, de exemplu Seria 2027.'))
+                     + err('sn-name-e', f'Scrie numele seriei, de exemplu {T.NEWNAME}.'))
 def year_err(year):
     f = T.tfield('sn-year', 'An', year, '', False, mono=True, numeric=True, cls=' s18-year')
     a = f'<span class="ip-input ip-num"><input id="sn-year" type="text" inputmode="numeric" autocomplete="off" value="{year}"/></span>'
     assert f.count(a) == 1, f
     return f.replace(a, f'<span class="ip-input ip-num is-error"><input id="sn-year" type="text" inputmode="numeric" autocomplete="off" value="{year}" aria-invalid="true" aria-describedby="sn-year-e"/></span>'
-                     + err('sn-year-e', f'Anul {num(year)} e deja folosit de {NAME26}. Scrie anul seriei noi, de exemplu {num(2027)}.'))
+                     + err('sn-year-e', f'Anul {num(year)} e deja folosit de {NAME26}. Scrie anul seriei noi, de exemplu {num(T.NEWYEAR)}.'))
 def date_err(typed):
     f = T.date_field(TODAY, False)
     a = '<span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span>'; assert f.count(a) == 1
@@ -244,19 +246,21 @@ def date_err(typed):
     a = f'<span class="ip-note ip-num" id="d-wk">SAPT 1 · ciclu nou din {dd(TODAY)}</span>'; assert f.count(a) == 1
     return f.replace(a, err('d-err', f'{num(dd(typed))} e în viitor. Alege Azi, {num(dd(TODAY))}, sau o zi trecută.'))
 def rows_err():
-    """Two rows, both H1, no count: the second row's duplicate error (SYS07 words) and the list's 'niciun rând completat'."""
-    s = T.prows('d', TODAY, [('H1', None, None), ('H1', None, None)], touch=False)
+    """Two rows, both Telița's first section, no count: the second row's duplicate error (SYS07 words) and the list's
+    'niciun rând completat'."""
+    c = T.TEL_SECS[0]
+    s = T.prows('d', TODAY, [(c, None, None), (c, None, None)], touch=False)
     a = 'aria-expanded="false" aria-controls="sm-d1" aria-labelledby="sl-d1"'; assert s.count(a) == 1
     a2 = 'class="ip-input ip-select__btn" id="sc-d1"'; assert s.count(a2) == 1
     s = s.replace(a2, 'class="ip-input ip-select__btn is-error" id="sc-d1"')
     s = s.replace(a, a + ' aria-invalid="true" aria-describedby="msg-d1"')
-    a = 'aria-label="Elimină H1">'; assert s.count(a) == 2
-    s = s.replace(a, 'aria-label="Elimină H1, rândul 1">', 1).replace(a, 'aria-label="Elimină H1, rândul 2">', 1)
-    msg = f'<p class="ip-err ip-sexrow__msg" id="msg-d1">{ERRI}<span>H1 e deja în listă. Alege altă secțiune sau elimină rândul.</span></p>'
+    a = f'aria-label="Elimină {c}">'; assert s.count(a) == 2
+    s = s.replace(a, f'aria-label="Elimină {c}, rândul 1">', 1).replace(a, f'aria-label="Elimină {c}, rândul 2">', 1)
+    msg = f'<p class="ip-err ip-sexrow__msg" id="msg-d1">{ERRI}<span>{c} e deja în listă. Alege altă secțiune sau elimină rândul.</span></p>'
     lis = s.split('</li>'); assert len(lis) == 3
     s = lis[0] + '</li>' + lis[1] + msg + '</li>' + lis[2]
     a = '<span class="ip-sexrows__sub"><span>niciun rând completat</span></span>'; assert s.count(a) == 1
-    s = s.replace(a, '<span class="ip-sexrows__sub"><span>niciun rând completat</span> · H1 de două ori</span>')
+    s = s.replace(a, f'<span class="ip-sexrows__sub"><span>niciun rând completat</span> · {c} de două ori</span>')
     for k in ('f-d0', 'm-d0', 'f-d1', 'm-d1'):   # fix 1: the list error names every empty count field
         a = f'<input id="{k}" inputmode="numeric"'; assert s.count(a) == 1, k
         s = s.replace(a, f'<input id="{k}" aria-invalid="true" aria-describedby="rows-e" inputmode="numeric"')
@@ -286,14 +290,14 @@ def sheet_select(k, used):
 <div class="ip-scrim ip-scrim--sheet">
 <div class="ip-sheet ip-sheet--select" role="dialog" aria-modal="true" id="sh-{k}" aria-labelledby="sh-{k}-t" aria-describedby="sh-{k}-d">
 <div class="ip-sheet__handle" aria-hidden="true"></div>
-<div class="ip-sheet__head"><div><h2 class="ip-t-heading ip-sheet__title" id="sh-{k}-t">Rândul 3: alege secțiunea</h2><p class="ip-note ip-sheet__sub" id="sh-{k}-d">Telița e goală; H1 și H2 sunt deja în listă.</p></div><button type="button" class="ip-iconbtn ip-iconbtn--touch" aria-label="Închide lista">{icon("x")}</button></div>
+<div class="ip-sheet__head"><div><h2 class="ip-t-heading ip-sheet__title" id="sh-{k}-t">Rândul 3: alege secțiunea</h2><p class="ip-note ip-sheet__sub" id="sh-{k}-d">Telița e goală; {" și ".join(used)} sunt deja în listă.</p></div><button type="button" class="ip-iconbtn ip-iconbtn--touch" aria-label="Închide lista">{icon("x")}</button></div>
 <div class="ip-sheet__list ip-focus" role="listbox" id="sl-{k}-lb" aria-labelledby="sh-{k}-t" tabindex="0" aria-activedescendant="{oid(first)}">
 <div role="group" aria-labelledby="sg-{k}-t"><div class="ip-menu__group" id="sg-{k}-t">Telița · creștere</div>{opts}</div>
 </div>
 </div>
 </div>'''
 def rows_picking():
-    """H1 and H2 typed (the real figures), a third row added and its SectionSelect open (phone: aria-haspopup=dialog,
+    """The two Telița ♀ placement rows typed (the real figures), a third row added and its SectionSelect open (phone: aria-haspopup=dialog,
     aria-controls on the open sheet, no hidden listbox: S9P)."""
     s = T.prows('p', REPLAY, [ROWS[0], ROWS[1], (None, None, None)], touch=True)
     a = ('<div class="ip-input ip-select__btn ip-input--touch" id="sc-p2" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" '
@@ -327,7 +331,7 @@ desk('--fara-acces', 'observator · fără acces', noaccess(), hd('--fara-acces'
 body = T.form(REPLAY, False, NAME26, YEAR26, ROWS, state='set')
 desk('--desktop-scris', f'Serie nouă · desktop · scris · reluare {dd(REPLAY)}',
      vp(scene_track(SC_BEFORE), TBL_BEFORE, 'before') + T.panel(body, REPLAY, DKEY), SC.SIDE_H)
-# 5 · desktop, field errors after Creează seria (16.11.2026, D39 values), focus on the first error (Nume)
+# 5 · desktop, field errors after Creează seria (today, D39 values), focus on the first error (Nume)
 desk('--desktop-erori', 'Serie nouă · desktop · erori în câmpuri · exemplu de stare (D39)',
      vp(T.track(), T.table()) + T.panel(form_errors(), TODAY, DKEY), SC.SIDE_H)
 # 6 · desktop refusal (D39, as the phone board): the list drawn on the same premise
@@ -349,7 +353,7 @@ desk('--salvat', f'salvat · reluare {dd(REPLAY)}', SAVED + TOAST, hd('--salvat'
 # 8 · Închide seria Dialog (D39: Seria 2025 not closed yet), over the inert page, focus on Anulează
 DLG = (f'<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-n">'
        f'<h2 id="dlg-t">Închide Seria 2025</h2>'
-       f'<p class="ip-dialog__note" id="dlg-n">Ultimul ei ciclu, Hîrbovăț ouat, s-a încheiat prin golire pe {num(dd(cP["end_date"]))}, după {num(cP["weeks"])} săpt. '
+       f'<p class="ip-dialog__note" id="dlg-n">Ultimul ei ciclu, Hîrbovăț ouat, s-a încheiat prin golire pe {num(dd(cP["end_date"]))}, la sapt. {num(cP["sapt_end"])}. '
        f'Închisă, seria rămâne doar citire: paginile și rapoartele o arată mai departe, dar nu mai primește înregistrări sau corecții.</p>'
        f'<div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button>'
        f'<button type="button" class="ip-btn ip-btn--primary">Închide seria</button></div></div></div>')
@@ -370,7 +374,7 @@ SH = T.sheet(body, REPLAY, PKEY).replace('<aside class="ip-sidepanel ip-sidepane
                                           '<aside class="ip-sidepanel ip-sidepanel--sheet" role="dialog" aria-modal="true" aria-labelledby="sn-t" inert="inert">', 1)
 assert 'inert="inert"' in SH and 'autofocus' not in SH   # focus is in the section sheet
 phone('--telefon-alege-sectiunea', f'Serie nouă · telefon · alege secțiunea · reluare {dd(REPLAY)}',
-      f'<div class="s18-screen ip-scrimhost">{SH}{sheet_select("p2", ("H1", "H2"))}</div>', 844)
+      f'<div class="s18-screen ip-scrimhost">{SH}{sheet_select("p2", (ROWS[0][0], ROWS[1][0]))}</div>', 844)
 
 S18_OUT = json.loads(pathlib.Path('/tmp/s18/boards.json').read_text())
 assert [b['stem'] for b in S18_OUT] == [STEM, STEM + '--serie-noua', STEM + '--telefon', STEM + '--telefon-serie-noua', STEM + '--telefon-refuzat']

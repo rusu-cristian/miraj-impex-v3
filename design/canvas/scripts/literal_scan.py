@@ -89,7 +89,7 @@ ROWS = [
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
