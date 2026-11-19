@@ -70,7 +70,9 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 - s2s ← s2; s14s ← s14 + s2; s15 ← s2s; s15s ← s15; s16s ← s16; s8s ← s8.
 - s17 ← s14s; s17s ← s17; s18 ← s17 + s3; s18s ← s18; s19 ← s18; s20, s21, s22 ← s19; s19s/s20s/s22s ← their base.
 - s20_build, s21_build and s22_build import s19_build, which rewrites /tmp/s19/boards.json with only the 10 base S19 boards (the 12 S19S boards drop out): re-run `s19s_build.py` after them before any `s19_render.py`. Renders only; repo files are unaffected.
-- s1, s19, s20, s22 also exec the top of design/system/scripts/sys13/sys10/sys11/sys12_build.py.
+- s1, s19, s20, s22 also exec the top of design/system/scripts/sys13/sys10/sys11/sys12_build.py. The sys10 and sys12 tops import
+  realdata (RF11, RF13: SYS12's last sign-in dates come from the illustrative event log), so a realdata/extract change re-runs
+  `sys12_build.py` (UserRow/OneTimePassword previews) and the S22 row.
 - sstate_css.py ← s2s, s6s, s7s, s8, s9, s10, s13, s14s, s15s, s16, s18 (s15 and later get it through these too).
 - canvas_rows.py: args/row_y/place/save for every build above.
 - skel.py (FIN11G, additions.css §54): skeleton markup and table column shares (readout, track, field, line, widths) ← s2s, s6s, s7s, s8s, s11 (S12/S13/S14 through it), s14, s16s, s18 (+ s18s), s19 (+ s19s, s21, s22), s20 (+ s20s), s21, s22. A change re-runs those rows.

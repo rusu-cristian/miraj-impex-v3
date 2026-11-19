@@ -1,5 +1,7 @@
 """S22 · Utilizatori (spec A2 Users and access, owner; screens.md S22; nav map: Setări › Utilizatori). Desktop-led like
-S18–S21 (a Setări page): desktops first, then the phone. Today = 16.11.2026 (D23/D24).
+S18–S21 (a Setări page): desktops first, then the phone. Today = 18.11.2026 (D152). RF13: the sign-in dates come from SYS12
+(realdata + the illustrative event log authors/times: Dr. Ceban and Ion Rusu just before their first save of today, you
+after today's last save, Petrea on Telița's last cycle day); S22 holds no other date of its own.
 The list is the SYS12 UserRow (additions.css §30) and the passwords are the SYS12 OneTimePassword: their markup helpers
 are read from design/system/scripts/sys12_build.py (the part above its preview blocks, so nothing is written there).
 D78 (departs from spec A2's field list): the app generates the temporary password and shows it once after the user is
@@ -325,7 +327,7 @@ CSS22 = '''
 @container s22-users (max-width: 759.98px){
   .ip-users__t th{width:auto} .ip-users__t th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
   .s22-cx{display:none}
-  .s22-fold{display:block;color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)} /* FW04 (D150): the small size of every sub-line (CostBlock, S19), so the owner's "proprietar · toate fermele · 16.11.2026, 08:02" keeps one line at 1280 (it took two: 69 beside 50) */
+  .s22-fold{display:block;color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)} /* FW04 (D150): the small size of every sub-line (CostBlock, S19), so the owner's "proprietar · toate fermele · dd.mm.yyyy, hh:mm" keeps one line at 1280 (it took two: 69 beside 50) */
 }
 .s22-checks{display:flex;flex-wrap:wrap;gap:0 var(--space-6);margin-block:calc(-1 * var(--space-3))} /* two farm boxes side by side: 44px targets, 20px text line in the form rhythm (as §44) */
 .s22-acct{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}

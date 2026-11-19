@@ -1,6 +1,6 @@
 """S22S · Utilizatori · state boards (spec A2; D78, D118, D119). Imports s22_build (which rewrites the 17 S22 boards, and
 through s19_build the S19/S18/S17/S14S/S2/S7 boards, byte-identical) and draws the leftover S22 states on the same row
-(y 39196): the new desktops follow the 16 S22 desktops; the S22 phone moves right (x only). Today = 16.11.2026.
+(y 39196): the new desktops follow the 16 S22 desktops; the S22 phone moves right (x only). Today = 18.11.2026 (D152, RF13).
 Markup is the SYS12 UserRow / OneTimePassword / Dialog (additions.css §30) through the S22 helpers; no new screen CSS.
 S22P: SYS12 dialog() is role=alertdialog and otp() leaves the status region empty on a failed copy (the screen-side
 overrides are gone); panel boards mark the current row (§45). FIN07: the S22 list page (page-head add key, h2 list head).

@@ -1,10 +1,15 @@
 """Build the SYS12 previews (UserRow list + OneTimePassword, S22 Utilizatori, spec A2): python3 sys12_build.py
 Names from the kit: Ion Rusu, Dr. Ceban (craft.md §7, illustrative) and petrea (spec A1/A2 sample login, A2 dialog).
 State examples (D39): the owner row "Proprietar exemplu", the viewer "Observator exemplu", every login except petrea,
-every last sign-in time, Petrea's deactivated state and both passwords. Farm names are real (farms-sections.json)."""
-import pathlib
+every last sign-in time, Petrea's deactivated state and both passwords. Farm names are real (farms-sections.json).
+RF13: the sign-in dates follow "today" 18.11.2026 (D152) through design/canvas/scripts/realdata.py: a user's last sign-in is
+LEAD before their first record on their latest day in the illustrative event log (authors/times, D158a), the owner's (you,
+no records) LEAD after the day's last record, Petrea's (Telița vet, deactivated) on Telița's last cycle day (cycles.json)."""
+import sys, pathlib, datetime as dt
 REPO = pathlib.Path(__file__).resolve().parents[3]  # repo root from this script's place (design/system/scripts), so a copy writes into itself
 ROOT = REPO / 'design/system/components'
+sys.path.insert(0, str(REPO / 'design/canvas/scripts'))
+import realdata as RD   # s22_build execs this part after s19_build imported it: the same module
 
 def svg(paths, cls='ip-icon ip-icon--16'):
     return f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true">{paths}</svg>'
@@ -23,17 +28,33 @@ def cap(text):
 def num(n):
     return f'<span class="ip-num">{n}</span>'
 
+# ------------------------------------------------------------------ last sign-in (RF13: from the illustrative event log)
+LEAD = dt.timedelta(minutes=3)   # D39: sign-in a few minutes before the first save (the owner: after the day's last save)
+def _acts(who=None):
+    """Every authored record time in illustrative-events-hirbovat.json (event log, the correction, culls, sexing errors,
+    sales, weighings), of one user or of all, as datetimes."""
+    I = RD.ILL
+    xs = [(e['user'], e['at']) for e in I['event_log']] + [(c['user'], c['at']) for c in I['corrections']]
+    xs += [(r['created_by'], r['created_at']) for k in ('culls', 'sexing_errors', 'sales', 'weighings') for r in I[k]]
+    return sorted(dt.datetime.fromisoformat(a) for u, a in xs if who is None or u == who)
+def _fmt(t): return RD.ddt(t.isoformat(timespec='minutes'))   # '18.11.2026, 08:12' (D129)
+def last_signin(who):
+    a = _acts(who); day = a[-1].date()
+    return _fmt(next(t for t in a if t.date() == day) - LEAD)
+TODAY_ACTS = [t for t in _acts() if t.date() == RD.TODAY]
+assert TODAY_ACTS and max(_acts()).date() == RD.TODAY   # nothing authored after "today"
 # ------------------------------------------------------------------ users (order: active by role, then deactivated)
 OWNER = dict(key='own', name='Proprietar exemplu', login='proprietar', role='Proprietar', farms=None,
-             seen='16.11.2026, 08:02', active=True, me=True)
+             seen=_fmt(TODAY_ACTS[-1] + LEAD), active=True, me=True)
 RUSU = dict(key='rusu', name='Ion Rusu', login='ion.rusu', role='Manager', farms='Telița, Hîrbovăț',
-            seen='16.11.2026, 17:40', active=True)
+            seen=last_signin('Ion Rusu'), active=True)
 CEBAN = dict(key='ceban', name='Dr. Ceban', login='ceban', role='Veterinar', farms='Hîrbovăț',
-             seen='16.11.2026, 08:34', active=True)
+             seen=last_signin('Dr. Ceban'), active=True)
 VIEW = dict(key='obs', name='Observator exemplu', login='observator', role='Observator', farms='Hîrbovăț',
             seen=None, active=True)
-PETREA = dict(key='petrea', name='Petrea', login='petrea', role='Veterinar', farms='Telița',
-              seen='28.02.2026, 07:15', active=False)
+PETREA = dict(key='petrea', name='Petrea', login='petrea', role='Veterinar', farms='Telița',   # time 07:15 a D39 example
+              seen=_fmt(dt.datetime.combine(RD.D(RD.CTEL['end_date']), dt.time(7, 15))), active=False)
+assert RD.CTEL['status'] == 'closed' and all(u['seen'].startswith(RD.dd(RD.TODAY)) for u in (OWNER, RUSU, CEBAN))
 ALL = [OWNER, RUSU, CEBAN, VIEW, PETREA]
 
 def items(p, u):

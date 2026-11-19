@@ -97,8 +97,12 @@ ROWS = [
     # S20N: the GuideImportPreview builder, README and preview (its helpers are exec'd by s20_build)
     ('SYS11', [], ['../../system/scripts/sys11_build.py', '../../system/scripts/sys11_render.py',
                    '../../system/components/GuideImportPreview/README.md', '../../system/components/GuideImportPreview/preview.html']),
+    # RF13: the UserRow/OneTimePassword (S22) and LoginCard (S1) builders and previews (their tops are exec'd by s22/s1)
+    ('SYS12', [], ['../../system/scripts/sys12_build.py', '../../system/components/UserRow/preview.html',
+                   '../../system/components/OneTimePassword/preview.html']),
+    ('SYS13', [], ['../../system/scripts/sys13_build.py', '../../system/components/LoginCard/preview.html']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11', 'S22', 'S1', 'SYS12', 'SYS13'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
