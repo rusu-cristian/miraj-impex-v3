@@ -13,7 +13,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
   the ported rows) + idempotence (run twice → byte-identical), not byte-identity with the old output.
 - After a row's `--canvas` rebuild run `python3 -I canvas_rows.py relayout $R --canvas` (re-stacks the rows below when its
   tallest board changed; y = previous row y + tallest h + 120; overlap check; S4NG: within a row a board drawn wider pushes
-  the boards to its right so every gap stays ≥ 80, boards never move left).
+  the boards to its right so every gap stays ≥ 80, boards never move left; FV03: it also rewrites `order` by row y, then x).
 - Wide boards (S4NG, D167): `board_widths.json` {stem: w} = the boards drawn wider than 1440 so a wide table shows whole
   (canvas.md › Sizes). `canvas_rows.place` takes w from it (every row's --canvas keeps it), `s4s_build.write` writes the
   `$preview` width and the canvas-only `.s4s-wide` CSS (page at its 1440 layout, table regions at their full width past the
@@ -44,6 +44,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S21 | `s21_build.py --canvas` (RF12: realdata; h/title in place; heights `s21_render.py --measure` → s21_heights.json, render wrapper keeps only the 1024/844 floor) |
 | S22 | `s22_build.py --canvas`, `s22s_build.py --canvas` |
 | S1  | `s1_build.py --canvas` |
+| Main | after `canvas_rows.py relayout`: `main_build.py --canvas` (FV03: the 00 · Index board lists the rows and board counts from canvas.json; w/h in place) |
 S4/S7/S11/S12/S13/S6/S9 entries were placed by hand: their x never changes; y only through `canvas_rows.py relayout`, and the
 S4 Rezumat entries' h/title through `s4s_build.py`/`s4_build.py --canvas` (RF01), the S7 ones through `s7_build.py`/`s7s_build.py --canvas` (RF02),
 the S11/S12/S13 ones through `s11_build.py`/`s12_build.py`/`s13_build.py --canvas` (RF03), the S6 ones through

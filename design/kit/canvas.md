@@ -1,6 +1,7 @@
 # Design canvas: Impex Line Panel · Ecrane
 
 - Slug `e5d5275e-4850-45ce-afa4-d035b0a5bd2b` · URL https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi (created 19.11.2026 by a design-loop session and filled from `design/canvas/project/`; version after the full publish `1795075243-a466`).
+- FV03 (19.11.2026): live version `1795092797-ff63`; FV03's patch (245 changed + 12 added files, remove `project/S2-acasa--zi-trecuta-blocat.dc.html`, `project/S15-introdus-azi--manager-10-11.dc.html`) is NOT published: the helper session got `network_off_limit` (it did not create the artifact), so the coordinator publishes it (2 batches ≤ 256, mode "patch").
 - Old canvas (16–17.11.2026, stale since 16.11, read-only from later sessions): slug `e44dd7fb-2990-41f9-a791-2841f1b1dcd1`, https://claude.ai/artifact/VC8kqksPgxxYo9kPpK14yv. Do not publish there.
 - Type: Design (canvas), `bcd2878f-a88d-4094-a616-8e39d8a5fd8a`. Version at setup: `1794844216-3062` (always re-fetch: `get_artifact`).
 - Design system installed: Impex Line Panel (`95f22f4a-…`, v `1794843774-ade9`) as folder `impexlinepanel`.

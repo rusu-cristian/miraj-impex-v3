@@ -10,6 +10,8 @@
   canvas.json only with --canvas (through save(), so overlapping boards stop it). Run it after a row's --canvas rebuild.
   S4NG (D167): it also lays each row out along x: a board that grew wider pushes the boards to its right so every gap stays
   at least GAP_X (80); boards never move left.
+  FV03 (FINAL4 9): it also rewrites `order` as the boards by row y, then x (Main first: it sits above ROW0), so a board added
+  late goes with its row.
 - Wide boards (D167 › 4): board_widths.json {stem: w} lists the boards drawn wider than their base width so a wide table
   shows whole (no clipped sideways scroll on the canvas). place() takes w from it, s4s_build.write the board's $preview width."""
 import sys, json, pathlib
@@ -131,7 +133,14 @@ def relayout(c):
             for k in keys: c['boards'][k]['y'] = ny
             moved.append((min(keys, key=lambda k: c['boards'][k]['x']), y, ny))
         prev = (ny, max(c['boards'][k]['h'] for k in keys))
+    sort_order(c)
     return moved
+
+
+def sort_order(c):
+    """FV03: `order` = the boards by row y, then x (a KeyError if `order` names a board `boards` lacks)"""
+    B = c['boards']
+    c['order'] = sorted(c['order'], key=lambda k: (B[k]['y'], B[k]['x']))
 
 
 if __name__ == '__main__' and sys.argv[1:2] == ['relayout']:
