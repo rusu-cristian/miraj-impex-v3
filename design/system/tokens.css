@@ -75,6 +75,13 @@
   --rec-weighing-bg: #ddeef5;
   --rec-eggs: #0d6f69;
   --rec-eggs-bg: #dcf0ee;
+  --colgroup-a: #f3f0e8;
+  --colgroup-a-total: #f1ede3;
+  --colgroup-a-head: #eeeade;
+  --colgroup-b: #ebf3f6;
+  --colgroup-b-total: #e6f0f4;
+  --colgroup-b-head: #e2edf2;
+  --colgroup-rule: var(--steel-300);
   --shadow-overlay: 0 1px 2px rgba(19,24,28,0.10), 0 6px 20px rgba(19,24,28,0.14);
   --shadow-key: inset 0 -1px 0 rgba(19,24,28,0.25);
 }

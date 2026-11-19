@@ -143,24 +143,34 @@ def hall_pasari(h):
         {'name': f'{ico("sale")}Vânzare', 'leaves': [(sx('F'), 'is-hen', sold('F')), (sx('M'), 'is-rooster', sold('M'))]},
     ]
 
-def productie(guide=True):
-    """Farm Producție (D3/D1): lay % = eggs ÷ start-of-day hens; week and period = eggs ÷ hen-days (D156, D159)."""
-    W = R.week
+def productie(guide=True, h=None, weeks=WEEKS):
+    """Farm Producție (D3/D1): lay % = eggs ÷ start-of-day hens; week and period = eggs ÷ hen-days (D156, D159).
+    h (S14N): one hall's figures (the report's hall week rows, spec D3 rowGroups), on the farm's guide of the age week; a
+    hall week (or day) without hens at its start is – (goală din 14.11, D158)."""
+    def W(k): return R.week(k) if h is None else R.week(k, h)
+    def D_(d): return R.day(d) if h is None else R.day(d, h)
+    def gone(kind, key):
+        if h is None or kind == 'f': return False
+        return (not W(key)['alive_F_start']) if kind == 'w' else (D_(key) is None or not D_(key)['eggs'])
+    def guard(fn):
+        def f(kind, key): return (DASH, GOALA) if gone(kind, key) else fn(kind, key)
+        return f
+    hd = sum(W(k)['hen_days'] for k in weeks)
     def hens(kind, key):
         if kind == 'w': return R.n(W(key)['alive_F_start'])
-        if kind == 'd': return R.n(R.alive_farm('F', key - dt.timedelta(days=1)))
-        return R.n(W(56)['alive_F_start'])
+        if kind == 'f': return R.n(W(weeks[-1])['alive_F_start'])
+        prev = key - dt.timedelta(days=1)
+        return R.n(R.alive_farm('F', prev) if h is None else R.alive_hall(h, 'F', prev))
     def eggs(kind, key):
-        return R.n(W(key)['eggs'] if kind == 'w' else R.eggs(key) if kind == 'd' else sum(W(k)['eggs'] for k in WEEKS))
-    hd = sum(W(k)['hen_days'] for k in WEEKS)
+        return R.n(W(key)['eggs'] if kind == 'w' else R.eggs(key, h) if kind == 'd' else sum(W(k)['eggs'] or 0 for k in weeks))
     def lay_v(kind, key):
         if kind == 'w': return W(key)['eggs'] / W(key)['hen_days'] * 100
-        if kind == 'd': return R.lay_day(key)
-        return sum(W(k)['eggs'] for k in WEEKS) / hd * 100
+        if kind == 'd': return R.lay_day(key, h)
+        return sum(W(k)['eggs'] or 0 for k in weeks) / hd * 100
     def gl_v(kind, key):
-        if kind == 'w': return W(key)['guide']['lay_pct']
+        if kind == 'w': return R.week(key)['guide']['lay_pct']
         if kind == 'd': return R.day(key)['guide_lay_pct']
-        return sum(W(k)['guide']['lay_pct'] * W(k)['hen_days'] for k in WEEKS) / hd   # hen-day weighted
+        return sum(R.week(k)['guide']['lay_pct'] * W(k)['hen_days'] for k in weeks) / hd   # hen-day weighted
     def lay(kind, key): return R.pct(lay_v(kind, key))
     def gl(kind, key): return R.pct(gl_v(kind, key))
     def dv(kind, key): return R.rnd(lay_v(kind, key), 1) - R.rnd(gl_v(kind, key), 1)
@@ -169,20 +179,23 @@ def productie(guide=True):
         return ('<span class="ip-lamp ip-lamp--warn">abatere</span>' if abs(dv(kind, key)) > 3
                 else '<span class="ip-lamp ip-lamp--ok">în normă</span>')
     def inc(kind, key):
-        return R.n(W(key)['inc'] if kind == 'w' else R.day(key)['inc'] if kind == 'd' else sum(W(k)['inc'] for k in WEEKS))
+        return R.n(W(key)['inc'] if kind == 'w' else D_(key)['inc'] if kind == 'd' else sum(W(k)['inc'] for k in weeks))
     def jos(kind, key):
-        return R.n(W(key)['jos'] if kind == 'w' else R.day(key)['jos'] if kind == 'd' else sum(W(k)['jos'] for k in WEEKS))
+        return R.n(W(key)['jos'] if kind == 'w' else D_(key)['jos'] if kind == 'd' else sum(W(k)['jos'] for k in weeks))
     def share(field):
         def f(kind, key):
             if kind == 'w': a, b = W(key)[field], W(key)['eggs']
-            elif kind == 'd': a, b = R.day(key)[field], R.day(key)['eggs']
-            else: a, b = sum(W(k)[field] for k in WEEKS), sum(W(k)['eggs'] for k in WEEKS)
+            elif kind == 'd': a, b = D_(key)[field], D_(key)['eggs']
+            else: a, b = sum(W(k)[field] for k in weeks), sum(W(k)['eggs'] or 0 for k in weeks)
             return R.pct(a / b * 100)
         return f
     def egg_g(kind, key):
         if kind == 'w': return R.n(W(key)['egg_g'], 1)
-        if kind == 'd': return R.n(R.day(key)['egg_g'], 1)
-        return R.n(sum(W(k)['egg_g'] * W(k)['eggs'] for k in WEEKS) / sum(W(k)['eggs'] for k in WEEKS), 1)
+        if kind == 'd': return R.n(D_(key)['egg_g'], 1)
+        return R.n(sum(W(k)['egg_g'] * W(k)['eggs'] for k in weeks if W(k)['eggs']) / sum(W(k)['eggs'] or 0 for k in weeks), 1)
+    if h is not None:
+        hens, eggs, lay, gl, vs, stare, inc, jos, egg_g = (guard(f) for f in (hens, eggs, lay, gl, vs, stare, inc, jos, egg_g))
+        share = (lambda s: (lambda fld: guard(s(fld))))(share)
     lay_leaves = [('ouă', '', eggs), ('% ouat', '', lay)]
     if guide: lay_leaves += [('ghid', '', gl), ('față de ghid', '', vs), ('stare', 'txt', stare)]
     return [
@@ -252,8 +265,16 @@ def greutate():
     return [{'name': f'{ico("weighing")}Cântărire', 'leaves': out}]
 
 # ---------- table ----------
+# SYS15 (D175): every record group's cells (head and body) carry its tint, alternating a / b in table order across the
+# sections (neighbours never share one; the spine and the section heads carry none), and its first column the group's
+# start edge (a full-height rule, additions.css section 71). Markup hooks only: the look is in CSS.
+def _gtint(i): return 'ip-ptable__ga' if i % 2 == 0 else 'ip-ptable__gb'
+def _gcls(i, start, sec=False):
+    return ' '.join(x for x in (_gtint(i), 'ip-ptable__gs' if start else '', 'ip-ptable__sec' if sec else '') if x)
 def cell(val, cls, sec):
-    c = ' '.join(x for x in (('' if cls == 'txt' else 'num'), ('' if cls == 'txt' else cls), 'ip-ptable__sec' if sec else '') if x)
+    """sec: a leaf's group classes (leaves_of: tint, start edge, section edge); True / False kept for older callers."""
+    g = sec if isinstance(sec, str) else ('ip-ptable__sec' if sec else '')
+    c = ' '.join(x for x in (('' if cls == 'txt' else 'num'), ('' if cls == 'txt' else cls), g) if x)
     if isinstance(val, tuple):
         return f'<td class="{c}">{DASH}<span class="ip-sr"> {val[1]}</span></td>'
     return f'<td class="{c}">{val}</td>'
@@ -268,53 +289,59 @@ def head(sections, spine, show_sec, colw=None, fcol=None):
     cw = list(colw or [])
     def st():
         v = cw.pop(0) if cw else None
-        return f' style="--ip-colw:{v}%"' if v else ''
+        return f' style="--ip-colw:{v if isinstance(v, str) else f"{v}%"}"' if v else ''   # S14N: a str is a length as given (px: a table wider than its page)
     if spine != 'phone':
         r0 += f'<th scope="col" class="num" rowspan="{nrows}"{st()}>Vârstă (zile)</th><th scope="col" class="num" rowspan="{nrows}"{st()}>SAPT</th>'
     if fcol:
         r0 += f'<th scope="col" rowspan="{nrows}">Fermă</th>'
     rows = [r0, '', ''] if show_sec else [r0, '']
     ri = 1 if show_sec else 0
+    gi = 0   # SYS15: group index in table order (tint a / b)
     for si, (sname, note, recs) in enumerate(sections):
         width = sum(len(r['leaves']) for r in recs)
         if show_sec:
             nt = f'<span class="ip-ptable__note">{note}</span>' if note else ''
-            rows[0] += f'<th scope="colgroup" colspan="{width}" class="ip-ptable__sec">{sname}{nt}</th>'
+            rows[0] += f'<th scope="colgroup" colspan="{width}" class="ip-ptable__sec ip-ptable__gs">{sname}{nt}</th>'
         first = True
         for r in recs:
-            sec = ' ip-ptable__sec' if first else ''
+            g = _gcls(gi, True, first)
             if r.get('single'):
                 sr = f'<span class="ip-sr">{r.get("sr", "")}</span>'
                 lab = r['leaves'][0][0]
                 lab = f' <span>{lab}</span>' if lab else ''
-                rows[ri] += f'<th scope="col" class="num{sec}" rowspan="2"{st()}>{r["name"]}{lab}{sr}</th>'
+                rows[ri] += f'<th scope="col" class="num {g}" rowspan="2"{st()}>{r["name"]}{lab}{sr}</th>'
             else:
-                rows[ri] += f'<th scope="colgroup" colspan="{len(r["leaves"])}" class="{sec.strip()}">{r["name"]}</th>'.replace(' class=""', '')
+                rows[ri] += f'<th scope="colgroup" colspan="{len(r["leaves"])}" class="{g}">{r["name"]}</th>'
                 for li, (lab, cls, _) in enumerate(r['leaves']):
-                    s2 = ' ip-ptable__sec' if (first and li == 0) else ''
                     nc = '' if cls == 'txt' else 'num'
-                    rows[ri + 1] += f'<th scope="col" class="{(nc + s2).strip()}"{st()}>{lab}</th>'.replace(' class=""', '')
-            first = False
+                    rows[ri + 1] += f'<th scope="col" class="{(nc + " " + _gcls(gi, li == 0, first and li == 0)).strip()}"{st()}>{lab}</th>'
+            first = False; gi += 1
     return '<thead>' + ''.join(f'<tr>{r}</tr>' for r in rows if r) + '</thead>'
 
 def leaves_of(sections):
-    out = []
+    """(cls, value fn, group classes) per leaf column; the group classes (SYS15: tint, start edge, section edge) are a str."""
+    out = []; gi = 0
     for (_, _, recs) in sections:
         first = True
         for r in recs:
             for li, (lab, cls, fn) in enumerate(r['leaves']):
-                out.append((cls, fn, first and li == 0));
-            first = False
+                out.append((cls, fn, _gcls(gi, li == 0, first and li == 0)))
+            first = False; gi += 1
     return out
 
 def wd(d):
     return f'<span aria-hidden="true">{WD[d.weekday()]}</span><span class="ip-sr">{WDF[d.weekday()]}</span> {num(R.ddm(d))}'
 
 def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None, weeks=WEEKS, weighings=False,
-           focus=None, dense=False, foot=True, skel=False, colw=None, cal=CAL, farm=None):
+           focus=None, dense=False, foot=True, skel=False, colw=None, cal=CAL, farm=None, rowgroups=None):
     """farm (S3N): (kind, key) -> the S3 "Fermă" text ('w' week, 'd' day, 'f' period); on the desktop spines it is the Fermă
     column (spine 's3' without it keeps "Hîrbovăț"); on the phone (D174) there is no column: a day whose farm() is not
-    None (the transfer weeks) shows it as the sticky cell's second small line"""
+    None (the transfer weeks) shows it as the sticky cell's second small line.
+    rowgroups (S14N, spec D3/D4 and PeriodTable › rowGroups, the reports S11 Consum and S14): after a week's daily rows, one
+    section week row per entry, th.ip-table__child (§32), always shown (week rows: grain Săpt. keeps them; days are farm-level
+    only). Entry: {'label': visible row head, 'sr': hidden words after it, 'sections': the same shape as `sections` (one
+    leaf per column), 'empty': k -> None | muted text, 'skip': k -> True to leave the row out that week}: a week the section had no birds is one muted line across the figure
+    columns (D158d, "goală din 14.11.2026 · H7.1, H7.2")."""
     if show_sec is None: show_sec = len(sections) > 1
     fcol = spine == 's3' or (farm is not None and spine != 'phone')
     farm_of = farm or (lambda kind, key: 'Hîrbovăț')
@@ -335,10 +362,10 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
             s = f'<td class="num">{cal.age(pa)}{DASH}{cal.age(pb)}</td><td class="num">{weeks[-1]}{DASH}{weeks[0]}</td>'
         if fcol: s += f'<td>{farm_of(kind, key)}</td>'
         return s
-    def figs(kind, key):
+    def figs(kind, key, L=L):   # S14N: L = another row's leaves of the same shape (rowgroups)
         if skel:
             # FIN11G: each bar as wide as its column's usual figure (ch of the cell's Plex Mono), at the figures' edge
-            return ''.join(f'<td class="num{" ip-ptable__sec" if sec else ""}"><span class="ip-skel ip-skel--ch{n} ip-skel--end"></span></td>'
+            return ''.join(f'<td class="num {sec}"><span class="ip-skel ip-skel--ch{n} ip-skel--end"></span></td>'
                            for (c, fn, sec), n in zip(L, skel))
         return ''.join(cell(fn(kind, key), c, sec) for (c, fn, sec) in L)
     for k in weeks:
@@ -381,6 +408,19 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
             lab = wd(d) + (f' · {num(cal.age(d))}' if spine == 'phone' else '')
             if spine == 'phone' and farm and farm('d', d): lab += f'<span class="ip-ptable__sub">{farm("d", d)}</span>'   # D174: the farm on a second line
             rows += f'<tr class="ip-ptable__day" id="{i}"{hid}><th scope="row">{lab}</th>{spine_cells("d", d, "")}{figs("d", d)}</tr>'
+        for g in (rowgroups or ()):
+            if g.get('skip', lambda k: False)(k): continue   # a section not drawn that week (S11: an emptied hall's compartments, one hall line instead)
+            gl = g['label'] + f'<span class="ip-sr">{g.get("sr", "")}, SAPT {k}</span>'
+            sp = spine_cells('w', k, '') if not skel else skel_spine(spine, fcol)
+            if skel:
+                rows += f'<tr class="ip-table__skel"><th scope="row" class="ip-table__child"><span class="ip-skel ip-skel--w3"></span></th>{sp}{figs("w", k)}</tr>'
+                continue
+            note = g.get('empty', lambda k: None)(k)
+            if note:
+                rows += (f'<tr><th scope="row" class="ip-table__child">{gl}</th>{sp}<td class="ip-muted ip-ptable__sec" colspan="{len(L)}">{note}</td></tr>')
+                continue
+            GL_ = leaves_of(g['sections']); assert len(GL_) == len(L), (g['label'], len(GL_), len(L))
+            rows += f'<tr><th scope="row" class="ip-table__child">{gl}</th>{sp}{figs("w", k, GL_)}</tr>'
         h += f'<tbody class="ip-ptable__week">{rows}</tbody>'
     if foot:
         lab = 'Total perioadă' if not skel else '<span class="ip-skel ip-skel--w2"></span>'
@@ -416,7 +456,7 @@ SER = 'Hîrbovăț · Seria 2026 · SAPT 56–59'
 # loaded column shares of the Păsări · Fermă table at 1440 (section 54: both copies declare them; px / 1126): only the
 # columns whose figures are wider than their head (SAPT "56–59", "34,7%", Vânzare, În viață; Mortalitate ♀ · ♂ as wide as their group head); the others are sized by the head.
 COLW = [None, round(63.2 / 1126 * 100, 2)] + [round(x / 1126 * 100, 2) for x in (71, 63.1, 71, 62, 60, 64, 71, 63.1)]   # D167 order: În viață, Mortalitate, % cumulat, Vânzare
-html = '<!-- @dsCard group="Data" height=11506 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
+html = '<!-- @dsCard group="Data" height=11502 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
 
 # 1 Păsări · Fermă: default (D166: every week open), SAPT 58 key focused
 c1 = f'Păsări · {SER}'

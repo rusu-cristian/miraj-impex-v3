@@ -33,7 +33,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S9  | `s9_build.py --canvas` (h/title refreshed in place, RF05) |
 | S10 | `s10_build.py --canvas` (h/title in place; tall default re-measured by `s10_render.py --heights`, RF05) |
 | S2  | `s2_build.py --canvas`, `s2s_build.py --canvas` (h/title in place; heights from `s2_render.py --heights --states` and `--heights --viewer`, render wrappers keep only the 844/1024 floor, RF06) |
-| S14 | `s14_build.py --canvas`, `s14s_build.py --canvas` |
+| S14 | `s14_build.py --canvas`, `s14s_build.py --canvas` (S14N: realdata, PeriodTable with hall rowgroups; heights `s14_render.py s14_heights.json …` / `s14s_heights.json …`, widths `s14_render.py <h> --widths <stem …>` → board_widths.json; the phone board is drawn wide) |
 | S8  | `s8_build.py --canvas`, `s8s_build.py --canvas` (h/title in place; heights from `s8_render.py s8_heights.json`, min-height released, RF07) |
 | S15 | `s15_build.py --canvas`, `s15s_build.py --canvas` |
 | S16 | `s16_build.py --canvas`, `s16s_build.py --canvas` |
@@ -66,7 +66,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 - S4NS: s4ns_build ← s4t_build (→ s4s_build, sys14) + s2_build (phone screen/tab bar/write_phone; rewrites the S2/S7 default boards byte-identical). Phone boards whose table is wider than 390 are drawn wider too (board_widths.json, page 390, `.s4ns-wide`, D167).
 - S4NG: s4s_build loads sys14_build itself and draws the Rezumat PeriodTable (period, record types, FilterBar `filterbar4`, `ptable`, `rezumat_groups`, `tb_rezumat`, loading table) in `panel_default` / `main_page`, so the S4 state boards and the S9/S10 desktop backdrops show the same table; s4t_build re-exports these names (`P = s4.P`).
 - S3N: s3_build ← s4t_build (→ s4s_build, sys14: `ptable(farm=…)` draws the S3 Fermă column, also on the phone spine) + s2_build (phone shell; rewrites the S2/S7 default boards byte-identical). s18 reads s3's `cT`, `cH`, `cP`, `ARR`, `X0D`, `X1D` (kept).
-- s12 ← s11; s13 ← s7s + s11 (rewrites the S7 boards); s14 ← s4t + s11; s16 ← s4t.
+- s12 ← s11; s13 ← s7s + s11 (rewrites the S7 boards; its desktop shows the S11 manager page, so an S11 Consum change rebuilds it); s14 ← s4t + s11; s16 ← s4t. S14N: sys14 `ptable(rowgroups=…)` and `productie(h=…)` serve S14 and S11 Consum.
 - s2s ← s2; s14s ← s14 + s2; s15 ← s2s; s15s ← s15; s16s ← s16; s8s ← s8.
 - s17 ← s14s; s17s ← s17; s18 ← s17 + s3; s18s ← s18; s19 ← s18; s20, s21, s22 ← s19; s19s/s20s/s22s ← their base.
 - s20_build, s21_build and s22_build import s19_build, which rewrites /tmp/s19/boards.json with only the 10 base S19 boards (the 12 S19S boards drop out): re-run `s19s_build.py` after them before any `s19_render.py`. Renders only; repo files are unaffected.

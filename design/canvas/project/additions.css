@@ -2134,9 +2134,20 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  * - Head controls: div.ip-ptable__bar right above the region (farm tabs only): the caption "Detaliu" + the system
  *   SegmentedControl Fermă · Hale · Compartimente (role=radiogroup, ip-seg--touch on a phone). The visible caption line
  *   p.ip-cap.ip-ptable__cap follows it (aria-hidden: the table's caption and the region's aria-label say the same).
- * - Head: up to three rows, section > record > leaf; group heads right-aligned on a rule (section 32). A section group's
- *   first column (head cells and body cells, .ip-ptable__sec) starts on a rule left edge, steel only. A section head may
- *   hold a note line (span.ip-ptable__note, "goală din 14.11"). ♀/♂ signs and figures: .is-hen / .is-rooster.
+ * - Head: up to three rows, section > record > leaf; section, group and leaf heads centred over their columns (SYS15,
+ *   D175; section 32's right-aligned colgroup heads stay for other DataTables). A section head may hold a note line
+ *   (span.ip-ptable__note, "goală din 14.11"). ♀/♂ signs and figures: .is-hen / .is-rooster.
+ * - Column groups stand out (SYS15, D175): every cell of a record group (head, week, day, foot, skeleton) carries its
+ *   tint class, .ip-ptable__ga | .ip-ptable__gb, alternating in table order across the sections so neighbours never share
+ *   one; the spine (Data · Vârstă · SAPT · Fermă), the section heads and spanning message cells carry none. Tints are
+ *   tokens (colgroup-a|b: body, -total: week rows and the foot, -head: head cells; A sand from rec-feed, B cool from
+ *   rec-weighing, mixed on steel-0, each ≥1.12:1 against white): week rows keep their stronger look on top (500,
+ *   line-strong top edge, the -total step). Leaf heads are centred over right-aligned figures (the user's request, D175).
+ *   Each group's first column (.ip-ptable__gs; a section's first column also .ip-ptable__sec) draws a full-height
+ *   colgroup-rule left edge, head to foot (inside the cell, so no column widens; a section's first column keeps its 1px
+ *   border); on a table with section heads (Hale, Compartimente) a section's start edge is line-strong, so halls
+ *   separate from groups through the body; the region's frame is the last group's right edge. Figures stay right-aligned,
+ *   the spine left. Forced colours: tints drop (system backgrounds), rules stay in CanvasText.
  * - Week block: one tbody.ip-ptable__week per age week. Its first row, tr.is-total.ip-ptable__wk, is the totals row look
  *   (500, panel, line-strong top edge: section 32); its th[scope=rowgroup] holds the expand key, a button filling the
  *   row header: chevron 16 (ink-secondary) + "SAPT 58" + dates in ink-secondary, row-h less space-1 high (28; phone 44),
@@ -2174,7 +2185,18 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 /* "Total perioadă" sticks with the first column (section 36 covers thead and tbody only) */
 .ip-tablescroll > .ip-ptable > tfoot > tr > :first-child{position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule);background:var(--panel)}
 .ip-ptable :is(thead th:not(.ip-ptable__data):not([style*="--ip-colw"]),tbody td,tfoot td){width:1%} /* a declared share (section 54) wins */
-.ip-ptable .ip-ptable__sec{border-left:var(--ip-hair) solid var(--rule)}
+/* column groups (SYS15, D175): full-height start edges, centred heads, alternating tints */
+.ip-ptable :is(th,td).ip-ptable__sec{border-left:var(--ip-hair) solid var(--colgroup-rule)}
+.ip-ptable :is(th,td).ip-ptable__gs:not(.ip-ptable__sec){box-shadow:inset var(--ip-hair) 0 0 var(--colgroup-rule)} /* an inset edge: no column widens (a section's first column keeps its border) */
+.ip-ptable:has(> thead th.ip-ptable__sec:not(.ip-ptable__ga,.ip-ptable__gb)) :is(th,td).ip-ptable__sec{border-left-color:var(--line-strong)} /* Hale / Compartimente: halls stand apart from their groups */
+.ip-ptable thead th:is(.ip-ptable__ga,.ip-ptable__gb,.ip-ptable__sec){text-align:center}
+.ip-ptable thead th.ip-ptable__ga{background:var(--colgroup-a-head)}
+.ip-ptable thead th.ip-ptable__gb{background:var(--colgroup-b-head)}
+.ip-ptable :is(tbody,tfoot) td.ip-ptable__ga{background:var(--colgroup-a)}
+.ip-ptable :is(tbody,tfoot) td.ip-ptable__gb{background:var(--colgroup-b)}
+.ip-ptable tr.is-total > td.ip-ptable__ga{background:var(--colgroup-a-total)}
+.ip-ptable tr.is-total > td.ip-ptable__gb{background:var(--colgroup-b-total)}
+@media (forced-colors: active){.ip-ptable :is(th,td):is(.ip-ptable__gs,.ip-ptable__sec){border-left:var(--ip-hair) solid CanvasText}} /* box-shadow is dropped there */
 .ip-ptable__note{display:block;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);letter-spacing:0;text-transform:none;color:var(--ink-secondary)}
 .ip-ptable .is-hen{color:var(--rec-hen)}
 .ip-ptable .is-rooster{color:var(--rec-rooster)}

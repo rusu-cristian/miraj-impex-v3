@@ -3,7 +3,7 @@ One long page with section headings in screens.md order (not Tabs). Reuses the S
 Lamp/SexCount helpers, number formats, board writer). RF03: every figure, date and week from realdata (DATA03, D151–D159):
 the 69 real Hîrbovăț deliveries (kg, lei; 4 fără preț) + Telița's 13; the Hîrbovăț feed type is only the stock the kg went
 into (sheet column ♀ "gaina" → Breeder 2 · ♀, ♂ "cocos" → Cocoși · ♂; product unknown, names illustrative D30). The Consum
-table keeps its weekly layout (daily rows: S14N) on the last 4 age weeks, H5–H7.
+table (S14N) is a PeriodTable on the last 4 age weeks: week rows, their days, then the compartments H5.1–H7.2.
 python3 -I s11_build.py <repo_root> [heights.json, default s11_heights.json] [--canvas]   (--canvas: refresh the 7 entries' h/title in place)
 Writes design/canvas/project/S11-rapoarte-hrana[--<state>].dc.html and /tmp/s4s/<stem>.html (plain wrappers)."""
 import sys, re, json, pathlib, importlib.util, datetime as dt
@@ -265,12 +265,10 @@ def del_ths(role):
 # skeleton reuses, so its columns sit where the loaded ones do
 W_DEL = [11.0, 8.2, 13.7, 7.7, 14.7, 17.3, None, 8.6]   # None: the column that takes the rest
 W_DEL_RO = [11.0, 11.0, None, 9.0]   # FW01: viewer Livrări (no prices) at the block's full width, was fit-content (576)
-W_CONS = [None, 6.4, 8.5, 5.8, 10.5, 8.5, 5.8, 10.5, 19.6]
 W_COST = [None, 13.6, 14.7, 13.4, 17.9]
 # FIN11G fix 1: each column's loaded min-content (px, without padding; measured with the table at its narrowest), so at
 # 1280, where the content outgrows the shares, the loading columns grow as the loaded ones do
 M_DEL = [78.28, 52.2, 103.25, 46.97, 116, 140, 150.08, 75.33]
-M_CONS = [246.11, 46.97, 71.06, 40.91, 93.03, 71.06, 40.91, 93.03, 193.7]
 M_COST = [256.53, 70.45, 78.28, 69.09, 100.11]
 
 def sec_deliveries(role, mode='default'):
@@ -298,54 +296,73 @@ def sec_deliveries(role, mode='default'):
 </section>'''
 
 # ---------- 4. Consum ----------
-def cons_cells(w, key, weighted):
-    out = ''; dvs = []
-    for sx in 'FM':
-        a = agg[(w, key, sx)]; g = g_avg(a, weighted); gd = guide[(w, sx)]; dv = dev(g, gd); dvs.append(dv)
-        cls = 'hen' if sx == 'F' else 'rooster'
-        out += f'<td class="num s11-{cls}">{n(g, 1)}</td><td class="num ip-muted">{gd}</td><td class="num ip-muted">{pct1(dv)}</td>'
-    return out, dvs
-def cons_state(w, key):
-    miss = [(sx, d) for sx in 'FM' for (_, d) in agg[(w, key, sx)]['miss']]
-    _, dvs = cons_cells(w, key, key == 'all')
-    if miss:
-        if key != 'all': what = ' · '.join(f'{F if sx == "F" else M} <span class="ip-num">{ddate(d)}</span>' for sx, d in miss)
-        else:
-            ds = sorted({d for _, d in miss}); span = ddate(ds[0]) if len(ds) == 1 else f'{ddm(ds[0])}–{ddate(ds[-1])}'
-            what = f'<span class="ip-num">{len(miss)}</span> rânduri · <span class="ip-num">{span}</span>'
-        return f'<span class="s11-state">{lamp("warn", "lipsă")}<span class="ip-muted">{what}</span></span>'
-    if any(abs(v) > 10 for v in dvs): return lamp('warn', 'abatere')
-    return lamp('ok', 'în normă')
-CONS_THS = ('<th scope="col">Secțiune</th>'
-           f'<th scope="col" class="num"><span class="ip-rec ip-rec--feed ip-table__ico">{icon("feed", 14)}</span>Kg</th>'
-           f'<th scope="col" class="num">{F} g/pasăre</th><th scope="col" class="num">{F} ghid</th><th scope="col" class="num">{F} față de ghid</th>'
-           f'<th scope="col" class="num">{M} g/pasăre</th><th scope="col" class="num">{M} ghid</th><th scope="col" class="num">{M} față de ghid</th><th scope="col">Stare</th>')
-CONS_THS = SKL.widths(CONS_THS, W_CONS, M_CONS)
-def empty_row(w, hall):
-    secs = R.HALL_SECS[hall]
-    return (f'<tr><th scope="row" class="ip-table__child">{hall}<span class="ip-sr">, {R.SAPT(w)}</span></th>'
-            f'<td class="num ip-muted">–</td><td class="ip-muted" colspan="7">goală din {dsp(EMPTY_HALLS[hall])} · {", ".join(secs)}</td></tr>')
+# RF03 → S14N (spec D4 › Consum, D154/D166): a PeriodTable (SYS14, imported through s4s_build): per age week the farm's week
+# row, its daily farm rows (every week open), then the compartment week rows (rowGroups); g/pasăre on every week row = kg ÷
+# bird-days (♀ by hens, ♂ by roosters, D38; compartments too, D163); a day = the register's g (realdata.feed_g), its guide
+# the day's; a compartment-day with birds and no kg is "lipsă" (D46: the week compares over the days that have rows)
+P = s4.P
+def pct1s(v): return pct1(v)
+def miss_txt(w, key, day=None):
+    miss = [(sx, sec, d) for sx in 'FM' for (sec, d) in agg[(w, key, sx)]['miss'] if day is None or d == day.isoformat()]
+    if not miss: return ''
+    if key != 'all': return ' · '.join(f'{F if sx == "F" else M} <span class="ip-num">{ddm(d)}</span>' for sx, _, d in miss)
+    if day is not None: return ' · '.join(f'{sec} {F if sx == "F" else M}' for sx, sec, _ in miss)
+    ds = sorted({d for *_, d in miss}); span = ddm(ds[0]) if len(ds) == 1 else f'{ddm(ds[0])}–{ddm(ds[-1])}'
+    return f'<span class="ip-num">{len(miss)}</span> rânduri · <span class="ip-num">{span}</span>'
+def cons_groups(key='all'):
+    """key 'all' = Total fermă (week, day and period rows); a compartment code = its week rows (rowGroups)"""
+    def a(kind, k, sx): return agg[(k, key, sx)]
+    def g_v(kind, k, sx):
+        if kind == 'w': return g_avg(agg[(k, key, sx)], True)
+        if kind == 'd': return R.feed_g(k, sx)
+        t = [agg[(w, key, sx)] for w in WEEKS]; return sum(x['kg'] for x in t) * 1000 / sum(x['bird'] for x in t)
+    def gd_v(kind, k, sx):
+        if kind == 'w': return guide[(k, sx)]
+        if kind == 'd': return R.day(k)[f'guide_g_{sx}']
+        t = {w: agg[(w, key, sx)]['bird'] for w in WEEKS}; return sum(guide[(w, sx)] * t[w] for w in WEEKS) / sum(t.values())   # bird-day weighted (D162)
+    def kg(sx):
+        def f(kind, k):
+            if kind == 'w': return n(agg[(k, key, sx)]['kg'], 1)
+            if kind == 'd': return n(R.feed_kg(k, sx), 1)
+            return n(sum(agg[(w, key, sx)]['kg'] for w in WEEKS), 1)
+        return f
+    def g(sx): return lambda kind, k: n(g_v(kind, k, sx), 1)
+    def gd(sx): return lambda kind, k: n(gd_v(kind, k, sx))
+    def dv(sx): return lambda kind, k: pct1(dev(g_v(kind, k, sx), gd_v(kind, k, sx)))
+    def stare(kind, k):
+        what = '' if kind == 'f' else miss_txt(R.sapt(k) if kind == 'd' else k, key, k if kind == 'd' else None)
+        if what: return f'<span class="s11-state">{lamp("warn", "lipsă")}<span class="ip-muted">{what}</span></span>'
+        if any(abs(dev(g_v(kind, k, sx), gd_v(kind, k, sx))) > 10 for sx in 'FM'): return lamp('warn', 'abatere')
+        return lamp('ok', 'în normă')
+    kgg = P.group(P.hrana(), 'Hrană · kg')
+    sx = P.sx
+    return [{'name': kgg['name'], 'leaves': [(sx('F'), 'is-hen', kg('F')), (sx('M'), 'is-rooster', kg('M'))]},
+            {'name': P.group(P.hrana(), 'Hrană · g/pasăre')['name'],
+             'leaves': [(sx('F', 'efectiv'), 'is-hen', g('F')), (sx('F', 'ghid'), 'is-hen', gd('F')), (sx('F', 'față de ghid'), 'is-hen', dv('F')),
+                        (sx('M', 'efectiv'), 'is-rooster', g('M')), (sx('M', 'ghid'), 'is-rooster', gd('M')), (sx('M', 'față de ghid'), 'is-rooster', dv('M')),
+                        ('stare', 'txt', stare)]}]
+assert [R.n(R.feed_kg(R.TODAY, x), 1) for x in 'FM'] == ['2 303,2', '154,7'] and R.n(R.feed_g(R.TODAY, 'F')) == '160' and R.day(R.TODAY)['guide_g_F'] == 157   # spec D4 sample
+EMPTY_HALL_TXT = {h: f'goală din {dsp(EMPTY_HALLS[h])} · {", ".join(R.HALL_SECS[h])}' for h in EMPTY_HALLS}
+def cons_rows():
+    out = [{'label': sec, 'sr': '', 'sections': [('', '', cons_groups(sec))], 'skip': (lambda k, sec=sec: not fed(k, sec))} for sec in SECS]
+    out += [{'label': h, 'sr': '', 'sections': [('', '', cons_groups())], 'empty': (lambda k, h=h: EMPTY_HALL_TXT[h]),
+             'skip': (lambda k, h=h: any(fed(k, sec) for sec in R.HALL_SECS[h]))} for h in EMPTY_HALLS]   # an emptied hall: one muted line (D158d)
+    return out
+CONS_SKEL = [4, 3, 4, 3, 4, 4, 3, 4, 4]
+CONS_CAP = f'Consum · Hîrbovăț · Seria 2026 · {R.SAPT(WEEKS[-1])}–{WEEKS[0]} · pe zile și secțiuni'
+def cons_table(skel=False):
+    t, _ = P.ptable('cs', CONS_CAP, [('Total fermă', '', cons_groups())], weeks=WEEKS, rowgroups=cons_rows(), skel=CONS_SKEL if skel else False)
+    if not skel: assert t.count(s4.PART[0]) == 1; t = t.replace(s4.PART[0], s4.PART[1])   # "17–18.11 · 2 din 7 zile" (D165)
+    assert t.count('aria-expanded="true"') == (0 if skel else len(WEEKS))   # D166: every week open
+    a = 'class="ip-table ip-table--rowheads ip-ptable"'; assert t.count(a) == 1   # D165: dense + wrapping figure heads so the table fits the 1440 page
+    return t.replace(a, 'class="ip-table ip-table--rowheads ip-table--wraphead ip-ptable ip-ptable--dense"')
 def sec_consum():
-    rows = ''
-    for w in WEEKS:
-        ds = wdates[w]; kg = agg[(w, 'all', 'F')]['kg'] + agg[(w, 'all', 'M')]['kg']
-        cur = ' · în curs' if TODAY in ds else ''
-        cells, _ = cons_cells(w, 'all', True)
-        rows += f'<tbody><tr class="is-group"><th scope="rowgroup" class="s11-gl"><span class="ip-num">{R.SAPT(w)}</span> <span class="s11-gsub">{R.drange(ds[0], ds[-1])}{cur}</span></th><td class="num">{n(kg)}</td>{cells}<td>{cons_state(w, "all")}</td></tr>'
-        for sec in SECS:
-            if not fed(w, sec): continue   # an emptied hall: one muted line below (D158d)
-            kg = agg[(w, sec, 'F')]['kg'] + agg[(w, sec, 'M')]['kg']; cells, _ = cons_cells(w, sec, False)
-            rows += f'<tr><th scope="row" class="ip-table__child">{sec}<span class="ip-sr">, {R.SAPT(w)}</span></th><td class="num">{n(kg)}</td>{cells}<td>{cons_state(w, sec)}</td></tr>'
-        for h in EMPTY_HALLS:
-            if not any(fed(w, sec) for sec in R.HALL_SECS[h]): rows += empty_row(w, h)
-        rows += '</tbody>'
-    ths = CONS_THS
     span = f'{R.SAPT(WEEKS[-1])}–{WEEKS[0]}'
-    foot = (f'<div class="s11-foot"><span class="ip-note">g/pasăre = media zilelor cu rânduri; rândul săptămânii cântărește ♀ după găini și ♂ după cocoși. Toleranță <span class="ip-num">±10%</span>. '
+    foot = (f'<div class="s11-foot"><span class="ip-note">g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre ({F} după găini, {M} după cocoși). Toleranță <span class="ip-num">±10%</span>. '
             f'Telița: fără consum în ciclul curent (ciclu închis pe {dsp(R.CTEL["end_date"])}).{odd_note()}</span><a class="ip-link s11-lk" href="#consum-toate">Vezi toate săptămânile</a></div>')
     return f'''<section class="ip-block" aria-labelledby="h-consum">
-{sec_head("h-consum", "Consum", f'Hîrbovăț · pe săptămână și secțiune · <span class="ip-num">{span}</span> · ghid Ross 308 ouat')}
-{tscroll(f'Consum Hîrbovăț pe săptămână și secțiune, {span}, față de ghid', f'<thead><tr>{ths}</tr></thead>{rows}', rowheads=True)}
+{sec_head("h-consum", "Consum", f'Hîrbovăț · pe săptămână, zi și secțiune · <span class="ip-num">{span}</span> · ghid Ross 308 ouat')}
+{P.block('cs', CONS_CAP, cons_table(), bar=False)}
 {foot}
 </section>'''
 
@@ -386,7 +403,7 @@ def sec_loading():
 <p class="ip-sr" role="status">Se încarcă raportul Hrană pentru Seria 2026.</p>
 <section class="ip-block" aria-hidden="true">{sec_head("h-stoc", "Stoc")}<ul class="ip-readouts">{ro * 3}</ul></section>
 <section class="ip-block" aria-hidden="true">{sec_head("h-livrari", "Livrări")}{tbl(del_ths("Proprietar"), 6)}</section>
-<section class="ip-block" aria-hidden="true">{sec_head("h-consum", "Consum")}{tbl(CONS_THS, 4)}</section>
+<section class="ip-block" aria-hidden="true">{sec_head("h-consum", "Consum")}<p class="ip-cap ip-ptable__cap">{CONS_CAP}</p>{P.region(cons_table(True), CONS_CAP, hidden=True)}</section>
 <section class="ip-block" aria-hidden="true">{sec_head("h-cost", "Cost")}<div class="ip-cost ip-cost--wide"><div class="ip-cost__head">{sk("s4s-w40")}</div><div class="ip-cost__scroll">{tbl(COST_THS, 5, "ip-cost__table")}</div></div></section>
 </div>'''
 

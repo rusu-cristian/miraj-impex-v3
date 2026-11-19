@@ -213,7 +213,7 @@
       "x": 0,
       "y": 12191,
       "w": 1440,
-      "h": 2469,
+      "h": 3342,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană"
     },
@@ -221,7 +221,7 @@
       "x": 1520,
       "y": 12191,
       "w": 1440,
-      "h": 1337,
+      "h": 2947,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · se încarcă"
     },
@@ -229,7 +229,7 @@
       "x": 3040,
       "y": 12191,
       "w": 1440,
-      "h": 2437,
+      "h": 3304,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · manager (prețuri doar de citit)"
     },
@@ -237,7 +237,7 @@
       "x": 4560,
       "y": 12191,
       "w": 1440,
-      "h": 2002,
+      "h": 2869,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · observator"
     },
@@ -251,7 +251,7 @@
     },
     "S12-preturi-hrana.dc.html": {
       "x": 0,
-      "y": 14921,
+      "y": 15794,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -259,7 +259,7 @@
     },
     "S12-preturi-hrana--se-incarca.dc.html": {
       "x": 1520,
-      "y": 14921,
+      "y": 15794,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -267,7 +267,7 @@
     },
     "S12-preturi-hrana--in-lucru.dc.html": {
       "x": 3040,
-      "y": 14921,
+      "y": 15794,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -275,7 +275,7 @@
     },
     "S12-preturi-hrana--toate-livrarile-au-pret.dc.html": {
       "x": 4560,
-      "y": 14921,
+      "y": 15794,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -283,7 +283,7 @@
     },
     "S12-preturi-hrana--eroare.dc.html": {
       "x": 6080,
-      "y": 14921,
+      "y": 15794,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -293,7 +293,7 @@
       "x": 7600,
       "y": 12191,
       "w": 1440,
-      "h": 2558,
+      "h": 3431,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · modifică preț"
     },
@@ -301,41 +301,41 @@
       "x": 9120,
       "y": 12191,
       "w": 1440,
-      "h": 2610,
+      "h": 3483,
       "expand": "fill",
       "title": "S11 · Rapoarte · Hrană · modifică preț · eroare"
     },
     "S13-livrare-hrana.dc.html": {
       "x": 0,
-      "y": 16065,
+      "y": 16938,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · telefon"
     },
     "S13-livrare-hrana--salvat.dc.html": {
       "x": 470,
-      "y": 16065,
+      "y": 16938,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · salvat"
     },
     "S13-livrare-hrana--cantitate-lipsa.dc.html": {
       "x": 940,
-      "y": 16065,
+      "y": 16938,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · cantitate lipsă"
     },
     "S13-livrare-hrana--eroare-la-salvare.dc.html": {
       "x": 1410,
-      "y": 16065,
+      "y": 16938,
       "w": 390,
       "h": 844,
       "title": "S13 · Livrare hrană · eroare la salvare"
     },
     "S13-livrare-hrana--desktop.dc.html": {
       "x": 1880,
-      "y": 16065,
+      "y": 16938,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -343,119 +343,119 @@
     },
     "S6-zilnic.dc.html": {
       "x": 0,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 3057,
       "title": "S6 · Zilnic"
     },
     "S6-zilnic--se-incarca.dc.html": {
       "x": 470,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · se încarcă"
     },
     "S6-zilnic--deja-introdus.dc.html": {
       "x": 940,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · deja introdus"
     },
     "S6-zilnic--zi-trecuta.dc.html": {
       "x": 1410,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · zi trecută (medic)"
     },
     "S6-zilnic--abatere.dc.html": {
       "x": 1880,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · abatere 3× · exemplu de stare (D39)"
     },
     "S6-zilnic--refuzat.dc.html": {
       "x": 2350,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · refuzat · peste cei în viață · exemplu de stare (D39)"
     },
     "S6-zilnic--eroare-la-salvare.dc.html": {
       "x": 2820,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · eroare la salvare"
     },
     "S6-zilnic--ferma-fara-pasari.dc.html": {
       "x": 3290,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · fermă fără păsări"
     },
     "S6-zilnic--salvat.dc.html": {
       "x": 3760,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · salvat"
     },
     "S6-zilnic--motiv-lipsa.dc.html": {
       "x": 4230,
-      "y": 17209,
+      "y": 18082,
       "w": 390,
       "h": 844,
       "title": "S6 · Zilnic · motiv lipsă · Mai mult deschis · exemplu de stare (D39)"
     },
     "S9-transfer.dc.html": {
       "x": 0,
-      "y": 20386,
+      "y": 21259,
       "w": 390,
       "h": 844,
       "title": "S9 · Transfer · telefon · reluare 28.02.2026"
     },
     "S9-transfer--salvat.dc.html": {
       "x": 470,
-      "y": 20386,
+      "y": 21259,
       "w": 390,
       "h": 844,
       "title": "S9 · Transfer · salvat"
     },
     "S9-transfer--refuzat.dc.html": {
       "x": 940,
-      "y": 20386,
+      "y": 21259,
       "w": 390,
       "h": 844,
       "title": "S9 · Transfer · refuzat · peste cei în viață · exemplu de stare (D39)"
     },
     "S9-transfer--eroare-la-salvare.dc.html": {
       "x": 1410,
-      "y": 20386,
+      "y": 21259,
       "w": 390,
       "h": 844,
       "title": "S9 · Transfer · eroare la salvare"
     },
     "S9-transfer--alege-sectiunea.dc.html": {
       "x": 1880,
-      "y": 20386,
+      "y": 21259,
       "w": 390,
       "h": 844,
       "title": "S9 · Transfer · alege secțiunea · exemplu de stare (D39)"
     },
     "S9-transfer--ciclu-nou.dc.html": {
       "x": 2350,
-      "y": 20386,
+      "y": 21259,
       "w": 390,
       "h": 844,
       "title": "S9 · Transfer · ciclu nou · exemplu de stare (D39)"
     },
     "S9-transfer--desktop.dc.html": {
       "x": 2820,
-      "y": 20386,
+      "y": 21259,
       "w": 1976,
       "h": 1024,
       "expand": "fill",
@@ -463,42 +463,42 @@
     },
     "S10-vanzare.dc.html": {
       "x": 0,
-      "y": 21530,
+      "y": 22403,
       "w": 390,
       "h": 1772,
       "title": "S10 · Vânzare · telefon · vânzarea din 18.11.2026"
     },
     "S10-vanzare--confirmare.dc.html": {
       "x": 470,
-      "y": 21530,
+      "y": 22403,
       "w": 390,
       "h": 844,
       "title": "S10 · Vânzare · confirmare · golește ferma · exemplu de stare (D39)"
     },
     "S10-vanzare--refuzat.dc.html": {
       "x": 940,
-      "y": 21530,
+      "y": 22403,
       "w": 390,
       "h": 844,
       "title": "S10 · Vânzare · refuzat · peste cei în viață · exemplu de stare (D39)"
     },
     "S10-vanzare--salvat.dc.html": {
       "x": 1410,
-      "y": 21530,
+      "y": 22403,
       "w": 390,
       "h": 844,
       "title": "S10 · Vânzare · salvat"
     },
     "S10-vanzare--eroare-la-salvare.dc.html": {
       "x": 1880,
-      "y": 21530,
+      "y": 22403,
       "w": 390,
       "h": 844,
       "title": "S10 · Vânzare · eroare la salvare"
     },
     "S10-vanzare--desktop.dc.html": {
       "x": 2820,
-      "y": 21530,
+      "y": 22403,
       "w": 1976,
       "h": 1024,
       "expand": "fill",
@@ -506,28 +506,28 @@
     },
     "S10-vanzare--partiala.dc.html": {
       "x": 2350,
-      "y": 21530,
+      "y": 22403,
       "w": 390,
       "h": 844,
       "title": "S10 · Vânzare · parțială · golește hala H7 · reluare 14.11.2026"
     },
     "S2-acasa.dc.html": {
       "x": 0,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 876,
       "title": "S2 · Acasă · vet · telefon"
     },
     "S2-acasa--manager.dc.html": {
       "x": 470,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 1740,
       "title": "S2 · Acasă · manager · telefon"
     },
     "S2-acasa--manager-desktop.dc.html": {
       "x": 940,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -535,7 +535,7 @@
     },
     "S2-acasa--proprietar-desktop.dc.html": {
       "x": 2460,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1128,
       "expand": "fill",
@@ -543,56 +543,56 @@
     },
     "S2-acasa--se-incarca.dc.html": {
       "x": 3980,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · se încarcă"
     },
     "S2-acasa--inainte-de-12.dc.html": {
       "x": 4450,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · înainte de 12:00 · Acțiuni deschis"
     },
     "S2-acasa--sterge-confirmare.dc.html": {
       "x": 4920,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · Șterge · confirmare"
     },
     "S2-acasa--dupa-2359.dc.html": {
       "x": 5390,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · după 23:59 · modificat la · exemplu de stare (D39)"
     },
     "S2-acasa--ferma-goala.dc.html": {
       "x": 5860,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · fermă goală (Telița) · exemplu de stare (D39)"
     },
     "S2-acasa--fara-acces.dc.html": {
       "x": 6330,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · fără acces"
     },
     "S2-acasa--eroare-la-incarcare.dc.html": {
       "x": 6800,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · vet · eroare la încărcare"
     },
     "S2-acasa--manager-desktop--se-incarca.dc.html": {
       "x": 7740,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -600,7 +600,7 @@
     },
     "S2-acasa--manager-desktop--zi-trecuta-stoc-sub-0.dc.html": {
       "x": 9260,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -608,7 +608,7 @@
     },
     "S2-acasa--proprietar-desktop--se-incarca.dc.html": {
       "x": 10780,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -616,7 +616,7 @@
     },
     "S2-acasa--proprietar-desktop--toate-cu-pret.dc.html": {
       "x": 12300,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1084,
       "expand": "fill",
@@ -624,14 +624,14 @@
     },
     "S2-acasa--observator.dc.html": {
       "x": 13820,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 1920,
       "title": "S2 · Acasă · observator · telefon"
     },
     "S2-acasa--observator-desktop.dc.html": {
       "x": 14290,
-      "y": 23422,
+      "y": 24295,
       "w": 1440,
       "h": 1084,
       "expand": "fill",
@@ -639,239 +639,239 @@
     },
     "S14-rapoarte-productie.dc.html": {
       "x": 0,
-      "y": 25462,
-      "w": 1440,
-      "h": 1785,
+      "y": 26335,
+      "w": 2008,
+      "h": 2123,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție"
     },
     "S14-rapoarte-productie--se-incarca.dc.html": {
-      "x": 1520,
-      "y": 25462,
-      "w": 1440,
-      "h": 1024,
+      "x": 2088,
+      "y": 26335,
+      "w": 2008,
+      "h": 1967,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · se încarcă"
     },
     "S14-rapoarte-productie--fara-date-in-perioada.dc.html": {
-      "x": 3040,
-      "y": 25462,
+      "x": 4176,
+      "y": 26335,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · fără date în perioadă"
     },
     "S14-rapoarte-productie--fara-ghid.dc.html": {
-      "x": 4560,
-      "y": 25462,
-      "w": 1440,
-      "h": 1850,
+      "x": 5696,
+      "y": 26335,
+      "w": 1752,
+      "h": 2159,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · fără ghid"
     },
     "S14-rapoarte-productie--seria-2025.dc.html": {
-      "x": 6080,
-      "y": 25462,
+      "x": 7528,
+      "y": 26335,
       "w": 1440,
-      "h": 1740,
+      "h": 2227,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · Seria 2025 (ciclu închis)"
     },
     "S14-rapoarte-productie--observator-se-exporta.dc.html": {
-      "x": 7600,
-      "y": 25462,
-      "w": 1440,
-      "h": 1785,
+      "x": 9048,
+      "y": 26335,
+      "w": 2008,
+      "h": 2123,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · observator · se exportă"
     },
     "S14-rapoarte-productie--eroare-la-incarcare.dc.html": {
-      "x": 9120,
-      "y": 25462,
+      "x": 11136,
+      "y": 26335,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · eroare la încărcare"
     },
     "S14-rapoarte-productie--fara-ferma-de-ouat.dc.html": {
-      "x": 10640,
-      "y": 25462,
+      "x": 12656,
+      "y": 26335,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · fără fermă de ouat · exemplu de stare (D39)"
     },
     "S14-rapoarte-productie--telefon.dc.html": {
-      "x": 12160,
-      "y": 25462,
+      "x": 14176,
+      "y": 26335,
       "w": 390,
-      "h": 2597,
+      "h": 3511,
       "title": "S14 · Rapoarte · Producție · telefon"
     },
     "S14-rapoarte-productie--telefon-filtre.dc.html": {
-      "x": 12630,
-      "y": 25462,
+      "x": 14646,
+      "y": 26335,
       "w": 390,
       "h": 844,
       "title": "S14 · Rapoarte · Producție · telefon · filtre și export"
     },
     "S8-cantarire.dc.html": {
       "x": 0,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 927,
       "title": "S8 · Cântărire · Hîrbovăț 10.11.2026"
     },
     "S8-cantarire--gol.dc.html": {
       "x": 470,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 921,
       "title": "S8 · Cântărire · gol"
     },
     "S8-cantarire--in-norma.dc.html": {
       "x": 940,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 947,
       "title": "S8 · Cântărire · în normă · Telița 24.02.2026"
     },
     "S8-cantarire--abatere.dc.html": {
       "x": 1410,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 991,
       "title": "S8 · Cântărire · abatere · Telița 24.02.2026"
     },
     "S8-cantarire--valoare-refuzata.dc.html": {
       "x": 1880,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 975,
       "title": "S8 · Cântărire · valoare refuzată · Hîrbovăț 10.11.2026 · exemplu de stare (D39)"
     },
     "S8-cantarire--salvat.dc.html": {
       "x": 2350,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 1015,
       "title": "S8 · Cântărire · salvat · Hîrbovăț 10.11.2026"
     },
     "S8-cantarire--eroare-la-salvare.dc.html": {
       "x": 2820,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 1129,
       "title": "S8 · Cântărire · eroare la salvare · Hîrbovăț 10.11.2026"
     },
     "S8-cantarire--se-incarca.dc.html": {
       "x": 3290,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 927,
       "title": "S8 · Cântărire · se încarcă"
     },
     "S8-cantarire--alege-sectiunea.dc.html": {
       "x": 3760,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 844,
       "title": "S8 · Cântărire · alege secțiunea"
     },
     "S8-cantarire--zi-trecuta.dc.html": {
       "x": 4230,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 1072,
       "title": "S8 · Cântărire · zi trecută (medic) · Telița 17.02.2026"
     },
     "S8-cantarire--ferma-fara-pasari.dc.html": {
       "x": 4700,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 844,
       "title": "S8 · Cântărire · fermă fără păsări"
     },
     "S8-cantarire--deja-introdus.dc.html": {
       "x": 5170,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 1006,
       "title": "S8 · Cântărire · deja introdus · Hîrbovăț 10.11.2026"
     },
     "S8-cantarire--gol-telita.dc.html": {
       "x": 5640,
-      "y": 28179,
+      "y": 29966,
       "w": 390,
       "h": 941,
       "title": "S8 · Cântărire · gol · Telița 24.02.2026"
     },
     "S15-introdus-azi.dc.html": {
       "x": 0,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet"
     },
     "S15-introdus-azi--gol.dc.html": {
       "x": 470,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · gol · manager · înainte de 13:16"
     },
     "S15-introdus-azi--sterge-confirmare.dc.html": {
       "x": 940,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · Șterge · confirmare"
     },
     "S15-introdus-azi--se-incarca.dc.html": {
       "x": 1410,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · se încarcă"
     },
     "S15-introdus-azi--eroare-la-incarcare.dc.html": {
       "x": 1880,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · eroare la încărcare"
     },
     "S15-introdus-azi--actiuni-deschis.dc.html": {
       "x": 2350,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · Acțiuni deschis"
     },
     "S15-introdus-azi--dupa-stergere.dc.html": {
       "x": 2820,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · după ștergere"
     },
     "S15-introdus-azi--dupa-2359.dc.html": {
       "x": 3290,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · vet · după 23:59 · modificat la · exemplu de stare (D39)"
     },
     "S15-introdus-azi--manager.dc.html": {
       "x": 3760,
-      "y": 29428,
+      "y": 31215,
       "w": 390,
       "h": 844,
       "title": "S15 · Introdus azi · manager · vânzare"
     },
     "S15-introdus-azi--desktop.dc.html": {
       "x": 4230,
-      "y": 29428,
+      "y": 31215,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -879,35 +879,35 @@
     },
     "S16-corecteaza.dc.html": {
       "x": 0,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 2280,
       "title": "S16 · Corectează · telefon · înainte de 10:12"
     },
     "S16-corecteaza--motiv-lipsa.dc.html": {
       "x": 470,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 2316,
       "title": "S16 · Corectează · motiv lipsă · exemplu de stare (D39)"
     },
     "S16-corecteaza--refuzat.dc.html": {
       "x": 940,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 2196,
       "title": "S16 · Corectează · refuzat · sub 0 · exemplu de stare (D39)"
     },
     "S16-corecteaza--sterge-confirmare.dc.html": {
       "x": 1410,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 844,
       "title": "S16 · Corectează · Șterge · confirmare · exemplu de stare (D39)"
     },
     "S16-corecteaza--desktop.dc.html": {
       "x": 4230,
-      "y": 30572,
+      "y": 32359,
       "w": 1440,
       "h": 2148,
       "expand": "fill",
@@ -915,42 +915,42 @@
     },
     "S16-corecteaza--salvat.dc.html": {
       "x": 1880,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 2220,
       "title": "S16 · Corectează · salvat · 18.11.2026, 10:12"
     },
     "S16-corecteaza--eroare-la-salvare.dc.html": {
       "x": 2350,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 2476,
       "title": "S16 · Corectează · eroare la salvare"
     },
     "S16-corecteaza--se-incarca.dc.html": {
       "x": 2820,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 2180,
       "title": "S16 · Corectează · se încarcă"
     },
     "S16-corecteaza--vet-blocat.dc.html": {
       "x": 3290,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 1948,
       "title": "S16 · Corectează · vet · zi trecută · blocat"
     },
     "S16-corecteaza--ciclu-transfer.dc.html": {
       "x": 3760,
-      "y": 30572,
+      "y": 32359,
       "w": 390,
       "h": 844,
       "title": "S16 · Corectează · transfer · refuzat · secțiune golită de o vânzare · exemplu de stare (D39)"
     },
     "S16-corecteaza--desktop-scris.dc.html": {
       "x": 5750,
-      "y": 30572,
+      "y": 32359,
       "w": 1440,
       "h": 2324,
       "expand": "fill",
@@ -958,7 +958,7 @@
     },
     "S16-corecteaza--desktop-refuzat.dc.html": {
       "x": 7270,
-      "y": 30572,
+      "y": 32359,
       "w": 1440,
       "h": 2180,
       "expand": "fill",
@@ -966,7 +966,7 @@
     },
     "S16-corecteaza--desktop-sterge-confirmare.dc.html": {
       "x": 8790,
-      "y": 30572,
+      "y": 32359,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -974,7 +974,7 @@
     },
     "S16-corecteaza--desktop-dupa-stergere.dc.html": {
       "x": 10310,
-      "y": 30572,
+      "y": 32359,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -982,7 +982,7 @@
     },
     "S17-istoric-modificari.dc.html": {
       "x": 0,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -990,7 +990,7 @@
     },
     "S17-istoric-modificari--filtre-fara-rezultate.dc.html": {
       "x": 1520,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -998,7 +998,7 @@
     },
     "S17-istoric-modificari--se-incarca.dc.html": {
       "x": 3040,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1006,7 +1006,7 @@
     },
     "S17-istoric-modificari--eroare-la-incarcare.dc.html": {
       "x": 4560,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1014,7 +1014,7 @@
     },
     "S17-istoric-modificari--observator-fara-acces.dc.html": {
       "x": 6080,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1022,14 +1022,14 @@
     },
     "S17-istoric-modificari--telefon.dc.html": {
       "x": 13680,
-      "y": 33168,
+      "y": 34955,
       "w": 390,
       "h": 844,
       "title": "S17 · Istoric modificări · manager · telefon"
     },
     "S17-istoric-modificari--din-modificat-de.dc.html": {
       "x": 7600,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1037,7 +1037,7 @@
     },
     "S17-istoric-modificari--manager-interval-gresit.dc.html": {
       "x": 9120,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1045,7 +1045,7 @@
     },
     "S17-istoric-modificari--exemple-randuri.dc.html": {
       "x": 10640,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1053,7 +1053,7 @@
     },
     "S17-istoric-modificari--observator-marcaj-text.dc.html": {
       "x": 12160,
-      "y": 33168,
+      "y": 34955,
       "w": 1440,
       "h": 2529,
       "expand": "fill",
@@ -1061,14 +1061,14 @@
     },
     "S17-istoric-modificari--telefon-filtre.dc.html": {
       "x": 14150,
-      "y": 33168,
+      "y": 34955,
       "w": 390,
       "h": 844,
       "title": "S17 · Istoric modificări · manager · telefon · filtre"
     },
     "S18-serii.dc.html": {
       "x": 0,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1076,7 +1076,7 @@
     },
     "S18-serii--serie-noua.dc.html": {
       "x": 1520,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1084,28 +1084,28 @@
     },
     "S18-serii--telefon.dc.html": {
       "x": 15200,
-      "y": 35817,
+      "y": 37604,
       "w": 390,
       "h": 1068,
       "title": "S18 · Serii · telefon"
     },
     "S18-serii--telefon-serie-noua.dc.html": {
       "x": 15670,
-      "y": 35817,
+      "y": 37604,
       "w": 390,
       "h": 1476,
       "title": "S18 · Serii · Serie nouă · telefon · reluare 07.10.2025"
     },
     "S18-serii--telefon-refuzat.dc.html": {
       "x": 16140,
-      "y": 35817,
+      "y": 37604,
       "w": 390,
       "h": 1200,
       "title": "S18 · Serii · Serie nouă · telefon · refuzat: Telița are încă păsări · exemplu de stare (D39)"
     },
     "S18-serii--se-incarca.dc.html": {
       "x": 3040,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1113,7 +1113,7 @@
     },
     "S18-serii--eroare-la-incarcare.dc.html": {
       "x": 4560,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1121,7 +1121,7 @@
     },
     "S18-serii--fara-acces.dc.html": {
       "x": 6080,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1129,7 +1129,7 @@
     },
     "S18-serii--desktop-scris.dc.html": {
       "x": 7600,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1137,7 +1137,7 @@
     },
     "S18-serii--desktop-erori.dc.html": {
       "x": 9120,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1145,7 +1145,7 @@
     },
     "S18-serii--desktop-refuzat.dc.html": {
       "x": 10640,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1153,7 +1153,7 @@
     },
     "S18-serii--salvat.dc.html": {
       "x": 12160,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1161,7 +1161,7 @@
     },
     "S18-serii--inchide-seria.dc.html": {
       "x": 13680,
-      "y": 35817,
+      "y": 37604,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1169,21 +1169,21 @@
     },
     "S18-serii--telefon-eroare-la-salvare.dc.html": {
       "x": 16610,
-      "y": 35817,
+      "y": 37604,
       "w": 390,
       "h": 1632,
       "title": "S18 · Serii · Serie nouă · telefon · eroare la salvare · reluare 07.10.2025"
     },
     "S18-serii--telefon-alege-sectiunea.dc.html": {
       "x": 17080,
-      "y": 35817,
+      "y": 37604,
       "w": 390,
       "h": 844,
       "title": "S18 · Serii · Serie nouă · telefon · alege secțiunea · reluare 07.10.2025"
     },
     "S19-ferme-sectiuni.dc.html": {
       "x": 0,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1191,7 +1191,7 @@
     },
     "S19-ferme-sectiuni--hirbovat.dc.html": {
       "x": 1520,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1199,7 +1199,7 @@
     },
     "S19-ferme-sectiuni--telita.dc.html": {
       "x": 3040,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1207,7 +1207,7 @@
     },
     "S19-ferme-sectiuni--retragere-blocata.dc.html": {
       "x": 4560,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1215,7 +1215,7 @@
     },
     "S19-ferme-sectiuni--retrage-sectiunea.dc.html": {
       "x": 6080,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1223,7 +1223,7 @@
     },
     "S19-ferme-sectiuni--fara-ghid.dc.html": {
       "x": 7600,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1231,7 +1231,7 @@
     },
     "S19-ferme-sectiuni--ghid-nepotrivit.dc.html": {
       "x": 9120,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1239,7 +1239,7 @@
     },
     "S19-ferme-sectiuni--fara-ferme.dc.html": {
       "x": 10640,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1247,7 +1247,7 @@
     },
     "S19-ferme-sectiuni--ferma-noua.dc.html": {
       "x": 12160,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1255,14 +1255,14 @@
     },
     "S19-ferme-sectiuni--telefon.dc.html": {
       "x": 31920,
-      "y": 37569,
+      "y": 39356,
       "w": 390,
       "h": 844,
       "title": "S19 · Ferme și secțiuni · telefon · doar citire"
     },
     "S19-ferme-sectiuni--se-incarca.dc.html": {
       "x": 13680,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1270,7 +1270,7 @@
     },
     "S19-ferme-sectiuni--eroare-la-incarcare.dc.html": {
       "x": 15200,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1278,7 +1278,7 @@
     },
     "S19-ferme-sectiuni--fara-acces.dc.html": {
       "x": 16720,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1286,7 +1286,7 @@
     },
     "S19-ferme-sectiuni--salvat.dc.html": {
       "x": 18240,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1294,7 +1294,7 @@
     },
     "S19-ferme-sectiuni--eroare-la-salvare.dc.html": {
       "x": 19760,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1302,7 +1302,7 @@
     },
     "S19-ferme-sectiuni--nume-gol.dc.html": {
       "x": 21280,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1310,7 +1310,7 @@
     },
     "S19-ferme-sectiuni--nume-folosit.dc.html": {
       "x": 22800,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1318,7 +1318,7 @@
     },
     "S19-ferme-sectiuni--ghid-lista.dc.html": {
       "x": 24320,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1326,7 +1326,7 @@
     },
     "S19-ferme-sectiuni--adauga-compartiment.dc.html": {
       "x": 25840,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1334,7 +1334,7 @@
     },
     "S19-ferme-sectiuni--cod-duplicat.dc.html": {
       "x": 27360,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1342,7 +1342,7 @@
     },
     "S19-ferme-sectiuni--redenumeste-cod-gol.dc.html": {
       "x": 28880,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1350,7 +1350,7 @@
     },
     "S19-ferme-sectiuni--retrasa-mutata.dc.html": {
       "x": 30400,
-      "y": 37569,
+      "y": 39356,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1358,7 +1358,7 @@
     },
     "S20-ghiduri.dc.html": {
       "x": 0,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1366,7 +1366,7 @@
     },
     "S20-ghiduri--ross-308-ouat.dc.html": {
       "x": 1520,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 2440,
       "expand": "fill",
@@ -1374,7 +1374,7 @@
     },
     "S20-ghiduri--ross-308-crestere.dc.html": {
       "x": 3040,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1760,
       "expand": "fill",
@@ -1382,7 +1382,7 @@
     },
     "S20-ghiduri--importa-ghid.dc.html": {
       "x": 4560,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1390,7 +1390,7 @@
     },
     "S20-ghiduri--inlocuieste-fisier.dc.html": {
       "x": 6080,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1084,
       "expand": "fill",
@@ -1398,7 +1398,7 @@
     },
     "S20-ghiduri--inlocuieste-refuzate.dc.html": {
       "x": 7600,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1140,
       "expand": "fill",
@@ -1406,7 +1406,7 @@
     },
     "S20-ghiduri--inlocuieste-lipit.dc.html": {
       "x": 9120,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1084,
       "expand": "fill",
@@ -1414,7 +1414,7 @@
     },
     "S20-ghiduri--salvat.dc.html": {
       "x": 10640,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1422,14 +1422,14 @@
     },
     "S20-ghiduri--telefon.dc.html": {
       "x": 33440,
-      "y": 38713,
+      "y": 40500,
       "w": 390,
       "h": 844,
       "title": "S20 · Ghiduri · telefon · doar citire"
     },
     "S20-ghiduri--se-incarca.dc.html": {
       "x": 12160,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1437,7 +1437,7 @@
     },
     "S20-ghiduri--eroare-la-incarcare.dc.html": {
       "x": 13680,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1445,7 +1445,7 @@
     },
     "S20-ghiduri--fara-acces.dc.html": {
       "x": 15200,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1453,7 +1453,7 @@
     },
     "S20-ghiduri--niciun-ghid.dc.html": {
       "x": 16720,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1461,7 +1461,7 @@
     },
     "S20-ghiduri--se-citeste.dc.html": {
       "x": 18240,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1469,7 +1469,7 @@
     },
     "S20-ghiduri--format-gresit.dc.html": {
       "x": 19760,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1477,7 +1477,7 @@
     },
     "S20-ghiduri--necitibil.dc.html": {
       "x": 21280,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1485,7 +1485,7 @@
     },
     "S20-ghiduri--gol.dc.html": {
       "x": 22800,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1493,7 +1493,7 @@
     },
     "S20-ghiduri--refuzate-filtru.dc.html": {
       "x": 24320,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1501,7 +1501,7 @@
     },
     "S20-ghiduri--nume-gol.dc.html": {
       "x": 25840,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1509,7 +1509,7 @@
     },
     "S20-ghiduri--nume-folosit.dc.html": {
       "x": 27360,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1517,7 +1517,7 @@
     },
     "S20-ghiduri--ghid-nou.dc.html": {
       "x": 28880,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1100,
       "expand": "fill",
@@ -1525,7 +1525,7 @@
     },
     "S20-ghiduri--eroare-la-salvare.dc.html": {
       "x": 30400,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1208,
       "expand": "fill",
@@ -1533,7 +1533,7 @@
     },
     "S20-ghiduri--sterge.dc.html": {
       "x": 31920,
-      "y": 38713,
+      "y": 40500,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1541,7 +1541,7 @@
     },
     "S21-tipuri-hrana.dc.html": {
       "x": 0,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1549,7 +1549,7 @@
     },
     "S21-tipuri-hrana--breeder-2.dc.html": {
       "x": 1520,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1557,7 +1557,7 @@
     },
     "S21-tipuri-hrana--starter.dc.html": {
       "x": 3040,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1565,7 +1565,7 @@
     },
     "S21-tipuri-hrana--retragere-refuzata.dc.html": {
       "x": 4560,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1573,7 +1573,7 @@
     },
     "S21-tipuri-hrana--tip-nou.dc.html": {
       "x": 6080,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1581,7 +1581,7 @@
     },
     "S21-tipuri-hrana--nume-gol.dc.html": {
       "x": 7600,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1589,7 +1589,7 @@
     },
     "S21-tipuri-hrana--nume-folosit.dc.html": {
       "x": 9120,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1597,7 +1597,7 @@
     },
     "S21-tipuri-hrana--salvat.dc.html": {
       "x": 10640,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1605,7 +1605,7 @@
     },
     "S21-tipuri-hrana--eroare-la-salvare.dc.html": {
       "x": 12160,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1613,7 +1613,7 @@
     },
     "S21-tipuri-hrana--sterge.dc.html": {
       "x": 13680,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1621,7 +1621,7 @@
     },
     "S21-tipuri-hrana--se-incarca.dc.html": {
       "x": 15200,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1629,7 +1629,7 @@
     },
     "S21-tipuri-hrana--eroare-la-incarcare.dc.html": {
       "x": 16720,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1637,7 +1637,7 @@
     },
     "S21-tipuri-hrana--fara-acces.dc.html": {
       "x": 18240,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1645,7 +1645,7 @@
     },
     "S21-tipuri-hrana--niciun-tip.dc.html": {
       "x": 19760,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1653,14 +1653,14 @@
     },
     "S21-tipuri-hrana--telefon.dc.html": {
       "x": 24320,
-      "y": 41273,
+      "y": 43060,
       "w": 390,
       "h": 844,
       "title": "S21 · Tipuri de hrană · telefon · doar citire"
     },
     "S21-tipuri-hrana--retras-stoc-0.dc.html": {
       "x": 21280,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1668,7 +1668,7 @@
     },
     "S21-tipuri-hrana--reactivat.dc.html": {
       "x": 22800,
-      "y": 41273,
+      "y": 43060,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1676,7 +1676,7 @@
     },
     "S22-utilizatori.dc.html": {
       "x": 0,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1684,7 +1684,7 @@
     },
     "S22-utilizatori--ion-rusu.dc.html": {
       "x": 1520,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1692,7 +1692,7 @@
     },
     "S22-utilizatori--utilizator-nou.dc.html": {
       "x": 3040,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1700,7 +1700,7 @@
     },
     "S22-utilizatori--erori.dc.html": {
       "x": 4560,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1708,7 +1708,7 @@
     },
     "S22-utilizatori--login-folosit.dc.html": {
       "x": 6080,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1716,7 +1716,7 @@
     },
     "S22-utilizatori--parola-cont-nou.dc.html": {
       "x": 7600,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1724,7 +1724,7 @@
     },
     "S22-utilizatori--salvat.dc.html": {
       "x": 9120,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1732,7 +1732,7 @@
     },
     "S22-utilizatori--eroare-la-salvare.dc.html": {
       "x": 10640,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1740,7 +1740,7 @@
     },
     "S22-utilizatori--contul-tau.dc.html": {
       "x": 12160,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1748,7 +1748,7 @@
     },
     "S22-utilizatori--dezactiveaza.dc.html": {
       "x": 13680,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1756,7 +1756,7 @@
     },
     "S22-utilizatori--dezactivat.dc.html": {
       "x": 15200,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1764,7 +1764,7 @@
     },
     "S22-utilizatori--parola-resetata.dc.html": {
       "x": 16720,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1772,7 +1772,7 @@
     },
     "S22-utilizatori--se-incarca.dc.html": {
       "x": 18240,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1780,7 +1780,7 @@
     },
     "S22-utilizatori--eroare-la-incarcare.dc.html": {
       "x": 19760,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1788,7 +1788,7 @@
     },
     "S22-utilizatori--fara-acces.dc.html": {
       "x": 21280,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1796,7 +1796,7 @@
     },
     "S22-utilizatori--doar-tu.dc.html": {
       "x": 22800,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1804,14 +1804,14 @@
     },
     "S22-utilizatori--telefon.dc.html": {
       "x": 38000,
-      "y": 42417,
+      "y": 44204,
       "w": 390,
       "h": 844,
       "title": "S22 · Utilizatori · telefon · doar citire · Petrea: exemplu de stare (D39)"
     },
     "S22-utilizatori--meniu-deschis.dc.html": {
       "x": 24320,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1819,7 +1819,7 @@
     },
     "S22-utilizatori--meniu-contul-tau.dc.html": {
       "x": 25840,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1827,7 +1827,7 @@
     },
     "S22-utilizatori--reseteaza-parola.dc.html": {
       "x": 27360,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1835,7 +1835,7 @@
     },
     "S22-utilizatori--resetare-esuata.dc.html": {
       "x": 28880,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1843,7 +1843,7 @@
     },
     "S22-utilizatori--parola-copiata.dc.html": {
       "x": 30400,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1851,7 +1851,7 @@
     },
     "S22-utilizatori--copiere-esuata.dc.html": {
       "x": 31920,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1859,7 +1859,7 @@
     },
     "S22-utilizatori--meniu-dezactivat.dc.html": {
       "x": 33440,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1867,7 +1867,7 @@
     },
     "S22-utilizatori--reactivat.dc.html": {
       "x": 34960,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1875,7 +1875,7 @@
     },
     "S22-utilizatori--editeaza-dezactivat.dc.html": {
       "x": 36480,
-      "y": 42417,
+      "y": 44204,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1883,7 +1883,7 @@
     },
     "S1-autentificare.dc.html": {
       "x": 0,
-      "y": 43561,
+      "y": 45348,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1891,7 +1891,7 @@
     },
     "S1-autentificare--gresit-desktop.dc.html": {
       "x": 1520,
-      "y": 43561,
+      "y": 45348,
       "w": 1440,
       "h": 1024,
       "expand": "fill",
@@ -1899,63 +1899,63 @@
     },
     "S1-autentificare--telefon.dc.html": {
       "x": 3040,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon"
     },
     "S1-autentificare--parola-vizibila.dc.html": {
       "x": 3510,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · parola vizibilă · ion.rusu cu parola resetată în S22: exemplu de stare (D39)"
     },
     "S1-autentificare--se-intra.dc.html": {
       "x": 3980,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · se intră · ceban: exemplu de stare (D39)"
     },
     "S1-autentificare--campuri-goale.dc.html": {
       "x": 4450,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · câmpuri goale"
     },
     "S1-autentificare--gresit.dc.html": {
       "x": 4920,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · login sau parolă greșită · ceban: exemplu de stare (D39)"
     },
     "S1-autentificare--prea-multe-incercari.dc.html": {
       "x": 5390,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · prea multe încercări · ceban: exemplu de stare (D39)"
     },
     "S1-autentificare--cont-dezactivat.dc.html": {
       "x": 5860,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · cont dezactivat · petrea, dezactivat în S22: exemplu de stare (D39)"
     },
     "S1-autentificare--fara-conexiune.dc.html": {
       "x": 6330,
-      "y": 43561,
+      "y": 45348,
       "w": 390,
       "h": 844,
       "title": "S1 · Autentificare · telefon · fără conexiune · ceban: exemplu de stare (D39)"
     },
     "S2-acasa--manager-ferma-goala.dc.html": {
       "x": 7270,
-      "y": 23422,
+      "y": 24295,
       "w": 390,
       "h": 844,
       "title": "S2 · Acasă · manager · fermă goală (Telița) · nimic de verificat · exemplu de stare (D39)"

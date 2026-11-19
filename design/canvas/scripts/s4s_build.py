@@ -843,17 +843,18 @@ PBY = {}
 for _r in PD['rows']: PBY.setdefault(R.D(_r['date']), []).append(_r)
 for _k in PW4: assert all(d in PBY for d in PCAL.days(_k)) and sum(r['total_eggs'] for d in PCAL.days(_k) for r in PBY[d]) == pall[_k]['total_eggs']
 def _pdays(kind, key): return [key] if kind == 'd' else PCAL.days(key) if kind == 'w' else [d for k in PW4 for d in PCAL.days(k)]
-def p_mort(sx):
+def _prows(kind, key, h=None): return [r for d in _pdays(kind, key) for r in PBY[d] if h is None or r['hall'] == h]   # S14N: h = one hall's rows (S14 hall week rows)
+def p_mort(sx, h=None):
     def f(kind, key):
-        rows = [r for d in _pdays(kind, key) for r in PBY[d]]
+        rows = _prows(kind, key, h)
         live = [r for r in rows if not r['depopulation']]
         return (DASH_, 'golire, nu mortalitate') if not live else n(sum(r[f'mortality_{sx}'] for r in live))
     return f
-def p_sum(field):
-    return lambda kind, key: n(sum(r[field] for d in _pdays(kind, key) for r in PBY[d]))
-def p_share(field):
+def p_sum(field, h=None):
+    return lambda kind, key: n(sum(r[field] for r in _prows(kind, key, h)))
+def p_share(field, h=None):
     def f(kind, key):
-        rows = [r for d in _pdays(kind, key) for r in PBY[d]]
+        rows = _prows(kind, key, h)
         return pct(sum(r[field] for r in rows) / sum(r['total_eggs'] for r in rows) * 100)
     return f
 DASH_ = '–'

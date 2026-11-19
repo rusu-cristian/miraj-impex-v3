@@ -31,9 +31,14 @@ NEAR = 160  # chars around a board hit searched for context
 CTX_OK = {'old-hall': re.compile(r'Teli[țţt]a'), 'sapt-40': re.compile(r'Seria 2025'), 'sapt-41': re.compile(r'Seria 2025')}
 CTX_NEED = {'old-hall': re.compile(r'Hîrbovăț|Hirbovat|Hala H[134]\b|H1, H3|H3, H4')}  # boards: a bare H1/H3/H4 only counts at Hîrbovăț
 ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match) — what RF00 keeps; add with the reason
-    # RF03: the end of a past age week (SAPT 58 = 10.11–16.11.2026) in the S11 Consum week rows (also under S13's SidePanel)
-    ('S11-', 'today-16.11', r'SAPT \d+</span> <span class="s11-gsub">\d\d\.\d\d–16\.11\.2026'),
-    ('S13-livrare-hrana--desktop', 'today-16.11', r'SAPT \d+</span> <span class="s11-gsub">\d\d\.\d\d–16\.11\.2026'),
+    # RF03 → S14N: the end of a past age week (SAPT 58 = 10.11–16.11.2026) in the PeriodTable week keys' hidden names: S11 Consum
+    # (also under S13's SidePanel) and S14 Producție
+    ('S11-', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    ('S13-livrare-hrana--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    ('S14-', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    # S14N: the real Hrană ♀ 3 691,7 kg of 02.11.2026 (S11 Consum day row, as on S4 Hrană)
+    ('S11-', 'sample-figure', r'is-hen(?: ip-ptable__\w+)*">3\u202f691,7<'),   # SYS15: + the column group classes (__ga|gb, __gs)
+    ('S13-livrare-hrana--desktop', 'sample-figure', r'is-hen(?: ip-ptable__\w+)*">3\u202f691,7<'),
     # RF03: Telița's real last delivery (10.02.2026), on the S11 "fără livrări în perioadă" board
     ('S11-rapoarte-hrana--fara-livrari', 'start-10.02', r'Ultima livrare'),
     # S4N: 16.11.2026 is a past day of SAPT 58 (10.11–16.11.2026) in the PeriodTable week keys and the Păsări log (real 16.11 records)
@@ -47,8 +52,8 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     ('S9-transfer--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     ('S10-vanzare--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     # S4N: real figures that equal old sample ones: Hrană ♀ 3 691,7 kg on 02.11.2026 (day row), Hala 6 ♀ 8 475 alive on a SAPT 57 day (Păsări pe hale)
-    ('S4-ferma', 'sample-figure', r'is-hen">3\u202f691,7<'),
-    ('S4-ferma--pasari', 'sample-figure', r'is-hen(?: ip-ptable__sec)?">8\u202f475<'),   # S4NG: În viață is a section's first column (D167)
+    ('S4-ferma', 'sample-figure', r'is-hen(?: ip-ptable__\w+)*">3\u202f691,7<'),   # SYS15: + the column group classes (__ga|gb, __gs)
+    ('S4-ferma--pasari', 'sample-figure', r'is-hen(?: ip-ptable__\w+)*">8\u202f475<'),   # S4NG: În viață is a section's first column (D167); SYS15: + group classes
     # RF08: the S16 desktops show S4 · Păsări (table-first page) beside / under the panel: 16.11.2026 is a past day of SAPT 58 there
     ('S16-corecteaza--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026|16\.11\.2026, \d\d:\d\d · SAPT 58|(?:Mortalitate|Vânzare H\d\.\d), 16\.11\.2026'),
     # S3N: the series table's week keys: SAPT 58 ends 16.11.2026 (a past age week; the hidden week name)
@@ -82,7 +87,7 @@ ROWS = [
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):
