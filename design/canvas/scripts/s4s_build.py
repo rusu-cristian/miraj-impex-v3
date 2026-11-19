@@ -8,60 +8,26 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import skel as
 
 ROOT = pathlib.Path(sys.argv[1])
 EX = ROOT / 'design/data/extracts'
-S = json.load(open(EX / 'sample-hirbovat-2026.json', encoding='utf-8'))
-CL = json.load(open(EX / 'counts-latest.json', encoding='utf-8'))
-GL = json.load(open(EX / 'guide-laying.json', encoding='utf-8'))
-CY = json.load(open(EX / 'cycles.json', encoding='utf-8'))
+# RF01: every figure comes from realdata (DATA03 extracts, today 18.11.2026, D151–D158); formats live there too.
+import realdata as R
+from realdata import NB, MINUS, rnd, n, sgn, pct
+CL, GL, CY, TR = R._CL, R.GL, R.CY, R.TR
 
-NB = ' '; MINUS = '−'
-
-# S4TP (D82): .5 rounds up (away from zero), never to even, as s4t_build; float noise is cut at 1e-9 first.
-from decimal import Decimal, ROUND_HALF_UP
-def rnd(v, dec=0):
-    d = Decimal(repr(float(v))).quantize(Decimal('1e-9')).quantize(Decimal(1).scaleb(-dec), rounding=ROUND_HALF_UP)
-    return float(d) if dec else int(d)
+def __getattr__(name):  # PEP 562: `S` is a legacy alias for rows not yet ported (RF00 §3); the S4 Rezumat boards never read it
+    if name == 'S':
+        globals()['S'] = json.load(open(EX / 'sample-hirbovat-2026.json', encoding='utf-8'))  # literal-ok: superseded file, legacy alias only
+        return globals()['S']
+    raise AttributeError(name)
 
 # S16P fix 1: DROP = (date, section, sex) of a deleted Mortalitate record, set on the module before it runs (only the S16
-# after-delete board does, through s4t_build); unset, nothing changes. The record's deaths go back into the birds alive
-# from that day on, and every stored total that counts them is recomputed in memory (the extracts stay untouched).
+# after-delete board does, through s4t_build). The sample it edited is superseded; the real-data version comes with the
+# shared illustrative correction (D158a, RF08).
 DROP = globals().get('DROP')
-def drop_mortality(S, CL, day, sec, sx):
-    rows = sorted((r for r in S['daily'] if r['section'] == sec and r['sex'] == sx and r['date'] >= day), key=lambda r: r['date'])
-    q = rows[0]['mortality']; assert rows[0]['date'] == day and q > 0
-    for r in rows:
-        if r['date'] == day: r['mortality'] = 0
-        else: r['alive_start'] += q
-        r['alive_end'] += q
-    def pcts(d):  # mortality_pct / removals_pct of a stored total, 2 decimals as stored
-        d['mortality_pct'] = round(d['mortality'] / d['start'] * 100, 2)
-        d['removals_pct'] = round((d['mortality'] + d['culls'] + d['sexing_errors']) / d['start'] * 100, 2)
-    st = next(r for r in S['section_totals'] if r['section'] == sec and r['sex'] == sx)
-    st['mortality'] -= q; st['alive'] += q; pcts(st)
-    # feed rows (allocations, kg) and egg rows are records of their own, saved with that day's count: they stay as entered
-    fm = CL['farms'][0]
-    cs = next(x for x in fm['sections'] if x['section'] == sec); cs[sx] += q
-    cs['detail'][sx]['mortality'] -= q; cs['detail'][sx]['alive'] += q; pcts(cs['detail'][sx])
-    next(h for h in fm['halls'] if h['hall'] == sec.split('.')[0])[sx] += q
-    fm['totals'][sx] += q; fm['totals']['all'] += q
-    cy = fm['cycle']; rm = cy['removals'][sx]; rm['mortality'] -= q; st0 = cy['start_counts'][sx]
-    cy['mortality_pct'][sx] = round(rm['mortality'] / st0 * 100, 2)
-    cy['removals_pct'][sx] = round((rm['mortality'] + rm['culls'] + rm['sexing_errors']) / st0 * 100, 2)
-    sm = S['summary_today']; sm['alive'][sx] += q; sm['alive']['total'] += q
-    sm['cumulative_mortality_pct'][sx] = cy['mortality_pct'][sx]; sm['cumulative_removals_pct'][sx] = cy['removals_pct'][sx]
-    return q
-DROPQ = drop_mortality(S, CL, *DROP) if DROP else 0
-
-def n(v, dec=0):
-    v = rnd(v, dec)
-    s = f'{abs(v):,.{dec}f}'.replace(',', 'X').replace('.', ',').replace('X', NB)
-    return (MINUS if v < 0 else '') + s
-
-def sgn(v, dec=1):
-    v = rnd(v, dec)
-    return ('+' if v > 0 else '') + n(v, dec)
+if DROP: raise NotImplementedError('s4s DROP: port the S16 delete onto realdata with the D158a correction (RF08)')
+DROPQ = 0
 
 def ddate(iso):
-    y, m, d = iso.split('-'); return f'{d}.{m}.{y}'
+    return R.dd(iso)
 
 # ---------- icons (copied path data from RecordTile / Sidebar / PageHeader previews) ----------
 IC = {
@@ -120,41 +86,59 @@ def pair(f, m, unit=''):
 def lamp(kind, word):
     return f'<span class="ip-lamp ip-lamp--{kind}">{word}</span>'
 
-# ---------- data ----------
-farm = CL['farms'][0]
-alive = {(x['section'], sx): x[sx] for x in farm['sections'] for sx in 'FM'}
-SECTIONS = ['H1.1', 'H1.2', 'H3.1', 'H3.2', 'H4.1', 'H4.2']
-TODAY = '2026-11-16'; WK = 40
-wk_rows = [r for r in S['daily'] if '2026-11-10' <= r['date'] <= TODAY]
-mort_wk = {s: sum(r['mortality'] for r in wk_rows if r['section'] == s) for s in SECTIONS}
-mort_wk_sex = {sx: sum(r['mortality'] for r in wk_rows if r['sex'] == sx) for sx in 'FM'}
-alloc = {(a['section'], a['sex']): a for a in S['allocations_today']}
-wt = {(w['section'], w['sex']): w['avg_weight_g'] for w in S['weighings'] if w['date'] == TODAY}
+# ---------- data (RF01: realdata, 18.11.2026) ----------
+TODAY = R.TODAY_ISO; WK = R.WK                        # 2026-11-18, SAPT 59 (D151)
+SECTIONS, HALLS = R.HSECS, R.HHALLS                   # H5.1 … H7.2, H5–H7 (D152)
+alive = {(s, sx): R.alive(s, sx) for s in SECTIONS for sx in 'FM'}
+tot = {'F': R.alive_farm('F'), 'M': R.alive_farm('M')}; tot['all'] = tot['F'] + tot['M']
+W0 = R.week_dates(WK)[0]                              # week so far: 17.11–18.11.2026 (Tue–Mon weeks)
+WSPAN = R.drange(W0, TODAY)
+mort_wk = {s: R.deaths(W0, TODAY, sec=s) for s in SECTIONS}            # real deaths only (D155)
+mort_wk_sex = {sx: R.deaths(W0, TODAY, sx=sx) for sx in 'FM'}
+FULL = [s for s in SECTIONS if R.has_birds(s)]        # compartments with birds today
+EMPTY_HALLS = {h: R.empty_since(h) for h in HALLS if R.empty_since(h)}  # H7: 14.11.2026
+assert list(EMPTY_HALLS) == ['H7'] and FULL == ['H5.1', 'H5.2', 'H6.1', 'H6.2']
+g_today = {(s, sx): R.feed_g(sec=s, sx=sx) for s in SECTIONS for sx in 'FM'}  # None: nothing fed (empty compartment)
+g_f, g_m = rnd(R.feed_g(sx='F')), rnd(R.feed_g(sx='M'))
+guide = {(r['age_week'], r['sex']): r for r in GL['rows']}           # by age week (D151)
+gf_g, gm_g = R.guide_feed(WK, 'F'), R.guide_feed(WK, 'M')
+def feed_dev(sec, sx):
+    g = g_today[(sec, sx)]; return g is not None and abs(g / R.guide_feed(WK, sx) - 1) > 0.10
+assert not any(feed_dev(s, sx) for s in FULL for sx in 'FM')  # 18.11: ♀ 160 g vs 157, ♂ 141–144 g vs 156 (−9,6 % at most)
+# weighings: none at Hîrbovăț in the workbook; the illustrative H5.1 ones of 10.11.2026 (D152) are the latest
+WDAY = max(w['date'] for w in R.WEIGHINGS_HIR)
+wt = {(w['section'], w['sex']): w['avg_weight_g'] for w in R.WEIGHINGS_HIR if w['date'] == WDAY}
+WSECS = sorted({s for s, _ in wt})
 def wavg(d, sx):
     keys = [k for k in d if k[1] == sx and d[k] is not None]
     return sum(d[k] * alive[k] for k in keys) / sum(alive[k] for k in keys)
 w_f = rnd(wavg(wt, 'F')); w_m = rnd(wavg(wt, 'M'))
-g_today = {k: a['today_g'] for k, a in alloc.items()}
-g_f = rnd(wavg(g_today, 'F')); g_m = rnd(wavg(g_today, 'M'))
-guide = {(r['cycle_week'], r['sex']): r for r in GL['rows']}
-gf_g = guide[(WK, 'F')]['feed_g']; gm_g = guide[(WK, 'M')]['feed_g']
-eggs_today = {r['hall']: r for r in S['eggs_daily'] if r['date'] == TODAY}
-lay_all = {r['cycle_week']: r for r in S['eggs_weekly'] if r['hall'] == 'all'}
-st = S['summary_today']
-lay_today = st['lay_pct_today']; lay_guide = st['guide_lay_pct']
-stocks = {s['feed_type_id']: s for s in S['stock_today']}
-unpriced = [d for d in S['deliveries'] if not d['priced']]
+assert (WDAY, WSECS, w_f, w_m) == ('2026-11-10', ['H5.1'], 3960, 4870)
+lay_today = R.lay_day(); lay_guide = R.guide_lay(WK)  # D156: eggs ÷ hens at the start of the day
+EGG_HALLS = [h for h in HALLS if R.eggs(TODAY, h)]
+eggs_today = {h: {'total_eggs': R.eggs(TODAY, h), 'lay_pct': R.lay_day(TODAY, h), 'guide_lay_pct': lay_guide} for h in EGG_HALLS}
+assert EGG_HALLS == ['H5', 'H6'] and sum(e['total_eggs'] for e in eggs_today.values()) == R.eggs() == 5914
+lay_all = {k: {'lay_pct': R.lay_week(k)} for k in sorted(R.WEEKS) if R.lay_week(k) is not None}  # D156: eggs ÷ hen-days
+def lay_dev(hall): return eggs_today[hall]['lay_pct'] - lay_guide < -3   # the ±3 pct band of the chart
+stocks = {}
+for _sx, _ft in R.FEED_TYPE.items():
+    _left, _avg, _out = R.stock_days(_sx)
+    stocks[_ft] = {'stock_kg': R.stock()[_sx], 'days_left': _left, 'avg_daily_kg_last3': _avg, 'run_out_date': _out.isoformat()}
+STOCK_LIMIT = 5                                       # D19: days of feed left
+unpriced = R.UNPRICED
 unpriced_kg = sum(d['qty_kg'] for d in unpriced)
-cum = farm['cycle']
-tot = farm['totals']
-
-def pct(v, dec=1):  # D46: no space before %
-    return n(v, dec) + '%'
-c25 = next(c for c in CY['cycles'] if c['id'] == 'cyc-hirbovat-2025')
-c26 = next(c for c in CY['cycles'] if c['id'] == 'cyc-hirbovat-2026')
-assert c26['week_today'] == WK and c26['start_date'] == '2026-02-10'
-PREV_WEEKS = c25['weeks']; PREV_END = c25['end_date']  # 47, 2026-01-28
-assert (PREV_WEEKS, PREV_END) == (47, '2026-01-28')
+cum = {'start_counts': R.ARRIVED, 'deaths': R.COUNTS['cycle']['removals'], 'mortality_pct': {}}
+for _sx in 'FM':
+    _dead = R.deaths(R.CYCLE_START, TODAY, sx=_sx); _sold = R.sold(R.CYCLE_START, TODAY, sx=_sx)
+    cum['mortality_pct'][_sx] = _dead / R.ARRIVED[_sx] * 100
+    cum.setdefault('dead', {})[_sx] = _dead; cum.setdefault('sold', {})[_sx] = _sold
+    assert R.ARRIVED[_sx] - _dead - _sold == tot[_sx]
+assert cum['dead'] == {'F': 1521, 'M': 1048} and cum['sold'] == {'F': 12801, 'M': 1182}
+c25, c26 = R.C25, R.C26
+C26_START = c26['start_date']                         # 22.02.2026
+PREV_END = c25['end_date']; PREV_WEEKS = c25['weeks']  # 2026-01-28; 47 weeks = SAPT 19–65
+P25 = f'SAPT {c25["sapt_start"]}–{c25["sapt_end"]}'   # Seria 2025 by age week (D151)
+assert (PREV_END, P25, C26_START) == ('2026-01-28', 'SAPT 19–65', '2026-02-22')
 
 # ---------- sidebar ----------
 def sidebar(role='Proprietar', viewer=False, series='2026'):
@@ -182,7 +166,7 @@ def header(mode='default'):
         return f'<header class="ip-pagehead"><div>{CRUMBS}<h1>Hîrbovăț</h1></div></header>'
     if mode == 'past':  # chosen closed cycle Seria 2025 (D51): no alive today (D43); start inferred (D36), no flock count in the workbook
         meta = (f'<span class="ip-tag ip-tag--neutral">Ouat</span><span class="ip-tag ip-tag--neutral">Ross 308 ouat</span>{lamp("off", "închis")}'
-                f'<span class="ip-note">Început dedus <span class="ip-num">{ddate(c25["start_date"])}</span> · încheiat prin golire <span class="ip-num">{ddate(PREV_END)}</span> · <span class="ip-num">{PREV_WEEKS} săpt.</span></span>'
+                f'<span class="ip-note">Început dedus <span class="ip-num">{ddate(c25["start_date"])}</span> · încheiat prin golire <span class="ip-num">{ddate(PREV_END)}</span> · <span class="ip-num">{P25}</span></span>'
                 f'<span class="ip-note">efectiv – fără date în registru</span>')
         acts = '<a class="ip-btn ip-btn--secondary" href="#ciclu-seria-2026">Înapoi la ciclul curent</a>'
         return f'''<header class="ip-pagehead">
@@ -200,7 +184,7 @@ def header(mode='default'):
         acts = f'<button type="button" class="ip-btn ip-btn--secondary">{icon("transfer", 16)}Mută păsări</button>'
     else:
         gtag = '<span class="ip-tag ip-tag--neutral">fără ghid</span>' if mode == 'noguide' else '<span class="ip-tag ip-tag--neutral">Ross 308 ouat</span>'
-        meta = f'<span class="ip-tag ip-tag--neutral">Ouat</span>{gtag}{pair(n(tot["F"]), n(tot["M"]))}<span class="ip-note ip-num">SAPT {WK} · ciclu din 10.02.2026</span>'
+        meta = f'<span class="ip-tag ip-tag--neutral">Ouat</span>{gtag}{pair(n(tot["F"]), n(tot["M"]))}<span class="ip-note ip-num">SAPT {WK} · ciclu din {ddate(C26_START)}</span>'
         acts = f'''<button type="button" class="ip-btn ip-btn--secondary">{icon('transfer', 16)}Mută păsări</button>
 <button type="button" class="ip-btn ip-btn--secondary">{icon('sale', 16)}Vânzare</button>
 <button type="button" class="ip-btn ip-btn--ghost" aria-haspopup="menu" aria-expanded="false" aria-label="Acțiuni ciclu">{icon('cycle', 16)}Ciclu{icon('chev', 14)}</button>'''
@@ -242,24 +226,24 @@ def track(today_iso, sel='2026', dom=DOM_LIVE, TW=TWS[0]):
     act25 = 'Ciclul afișat.' if sel == '2025' else 'Deschide ciclul.'
     act26 = 'Ciclul afișat.' if sel == '2026' else 'Deschide ciclul.'
     assert c25['start_inferred'] and c25['start_date'] == '2025-03-07' and PREV_END == '2026-01-28'  # D54: no start event, ended by emptying (no sale)
-    lab25 = f'Seria 2025, ouat, început dedus {ddate(c25["start_date"])} · încheiat prin golire {ddate(PREV_END)}, {PREV_WEEKS} săptămâni, închis. {act25}'
-    lab26 = f'Seria 2026, ouat, din 10.02.2026, deschis, azi sapt. {WK}. Început prin transfer. {act26}'
+    lab25 = f'Seria 2025, ouat, început dedus {ddate(c25["start_date"])} · încheiat prin golire {ddate(PREV_END)}, sapt. {c25["sapt_start"]}–{c25["sapt_end"]}, închis. {act25}'
+    lab26 = f'Seria 2026, ouat, din {ddate(C26_START)}, deschis, azi sapt. {WK}. Început prin transfer. {act26}'
     w25 = round(x25b - x25a, 1)
     cur25 = ' aria-current="true"' if sel == '2025' else ''
     sel25 = f'<rect class="sel" x="{x25a}" y="37" width="{w25}" height="2"/>' if sel == '2025' else ''
-    b25 = f'<a href="#ciclu-seria-2025"{cur25} aria-label="{lab25}"><title>{lab25}</title><rect class="ring" x="{round(x25a-4,1)}" y="12" width="{round(w25+8,1)}" height="30" rx="3"/><rect class="cyc" x="{x25a}" y="16" width="{w25}" height="18" rx="2"/><text class="cyctxt" x="{round(x25a+7,1)}" y="29">Seria 2025 · ouat · {PREV_WEEKS} săpt.</text><line class="ded" x1="{round(x25a-3,1)}" x2="{round(x25a-3,1)}" y1="14" y2="40"/>{sel25}</a>'
+    b25 = f'<a href="#ciclu-seria-2025"{cur25} aria-label="{lab25}"><title>{lab25}</title><rect class="ring" x="{round(x25a-4,1)}" y="12" width="{round(w25+8,1)}" height="30" rx="3"/><rect class="cyc" x="{x25a}" y="16" width="{w25}" height="18" rx="2"/><text class="cyctxt" x="{round(x25a+7,1)}" y="29">Seria 2025 · ouat · {P25}</text><line class="ded" x1="{round(x25a-3,1)}" x2="{round(x25a-3,1)}" y1="14" y2="40"/>{sel25}</a>'
     tl = ddate(today_iso)[:5]
     if with26:
         x26a = tx(c26['start_date']); w26 = round(xt - x26a, 1)
         cur26 = ' aria-current="true"' if sel == '2026' else ''
         sel26 = f'<rect class="sel" x="{x26a}" y="37" width="{w26}" height="2"/>' if sel == '2026' else ''
-        b26 = f'<a href="#ciclu-seria-2026"{cur26} aria-label="{lab26}"><title>{lab26}</title><rect class="ring" x="{round(x26a-4,1)}" y="12" width="{round(w26+8,1)}" height="30" rx="3"/><rect class="cyc open" x="{x26a}" y="16" width="{w26}" height="18" rx="2"/><text class="cyctxt open" x="{round(x26a+7,1)}" y="29">Seria 2026 · ouat · din 10.02.2026</text><rect class="xfer" x="{round(x26a-1,1)}" y="16" width="3" height="18"/>{sel26}</a>'
-        ro = f'<rect class="ro" x="{round(xt+4,1)}" y="17" width="56" height="16" rx="2"/><text class="rotxt" x="{round(xt+32,1)}" y="28.5" text-anchor="middle">SAPT {WK}</text>'  # 56: "SAPT 40" at 11px Mono (FIN13), as S3
+        b26 = f'<a href="#ciclu-seria-2026"{cur26} aria-label="{lab26}"><title>{lab26}</title><rect class="ring" x="{round(x26a-4,1)}" y="12" width="{round(w26+8,1)}" height="30" rx="3"/><rect class="cyc open" x="{x26a}" y="16" width="{w26}" height="18" rx="2"/><text class="cyctxt open" x="{round(x26a+7,1)}" y="29">Seria 2026 · ouat · din {ddate(C26_START)}</text><rect class="xfer" x="{round(x26a-1,1)}" y="16" width="3" height="18"/>{sel26}</a>'
+        ro = f'<rect class="ro" x="{round(xt+4,1)}" y="17" width="56" height="16" rx="2"/><text class="rotxt" x="{round(xt+32,1)}" y="28.5" text-anchor="middle">SAPT {WK}</text>'  # 56: "SAPT nn" at 11px Mono (FIN13), as S3
         shown = {'2025': ' Afișat: Seria 2025.', '2026': ' Afișat: Seria 2026.'}.get(sel, '')
-        desc = f'Hîrbovăț: Seria 2025 ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, {PREV_WEEKS} săpt., închis; Seria 2026 ouat din 10.02.2026 (transfer), deschis, azi 16.11.2026, sapt. {WK}.{shown}'
+        desc = f'Hîrbovăț: Seria 2025 ouat, început dedus {ddate(c25["start_date"])} · încheiat prin golire {ddate(PREV_END)}, sapt. {c25["sapt_start"]}–{c25["sapt_end"]}, închis; Seria 2026 ouat din {ddate(C26_START)} (transfer), deschis, vânzări din {ddate(R.EMPTYING_SINCE)}, azi {ddate(today_iso)}, sapt. {WK}.{shown}'
     else:  # empty farm: no open cycle, so no readout next to "azi" and no current block
         b26 = ''; ro = ''
-        desc = f'Hîrbovăț: Seria 2025 ouat, început dedus 07.03.2025 · încheiat prin golire 28.01.2026, {PREV_WEEKS} săpt., închis; ferma e goală din 28.01.2026, azi {ddate(today_iso)}. Niciun ciclu deschis.'
+        desc = f'Hîrbovăț: Seria 2025 ouat, început dedus {ddate(c25["start_date"])} · încheiat prin golire {ddate(PREV_END)}, sapt. {c25["sapt_start"]}–{c25["sapt_end"]}, închis; ferma e goală din {ddate(PREV_END)}, azi {ddate(today_iso)}. Niciun ciclu deschis.'
     return f'''<svg class="ip-track ip-track--farm ip-track--{TW}" viewBox="0 0 {TW} 60" role="group" aria-label="Ciclurile fermei Hîrbovăț"><desc>{desc}</desc><rect class="lane" x="0" y="14" width="{TW}" height="26"/>{b25}{b26}<line class="today" x1="{xt}" x2="{xt}" y1="12" y2="42"/><text class="todaylbl" x="{xt}" y="9" text-anchor="middle">azi {tl}</text>{ro}{ticks}</svg>'''
 def trackbox(today_iso, sel='2026', dom=DOM_LIVE):  # FIN16: §65 width box, the widest drawing that fits is shown
     return '<div class="ip-trackbox">' + ''.join(track(today_iso, sel, dom, w) for w in TWS) + '</div>'
@@ -268,9 +252,9 @@ def legend(xfer=True):  # names only the marks drawn: Seria 2026 starts by trans
     return f'<div class="ip-tracklegend" aria-hidden="true">{x}<span><svg class="ded" viewBox="0 0 3 12"><line x1="1.5" x2="1.5" y1="0" y2="12"/></svg>început dedus</span><span><i class="today"></i>azi</span></div>'
 LEGEND = legend()
 def opt26(selected, active=False):  # is-active only in an open list (section 53)
-    return f'''<li class="ip-menu__item ip-select__opt{" is-active" if active else ""}" role="option" id="cyc-2026" aria-selected="{"true" if selected else "false"}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if selected else ""}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026 · ouat</b>{lamp('ok', 'deschis')}</span><span class="ip-num">din 10.02.2026 · SAPT {WK}</span></span></li>'''
+    return f'''<li class="ip-menu__item ip-select__opt{" is-active" if active else ""}" role="option" id="cyc-2026" aria-selected="{"true" if selected else "false"}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if selected else ""}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2026 · ouat</b>{lamp('ok', 'deschis')}</span><span class="ip-num">din {ddate(C26_START)} · SAPT {WK}</span></span></li>'''
 def opt25(selected, active=False):
-    return f'''<li class="ip-menu__item ip-select__opt{" is-active" if active else ""}" role="option" id="cyc-2025" aria-selected="{"true" if selected else "false"}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if selected else ""}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025 · ouat</b>{lamp('off', 'închis')}</span><span class="ip-num">07.03.2025–{ddate(PREV_END)} · {PREV_WEEKS} săpt.</span></span></li>'''
+    return f'''<li class="ip-menu__item ip-select__opt{" is-active" if active else ""}" role="option" id="cyc-2025" aria-selected="{"true" if selected else "false"}"><span class="ip-select__chk" aria-hidden="true">{icon('check', 16) if selected else ""}</span><span class="ip-select__txt"><span class="ip-select__top"><b>Seria 2025 · ouat</b>{lamp('off', 'închis')}</span><span class="ip-num">{R.drange(c25["start_date"], PREV_END)} · {P25}</span></span></li>'''
 GRP = '<li class="ip-menu__group" role="presentation">Cicluri la Hîrbovăț</li>'
 CYC_ITEMS = GRP + opt26(True) + opt25(False)
 CYC_OPEN = GRP + opt26(True, True) + opt25(False)   # open: the chosen cycle is the active option (aria-activedescendant)
@@ -282,26 +266,26 @@ def combo(text, lmp, opened=False, active=''):
 def cycle(mode='default'):
     if mode == 'empty':  # D51: no open cycle; Seria 2025 only as an option and in the hint; no block current on the track
         sel = combo('Niciun ciclu deschis', lamp('off', 'goală'))
-        hint = f'<span class="ip-hint">ultimul ciclu · Seria 2025 · 07.03.2025–{ddate(PREV_END)}</span>'
+        hint = f'<span class="ip-hint">ultimul ciclu · Seria 2025 · {R.drange(c25["start_date"], PREV_END)}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
 <div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{hidden_list(GRP + opt25(False))}</div>{hint}</div>
 <div class="ip-stack s4-tight">{trackbox('2026-01-30', sel=None, dom=DOM_EMPTY)}{legend(xfer=False)}</div>
 </section>'''
     if mode == 'past':  # D51 "ciclu ales": the page rescoped to the closed Seria 2025 cycle
-        sel = combo(f'Seria 2025 · {PREV_WEEKS} săpt.', lamp('off', 'închis'))
+        sel = combo(f'Seria 2025 · {P25}', lamp('off', 'închis'))
         hint = f'<span class="ip-hint">început dedus {ddate(c25["start_date"])} · date din {ddate(c25["data_start_date"])}</span>'
         return f'''<section class="s4-cycle" aria-label="Ciclu">
 <div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{hidden_list(GRP + opt26(False) + opt25(True))}</div>{hint}</div>
 <div class="ip-stack s4-tight">{trackbox(TODAY, sel='2025')}{LEGEND}</div>
 </section>'''
     opened = mode == 'menu'
-    sel = combo('Seria 2026 · din 10.02.2026', lamp('ok', 'deschis'), opened, 'cyc-2026')
+    sel = combo(f'Seria 2026 · din {ddate(C26_START)}', lamp('ok', 'deschis'), opened, 'cyc-2026')
     if opened:  # CycleSelector open: cycles (open first), then the manager+ actions (S4 is the owner's view)
         menu = f'''<div class="ip-menu ip-select__menu"><ul class="ip-select__list" role="listbox" id="cyc-list" aria-labelledby="cyc-lbl" tabindex="-1">{CYC_OPEN}</ul><div class="ip-menu__group" id="cyc-act">Ciclu</div><div role="group" aria-labelledby="cyc-act"><button type="button" class="ip-menu__item ip-select__act">{icon('cycle', 16)}<span class="ip-grow">Începe ciclu nou</span></button><button type="button" class="ip-menu__item ip-select__act"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-grow">Schimbă ghidul ciclului</span></button></div></div>'''
     else:
         menu = hidden_list(CYC_ITEMS)
     return f'''<section class="s4-cycle" aria-label="Ciclu">
-<div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{menu}</div><span class="ip-hint">2 cicluri la Hîrbovăț · deschis din 10.02.2026</span></div>
+<div class="ip-field"><span class="ip-label" id="cyc-lbl">Ciclu</span><div class="ip-select">{sel}{menu}</div><span class="ip-hint">2 cicluri la Hîrbovăț · deschis din {ddate(C26_START)}</span></div>
 <div class="ip-stack s4-tight">{trackbox(TODAY)}{LEGEND}</div>
 </section>'''
 
@@ -312,12 +296,16 @@ def seg(label, items, sel):
 def chip(k, word, on=True):
     return f'<button type="button" class="ip-chip ip-rec ip-rec--{REC[k]}{"" if on else " ip-chip--off"}" role="checkbox" aria-checked="{"true" if on else "false"}">{icon(k, 16)}{word}</button>'
 chip_sexerr = f'<button type="button" class="ip-chip ip-rec ip-chip--split" role="checkbox" aria-checked="true"><span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>'
-assert S['sexing_errors'] and all(e['date'] >= '2026-02-10' for e in S['sexing_errors'])
-CHIPS = f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("cull", "Sacrificare")}{chip_sexerr}{chip("transfer", "Transfer")}{chip("feed", "Hrană")}{chip("weighing", "Cântărire")}{chip("eggs", "Ouă")}</div>'
+# one chip per record type the cycle holds (D45): culls, a sexing error and weighings are illustrative (D152); transfers are the
+# arrivals 22–28.02 and the 22.10 move; Vânzare = the real sales from 12.11 (D155)
+for _k in ('culls', 'sexing_errors', 'weighings', 'sales'):
+    assert R.ILL[_k] and all(C26_START <= e['date'] <= TODAY for e in R.ILL[_k]), _k
+assert R.TR['internal_moves_hirbovat'] and R.sales()
+CHIPS = f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("cull", "Sacrificare")}{chip_sexerr}{chip("transfer", "Transfer")}{chip("sale", "Vânzare")}{chip("feed", "Hrană")}{chip("weighing", "Cântărire")}{chip("eggs", "Ouă")}</div>'
 EXPORT = f'<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end">{icon("download", 16)}Exportă .xlsx</button>'
 PERIODS = ['Ciclul curent', '4 săpt.', '13 săpt.', 'Interval']
 def datef(i, label, val):
-    return f'<span class="ip-datef"><label class="ip-label" for="{i}">{label}</label><span class="ip-input"><input id="{i}" type="text" inputmode="numeric" value="{val}" placeholder="zz.ll.aaaa" aria-describedby="{i}-fmt"/><button type="button" class="ip-iconbtn" aria-label="Alege data „{label}” din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></span><span class="ip-sr" id="{i}-fmt">Format zz.ll.aaaa, cel târziu 16.11.2026</span>'
+    return f'<span class="ip-datef"><label class="ip-label" for="{i}">{label}</label><span class="ip-input"><input id="{i}" type="text" inputmode="numeric" value="{val}" placeholder="zz.ll.aaaa" aria-describedby="{i}-fmt"/><button type="button" class="ip-iconbtn" aria-label="Alege data „{label}” din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></span><span class="ip-sr" id="{i}-fmt">Format zz.ll.aaaa, cel târziu {ddate(TODAY)}</span>'
 def filterbar(mode='default'):
     if mode == 'period':  # Interval 01.11–15.11.2025: no record of the cycle in it, so no type chips (D45) and nothing to export
         itv = f'<span class="ip-interval" role="group" aria-label="Interval">{datef("iv-a", "de la", "01.11.2025")}{datef("iv-b", "până la", "15.11.2025")}</span>'
@@ -335,13 +323,16 @@ tabs = '<div class="ip-tabs" role="tablist" aria-label="Vederi Hîrbovăț">' + 
 # ---------- readout + guide chart ----------
 CW, CH = 540, 216  # S4P: drawn 1:1 in the Readout's 540px content box (no scaling); Readout = the 3 Stat rows (364)
 X0, X1, YT, YB = 40, CW - 8, 10, CH - 22
-WMAX = 45
-def cx(w): return round(X0 + (w - 1) * (X1 - X0) / (WMAX - 1), 1)
+WMIN, WMAX = c26['sapt_start'], max(R.GUIDE_LAY_WEEKS[-1], WK) + 3   # age weeks (D151): cycle start SAPT 20 … 65
+assert (WMIN, WMAX) == (20, 65)
+def cx(w): return round(X0 + (w - WMIN) * (X1 - X0) / (WMAX - WMIN), 1)
 def cy(p): return round(YB - p / 100 * (YB - YT), 1)
-gweeks = [w for w in range(1, WMAX + 1) if guide[(w, 'F')]['lay_pct'] is not None]
-gv = {w: guide[(w, 'F')]['lay_pct'] for w in gweeks}
-aweeks = sorted(w for w in lay_all if w <= WK)
-a40 = lay_all[WK]['lay_pct']; dev = rnd(a40 - gv[WK], 1)
+gweeks = [w for w in R.GUIDE_LAY_WEEKS if WMIN <= w <= WMAX]                 # guide lay % SAPT 23–62
+gv = {w: R.guide_lay(w) for w in gweeks}
+aweeks = sorted(w for w in lay_all if w <= WK)                                # SAPT 21–59 (SAPT 59 = 17–18.11)
+a40 = lay_all[WK]['lay_pct']; dev = rnd(a40 - gv[WK], 1)                     # current week so far (D156: eggs ÷ hen-days)
+LAY_DEV = dev < -3                                                            # outside the ±3 pct band
+XTICKS = [WMIN, 30, 40, 50, WK, WMAX]
 SWATCH = {k: f'<svg viewBox="0 0 24 8" aria-hidden="true">{v}</svg>' for k, v in {
     'act': '<line class="act" x1="0" x2="24" y1="4" y2="4"/>', 'guide': '<line class="guide" x1="0" x2="24" y1="4" y2="4"/>',
     'band': '<rect class="band" x="0" y="0" width="24" height="8"/>'}.items()}
@@ -357,22 +348,22 @@ def readout(ng=False):
     grid = ''
     for p in (0, 50, 100):
         grid += f'<line class="{"axis" if p == 0 else "grid"}" x1="{X0}" x2="{X1}" y1="{cy(p)}" y2="{cy(p)}"/><text class="ax" x="{X0-4}" y="{cy(p)+3}" text-anchor="end">{p}%</text>'
-    xl = ''.join(f'<text class="ax" x="{cx(w)}" y="{CH-6}" text-anchor="middle">{w}</text>' for w in [1, 10, 20, 30, 40, 45])
+    xl = ''.join(f'<text class="ax" x="{cx(w)}" y="{CH-6}" text-anchor="middle">{w}</text>' for w in XTICKS)
     gpart = '' if ng else f'<polygon class="band" points="{band}"/><polyline class="guide" points="{gline}"/>'
-    lbl = f'Ouat Hîrbovăț pe săptămânile ciclului, sapt. 3–{WK}; ciclul nu are ghid' if ng else f'Ouat Hîrbovăț față de ghid, pe săptămânile ciclului, sapt. 3–{WK}; ghid sapt. 7–45'  # hidden running text: sapt. (D115, FIN13)
+    lbl = f'Ouat Hîrbovăț pe săptămânile de vârstă, sapt. {aweeks[0]}–{WK}; ciclul nu are ghid' if ng else f'Ouat Hîrbovăț față de ghid, pe săptămânile de vârstă, sapt. {aweeks[0]}–{WK}; ghid sapt. {gweeks[0]}–{gweeks[-1]}'  # hidden running text: sapt. (D115, FIN13)
     chart = f'''<svg class="ip-chart" viewBox="0 0 {CW} {CH}" role="group" aria-roledescription="grafic" tabindex="0" aria-label="{lbl}" aria-describedby="lay-help lay-read"><g aria-hidden="true">{grid}{gpart}<polyline class="act" points="{aline}"/><line class="today" x1="{cx(WK)}" x2="{cx(WK)}" y1="{YT-2}" y2="{YB}"/><line class="cur" x1="{cx(WK)}" x2="{cx(WK)}" y1="{YT-2}" y2="{YB}"/><circle class="pt" cx="{cx(WK)}" cy="{cy(a40)}" r="3.5"/>{xl}</g></svg>'''
     if ng:
         rows = [(w, pct(lay_all[w]['lay_pct']), '– fără ghid') for w in aweeks]
         rl = '<span class="ip-rlamp ip-rlamp--off">FĂRĂ GHID</span>'
-        sub = 'ciclul nu are ghid, nu se compară · 10.11–16.11.2026'
+        sub = f'ciclul nu are ghid, nu se compară · {WSPAN}'
         read = f'SAPT {WK} · efectiv {pct(a40)} · ghid – fără ghid'
-        leg = chart_legend([('act', 'efectiv')], 'axa: săpt. ciclului')
+        leg = chart_legend([('act', 'efectiv')], 'axa: SAPT de vârstă')
     else:
         rows = [(w, pct(lay_all[w]['lay_pct']), pct(gv[w]) if w in gv else '– fără date în ghid') for w in aweeks]
-        rl = '<span class="ip-rlamp ip-rlamp--ok">ÎN NORMĂ</span>'
-        sub = f'ghid {pct(gv[WK])} · {sgn(dev)} pct · 10.11–16.11.2026'
+        rl = '<span class="ip-rlamp ip-rlamp--warn">ABATERE</span>' if LAY_DEV else '<span class="ip-rlamp ip-rlamp--ok">ÎN NORMĂ</span>'
+        sub = f'ghid {pct(gv[WK])} · {sgn(dev)} pct · {WSPAN}'
         read = f'SAPT {WK} · efectiv {pct(a40)} · ghid {pct(gv[WK])} · {sgn(dev)} pct'
-        leg = chart_legend([('act', 'efectiv'), ('guide', 'ghid'), ('band', '±3 pct')], 'axa: săpt. ciclului')  # = Producție
+        leg = chart_legend([('act', 'efectiv'), ('guide', 'ghid'), ('band', '±3 pct')], 'axa: SAPT de vârstă')  # = Producție
     return f'''<div class="ip-readout s4-readout">
 <div class="ip-readout__cap"><span>OUAT · HÎRBOVĂȚ · SAPT {WK}</span>{rl}</div>
 <div class="ip-readout__val">{n(a40,1)}<small>%</small></div>
@@ -380,7 +371,7 @@ def readout(ng=False):
 {chart}
 <span class="ip-sr" id="lay-help">Săgețile stânga și dreapta mută săptămâna; Home și End: prima și ultima săptămână.</span>
 <div class="ip-chart__read" id="lay-read" role="status" aria-live="polite">{read}</div>
-{sr_table(f'Ouat Hîrbovăț pe săptămâni{"" if ng else ", efectiv față de ghid"}; înregistrări din 01.03.2026 (SAPT 3)', ['SAPT', 'Efectiv', 'Ghid'], rows)}
+{sr_table(f'Ouat Hîrbovăț pe săptămâni{"" if ng else ", efectiv față de ghid"}; ciclul din {ddate(C26_START)} (SAPT {WMIN})', ['SAPT', 'Efectiv', 'Ghid'], rows)}
 {leg}
 </div>'''
 
@@ -405,18 +396,29 @@ def guides(html):  # apply gline() inside every Stat guide line of a block of St
 def cap(k, text):
     return f'<span class="ip-cap s4-capi">{ico(k) if k else ""}{text}</span>'
 s_b2 = stocks['ft-breeder2']; s_co = stocks['ft-cocosi']
+FT_NAME = {k: R.FEED_TYPES[k]['name'] for k in stocks}                      # Breeder 2 / Cocoși (illustrative, D30)
+ST_LOW, ST_HIGH = sorted(stocks, key=lambda k: stocks[k]['days_left'])       # the stock that runs out first leads
+assert ST_LOW == 'ft-cocosi'
+def st_lamp(k): return lamp('warn', 'abatere') if stocks[k]['days_left'] < STOCK_LIMIT else lamp('ok', 'în normă')
+def lay_lamp(dev_pts): return lamp('warn', 'abatere') if dev_pts < -3 else lamp('ok', 'în normă')
+MORT_G = R.guide_mort(WK)                                                     # ♀ cumulative mortality, RealGhid (7,25 % at SAPT 59)
+assert MORT_G is not None and R.guide_row(WK, 'M')['mortality_cum_pct'] is None
+assert R.weigh_guide(R.sapt(WDAY), 'F') is None and R.guide_row(R.sapt(WDAY) - 1)['body_weight_g'] is None  # D157: no weight guide at SAPT 57
+EMPTY_NOTE = ' · '.join(f'{h} goală din {ddate(d)[:5]}' for h, d in EMPTY_HALLS.items())  # "H7 goală din 14.11"
 NOG = 'ghid: – fără ghid'
 def stats(ng=False):
     g_feed = NOG if ng else f'ghid {pair(gf_g, gm_g)} {lamp("ok", "în normă")}'
-    g_lay = NOG if ng else f'ghid {pct(lay_guide)} · {sgn(rnd(lay_today-lay_guide,1))} pct {lamp("ok", "în normă")}'
+    g_lay = NOG if ng else f'ghid {pct(lay_guide)} · {sgn(rnd(lay_today-lay_guide,1))} pct {lay_lamp(lay_today - lay_guide)}'
+    g_mort = NOG if ng else f'ghid {hen(pct(MORT_G, 2))} {lamp("ok", "în normă") if cum["mortality_pct"]["F"] <= MORT_G else lamp("warn", "abatere")}'
     g_none = NOG if ng else 'ghid: – fără date în ghid'
+    lo, hi = stocks[ST_LOW], stocks[ST_HIGH]
     return guides(f'''<div class="ip-stats s4-stats">
-<div class="ip-stat">{cap(None, 'În viață')}<span class="ip-stat__val">{pair(n(tot['F']), n(tot['M']))}</span><span class="ip-stat__guide ip-num">total {n(tot['all'])}</span><span class="ip-stat__guide">la sosire {pair(n(cum['start_counts']['F']), n(cum['start_counts']['M']))}</span></div>
-<div class="ip-stat">{cap('mortality', 'Mortalitate cumulată')}<span class="ip-stat__val">{pair(n(cum['mortality_pct']['F'],2), n(cum['mortality_pct']['M'],2))}<small>%</small></span><span class="ip-stat__guide">{g_none}</span><span class="ip-stat__guide">din 10.02.2026 {pair(n(-cum['removals']['F']['mortality']), n(-cum['removals']['M']['mortality']))}</span></div>
-<div class="ip-stat">{cap('weighing', f'Greutate {F} / {M}')}<span class="ip-stat__val">{pair(n(w_f), n(w_m))}<small>g</small></span><span class="ip-stat__guide">{g_none}</span><span class="ip-stat__guide ip-num">cântărit 16.11 · 6\u00a0secțiuni</span></div>
-<div class="ip-stat">{cap('feed', 'Hrană azi pe pasăre')}<span class="ip-stat__val">{pair(g_f, g_m)}<small>g</small></span><span class="ip-stat__guide">{g_feed}</span><span class="ip-stat__guide"><span>fără {F} H4.2 · {M} H3.2 (lipsă azi)</span></span></div>
-<div class="ip-stat">{cap('feed', 'Stoc hrană · zile rămase')}<span class="ip-stat__val">{n(s_co['days_left'],1)}<small>zile · Cocoși</small></span><span class="ip-stat__guide"><span class="ip-num">până pe {ddate(s_co['run_out_date'])}</span>{lamp('warn', 'abatere')}</span><span class="ip-stat__guide"><span>Breeder 2 · <span class="ip-num">{n(s_b2['days_left'],1)} zile · {n(s_b2['stock_kg'])} kg</span></span></span></div>
-<div class="ip-stat">{cap('eggs', 'Ouat azi')}<span class="ip-stat__val">{n(lay_today,1)}<small>%</small></span><span class="ip-stat__guide">{g_lay}</span><span class="ip-stat__guide ip-num">{n(sum(e['total_eggs'] for e in eggs_today.values()))} ouă · 3 hale</span></div>
+<div class="ip-stat">{cap(None, 'În viață')}<span class="ip-stat__val">{pair(n(tot['F']), n(tot['M']))}</span><span class="ip-stat__guide">la sosire {pair(n(cum['start_counts']['F']), n(cum['start_counts']['M']))}</span><span class="ip-stat__guide">vânzări {pair(n(-cum['sold']['F']), n(-cum['sold']['M']))}</span></div>
+<div class="ip-stat">{cap('mortality', 'Mortalitate cumulată')}<span class="ip-stat__val">{pair(n(cum['mortality_pct']['F'],2), n(cum['mortality_pct']['M'],2))}<small>%</small></span><span class="ip-stat__guide">{g_mort}</span><span class="ip-stat__guide">din {ddate(C26_START)} {pair(n(-cum['dead']['F']), n(-cum['dead']['M']))}</span></div>
+<div class="ip-stat">{cap('weighing', f'Greutate {F} / {M}')}<span class="ip-stat__val">{pair(n(w_f), n(w_m))}<small>g</small></span><span class="ip-stat__guide">{g_none}</span><span class="ip-stat__guide ip-num">cântărit {ddate(WDAY)[:5]} · {", ".join(WSECS)}</span></div>
+<div class="ip-stat">{cap('feed', 'Hrană azi pe pasăre')}<span class="ip-stat__val">{pair(g_f, g_m)}<small>g</small></span><span class="ip-stat__guide">{g_feed}</span><span class="ip-stat__guide"><span>{len(FULL)} secțiuni · {EMPTY_NOTE}</span></span></div>
+<div class="ip-stat">{cap('feed', 'Stoc hrană · zile rămase')}<span class="ip-stat__val">{n(lo['days_left'],1)}<small>zile · {FT_NAME[ST_LOW]}</small></span><span class="ip-stat__guide"><span class="ip-num">până pe {ddate(lo['run_out_date'])}</span>{st_lamp(ST_LOW)}</span><span class="ip-stat__guide"><span>{FT_NAME[ST_HIGH]} · <span class="ip-num">{n(hi['days_left'],1)} zile · {n(hi['stock_kg'])} kg</span></span></span></div>
+<div class="ip-stat">{cap('eggs', 'Ouat azi')}<span class="ip-stat__val">{n(lay_today,1)}<small>%</small></span><span class="ip-stat__guide">{g_lay}</span><span class="ip-stat__guide ip-num">{n(sum(e['total_eggs'] for e in eggs_today.values()))} ouă · {len(EGG_HALLS)} hale</span></div>
 </div>''')
 
 # ---------- section tiles + totals ----------
@@ -424,9 +426,7 @@ def tstate(sec, ng=False):
     hall = sec.split('.')[0]; out = []
     if g_today[(sec, 'F')] is None or g_today[(sec, 'M')] is None: out.append(('warn', 'lipsă'))
     if ng: return out  # no guide: no deviation and no "în normă" (nothing to compare with); "lipsă" is not guide-based
-    feed_dev = any(g_today[(sec, sx)] is not None and abs(g_today[(sec, sx)] / guide[(WK, sx)]['feed_g'] - 1) > 0.10 for sx in 'FM')
-    lay_dev = abs(eggs_today[hall]['lay_pct'] - eggs_today[hall]['guide_lay_pct']) > 3
-    if feed_dev or lay_dev: out.append(('warn', 'abatere'))
+    if any(feed_dev(sec, sx) for sx in 'FM') or abs(eggs_today[hall]['lay_pct'] - eggs_today[hall]['guide_lay_pct']) > 3: out.append(('warn', 'abatere'))
     return out or [('ok', 'în normă')]
 def gpair(sec):
     f = g_today[(sec, 'F')]; m = g_today[(sec, 'M')]
@@ -436,88 +436,115 @@ def gpair(sec):
         ms = M + miss if m is None else roo(m) + '<span class="s4-unit">g</span>'
         return f'<span class="ip-pair s4-kvpair">{fs}<span class="sep">·</span>{ms}</span>'
     return f'<span class="ip-pair s4-kvpair">{hen(f)}<span class="sep">·</span>{roo(m)}<span class="s4-unit">g</span></span>'
+def wkv(sec):  # the latest weighing of the cycle (10.11, H5.1 only); the other compartments: – with its reason
+    if (sec, 'F') in wt: return f'<span class="ip-pair s4-kvpair">{hen_v(n(wt[(sec, "F")]))}<span class="s4-unit">g · {ddate(WDAY)[:5]}</span></span>'
+    return '<span class="s4-miss">– necântărit</span>'
 def stile(sec, ng=False):
     hall = sec.split('.')[0]; f, m = alive[(sec, 'F')], alive[(sec, 'M')]
     pf = round(f / (f + m) * 100)
     missing = g_today[(sec, 'F')] is None or g_today[(sec, 'M')] is None
     lamps = ''.join(lamp(k, w) for k, w in tstate(sec, ng))
     okey = f'Ouat {hall}' if ng else f'Ouat {hall} · ghid {pct(eggs_today[hall]["guide_lay_pct"])}'
-    return f'''<a href="#sectiune-{sec}" class="ip-stile{" is-missing" if missing else ""}"><div class="ip-stile__head"><span class="ip-stile__code">{sec}</span><span class="s4-lamps">{lamps}</span></div>{pair(n(f), n(m))}<div class="ip-bar" aria-hidden="true"><span style="width:{pf}%"></span><span style="width:{100-pf}%"></span></div><div class="ip-stile__kv"><span class="s4-capi">{ico('mortality')}Mort. săpt.</span><b>{n(-mort_wk[sec])}</b></div><div class="ip-stile__kv"><span class="s4-capi">{ico('feed')}Hrană azi</span>{gpair(sec)}</div><div class="ip-stile__kv"><span class="s4-capi">{ico('weighing')}Greutate {F}</span><span class="ip-pair s4-kvpair">{hen_v(n(wt[(sec,'F')]))}<span class="s4-unit">g</span></span></div><div class="ip-stile__kv"><span class="s4-capi">{ico('eggs')}{okey}</span><b>{pct(eggs_today[hall]['lay_pct'])}</b></div></a>'''
+    return f'''<a href="#sectiune-{sec}" class="ip-stile{" is-missing" if missing else ""}"><div class="ip-stile__head"><span class="ip-stile__code">{sec}</span><span class="s4-lamps">{lamps}</span></div>{pair(n(f), n(m))}<div class="ip-bar" aria-hidden="true"><span style="width:{pf}%"></span><span style="width:{100-pf}%"></span></div><div class="ip-stile__kv"><span class="s4-capi">{ico('mortality')}Mort. săpt.</span><b>{n(-mort_wk[sec])}</b></div><div class="ip-stile__kv"><span class="s4-capi">{ico('feed')}Hrană azi</span>{gpair(sec)}</div><div class="ip-stile__kv"><span class="s4-capi">{ico('weighing')}Greutate {F}</span>{wkv(sec)}</div><div class="ip-stile__kv"><span class="s4-capi">{ico('eggs')}{okey}</span><b>{pct(eggs_today[hall]['lay_pct'])}</b></div></a>'''
 def halls(ng=False):
     out = ''
-    for hall in ['H1', 'H3', 'H4']:
-        secs = [s for s in SECTIONS if s.startswith(hall + '.')]
+    for hall in HALLS:
+        secs = R.HALL_SECS[hall]
         hf = sum(alive[(s, 'F')] for s in secs); hm = sum(alive[(s, 'M')] for s in secs)
-        out += f'<div class="s4-hall" role="group" aria-label="Hala {hall}"><div class="s4-hallhead"><span class="ip-cap">Hala {hall}</span>{pair(n(hf), n(hm))}</div><div class="ip-tiles">{"".join(stile(s, ng) for s in secs)}</div></div>'
+        if hall in EMPTY_HALLS:  # D158(d): an empty hall shows one muted line, not hidden and not as tiles of zeros
+            body = f'<p class="ip-note ip-m0">{lamp("off", "goală")} din {ddate(EMPTY_HALLS[hall])} · {", ".join(secs)}</p>'
+        else:
+            body = f'<div class="ip-tiles">{"".join(stile(s, ng) for s in secs)}</div>'
+        out += f'<div class="s4-hall" role="group" aria-label="Hala {hall}"><div class="s4-hallhead"><span class="ip-cap">Hala {hall}</span>{pair(n(hf), n(hm))}</div>{body}</div>'
     return out
 def totals(ng=False):
     tf = f'<span class="ip-stotals__sub">{NOG}</span>' if ng else f'<span class="ip-stotals__sub s4-nowrap"><span>ghid <span class="ip-num">{gf_g}/{gm_g} g</span></span>{lamp("ok", "în normă")}</span>'
+    assert not any(feed_dev(s, sx) for s in FULL for sx in 'FM')
     tw = NOG if ng else 'ghid: – fără date în ghid'
-    tl = NOG if ng else f'ghid {pct(lay_guide)} {lamp("ok", "în normă")}'
-    return f'''<div class="ip-stotals" role="group" aria-label="Total fermă Hîrbovăț, 16.11.2026"><div><span class="ip-cap">Total fermă</span><span class="ip-stotals__sub">6 secțiuni</span><span class="ip-stotals__sub ip-num">16.11.2026 · SAPT {WK}</span></div><div><span class="ip-stotals__key">În viață</span><span class="ip-stotals__val">{pair(n(tot['F']), n(tot['M']))}</span><span class="ip-stotals__sub ip-num">total {n(tot['all'])}</span></div><div><span class="ip-stotals__key">{ico('mortality')}Mort. săpt.</span><span class="ip-stotals__val">{n(-(mort_wk_sex['F']+mort_wk_sex['M']))}</span><span class="ip-stotals__sub">{pair(n(-mort_wk_sex['F']), n(-mort_wk_sex['M']))}</span></div><div><span class="ip-stotals__key">{ico('feed')}Hrană azi</span><span class="ip-stotals__val">{pair(g_f, g_m)}<small>g</small></span>{tf}<span class="ip-stotals__sub s4-nowrap"><span>fără {F} H4.2 · {M} H3.2</span></span></div><div><span class="ip-stotals__key">{ico('weighing')}Greutate {F}</span><span class="ip-stotals__val">{hen_v(n(w_f))}<small>g</small></span><span class="ip-stotals__sub">{tw}</span><span class="ip-stotals__sub">medie pe găini</span></div><div><span class="ip-stotals__key">{ico('eggs')}Ouat</span><span class="ip-stotals__val">{n(lay_today,1)}<small>%</small></span><span class="ip-stotals__sub">{tl}</span></div></div>'''
+    tl = NOG if ng else f'ghid {pct(lay_guide)} {lay_lamp(lay_today - lay_guide)}'
+    return f'''<div class="ip-stotals" role="group" aria-label="Total fermă Hîrbovăț, {ddate(TODAY)}"><div><span class="ip-cap">Total fermă</span><span class="ip-stotals__sub">{len(FULL)} secțiuni cu păsări</span><span class="ip-stotals__sub ip-num">{ddate(TODAY)} · SAPT {WK}</span></div><div><span class="ip-stotals__key">În viață</span><span class="ip-stotals__val">{pair(n(tot['F']), n(tot['M']))}</span><span class="ip-stotals__sub ip-num">total {n(tot['all'])}</span></div><div><span class="ip-stotals__key">{ico('mortality')}Mort. săpt.</span><span class="ip-stotals__val">{n(-(mort_wk_sex['F']+mort_wk_sex['M']))}</span><span class="ip-stotals__sub">{pair(n(-mort_wk_sex['F']), n(-mort_wk_sex['M']))}</span></div><div><span class="ip-stotals__key">{ico('feed')}Hrană azi</span><span class="ip-stotals__val">{pair(g_f, g_m)}<small>g</small></span>{tf}<span class="ip-stotals__sub s4-nowrap"><span>{EMPTY_NOTE}</span></span></div><div><span class="ip-stotals__key">{ico('weighing')}Greutate {F}</span><span class="ip-stotals__val">{hen_v(n(w_f))}<small>g</small></span><span class="ip-stotals__sub">{tw}</span><span class="ip-stotals__sub ip-num">{", ".join(WSECS)} · {ddate(WDAY)[:5]}</span></div><div><span class="ip-stotals__key">{ico('eggs')}Ouat</span><span class="ip-stotals__val">{n(lay_today,1)}<small>%</small></span><span class="ip-stotals__sub">{tl}</span></div></div>'''
 
-# ---------- alerts ----------
-h3 = st['lay_pct_week40_by_hall']['H3']; fd = st['feed_deviation_today']
-h3_days = sorted((r for r in S['eggs_daily'] if r['hall'] == 'H3' and r['date'] <= TODAY and r['guide_lay_pct'] is not None), key=lambda r: r['date'])
-h3_since = None
-for r in reversed(h3_days):
-    if r['lay_pct'] - r['guide_lay_pct'] < -3: h3_since = r['date']
-    else: break
-assert h3_since == '2026-11-09', h3_since
+# ---------- alerts (18.11.2026: both halls with birds lay below the guide band; no feed deviation, no missing row, no stock
+# under 5 days; 4 Hîrbovăț deliveries without a price) ----------
+def below_since(hall):  # first day of the run of days up to today with the daily lay (D156) below guide − 3 pct
+    d = R.D(TODAY); since = None
+    while R.day(d, hall) and R.lay_day(d, hall) is not None and R.guide_lay(R.sapt(d)) is not None \
+            and R.lay_day(d, hall) - R.guide_lay(R.sapt(d)) < -3:
+        since = d; d -= dt.timedelta(days=1)
+    return since
+LAY_ALERTS = [h for h in EGG_HALLS if lay_dev(h)]
+assert LAY_ALERTS == ['H5', 'H6'] and (below_since('H5'), below_since('H6')) == (dt.date(2026, 11, 2), dt.date(2026, 11, 1))
+LAY_SINCE = {h: below_since(h) for h in LAY_ALERTS}
+h3_since = LAY_SINCE['H6']  # literal-ok: s4t's old name for this hall (= H6, D152)
+_YDAY = R.D(TODAY) - dt.timedelta(days=1)
+alloc = {(s, sx): {'section': s, 'sex': sx, 'today_g': g_today[(s, sx)], 'yesterday_g': R.feed_g(_YDAY, sx, s), 'guide_g': R.guide_feed(WK, sx)}
+         for s in FULL for sx in 'FM'}  # the day's norm g/bird per compartment (was the sample's allocations_today)
+MISSING = [(s, sx) for s in FULL for sx in 'FM' if R.alive_start(s, sx) and g_today[(s, sx)] is None]
+assert not MISSING
 def alert(k, title, meta, status, act=None):
     a = f'<a class="ip-link ip-ev__act" href="{act[1]}">{act[0]}</a>' if act else ''
     return f'<li class="ip-ev ip-ev--alert">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{a}<span class="ip-ev__status">{status}</span></li>'  # FIN16: a row of ul.ip-list
 def alerts(ng=False):
-    a_h3 = alert('eggs', f'H3 · ouat <span class="ip-num">{pct(h3["lay_pct"])}</span> · ghid <span class="ip-num">{pct(lay_guide)}</span> · <span class="ip-num">{n(h3["diff_pts"],1)} pct</span>',
-           f'16.11.2026 · SAPT {WK} · sub ghid din {ddate(h3_since)}', lamp('warn', 'abatere'), ('Vezi producția', '#productie'))
-    a_h12 = alert('feed', f'H1.2 · hrană {roo(fd["g"], " g")} · ghid {roo(fd["guide_g"], " g")} · <span class="ip-num">+{pct(fd["deviation_pct"], 0)}</span>',
-           f'16.11.2026 · SAPT {WK} · Dr. Ceban · ieri {roo(alloc[("H1.2","M")]["yesterday_g"], " g")}', lamp('warn', 'abatere'), ('Deschide secțiunea', '#sectiune-H1.2'))
-    g32 = '' if ng else f' · ghid {roo(gm_g, " g")}'
-    g42 = '' if ng else f' · ghid {hen(gf_g, " g")}'
-    a_32 = alert('feed', f'H3.2 · hrană {M} azi – lipsă{g32}',
-           f'16.11.2026 · SAPT {WK} · de la 12:00 · ieri {roo(alloc[("H3.2","M")]["yesterday_g"], " g")}', lamp('warn', 'lipsă'), ('Deschide secțiunea', '#sectiune-H3.2'))
-    a_42 = alert('feed', f'H4.2 · hrană {F} azi – lipsă{g42}',
-           f'16.11.2026 · SAPT {WK} · de la 12:00 · ieri {hen(alloc[("H4.2","F")]["yesterday_g"], " g")}', lamp('warn', 'lipsă'), ('Deschide secțiunea', '#sectiune-H4.2'))
-    a_st = alert('delivery', f'Cocoși · stoc <span class="ip-num">{n(s_co["stock_kg"])} kg</span> · <span class="ip-num">{n(s_co["days_left"],1)} zile</span> · limită <span class="ip-num">5 zile</span>',
-           f'16.11.2026 · se termină pe {ddate(s_co["run_out_date"])} · {s_co["avg_daily_kg_last3"]} kg/zi', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
-    a_pr = alert('delivery', f'Hrană · {len(unpriced)} livrări fără preț · <span class="ip-num">{n(unpriced_kg)} kg</span>',
-           f'{ddate(unpriced[0]["date"])[:5]}–{ddate(unpriced[-1]["date"])} · Ion Rusu · așteaptă prețul', lamp('info', 'informație'), ('Adaugă prețurile', '#preturi-hrana'))
-    # no guide: the guide-based alerts (lay vs guide, feed ±10 %) go; missing rows, stock (D19 threshold) and prices stay
-    return [a_32, a_42, a_st, a_pr] if ng else [a_h3, a_h12, a_32, a_42, a_st, a_pr]
+    out = []
+    if not ng:  # guide-based: lay vs guide (±3 pct), feed ±10 %
+        for h in LAY_ALERTS:
+            e = eggs_today[h]
+            out.append(alert('eggs', f'{h} · ouat <span class="ip-num">{pct(e["lay_pct"])}</span> · ghid <span class="ip-num">{pct(lay_guide)}</span> · <span class="ip-num">{n(e["lay_pct"] - lay_guide, 1)} pct</span>',
+                             f'{ddate(TODAY)} · SAPT {WK} · sub ghid din {ddate(below_since(h))}', lamp('warn', 'abatere'), ('Vezi producția', '#productie')))
+        for sec, sx in ((s, sx) for s in FULL for sx in 'FM' if feed_dev(s, sx)):
+            sxf = hen if sx == 'F' else roo; g = g_today[(sec, sx)]; gg = R.guide_feed(WK, sx)
+            out.append(alert('feed', f'{sec} · hrană {sxf(n(g), " g")} · ghid {sxf(gg, " g")} · <span class="ip-num">{sgn((g / gg - 1) * 100, 0)}%</span>',
+                             f'{ddate(TODAY)} · SAPT {WK}', lamp('warn', 'abatere'), ('Deschide secțiunea', f'#sectiune-{sec}')))
+    for sec, sx in MISSING:  # a compartment with birds and no feed row today (none on 18.11)
+        out.append(alert('feed', f'{sec} · hrană {sg(sx)} azi – lipsă', f'{ddate(TODAY)} · SAPT {WK}', lamp('warn', 'lipsă'), ('Deschide secțiunea', f'#sectiune-{sec}')))
+    for k in (k for k in stocks if stocks[k]['days_left'] < STOCK_LIMIT):  # D19 threshold, not guide-based (none on 18.11)
+        st = stocks[k]
+        out.append(alert('delivery', f'{FT_NAME[k]} · stoc <span class="ip-num">{n(st["stock_kg"])} kg</span> · <span class="ip-num">{n(st["days_left"],1)} zile</span> · limită <span class="ip-num">{STOCK_LIMIT} zile</span>',
+                         f'{ddate(TODAY)} · se termină pe {ddate(st["run_out_date"])} · {n(st["avg_daily_kg_last3"])} kg/zi', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc')))
+    out.append(alert('delivery', f'Hrană · {len(unpriced)} livrări fără preț · <span class="ip-num">{n(unpriced_kg)} kg</span>',
+                     f'{R.drange(unpriced[0]["date"], unpriced[-1]["date"])} · așteaptă prețul', lamp('info', 'informație'), ('Adaugă prețurile', '#preturi-hrana')))
+    return out
+assert len(unpriced) == 4 and unpriced_kg == 18160
 
-# ---------- latest records ----------
-# S4TP: a Mortalitate row counts deaths only (D81, as the Păsări Jurnal); culls are their own Sacrificare rows. The Zilnic
-# save summary in event_log adds that day's culls (15.11: ♂ −4 = deaths −2 + Sacrificare H3.1 −2), asserted here.
-def deaths(d):
-    return {sx: sum(r['mortality'] for r in S['daily'] if r['date'] == d and r['sex'] == sx) for sx in 'FM'}
-for _d, _e in ((e['at'][:10], e) for e in S['event_log'] if e['record'] == 'mortality' and e['action'] == 'create' and e['at'] >= '2026-11-15'):
-    _c = {sx: sum(c['qty'] for c in S['culls'] if c['date'] == _d and c['sex'] == sx) for sx in 'FM'}
-    assert f"♀ {n(-(deaths(_d)['F'] + _c['F']))} · ♂ {n(-(deaths(_d)['M'] + _c['M']))}" in _e['summary'], (_d, _e['summary'])
-D15, D16 = deaths('2026-11-15'), deaths('2026-11-16')
-assert (D15, D16) == ({'F': 7, 'M': 2}, {'F': 8, 'M': 1})
+# ---------- latest records: the illustrative event log on the real daily figures (D152, D155) ----------
+# A Mortalitate row counts real deaths only (D81, D155); sales are their own Vânzare rows (real quantities, illustrative
+# author/time). Each row's figures are recomputed from realdata and checked against the log's summary.
 def ev(k, title, meta, status=''):  # FIN16: the row link in its own li (ul.ip-list > li > a.ip-ev, additions.css section 1), as the tabs' lists
     return f'<li><a class="ip-ev" href="#inregistrare">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{status}</a></li>'
-events = [
- ev('weighing', f'Cântărire · 6 secțiuni · {pair(n(w_f), n(w_m), " g")}', f'16.11.2026, 10:10 · SAPT {WK} · Dr. Ceban'),
- ev('feed', f'Hrană zilnică · 10 din 12 rânduri · <span class="ip-num">3{NB}691 kg</span>', f'16.11.2026, 09:47 · SAPT {WK} · Dr. Ceban', lamp('warn', 'lipsă 2')),
- ev('eggs', f'Ouă · H1, H3, H4 · <span class="ip-num">18{NB}688</span> ouă', f'16.11.2026, 08:35 · SAPT {WK} · Dr. Ceban'),
- ev('mortality', f'Mortalitate · 6 secțiuni · {hen(n(-D16["F"]))} · {roo(n(-D16["M"]))}', f'16.11.2026, 08:34 · SAPT {WK} · Dr. Ceban'),
- ev('mortality', f'Corecție mortalitate · H4.1 · {F} · <span class="ip-num">14.11</span> · {hen_v(n(-3))} → {hen_v(n(-5))}', f'15.11.2026, 10:12 · SAPT {WK} · Ion Rusu', '<span class="ip-tag ip-tag--neutral">corectat</span>'),
- ev('feed', f'Hrană zilnică · 12 din 12 rânduri · <span class="ip-num">4{NB}393 kg</span>', f'15.11.2026, 09:47 · SAPT {WK} · Dr. Ceban'),
- ev('eggs', f'Ouă · H1, H3, H4 · <span class="ip-num">18{NB}679</span> ouă', f'15.11.2026, 08:21 · SAPT {WK} · Dr. Ceban'),
- ev('cull', f'Sacrificare · H3.1 · {roo(n(-2))} · boală', f'15.11.2026, 08:20 · SAPT {WK} · Dr. Ceban'),
- ev('mortality', f'Mortalitate · 6 secțiuni · {hen(n(-D15["F"]))} · {roo(n(-D15["M"]))}', f'15.11.2026, 08:20 · SAPT {WK} · Dr. Ceban'),
-]
-for at in ['2026-11-16T10:10', '2026-11-16T09:47', '2026-11-16T08:35', '2026-11-16T08:34', '2026-11-15T10:12', '2026-11-15T09:47', '2026-11-15T08:21', '2026-11-15T08:20']:
-    assert any(e['at'] == at for e in S['event_log']), at
+def sexpair(f, m):  # removals with true minus; a sex with nothing removed is left out of a sale
+    return ' · '.join(x for x in (hen(n(-f)) if f else '', roo(n(-m)) if m else '') if x)
+def event_row(e):
+    d = e['at'][:10]; meta = f'{R.ddt(e["at"])} · SAPT {R.sapt(d)} · {e["user"]}'
+    if e['record'] == 'mortality':
+        f, m = R.deaths(d, sx='F'), R.deaths(d, sx='M'); k = sum(1 for s in SECTIONS if R.sd(d, s, 'F') or R.sd(d, s, 'M'))
+        assert f'mortalitate ♀ {f} · ♂ {m}' in e['summary'] and f'{k} secțiuni' in e['summary'], e
+        return ev('mortality', f'Mortalitate · {k} secțiuni · {hen(n(-f))} · {roo(n(-m))}', meta)
+    if e['record'] == 'eggs':
+        hs = [h for h in HALLS if R.eggs(d, h)]; t = R.eggs(d)
+        assert e['summary'].startswith(f'Ouă · {t} total'), e
+        return ev('eggs', f'Ouă · {", ".join(hs)} · <span class="ip-num">{n(t)}</span> ouă', meta)
+    if e['record'] == 'feed':
+        rows = [(s, sx) for s in SECTIONS for sx in 'FM' if R.sd(d, s, sx) and R.sd(d, s, sx)['kg']]
+        due = [(s, sx) for s in SECTIONS for sx in 'FM' if R.alive_start(s, sx, d)]
+        kg = R.feed_kg(d, 'F') + R.feed_kg(d, 'M')
+        assert e['summary'] == f'Hrană · ♀ {R.feed_kg(d, "F"):g} kg · ♂ {R.feed_kg(d, "M"):g} kg', e
+        miss = '' if len(rows) == len(due) else lamp('warn', f'lipsă {len(due) - len(rows)}')
+        return ev('feed', f'Hrană zilnică · {len(rows)} din {len(due)} rânduri · <span class="ip-num">{n(kg)} kg</span>', meta, miss)
+    if e['record'] == 'sale':
+        sec = e['scope'].split(' · ')[1]; r = next(x for x in R.sales(d, d) if x['section'] == sec)
+        return ev('sale', f'Vânzare · {sec} · {sexpair(r["F"], r["M"])}', meta)
+    raise ValueError(e)
+EVENTS = R.EVENTS[:9]
+assert [e['at'] for e in EVENTS][::4] == ['2026-11-18T13:16', '2026-11-18T08:15', '2026-11-17T08:07']
+events = [event_row(e) for e in EVENTS]
 
 def panel_default(ng=False, banner=''):
     al = alerts(ng)
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 {banner}<section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori{"" if ng else " față de ghid"}</h2>{readout(ng)}{stats(ng)}</section>
-<section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">6 secțiuni · 3 hale · 16.11.2026</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
+<section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Secțiuni</h2><span class="ip-note ip-num">{len(FULL)} secțiuni cu păsări · {len(HALLS)} hale · {ddate(TODAY)}</span></div><div class="s4-halls">{halls(ng)}</div>{totals(ng)}</section>
 <div class="s4-split">
-<section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> alerte · <span class="ip-num">16.11.2026</span></span></div><ul class="ip-list" aria-labelledby="h-chk">{"".join(al)}</ul></section>
+<section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note"><span class="ip-num">{len(al)}</span> {"alertă" if len(al) == 1 else "alerte"} · <span class="ip-num">{ddate(TODAY)}</span></span></div><ul class="ip-list" aria-labelledby="h-chk">{"".join(al)}</ul></section>
 <section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><ul class="ip-list" aria-labelledby="h-log">{"".join(events)}</ul></section>
 </div>
 </div>'''
@@ -547,11 +574,10 @@ def empty_box(word, lines, step, aria='Rezumat'):
     return f'<div class="ip-emptybox" role="region" aria-label="{aria}"><div class="ip-empty">{lamp("off", word)}{body}{step}</div></div>'
 
 # ---------- 2. no data in the period ----------
-# check: no Seria 2026 record at Hîrbovăț in 01.11–15.11.2025 (cycle from 10.02.2026, arrivals 22–28.02.2026, sample from 01.03.2026)
-TR = json.load(open(EX / 'transfers-seria2026.json', encoding='utf-8'))
-assert all(a['date'] >= '2026-02-22' for a in TR['arrivals']), 'arrival before the cycle'
-for k in ('daily', 'eggs_daily', 'weighings', 'deliveries', 'culls', 'sexing_errors', 'feed_by_type_daily'):
-    assert all(r['date'] >= '2026-03-01' for r in S[k]), k
+# check: no Seria 2026 record at Hîrbovăț in 01.11–15.11.2025 (cycle from 22.02.2026; the sheets start 17.02.2026)
+assert all(a['date'] >= C26_START for a in TR['arrivals']), 'arrival before the cycle'
+assert min(r['date'] for r in R.SECTION_DAY + R.HALL_DAY + R.FARM_DAY + R.DELIVERIES) >= '2026-02-17'
+assert all(e['date'] >= C26_START for k in ('culls', 'sexing_errors', 'weighings', 'sales') for e in R.ILL[k])
 def panel_period():
     step = f'<button type="button" class="ip-btn ip-btn--secondary">Alege ciclul curent</button>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
@@ -572,7 +598,7 @@ def main_noaccess():
 # ---------- 5. empty farm (30.01.2026, after the halls were emptied on 28.01.2026) ----------
 def main_empty():
     step = '<a class="ip-link" href="#ciclu-seria-2025">Vezi ultimul ciclu</a>'
-    lines = [f'Ferma e goală din {ddate(PREV_END)}. Ultimul ciclu: Seria 2025, {PREV_WEEKS} săpt.', 'Ciclul pornește la prima populare sau transfer.']
+    lines = [f'Ferma e goală din {ddate(PREV_END)}. Ultimul ciclu: Seria 2025, {P25}.', 'Ciclul pornește la prima populare sau transfer.']
     return f'''<main class="ip-shell__main s4-main">
 {header('empty')}
 {cycle('empty')}
@@ -582,24 +608,25 @@ def main_empty():
 # ---------- 6b. chosen past cycle: Hîrbovăț · Seria 2025 (D51), real previous-flock data only ----------
 # eggs per hall and week (D18 totals, Jos apart), egg weight, hatching eggs; hens_alive and % lay are null (no flock count),
 # no grams, no guide for eggs/week → anything else is "–" with its reason. Depopulation removals are not shown as mortality.
-PD = json.load(open(EX / 'eggs-hirbovat-prev-daily.json', encoding='utf-8'))
-PW = json.load(open(EX / 'eggs-hirbovat-prev-weekly.json', encoding='utf-8'))
-assert PD['meta']['cycle_id'] == PW['meta']['cycle_id'] == c25['id']
+# RF01: realdata maps the previous-flock halls to H5–H7 (D158c); the boards index by age week (D151): data SAPT 23–65,
+# cycle SAPT 19–65.
+PD = {'rows': R.PREV_DAILY, 'meta': R.PREV_META}; PW = {'rows': R.PREV_WEEKLY}
 assert all(r['hens_alive'] is None and r['lay_pct'] is None for r in PW['rows'])
 PT = PD['meta']['totals']; PTH = PD['meta']['totals_by_hall']; PLAST = PD['meta']['hall_last_egg_day']
 assert PT['total_eggs'] == 4606935 == sum(r['total_eggs'] for r in PD['rows'])
-pall = {r['cycle_week']: r for r in PW['rows'] if r['hall'] == 'all'}
-phall = {(r['hall'], r['cycle_week']): r for r in PW['rows'] if r['hall'] != 'all'}
+pall = {r['age_week']: r for r in PW['rows'] if r['hall'] == 'all'}
+phall = {(r['hall'], r['age_week']): r for r in PW['rows'] if r['hall'] != 'all'}
 PWEEKS = sorted(pall); PFIN = PWEEKS[-1]
-assert PFIN == PREV_WEEKS == 47 and PWEEKS[0] == c25['data_start_cycle_week'] == 5
+assert PFIN == c25['sapt_end'] == 65 and PWEEKS[0] == c25['data_start_sapt'] == 23 and PFIN - c25['sapt_start'] + 1 == PREV_WEEKS
 fin = pall[PFIN]
 assert fin['partial'] and fin['days'] == 6 and fin['to'] == PREV_END
 PDAYS = len({r['date'] for r in PD['rows']})
 assert PDAYS == 300
-fin_halls = [h for h in ('H1', 'H3', 'H4') if (h, PFIN) in phall]
-assert fin_halls == ['H4'] and fin['total_eggs'] == phall[('H4', PFIN)]['total_eggs']
+PHALLS = HALLS                                        # H5–H7 = the old H1/H3/H4 (same halls, D152)
+fin_halls = [h for h in PHALLS if (h, PFIN) in phall]
+assert fin_halls == ['H7'] and fin['total_eggs'] == phall[('H7', PFIN)]['total_eggs']
 PGL = 'ghid: – fără date în ghid'
-assert PLAST['H1'] == PLAST['H3'] == '2026-01-22'  # FIN16: the Readout sub-line names one last day for H1 and H3 (one line at 1280)
+assert PLAST['H5'] == PLAST['H6'] == '2026-01-22'  # FIN16: the Readout sub-line names one last day for H5 and H6 (one line at 1280)
 # D52/D54: mortality = Σ daily ♀/♂ deaths outside the emptying days (depopulation flag, first 15.01.2026); no flock count, so no %
 PMORT = {sx: sum(r[f'mortality_{sx}'] for r in PD['rows'] if not r['depopulation']) for sx in 'FM'}
 assert PMORT == {'F': 6948, 'M': 1505}, PMORT
@@ -608,34 +635,34 @@ assert PDEP == '2026-01-15' == min(r['date'] for r in PD['rows'] if r['depopulat
 NOFLOCK = 'fără efectiv în registru'
 
 def readout_past():
-    W0, W1 = 1, PFIN; PX0 = 56; YMAX = 160000
+    W0, W1 = c25['sapt_start'], PFIN; PX0 = 56; YMAX = 160000
     def px(w): return round(PX0 + (w - W0) * (X1 - PX0) / (W1 - W0), 1)
     def py(v): return round(YB - v / YMAX * (YB - YT), 1)
     assert max(r['total_eggs'] for r in pall.values()) <= YMAX
     grid = ''
     for v in (0, 80000, 160000):
         grid += f'<line class="{"axis" if v == 0 else "grid"}" x1="{PX0}" x2="{X1}" y1="{py(v)}" y2="{py(v)}"/><text class="ax" x="{PX0-4}" y="{py(v)+3}" text-anchor="end">{n(v)}</text>'
-    xl = ''.join(f'<text class="ax" x="{px(w)}" y="{CH-6}" text-anchor="middle">{w}</text>' for w in [1, 10, 20, 30, 40, PFIN])
+    xl = ''.join(f'<text class="ax" x="{px(w)}" y="{CH-6}" text-anchor="middle">{w}</text>' for w in [W0, 30, 40, 50, 60, PFIN])
     aline = ' '.join(f'{px(w)},{py(pall[w]["total_eggs"])}' for w in PWEEKS)
     lbl = f'Ouă pe săptămână la Hîrbovăț, Seria 2025, sapt. {PWEEKS[0]}–{PFIN}; fără date în ghid pentru ouă pe săptămână'
     chart = f'<svg class="ip-chart" viewBox="0 0 {CW} {CH}" role="group" aria-roledescription="grafic" tabindex="0" aria-label="{lbl}" aria-describedby="egg-help egg-read"><g aria-hidden="true">{grid}<polyline class="act" points="{aline}"/><line class="cur" x1="{px(PFIN)}" x2="{px(PFIN)}" y1="{YT-2}" y2="{YB}"/><circle class="pt" cx="{px(PFIN)}" cy="{py(fin["total_eggs"])}" r="3.5"/>{xl}</g></svg>'
     rows = [(w, n(pall[w]['total_eggs']), pall[w]['days'], '– fără date în ghid') for w in PWEEKS]
-    per = f'{ddate(fin["from"])[:5]}–{ddate(fin["to"])}'
+    per = R.drange(fin['from'], fin['to'])
     return f'''<div class="ip-readout s4-readout">
 <div class="ip-readout__cap"><span>OUĂ / SĂPT. · HÎRBOVĂȚ · SAPT {PFIN}</span><span class="ip-rlamp ip-rlamp--off">FĂRĂ DATE ÎN GHID</span></div>
 <div class="ip-readout__val">{n(fin["total_eggs"])} <small>ouă</small></div>
-<div class="ip-readout__sub">{per} · {fin["days"]} zile · doar H4 (H1, H3 până pe {ddate(PLAST["H1"])[:5]})</div>
+<div class="ip-readout__sub">{per} · {fin["days"]} zile · doar {fin_halls[0]} ({", ".join(h for h in PHALLS if h not in fin_halls)} până pe {ddate(PLAST["H5"])[:5]})</div>
 {chart}
 <span class="ip-sr" id="egg-help">Săgețile stânga și dreapta mută săptămâna; Home și End: prima și ultima săptămână.</span>
 <div class="ip-chart__read" id="egg-read" role="status" aria-live="polite">SAPT {PFIN} · {n(fin["total_eggs"])} ouă · {fin["days"]} zile · ghid – fără date în ghid</div>
 {sr_table(f'Ouă pe săptămână la Hîrbovăț, Seria 2025; înregistrări din {ddate(c25["data_start_date"])} (SAPT {PWEEKS[0]})', ['SAPT', 'Ouă', 'Zile', 'Ghid'], rows)}
-{chart_legend([('act', 'ouă totale (Cat. 1–3 + incubabile)')], 'axa: săpt. ciclului, 1–4 fără date')}
+{chart_legend([('act', 'ouă totale (Cat. 1–3 + incubabile)')], f'axa: SAPT; {W0}–{PWEEKS[0] - 1} fără date')}
 </div>'''
 
 # FIN16: the peak week of the cycle (eggs per day, whole weeks only): the top of the Readout's curve as a figure, in place
 # of "Masă medie ou · SAPT 47", which repeated one row of the weekly table (the final week's egg weight)
 PPEAK = max((r for r in pall.values() if not r['partial']), key=lambda r: r['eggs_per_day'])
-assert (PPEAK['cycle_week'], PPEAK['eggs_per_day'], PPEAK['total_eggs']) == (9, 22739, 159175) and PPEAK['eggs_per_day'] == rnd(PPEAK['total_eggs'] / PPEAK['days'])
+assert (PPEAK['age_week'], PPEAK['eggs_per_day'], PPEAK['total_eggs']) == (27, 22739, 159175) and PPEAK['eggs_per_day'] == rnd(PPEAK['total_eggs'] / PPEAK['days'])
 assert PPEAK['total_eggs'] == max(r['total_eggs'] for r in pall.values())  # also the highest point of the weekly chart
 def stats_past():
     inc = PT['hatching_eggs'] / PT['total_eggs'] * 100
@@ -644,7 +671,7 @@ def stats_past():
     return guides(f'''<div class="ip-stats s4-stats">
 <div class="ip-stat">{cap('eggs', 'Ouă în ciclu')}<span class="ip-stat__val">{n(PT['total_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{PDAYS} zile · din {ddate(c25['data_start_date'])}</span></div>
 <div class="ip-stat">{cap('eggs', 'Incubabile')}<span class="ip-stat__val">{n(inc,1)}<small>%</small></span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">{n(PT['hatching_eggs'])} din {n(PT['total_eggs'])} ouă</span></div>
-<div class="ip-stat">{cap('eggs', 'Vârf · ouă pe zi')}<span class="ip-stat__val">{n(PPEAK['eggs_per_day'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">SAPT {PPEAK['cycle_week']} · {ddate(PPEAK['from'])[:5]}–{ddate(PPEAK['to'])}</span></div>
+<div class="ip-stat">{cap('eggs', 'Vârf · ouă pe zi')}<span class="ip-stat__val">{n(PPEAK['eggs_per_day'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide ip-num">SAPT {PPEAK['age_week']} · {R.drange(PPEAK['from'], PPEAK['to'])}</span></div>
 <div class="ip-stat">{cap('eggs', 'Ouă jos')}<span class="ip-stat__val">{n(PT['floor_eggs'])}</span><span class="ip-stat__guide">{PGL}</span><span class="ip-stat__guide">nu intră în total · <span class="ip-num">{pct(jos)}</span> din total</span></div>
 <div class="ip-stat">{cap('eggs', 'Ouat')}<span class="ip-stat__val">–</span><span class="ip-stat__guide">{NOFLOCK}</span><span class="ip-stat__guide">ouă pe găină: – fără efectiv</span></div>
 <div class="ip-stat">{cap('mortality', 'Mortalitate cumulată')}<span class="ip-stat__val">{pair(n(PMORT['F']), n(PMORT['M']))}</span><span class="ip-stat__guide">% – {NOFLOCK}</span><span class="ip-stat__guide"><span>fără golirea din <span class="ip-num">{ddate(PDEP)}</span></span></span></div>
@@ -664,7 +691,7 @@ def events_past():
     out = []
     for d in sorted(by, reverse=True)[:8]:
         rs = sorted(by[d], key=lambda r: r['hall'])
-        out.append(ev('eggs', f'Ouă · {", ".join(r["hall"] for r in rs)} · <span class="ip-num">{n(sum(r["total_eggs"] for r in rs))}</span> ouă', f'{ddate(d)} · SAPT {rs[0]["cycle_week"]} · din registru'))
+        out.append(ev('eggs', f'Ouă · {", ".join(r["hall"] for r in rs)} · <span class="ip-num">{n(sum(r["total_eggs"] for r in rs))}</span> ouă', f'{ddate(d)} · SAPT {rs[0]["age_week"]} · din registru'))
     return out
 
 def panel_past():
@@ -673,7 +700,7 @@ def panel_past():
     none = f'<ul class="ip-list" aria-labelledby="h-chk"><li class="ip-list__empty">{lamp("off", "nimic de verificat")}<span>Ciclul Seria 2025 la Hîrbovăț e închis din {ddate(PREV_END)}; nu are alerte.</span></li></ul>'
     return f'''<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-rezumat">
 <section class="s4-top" aria-labelledby="h-key"><h2 class="ip-sr" id="h-key">Indicatori, Seria 2025</h2>{readout_past()}{stats_past()}</section>
-<section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {ddate(c25['data_start_date'])}–{ddate(PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in ("H1", "H3", "H4"))}</div></section>
+<section class="ip-block" aria-labelledby="h-sec"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-sec">Hale</h2><span class="ip-note ip-num">3 hale · ouă pe hală din registru · {R.drange(c25['data_start_date'], PREV_END)}</span></div><div class="s4-halls">{"".join(htile_past(h) for h in PHALLS)}</div></section>
 <div class="s4-split">
 <section class="ip-block" aria-labelledby="h-chk"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-chk">De verificat</h2><span class="ip-note">ciclu închis</span></div>{none}</section>
 <section class="ip-block" aria-labelledby="h-log"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-log">Ultimele înregistrări</h2><a class="ip-link ip-note" href="#pasari">Tot jurnalul</a></div><ul class="ip-list" aria-labelledby="h-log">{"".join(events_past())}</ul><p class="ip-note ip-m0">Ultimele zile ale ciclului. Ieșirile de păsări din 15.01.2026 (golirea halelor) nu apar ca mortalitate.</p></section>
@@ -683,8 +710,8 @@ def panel_past():
 # ---------- 7. new cycle dialog ----------
 DLG = f'''<div class="ip-scrim ip-scrim--page"><div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-note">
 <h2 id="dlg-t">Începe ciclu nou la Hîrbovăț</h2>
-<p class="ip-dialog__note" id="dlg-note">Ciclul curent (sapt. {WK}) se închide pe 16.11.2026. Săptămâna ghidului pornește de la 1.</p>
-<div class="ip-field"><label class="ip-label" for="nc-date">Data de început</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="nc-date" type="text" inputmode="numeric" value="16.11.2026" placeholder="zz.ll.aaaa" aria-describedby="nc-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data de început din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="nc-date-h">SAPT 1 · ciclu nou din 16.11.2026</span></div>
+<p class="ip-dialog__note" id="dlg-note">Ciclul curent (sapt. {WK}) se închide pe {ddate(TODAY)}. Săptămâna rămâne cea de vârstă a păsărilor.</p>
+<div class="ip-field"><label class="ip-label" for="nc-date">Data de început</label><div class="ip-row s4s-daterow"><span class="ip-seg" role="radiogroup" aria-label="Zi rapidă"><span class="ip-seg__item is-selected" role="radio" aria-checked="true" tabindex="0">Azi</span><span class="ip-seg__item" role="radio" aria-checked="false" tabindex="-1">Ieri</span></span><span class="ip-input s4s-date"><input id="nc-date" type="text" inputmode="numeric" value="{ddate(TODAY)}" placeholder="zz.ll.aaaa" aria-describedby="nc-date-h"/><button type="button" class="ip-iconbtn" aria-label="Alege data de început din calendar" aria-haspopup="dialog" aria-expanded="false">{icon("cal", 16)}</button></span></div><span class="ip-hint ip-num" id="nc-date-h">SAPT {WK} · ciclu nou din {ddate(TODAY)}</span></div>
 <div class="ip-field"><span class="ip-label" id="nc-guide-l">Ghid</span><div class="ip-select"><div class="ip-input ip-select__btn" id="nc-guide" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="nc-glist" aria-labelledby="nc-guide-l" aria-describedby="nc-guide-h"><span class="ip-select__val">Ross 308 ouat</span>{icon("chev", 16)}</div><ul class="ip-menu ip-select__menu" role="listbox" id="nc-glist" aria-labelledby="nc-guide-l" tabindex="-1" hidden="hidden"><li class="ip-menu__item ip-select__opt" role="option" id="nc-g0" aria-selected="false"><span class="ip-select__chk" aria-hidden="true"></span><span class="ip-select__txt"><span class="ip-select__top">Fără ghid</span></span></li><li class="ip-menu__group" role="presentation">Ghiduri de ouat</li><li class="ip-menu__item ip-select__opt" role="option" id="nc-g1" aria-selected="true"><span class="ip-select__chk" aria-hidden="true">{icon("check", 16)}</span><span class="ip-select__txt"><span class="ip-select__top">Ross 308 ouat <span class="ip-note">ghidul fermei</span></span></span></li></ul></div><span class="ip-hint" id="nc-guide-h">ghidul fermei · ouat</span></div>
 <div class="ip-field"><label class="ip-label" for="nc-why">Motiv</label><span class="ip-input ip-input--area"><textarea id="nc-why" rows="3" required="required" aria-required="true" aria-describedby="nc-why-h"></textarea></span><span class="ip-hint" id="nc-why-h">Obligatoriu. Apare în jurnalul de modificări.</span></div>
 <div class="ip-dialog__keys"><button type="button" class="ip-btn ip-btn--secondary ip-focus" autofocus="autofocus">Anulează</button><button type="button" class="ip-btn ip-btn--primary">{icon("cycle", 16)}Începe ciclu nou</button></div>
@@ -806,3 +833,7 @@ BOARDS = [
 if __name__ == '__main__':
     for stem, title, body, ov in BOARDS:
         write(stem, title, body, ov, vp=1024 if stem == B + 'ciclu-nou' else None)  # board viewport 1440×1024 (canvas.md)
+    if '--canvas' in sys.argv[2:]:  # RF01: refresh the 8 entries' h/title in place (hand-placed row: x and y kept, canvas_rows.place)
+        import canvas_rows as CR
+        c = CR.load(ROOT); CR.place(c, 'S4-ferma-rezumat', [(stem, 1440, HEIGHTS.get(stem, 1874), title) for stem, title, _, _ in BOARDS])
+        CR.save(ROOT, c)

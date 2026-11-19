@@ -5,10 +5,13 @@ the figures and the formats (D46: no space before %) can't drift between them. W
 design/canvas/project/S4-ferma-rezumat.dc.html and /tmp/s4s/S4-ferma-rezumat.html (plain wrapper)."""
 import sys, pathlib, importlib.util
 
-A = [a for a in sys.argv[1:] if a != '--canvas']  # --canvas: no canvas step (entries kept)
+A = [a for a in sys.argv[1:] if a != '--canvas']  # --canvas: refresh the entry's h/title in place (x, y kept; RF01)
 H = int(A[1]) if len(A) > 1 else 1874
 spec = importlib.util.spec_from_file_location('s4s_build', pathlib.Path(__file__).resolve().with_name('s4s_build.py'))
 s4s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s4s)  # reads sys.argv[1] (repo root)
 
 body = s4s.shell(s4s.main_page(panel=s4s.panel_default()))
 s4s.write('S4-ferma-rezumat', 'S4 · Fermă · Rezumat', body, H=H, css=s4s.CSS)
+if '--canvas' in sys.argv[2:]:
+    import canvas_rows as CR
+    c = CR.load(s4s.ROOT); CR.place(c, 'S4-ferma-rezumat', [('S4-ferma-rezumat', 1440, H, 'S4 · Fermă · Rezumat')]); CR.save(s4s.ROOT, c)

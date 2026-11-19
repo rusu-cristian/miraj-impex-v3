@@ -3,7 +3,11 @@
 - row_y(): a row keeps the y of its existing entries; only a row with no entry yet goes below the lowest other row.
 - place(): existing boards keep x and y (w, h, title refreshed in place); a run that adds a board lays the given sequence out
   from x0 (80 px gaps), moving the listed existing boards with it. Only called under --canvas.
-- save(): refuses overlapping boards; writes only when the text changes (same json format as before)."""
+- save(): refuses overlapping boards; writes only when the text changes (same json format as before).
+- relayout() / `python3 -I canvas_rows.py relayout <repo_root> [--canvas]` (RF01): re-stack the rows when board heights
+  change. A row = the boards sharing one y. Rows above ROW0 (the 00 · Index board) and the first row at ROW0 keep their y;
+  every later row gets y = previous row y + its tallest h + GAP_Y (120). x, w, h never change. Prints each moved row; writes
+  canvas.json only with --canvas (through save(), so overlapping boards stop it). Run it after a row's --canvas rebuild."""
 import sys, json, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -82,3 +86,35 @@ def save(root, c):
     p = path(root)
     if p.read_text(encoding='utf-8') != txt: p.write_text(txt, encoding='utf-8')
     return txt
+
+
+ROW0 = 800  # first screen row (canvas.md › Sizes)
+
+
+def rows(c):
+    """[(y, [board keys])] in y order."""
+    by = {}
+    for k, v in c['boards'].items(): by.setdefault(v['y'], []).append(k)
+    return sorted(by.items())
+
+
+def relayout(c):
+    """Re-stack the rows from ROW0 down in place; returns [(first board of the row, old y, new y)] for the rows that moved."""
+    moved, prev = [], None
+    for y, keys in rows(c):
+        if y < ROW0: continue
+        ny = y if prev is None else prev[0] + prev[1] + GAP_Y
+        if ny != y:
+            for k in keys: c['boards'][k]['y'] = ny
+            moved.append((min(keys, key=lambda k: c['boards'][k]['x']), y, ny))
+        prev = (ny, max(c['boards'][k]['h'] for k in keys))
+    return moved
+
+
+if __name__ == '__main__' and sys.argv[1:2] == ['relayout']:
+    root = pathlib.Path(next(a for a in sys.argv[2:] if a != '--canvas')); c = load(root)
+    for k, a, b in relayout(c): print(f'{k}: y {a} → {b} ({b - a:+d})')
+    bad = overlaps(c)
+    if bad: sys.exit(f'overlap: {bad[:3]}')
+    print('rows', len([y for y, _ in rows(c) if y >= ROW0]), 'ok' if '--canvas' not in sys.argv else 'saved')
+    if '--canvas' in sys.argv: save(root, c)
