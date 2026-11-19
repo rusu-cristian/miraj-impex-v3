@@ -160,7 +160,7 @@ LCOLS = ('<thead><tr><th scope="col">Ghid</th><th scope="col">Tip</th><th scope=
          '<th scope="col">Folosit de</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
 # FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
 # None = the column that takes the rest
-LCOLS = SKL.widths(LCOLS, [11.8, 6.6, 15.4, None, 24.4, 10.4], [111.8, 52.58, 86.7, 64.59, 258.38, 96.78])  # + loaded min-content px (fix 1)
+LCOLS = SKL.widths(LCOLS, [11.8, 6.6, 9.6, None, 24.4, 10.4], [111.8, 52.58, 86.7, 64.59, 258.38, 96.78])  # + loaded min-content px (fix 1); FW04 (D150): Săptămâni 15.4 → 9.6 (its content), so Coloane (the rest) wraps its "fără date" line the same for every guide: rows 48 at 1440, 63 at 1280 (were 63 / 63 and 63 / 78)
 ORDER = ['g-growth', 'g-laying']   # by name
 assert ORDER == sorted(GUIDE, key=lambda g: GUIDE[g])
 def lrow(g):
@@ -384,19 +384,14 @@ def saved():
 
 # ================================================================= phone list (owner, read-only, D113)
 def phone_list():
-    rows = ''
-    for g in ORDER:
-        rows += (f'<tbody><tr class="is-group"><th scope="rowgroup" colspan="2" id="pg-{TYPE[g]}">{GUIDE[g]}</th></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Tip</th><td>{TYPE_RO[TYPE[g]]}</td></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Săptămâni</th><td class="ip-num">{weeks_txt(g)}</td></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Coloane</th><td><span class="s19-secs"><span>{cols_txt(g)}</span>'
-                 f'<span class="ip-note">fără date în ghid: {missing_txt(g)}</span></span></td></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Folosit de</th><td><span class="s20-uses">{used_txt(g)}</span></td></tr></tbody>')
+    # FW04 (D150): a card per guide (head + label/value pairs, S19's pcard) instead of a table with a row per field (35–70)
+    cards = ''.join(M.pcard(f'pg-{TYPE[g]}', GUIDE[g],
+                            [('Tip', TYPE_RO[TYPE[g]]), ('Săptămâni', f'<span class="ip-num">{weeks_txt(g)}</span>'),
+                             ('Coloane', f'<span class="s19-secs"><span>{cols_txt(g)}</span><span class="ip-note">fără date în ghid: {missing_txt(g)}</span></span>'),
+                             ('Folosit de', f'<span class="s20-uses">{used_txt(g)}</span>')]) for g in ORDER)
     blk = (f'<section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2>'
            f'<span class="ip-note">{num(len(ORDER))} ghiduri</span></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-gh">'
-           f'<table class="ip-table ip-table--rowheads s20-table s19-ptable"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, '
-           f'coloanele și ciclurile care le folosesc</caption>{rows}</table></div>'
+           f'<div class="s19-pbox">{cards}</div>'
            f'<p class="ip-note ip-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>')
     cr = crumbs('Ghiduri').replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     body = A.phone([f'<header class="ip-pagehead s2-phead s14-phead"><div>{cr}<h1>Ghiduri</h1></div></header>', blk])

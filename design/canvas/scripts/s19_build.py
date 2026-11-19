@@ -79,8 +79,13 @@ def cyc_cell(fid):
     if fid == 'hirbovat':
         return f'<span class="s19-cyc">{lamp("ok", "deschis")}<span class="ip-note ip-num"><span class="ip-nowrap">SAPT {WK}</span> · <span class="ip-nowrap">din {dd(cH["start_date"])}</span></span></span>'
     return f'<span class="s19-cyc">{lamp("off", "goală")}<span class="ip-note ip-num"><span class="ip-nowrap">din {dd(cT["end_date"])}</span></span></span>'
-def fold(fid):   # S19P: Tip + Ciclu under the farm name while the list region is narrow (beside the panel, container query)
-    return f'<span class="s19-fold"><span class="s19-ftip">{TYPE_RO[FARM[fid]["type"]]}</span>{cyc_cell(fid)}</span>'
+def fold(fid, noguide=False):   # S19P: Tip + Ciclu under the farm name while the list region is narrow (beside the panel, container query)
+    # FW04 (D150): the same four lines for every farm (type + cycle lamp · cycle date · guide Tag), so both rows are as tall
+    # (Hîrbovăț's lamp and date took two lines, Telița's one: 77 beside 60 at 1440, 99 beside 76 at 1280); the Ghid column
+    # folds in too, so Secțiuni has the room for its count on one line and its codes in at most two
+    c = cyc_cell(fid); lmp = re.search(r'<span class="ip-lamp[^"]*">[^<]*</span>', c).group(0)
+    return (f'<span class="s19-fold"><span class="s19-fl"><span class="s19-ftip">{TYPE_RO[FARM[fid]["type"]]}</span>{lmp}</span>'
+            f'{c.replace(lmp, "", 1)[len('<span class="s19-cyc">'):-len("</span>")]}{gtag(fid, noguide)}</span>')
 def gtag(fid, noguide=False):
     return f'<span class="ip-tag ip-tag--neutral">{"fără ghid" if noguide else GUIDE[FARM[fid]["guide_id"]]}</span>'
 
@@ -115,14 +120,14 @@ def editkey(fid, pressed=False):
     # row; the key keeps aria-expanded/-controls but is not drawn pressed (one mark per open record, as S16/S22)
     p = '" aria-expanded="true" aria-controls="fp" aria-current="true' if pressed else ''
     return f'<button type="button" class="ip-btn ip-btn--ghost{p}">Editează<span class="ip-sr"> {nm}</span></button>'
-COLS = ('<thead><tr><th scope="col">Fermă</th><th scope="col" class="s19-ctip">Tip</th><th scope="col">Ghid</th><th scope="col">Secțiuni</th>'
+COLS = ('<thead><tr><th scope="col">Fermă</th><th scope="col" class="s19-ctip">Tip</th><th scope="col" class="s19-cgh">Ghid</th><th scope="col">Secțiuni</th>'
         '<th scope="col" class="s19-ccyc">Ciclu</th><th scope="col"><span class="ip-sr">Acțiuni</span></th></tr></thead>')
 # FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
 # None = the column that takes the rest
 COLS = SKL.widths(COLS, [8.2, 8.2, 15.0, None, 28.3, 12.3], [52.2, 52.58, 116.34, 104.34, 101.16, 91.34])  # + loaded min-content px (fix 1)
 def frow(fid, open_=None, noguide=()):
     f = FARM[fid]
-    return (f'<tr{" class=\"is-current\"" if open_ == fid else ""}><th scope="row" class="s19-fname"><span class="s19-fn">{f["name"]}</span>{fold(fid)}</th><td class="s19-ctip">{TYPE_RO[f["type"]]}</td><td>{gtag(fid, fid in noguide)}</td>'
+    return (f'<tr{" class=\"is-current\"" if open_ == fid else ""}><th scope="row" class="s19-fname"><span class="s19-fn">{f["name"]}</span>{fold(fid, fid in noguide)}</th><td class="s19-ctip">{TYPE_RO[f["type"]]}</td><td class="s19-cgh">{gtag(fid, fid in noguide)}</td>'
             f'<td><span class="s19-secs"><span>{sec_count(fid)}</span><span class="ip-note ip-num">{sec_codes(fid)}</span></span></td>'
             f'<td class="s19-ccyc">{cyc_cell(fid)}</td><td class="s19-act">{editkey(fid, open_ == fid)}</td></tr>')
 def flist(open_=None, noguide=()):
@@ -244,22 +249,22 @@ NOFARMS = s4.empty_box('fără ferme', ['Nu există nicio fermă.', 'Adaugă pri
 def p_header():
     h = CRUMBS.replace('<a href="#setari">Setări</a>', '<a href="#setari"><span class="ip-crumbs__txt">Setări</span></a>').replace('<nav class="ip-crumbs"', '<nav class="ip-crumbs ip-crumbs--touch"', 1)  # FIN06: system touch crumb (section 52)
     return f'<header class="ip-pagehead s2-phead s14-phead"><div>{h}<h1>Ferme și secțiuni</h1></div></header>'
+def pcard(hid, name, pairs):
+    """FW04 (D150): one farm (or guide) on the phone = a head + a list of label/value pairs (dl), no table rows: the
+    values take the lines they need (Secțiuni and Ciclu two, Tip one) without rows of uneven height beside each other."""
+    dl = ''.join(f'<dt>{k}</dt><dd>{v}</dd>' for k, v in pairs)
+    return (f'<section class="s19-pcard" aria-labelledby="{hid}"><h3 class="s19-pcard__h" id="{hid}">{name}</h3>'
+            f'<dl class="s19-pdl">{dl}</dl></section>')
 def phone_list():
-    """Phone (D110): one framed table, a group row per farm and one row per field (fits 358 px; no sideways scroll)."""
-    rows = ''
-    for f in ORDER:
-        nm = FARM[f]['name']
-        rows += (f'<tbody><tr class="is-group"><th scope="rowgroup" colspan="2" id="pf-{f}">{nm}</th></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Tip</th><td>{TYPE_RO[FARM[f]["type"]]}</td></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Ghid</th><td>{gtag(f)}</td></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Secțiuni</th><td><span class="s19-secs"><span>{sec_count(f)}</span>'
-                 f'<span class="ip-note ip-num">{sec_codes(f)}</span></span></td></tr>'
-                 f'<tr><th scope="row" class="ip-table__child">Ciclu</th><td>{cyc_cell(f)}</td></tr></tbody>')
+    """Phone (D110): one framed box, a card per farm: head + Tip, Ghid, Secțiuni, Ciclu as label/value pairs (fits 358 px;
+    FW04: was a table, a group row per farm and one row per field, rows 35–68 tall)."""
+    cards = ''.join(pcard(f'pf-{f}', FARM[f]['name'],
+                          [('Tip', TYPE_RO[FARM[f]['type']]), ('Ghid', gtag(f)),
+                           ('Secțiuni', f'<span class="s19-secs"><span>{sec_count(f)}</span><span class="ip-note ip-num">{sec_codes(f)}</span></span>'),
+                           ('Ciclu', cyc_cell(f))]) for f in ORDER)
     blk = (f'<section class="ip-block" aria-labelledby="h-fer"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-fer">Ferme</h2>'
            f'<span class="ip-note">{pl(len(ORDER), "fermă", "ferme")}</span></div>'
-           f'<div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-fer">'
-           f'<table class="ip-table ip-table--rowheads s19-table s19-ptable"><caption class="ip-sr">Fermele, cu tipul, ghidul, secțiunile și ciclul lor</caption>'
-           f'{rows}</table></div>'
+           f'<div class="s19-pbox">{cards}</div>'
            f'<p class="ip-note ip-m0">Fermele și secțiunile le editezi pe calculator.</p></section>')
     body = A.phone([p_header(), blk])
     for a, z in (('class="ip-tabbar__item is-current" href="#acasa" aria-current="page"', 'class="ip-tabbar__item" href="#acasa"'),
@@ -276,12 +281,14 @@ CSS19 = '''
 .s19-fname{font-weight:500}
 .s19-region{container:s19-ferme / inline-size}
 .s19-fold{display:none}
-/* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip and
+/* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip, Ghid (FW04) and
  * Ciclu fold under the farm name and Editează stays in view; the list alone (998px+ at 1280) keeps all six columns. */
 @container s19-ferme (max-width: 759.98px){
   .s19-table th{width:auto} .s19-table th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
-  .s19-table .s19-ctip,.s19-table .s19-ccyc{display:none}
-  .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:normal}
+  .s19-table .s19-ctip,.s19-table .s19-ccyc,.s19-table .s19-cgh{display:none}
+  .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:nowrap}
+  .s19-fl{display:inline-flex;align-items:center;gap:0 var(--space-2)}
+  .s19-fold > .ip-tag{margin-top:var(--space-1)}
   .s19-fn{display:block;color:var(--ink)}
 }
 .s19-secs{display:flex;flex-direction:column;gap:0}
@@ -292,7 +299,13 @@ CSS19 = '''
 CSS_DESK = T.CSS_DESK + SC.OPT + CSS19
 CSS_PL = T.CSS_PL + CSS19 + '''
 .s19-ptable td{height:auto;padding-block:var(--space-2)}
-.s19-ptable .ip-table__child{width:calc(var(--space-12) * 2);vertical-align:middle}'''
+.s19-ptable .ip-table__child{width:calc(var(--space-12) * 2);vertical-align:middle}
+.s19-pbox{background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);overflow:hidden} /* FW04 (D150): farm / guide cards, label/value pairs instead of table rows */
+.s19-pcard + .s19-pcard{border-top:var(--ip-hair) solid var(--line)}
+.s19-pcard__h{display:flex;align-items:center;min-height:var(--row-h);margin:0;padding:0 var(--space-3);background:var(--sunken);font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink)} /* as the group row it replaces */
+.s19-pdl{display:grid;grid-template-columns:calc(var(--space-12) * 2) minmax(0,1fr);align-items:baseline;gap:var(--space-2) var(--space-3);margin:0;padding:var(--space-3);font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink)}
+.s19-pdl > dt{color:var(--ink-secondary)}
+.s19-pdl > dd{margin:0;min-width:0}'''
 
 # ================================================================= write
 FONTS = s4.FONTS; SYS = ROOT / 'design/system'

@@ -127,14 +127,11 @@ SC_D39 = dict(day=TODAY, d1=dt.date(2027, 1, 1), no25=True, blocks=[B25_CLOSED, 
 
 # ================================================================= the series table for a scene (s18_build.crow / grow / acts)
 def crow_at(fid, cyc, start, week, dedus=False):
-    """s18_build.crow for a cycle as it stood on the scene's day: open cycles read SAPT <week>; an open inferred start
-    reads "din <start> · început dedus", as the closed range and S3/S4/S20 (FY02)."""
+    """s18_build.crow for a cycle as it stood on the scene's day: open cycles read SAPT <week>; an inferred start says
+    "· început dedus" in the Început column, open or closed (FW04, D150: was after "din <start>", as the closed range)."""
     keep = T.WK; T.WK = week
     try: r = T.crow(fid, cyc, start, dedus=dedus)
     finally: T.WK = keep
-    if dedus and not cyc['end_date']:
-        a = f'din {num(dd(cyc["start_date"]))}'; assert r.count(a) == 1
-        r = r.replace(a, a + '<span class="ip-note"> · început dedus</span>')
     return r
 def open_(c): return dict(c, end_date=None)
 def why(sid, farm, week):

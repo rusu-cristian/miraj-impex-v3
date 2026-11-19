@@ -325,7 +325,7 @@ CSS22 = '''
 @container s22-users (max-width: 759.98px){
   .ip-users__t th{width:auto} .ip-users__t th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
   .s22-cx{display:none}
-  .s22-fold{display:block;color:var(--ink-secondary)}
+  .s22-fold{display:block;color:var(--ink-secondary);font-size:var(--ip-fs-small);line-height:var(--ip-lh-small)} /* FW04 (D150): the small size of every sub-line (CostBlock, S19), so the owner's "proprietar · toate fermele · 16.11.2026, 08:02" keeps one line at 1280 (it took two: 69 beside 50) */
 }
 .s22-checks{display:flex;flex-wrap:wrap;gap:0 var(--space-6);margin-block:calc(-1 * var(--space-3))} /* two farm boxes side by side: 44px targets, 20px text line in the form rhythm (as §44) */
 .s22-acct{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}

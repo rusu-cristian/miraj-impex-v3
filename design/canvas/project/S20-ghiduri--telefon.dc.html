@@ -75,8 +75,7 @@ body{margin:0}
 .s11-filterbar:has(> .ip-interval) .s11-farm{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s14-page{display:flex;flex-direction:column;gap:var(--space-6)}
 .s14-phone .s4-top,.s14-phone .s4-stats{grid-template-columns:minmax(0,1fr)} /* phone: Readout, then the Stats one per line */
-.s14-phone .ip-table--rowheads tbody th .s4t-sub{display:block} /* the week's dates under SAPT: a narrower sticky column, more figures in view */
-.s14-phone .ip-table--rowheads thead th:first-child{white-space:normal}
+.s14-phone .ip-table--rowheads thead th:first-child{white-space:normal} /* FW04 (D150): the week's dates stay beside SAPT (were under it: week rows 46 beside 32 hall rows); the sticky column is as wide as that line */
 .s14-phone .ip-sechead{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s14-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s14-phone .s4t-lk{min-height:var(--control-h-touch)} /* touch: 48px target */
@@ -84,16 +83,21 @@ body{margin:0}
 .s14-pfilter{gap:var(--space-2) var(--space-3)}
 .s18-table{width:100%}
 .s18-table thead th{white-space:nowrap}
-.s18-table td.num,.s18-table td:last-child{white-space:nowrap} /* fix 1: Ghid / Ciclu / Început may wrap, so the table fits 998 px at 1280 */
+.s18-table td{white-space:nowrap} /* FW04 (D150): every cell on one line, so every cycle row is the row height (Ciclu, Început wrapped at 1440/1280: 51 beside 34); Început takes the rest */
 .s18-start .ip-pair,.s18-cyc > span{white-space:nowrap}
+.s18-table tbody > tr > :is(th,td){height:calc(var(--row-h) + var(--ip-hair))} /* FW04 fix 1 (D150): one height for every row: a cycle row's 24 px farm link + space-1 above and below + its rule (33), so the series rows and the "fără date" row match (were 32 beside 33 / 33.5) */
+.s18-table .s18-start,.s18-table .s18-rlink{vertical-align:middle} /* the icon/link line box no longer adds half a pixel */
 .s18-g{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-3)}
 .s18-g > .ip-note{font-weight:400}
 .s18-gname{font-weight:500}
 .s18-gact{text-align:right}
+.s18-table td.s18-gact{padding-block:0;vertical-align:middle}
+.s18-acts{vertical-align:middle}
+.s18-gact .ip-btn{height:calc(var(--row-h) - var(--space-1))} /* FW04 (D150): the series keys in the group row are row-h less space-1 (28, as §69 in-row keys), so the series row is the row height (was 45) */
 .s18-acts{display:inline-flex;gap:var(--space-2);justify-content:flex-end;align-items:center}
 .s18-rlink{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s18-rlink:hover{text-decoration-color:var(--ink)}
-.s18-start{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
+.s18-start{display:inline-flex;align-items:center;gap:0 var(--space-2)}
 .s18-notes{display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
@@ -107,18 +111,21 @@ body{margin:0}
 .s18-gact .ip-btn{white-space:nowrap}
 .s18-ways .ip-link{min-height:var(--control-h-touch)}
 .s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */
+.s18-table tbody > tr:not(.is-group) > :is(th,td){height:calc(var(--control-h-touch) + var(--space-2))} /* FW04 (D150): every cycle row as tall as a row with its 48 px farm link (the "fără date" row was 32 beside 57) */
 .s19-table{width:100%}
 .s19-table thead th{white-space:nowrap}
 .s19-table td{vertical-align:middle;white-space:normal}
 .s19-fname{font-weight:500}
 .s19-region{container:s19-ferme / inline-size}
 .s19-fold{display:none}
-/* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip and
+/* S19P: beside the farm panel the region is under the table's six-column width (558px at 1280, 718px at 1440), so Tip, Ghid (FW04) and
  * Ciclu fold under the farm name and Editează stays in view; the list alone (998px+ at 1280) keeps all six columns. */
 @container s19-ferme (max-width: 759.98px){
   .s19-table th{width:auto} .s19-table th::after{content:none} /* FIN11G: beside the panel the columns are content-sized again (the §54 shares are the list alone's) */
-  .s19-table .s19-ctip,.s19-table .s19-ccyc{display:none}
-  .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:normal}
+  .s19-table .s19-ctip,.s19-table .s19-ccyc,.s19-table .s19-cgh{display:none}
+  .s19-fold{display:flex;flex-direction:column;align-items:flex-start;font-weight:400;color:var(--ink-secondary);white-space:nowrap}
+  .s19-fl{display:inline-flex;align-items:center;gap:0 var(--space-2)}
+  .s19-fold > .ip-tag{margin-top:var(--space-1)}
   .s19-fn{display:block;color:var(--ink)}
 }
 .s19-secs{display:flex;flex-direction:column;gap:0}
@@ -128,6 +135,12 @@ body{margin:0}
 .s19-pbody{position:relative}
 .s19-ptable td{height:auto;padding-block:var(--space-2)}
 .s19-ptable .ip-table__child{width:calc(var(--space-12) * 2);vertical-align:middle}
+.s19-pbox{background:var(--raised);border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);overflow:hidden} /* FW04 (D150): farm / guide cards, label/value pairs instead of table rows */
+.s19-pcard + .s19-pcard{border-top:var(--ip-hair) solid var(--line)}
+.s19-pcard__h{display:flex;align-items:center;min-height:var(--row-h);margin:0;padding:0 var(--space-3);background:var(--sunken);font:500 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink)} /* as the group row it replaces */
+.s19-pdl{display:grid;grid-template-columns:calc(var(--space-12) * 2) minmax(0,1fr);align-items:baseline;gap:var(--space-2) var(--space-3);margin:0;padding:var(--space-3);font:400 var(--ip-fs-table)/var(--ip-lh-table) var(--font-sans);color:var(--ink)}
+.s19-pdl > dt{color:var(--ink-secondary)}
+.s19-pdl > dd{margin:0;min-width:0}
 .s20-table{width:100%}
 .s20-table thead th{white-space:nowrap}
 .s20-table td{vertical-align:middle;white-space:normal}
@@ -151,7 +164,7 @@ body{margin:0}
 </helmet>
 <div class="ip-root" style="padding:0; width:390px; min-height:844px"><div class="ip-screen">
 <main class="ip-screen__main s2-main">
-<header class="ip-pagehead s2-phead s14-phead"><div><nav class="ip-crumbs ip-crumbs--touch" aria-label="Cale"><a href="#setari"><span class="ip-crumbs__txt">Setări</span></a><span aria-hidden="true">›</span><span aria-current="page">Ghiduri</span></nav><h1>Ghiduri</h1></div></header><section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2><span class="ip-note"><span class="ip-num">2</span> ghiduri</span></div><div class="ip-tablescroll ip-tablescroll--framed" tabindex="0" role="region" aria-labelledby="h-gh"><table class="ip-table ip-table--rowheads s20-table s19-ptable"><caption class="ip-sr">Ghidurile, cu tipul, săptămânile, coloanele și ciclurile care le folosesc</caption><tbody><tr class="is-group"><th scope="rowgroup" colspan="2" id="pg-growth">Ross 308 creștere</th></tr><tr><th scope="row" class="ip-table__child">Tip</th><td>Creștere</td></tr><tr><th scope="row" class="ip-table__child">Săptămâni</th><td class="ip-num"><span class="ip-nowrap">SAPT 1–25</span></td></tr><tr><th scope="row" class="ip-table__child">Coloane</th><td><span class="s19-secs"><span><span class="ip-nowrap">Hrană g</span> · <span class="ip-nowrap">Greutate g</span></span><span class="ip-note">fără date în ghid: mortalitate %, ouat %, incubabile %, masă ou g</span></span></td></tr><tr><th scope="row" class="ip-table__child">Folosit de</th><td><span class="s20-uses"><span class="s20-use"><span class="ip-nowrap"><span class="ip-lamp ip-lamp--off">închis</span> Telița</span> · <span class="ip-nowrap">Seria 2026</span></span></span></td></tr></tbody><tbody><tr class="is-group"><th scope="rowgroup" colspan="2" id="pg-laying">Ross 308 ouat</th></tr><tr><th scope="row" class="ip-table__child">Tip</th><td>Ouat</td></tr><tr><th scope="row" class="ip-table__child">Săptămâni</th><td class="ip-num"><span class="ip-nowrap">SAPT 1–47</span> <span class="ip-note ip-nowrap">vârsta 19–65</span></td></tr><tr><th scope="row" class="ip-table__child">Coloane</th><td><span class="s19-secs"><span><span class="ip-nowrap">Hrană g</span> · <span class="ip-nowrap">Ouat %</span></span><span class="ip-note">fără date în ghid: greutate g, mortalitate %, incubabile %, masă ou g</span></span></td></tr><tr><th scope="row" class="ip-table__child">Folosit de</th><td><span class="s20-uses"><span class="s20-use"><span class="ip-nowrap"><span class="ip-lamp ip-lamp--ok">deschis</span> Hîrbovăț</span> · <span class="ip-nowrap">Seria 2026</span> · <span class="ip-note ip-num ip-nowrap">SAPT 40</span></span><span class="s20-use"><span class="ip-nowrap"><span class="ip-lamp ip-lamp--off">închis</span> Hîrbovăț</span> · <span class="ip-nowrap">Seria 2025</span></span></span></td></tr></tbody></table></div><p class="ip-note ip-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>
+<header class="ip-pagehead s2-phead s14-phead"><div><nav class="ip-crumbs ip-crumbs--touch" aria-label="Cale"><a href="#setari"><span class="ip-crumbs__txt">Setări</span></a><span aria-hidden="true">›</span><span aria-current="page">Ghiduri</span></nav><h1>Ghiduri</h1></div></header><section class="ip-block" aria-labelledby="h-gh"><div class="ip-sechead"><h2 class="ip-t-heading" id="h-gh">Ghiduri</h2><span class="ip-note"><span class="ip-num">2</span> ghiduri</span></div><div class="s19-pbox"><section class="s19-pcard" aria-labelledby="pg-growth"><h3 class="s19-pcard__h" id="pg-growth">Ross 308 creștere</h3><dl class="s19-pdl"><dt>Tip</dt><dd>Creștere</dd><dt>Săptămâni</dt><dd><span class="ip-num"><span class="ip-nowrap">SAPT 1–25</span></span></dd><dt>Coloane</dt><dd><span class="s19-secs"><span><span class="ip-nowrap">Hrană g</span> · <span class="ip-nowrap">Greutate g</span></span><span class="ip-note">fără date în ghid: mortalitate %, ouat %, incubabile %, masă ou g</span></span></dd><dt>Folosit de</dt><dd><span class="s20-uses"><span class="s20-use"><span class="ip-nowrap"><span class="ip-lamp ip-lamp--off">închis</span> Telița</span> · <span class="ip-nowrap">Seria 2026</span></span></span></dd></dl></section><section class="s19-pcard" aria-labelledby="pg-laying"><h3 class="s19-pcard__h" id="pg-laying">Ross 308 ouat</h3><dl class="s19-pdl"><dt>Tip</dt><dd>Ouat</dd><dt>Săptămâni</dt><dd><span class="ip-num"><span class="ip-nowrap">SAPT 1–47</span> <span class="ip-note ip-nowrap">vârsta 19–65</span></span></dd><dt>Coloane</dt><dd><span class="s19-secs"><span><span class="ip-nowrap">Hrană g</span> · <span class="ip-nowrap">Ouat %</span></span><span class="ip-note">fără date în ghid: greutate g, mortalitate %, incubabile %, masă ou g</span></span></dd><dt>Folosit de</dt><dd><span class="s20-uses"><span class="s20-use"><span class="ip-nowrap"><span class="ip-lamp ip-lamp--ok">deschis</span> Hîrbovăț</span> · <span class="ip-nowrap">Seria 2026</span> · <span class="ip-note ip-num ip-nowrap">SAPT 40</span></span><span class="s20-use"><span class="ip-nowrap"><span class="ip-lamp ip-lamp--off">închis</span> Hîrbovăț</span> · <span class="ip-nowrap">Seria 2025</span></span></span></dd></dl></section></div><p class="ip-note ip-m0">Ghidurile le imporți și le înlocuiești pe calculator: tabelul citit are nevoie de un ecran lat.</p></section>
 </main>
 <nav class="ip-tabbar ip-screen__tabbar" aria-label="Navigare"><a class="ip-tabbar__item" href="#acasa"><svg class="ip-icon ip-icon--22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>Acasă</a><a class="ip-tabbar__item" href="#serie"><svg class="ip-icon ip-icon--22" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>Serie</a><a class="ip-tabbar__item" href="#inregistreaza"><span class="ip-tabbar__key"><svg class="ip-icon ip-icon--22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span>Înregistrează</a><a class="ip-tabbar__item" href="#rapoarte"><svg class="ip-icon ip-icon--22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Rapoarte</a><a class="ip-tabbar__item is-current" href="#mai-mult" aria-current="page"><svg class="ip-icon ip-icon--22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>Mai mult</a></nav>
 </div></div>

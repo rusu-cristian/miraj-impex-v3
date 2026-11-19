@@ -2099,3 +2099,26 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
   .ip-table__detailbody > p.ip-table__aside{min-height:var(--control-h-touch)}
   .ip-table__detailbody > .ip-field ~ .ip-err{order:0} /* keys and aside wrap under the field, its error stays right under it */
 }
+
+/* =====================================================================================================
+ * FW04 · Content rows keep one height too (D150 extended, user 19.11.2026), system-wide. Spec: components.md › Additions › FW04.
+ * ===================================================================================================== */
+
+/* ---------- 70. DataTable · rows taller only by their content: one height per table (FW04) ---------- */
+/* D150 for rows with no message: within one table every body row has the same height (group head rows may be shorter,
+ * never taller). Screens keep cells on one line (the slack column takes the room); where a table genuinely needs two
+ * lines, every row gets that height. The shared causes are fixed here:
+ * - CostBlock (section 11): a cycle row is two lines (name + its sub-line, figures + "–" reason), so the "fără preț" row
+ *   and the totals row take the same two-line height (cells top-aligned as before: S11 rows 37/38 → 51 beside 51).
+ * - Small-curve table (section 16, .ip-sparktable): every data row is as tall as a row with a curve (48 + 2 × space-1),
+ *   also a row whose indicator has no curve ("– fără date în ghid", S20: 32 → 57 beside 57). Group rows keep row-h.
+ * - SectionTree farm row (section 28): name, guide Tag and its note on one line in row-h (was two lines, 53 beside 33);
+ *   the note wraps under the name only where the line does not fit.
+ * - UserRow empty row (section 30, "doar tu"): one line in row-h, as a user row (was 42.5 beside 33).
+ * Tokens only. */
+.ip-cost__table tbody > tr > :is(th,td){height:calc(var(--ip-lh-table) + var(--ip-lh-small) + 2 * var(--space-2))}
+.ip-sparktable tbody > tr:not(.is-group) > :is(th,td){height:calc(var(--space-12) + 2 * var(--space-1))}
+.ip-stree__farm > td{padding-block:0;white-space:normal}
+.ip-stree__farm .ip-stree__farmname{display:inline-flex;vertical-align:middle}
+.ip-stree__farm .ip-stree__farmname + .ip-note{display:inline;margin-left:var(--space-2);vertical-align:middle}
+.ip-users__t tr.ip-users__empty > td{height:var(--row-h);padding-block:0}

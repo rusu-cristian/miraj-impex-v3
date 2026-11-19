@@ -187,10 +187,13 @@ def crow(fid, cyc=None, start='', st=None, dedus=False):
                 f'<td colspan="6" class="ip-muted">– fără date pentru Seria 2025 la {f["name"]} (registrul începe cu Seria 2026)</td></tr>')
     href = f'#/ferme/{fid}?ciclu={cyc["id"]}'
     end = dd(cyc['end_date']) if cyc['end_date'] else None
-    # FIN09/FY02: "start–end" unspaced, "· început dedus" after the range (as S3/S4/S20); the only break is after the dash
-    per = (f'<span class="s18-cyc"><span>{num(dd(cyc["start_date"]) + "–")}</span><wbr><span>{num(end)}'
-           f'{"<span class=\"ip-note\"> · început dedus</span>" if dedus else ""}</span></span>' if end
+    # FIN09/FY02: "start–end" unspaced. FW04 (D150): every cell on one line, so "· început dedus" moves from after the range
+    # (as S3/S4/S20) to the Început column, which says how the cycle began (the range alone fits; at 1280 both on one
+    # line made the table 44px wider than its box)
+    per = (f'<span class="s18-cyc"><span>{num(dd(cyc["start_date"]) + "–")}</span><span>{num(end)}</span></span>' if end
            else f'din {num(dd(cyc["start_date"]))}')
+    if dedus:
+        start += '<span class="ip-note"> · început dedus</span>'
     wk = num(cyc['weeks']) if end else num(f'SAPT {WK}')
     stt = lamp('off', 'închis') if end else lamp('ok', 'deschis')
     return (f'<tr><th scope="row" class="ip-table__child"><a class="s18-rlink" href="{href}" aria-label="{f["name"]}, ciclul {"din " + dd(cyc["start_date"]) if not end else dd(cyc["start_date"]) + "–" + end}">{f["name"]}</a></th>'
@@ -211,7 +214,7 @@ COLS = ('<thead><tr><th scope="col">Serie · fermă</th><th scope="col">Tip</th>
         '<th scope="col" class="num">Săpt.</th><th scope="col">Început</th><th scope="col">Stare</th></tr></thead>')
 # FIN11G (§54): the desktop list's column shares at 1440 (as content-sized before) on the head the loading skeleton reuses;
 # None = the column that takes the rest
-DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 22.9, 7.8, None, 8.1], [86.36, 52.58, 111.8, 208.88, 54.8, 178.5, 58.56])  # + loaded min-content px (fix 1)   # desktop (the phone tables scroll at content width)
+DCOLS = SKL.widths(COLS, [11.0, 7.5, 13.4, 16.5, 7.8, None, 8.1], [86.36, 52.58, 111.8, 164.38, 54.8, 273.23, 58.56])  # + loaded min-content px (fix 1; FW04: one-line cells, Ciclu without "început dedus")   # desktop (the phone tables scroll at content width)
 def acts(sid, touch):
     t = ' ip-btn--touch' if touch else ''
     a = f'<a class="ip-btn ip-btn--ghost{t}" href="#/serii/{sid}">Deschide seria<span class="ip-sr"> {SER[sid]["name"]}</span></a>'
@@ -413,16 +416,21 @@ DATE_CSS = rule(B7.CSS, '.s7-date')
 CSS18 = '''
 .s18-table{width:100%}
 .s18-table thead th{white-space:nowrap}
-.s18-table td.num,.s18-table td:last-child{white-space:nowrap} /* fix 1: Ghid / Ciclu / Început may wrap, so the table fits 998 px at 1280 */
+.s18-table td{white-space:nowrap} /* FW04 (D150): every cell on one line, so every cycle row is the row height (Ciclu, Început wrapped at 1440/1280: 51 beside 34); Început takes the rest */
 .s18-start .ip-pair,.s18-cyc > span{white-space:nowrap}
+.s18-table tbody > tr > :is(th,td){height:calc(var(--row-h) + var(--ip-hair))} /* FW04 fix 1 (D150): one height for every row: a cycle row's 24 px farm link + space-1 above and below + its rule (33), so the series rows and the "fără date" row match (were 32 beside 33 / 33.5) */
+.s18-table .s18-start,.s18-table .s18-rlink{vertical-align:middle} /* the icon/link line box no longer adds half a pixel */
 .s18-g{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-3)}
 .s18-g > .ip-note{font-weight:400}
 .s18-gname{font-weight:500}
 .s18-gact{text-align:right}
+.s18-table td.s18-gact{padding-block:0;vertical-align:middle}
+.s18-acts{vertical-align:middle}
+.s18-gact .ip-btn{height:calc(var(--row-h) - var(--space-1))} /* FW04 (D150): the series keys in the group row are row-h less space-1 (28, as §69 in-row keys), so the series row is the row height (was 45) */
 .s18-acts{display:inline-flex;gap:var(--space-2);justify-content:flex-end;align-items:center}
 .s18-rlink{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:calc(3 * var(--ip-hair));display:inline-flex;align-items:center;min-height:var(--space-6)}
 .s18-rlink:hover{text-decoration-color:var(--ink)}
-.s18-start{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-2)}
+.s18-start{display:inline-flex;align-items:center;gap:0 var(--space-2)}
 .s18-notes{display:flex;flex-direction:column;gap:var(--space-1)}
 .s18-year .ip-input{width:calc(var(--space-12) * 2 + var(--space-6))} /* a 4-digit year: 120 px */
 .s18-ways{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
@@ -441,7 +449,8 @@ CSS_PL = Z_CSS + CSS18 + '''
 .s18-pacts{display:flex;flex-wrap:wrap;gap:var(--space-2)}
 .s18-gact .ip-btn{white-space:nowrap}
 .s18-ways .ip-link{min-height:var(--control-h-touch)}
-.s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */'''
+.s18-rlink{min-height:var(--control-h-touch);min-width:var(--control-h-touch)} /* touch: the farm link in a table row is a 48 px target */
+.s18-table tbody > tr:not(.is-group) > :is(th,td){height:calc(var(--control-h-touch) + var(--space-2))} /* FW04 (D150): every cycle row as tall as a row with its 48 px farm link (the "fără date" row was 32 beside 57) */'''
 SHEET = ''  # FIN15B: the sheet's scrolling form body is additions.css §62 ip-sidepanel__body--form
 CSS_SH = ('body{margin:0}\n.s18-screen{height:100%;display:flex}' + SHEET + SC.M0 + SC.REC + SC.EFFECT + SC.FX + SC.BANNER + DATE_CSS + CSS18 + '''
 .s18-ways .ip-link{min-height:var(--control-h-touch)} /* touch: each way out is a 48 px target */''')

@@ -135,8 +135,7 @@ def phone_sheet():  # 390×844: the page (scrolled to its top) and tab bar inert
 
 CSS_PHONE = A.CSS_P + '\n' + X.CSS + '''
 .s14-phone .s4-top,.s14-phone .s4-stats{grid-template-columns:minmax(0,1fr)} /* phone: Readout, then the Stats one per line */
-.s14-phone .ip-table--rowheads tbody th .s4t-sub{display:block} /* the week's dates under SAPT: a narrower sticky column, more figures in view */
-.s14-phone .ip-table--rowheads thead th:first-child{white-space:normal}
+.s14-phone .ip-table--rowheads thead th:first-child{white-space:normal} /* FW04 (D150): the week's dates stay beside SAPT (were under it: week rows 46 beside 32 hall rows); the sticky column is as wide as that line */
 .s14-phone .ip-sechead{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s14-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s14-phone .s4t-lk{min-height:var(--control-h-touch)} /* touch: 48px target */

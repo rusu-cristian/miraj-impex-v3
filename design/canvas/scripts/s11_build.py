@@ -315,7 +315,10 @@ def sec_loading():
         cols = re.findall(r'<th scope="col"(?: class="([^"]*)")?(?: style="[^"]*")?>', ths)  # FIN11G: heads carry the §54 style  # num → td.num; s11-thedit → td.s11-pc (same right edge)
         cl = lambda c: (' class="' + ' '.join(['num'] * ('num' in c.split()) + ['s11-pc'] * ('s11-thedit' in c.split())) + '"') if 'num' in c.split() else ''
         tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}</td>' for c in cols) + '</tr>' for _ in range(rows))
-        if cost: return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'
+        if cost:   # FW04 (D150): CostBlock rows are two lines (§70), so the Ciclu cell's bar has a sub-line bar under it, as the loaded name + sub-line
+            sub = f'<span class="ip-cost__sub"><span class="ip-skel-line">{sk("s4s-w40")}</span></span>'
+            tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}{sub if i == 0 else ""}</td>' for i, c in enumerate(cols)) + '</tr>' for _ in range(rows))
+            return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'
         return f'<div class="ip-tablescroll ip-tablescroll--framed"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'  # aria-hidden: scrolls, not a tab stop
     return f'''<div class="s11-page" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Hrană pentru Seria 2026.</p>
