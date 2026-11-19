@@ -1,17 +1,19 @@
 """S21 · Tipuri de hrană (screens.md S21: list (name, for sex, active), add or edit; data-model FEED_TYPE; nav map: Setări ›
-Tipuri de hrană, owner). Desktop-led like S18–S20 (a Setări page): desktops first, then the phone. Today = 16.11.2026.
-Content, from the extracts only: feed-types.json (Breeder 2 ♀ and Cocoși ♂ active at Hîrbovăț; Starter, Grower, Pre-ouat
-for both sexes, retired, Telița; names illustrative, D30); "in use" from feed-deliveries.json (every Telița type has
-deliveries) and the extracts README (Hîrbovăț deliveries and stock are sample: Breeder 2 28 252 kg, Cocoși 1 650 kg).
+Tipuri de hrană, owner). Desktop-led like S18–S20 (a Setări page): desktops first, then the phone. RF12: every type, farm,
+series and stock from realdata (through s19_build; today 18.11.2026, D152). Types: feed-types.json (Breeder 2 ♀ and Cocoși ♂
+active at Hîrbovăț; Starter, Grower, Pre-ouat for both sexes, retired, Telița; names illustrative, D30). "In use" = the farm
+of the type's real deliveries (Telița 13; Hîrbovăț 69, typed into the ♀ or ♂ stock: Breeder 2 = the ♀ stock, Cocoși = the ♂
+stock, D163); stock = realdata's ♀ / ♂ stock at the end of today, in whole kg.
+Breeder 3 (salvat, eroare, șterge, retras stoc 0) is illustrative (D39).
 D116: a used type can be retired but never deleted; retiring is refused while a farm still has it in stock (the vets feed
 it daily); "Pentru" is fixed once a type is used; names unique ignoring case and diacritics (as D111/D114).
-Boards (row below S20: y 35552 + 2380 + 120 = 38052; x step w + 80; desktops first, then the phone):
+Boards (row below S20; x step w + 80; desktops first, then the phone):
   S21-tipuri-hrana          list: PageHeader (Setări › Tipuri de hrană, "Adaugă tip"), DataTable (Tip hrană, Pentru, Stare
                             lamp, Folosit la, Editează)
   --breeder-2               list beside the non-modal SidePanel: Nume (focus), Pentru read-only (used), Activ ticked with the
                             stock rule, Folosit la + Șterge tipul aria-disabled with its reason
   --starter                 a retired Telița type: Activ unticked (tick to reactivate), Șterge aria-disabled
-  --retragere-refuzata      D39: Activ unticked on Breeder 2 → refused (28 252 kg in stock), Salvează tipul aria-disabled
+  --retragere-refuzata      D39: Activ unticked on Breeder 2 → refused (today's real ♀ stock), Salvează tipul aria-disabled
   --tip-nou                 empty "Tip nou" panel: Nume (focus), Pentru unset, Activ ticked, nefolosit
   --nume-gol                D39: Adaugă tipul with nothing filled: Nume (focus) + Pentru errors (§41)
   --nume-folosit            D39: "cocosi" = Cocoși ignoring case and diacritics
@@ -22,7 +24,8 @@ Boards (row below S20: y 35552 + 2380 + 120 = 38052; x step w + 80; desktops fir
   --eroare-la-incarcare     fault Banner + Reîncearcă in place of the table, Adaugă tip kept
   --fara-acces              Observator (a manager or a vet: same picture, own nav and role sentence)
   --niciun-tip              D39 first use: EmptyState + "Adaugă primul tip" (no series yet)
-  --retras-stoc-0           S21P, D39: Activ unticked on Breeder 2 with Hîrbovăț stock at 0 kg (Breeder 3 added): accepted
+  --retras-stoc-0           S21P, D39 (not real: the ♀ stock is not 0): Activ unticked on Breeder 2 with Hîrbovăț stock at
+                            0 kg (Breeder 3 added): accepted
   --reactivat               S21P, D39: Starter active again: the list re-sorted, Toast + Anulează, focus on its Editează
   --telefon                 phone, read-only list ("le editezi pe calculator", as S19/S20)
 The list region is a size container: under 760px (beside the panel: 558 at 1280, 718 at 1440) "Folosit la" folds under the
@@ -45,26 +48,31 @@ sp = importlib.util.spec_from_file_location('s19_build', HERE / 's19_build.py')
 M = importlib.util.module_from_spec(sp)
 with contextlib.redirect_stdout(io.StringIO()):
     sp.loader.exec_module(M)   # rewrites the S19 boards (and through s18_build S18/S17/S14S/S2/S7) byte-identical
-T, SC, Q, s4, A = M.T, M.SC, M.Q, M.s4, M.A
+T, SC, Q, s4, A, R = M.T, M.SC, M.Q, M.s4, M.A, M.R   # R = realdata (RF12)
 icon, lamp, num, NB = M.icon, M.lamp, M.num, M.NB
 
-# ================================================================= data (extracts only)
-EX = ROOT / 'design/data/extracts'
-FT = json.loads((EX / 'feed-types.json').read_text(encoding='utf-8'))['rows']
-DEL = json.loads((EX / 'feed-deliveries.json').read_text(encoding='utf-8'))['rows']
-README = (EX / 'README.md').read_text(encoding='utf-8')
-TY = {r['id']: r for r in FT}
+# ================================================================= data (realdata only, RF12)
+FT = list(R.FEED_TYPES.values())
+DEL = R.DELIVERIES_TELITA + R.DELIVERIES
+TY = R.FEED_TYPES
 assert [r['name'] for r in FT] == ['Starter', 'Grower', 'Pre-ouat', 'Breeder 2', 'Cocoși']
 assert {r['id'] for r in FT if r['active']} == {'ft-breeder2', 'ft-cocosi'}
 assert TY['ft-breeder2']['for_sex'] == 'F' and TY['ft-cocosi']['for_sex'] == 'M' and all(TY[k]['for_sex'] is None for k in ('ft-starter', 'ft-grower', 'ft-preouat'))
-USED_TEL = {d['feed_type_id'] for d in DEL if d['farm_id'] == 'telita'}
-assert USED_TEL == {'ft-starter', 'ft-grower', 'ft-preouat'}   # real deliveries
-# Hîrbovăț deliveries and stock are sample (README, D30): both active types are in use, stock on 16.11.2026
-assert 'Breeder 2 28 252 kg' in README and 'Cocoși 1 650 kg' in README
-STOCK = {'ft-breeder2': 28252, 'ft-cocosi': 1650}
+# in use = the farm of the type's real deliveries (every type has some, each at one farm: its own)
+USED = {}
+for d in DEL: USED.setdefault(d['feed_type_id'], set()).add(d['farm_id'])
+assert USED == {r['id']: {r['farm_id']} for r in FT}, USED
 FARM_OF = {r['id']: M.FARM[r['farm_id']]['name'] for r in FT}
 assert FARM_OF['ft-breeder2'] == 'Hîrbovăț' and FARM_OF['ft-starter'] == 'Telița'
-def n(v): return s4.n(v)
+SERIA = R.SERIES['seria-2026']['name']
+# every delivery falls in Seria 2026 (placed 07.10.2025); Telița's in its cycle, Hîrbovăț's up to today
+assert all(R.PLACEMENT <= R.D(d['date']) <= R.TODAY for d in DEL)
+assert all(R.D(d['date']) <= R.D(R.CTEL['end_date']) for d in R.DELIVERIES_TELITA)
+# stock = Hîrbovăț's ♀ / ♂ stock at the end of today: Breeder 2 is the ♀ stock, Cocoși the ♂ stock (D163); both fed today
+SX_OF = {v: k for k, v in R.FEED_TYPE.items()}
+STOCK = {t: R.stock(R.TODAY)[sx] for t, sx in SX_OF.items()}
+assert all(TY[t]['for_sex'] == sx and TY[t]['active'] and R.feed_kg(R.TODAY, sx) > 0 and STOCK[t] > 0 for t, sx in SX_OF.items())
+def kg(v): return R.n(v)   # the stock in whole kg
 SEXW = {'F': ('♀', 'hen', 'găini', 'Găini'), 'M': ('♂', 'rooster', 'cocoși', 'Cocoși')}
 def sexw(s, cap=False):
     if s is None: return 'Ambele sexe' if cap else 'ambele sexe'
@@ -185,10 +193,10 @@ def use_block(r, del_state='used', pressed=False, stock=None):
     else:
         f = FARM_OF[r['id']]
         if r['id'] in STOCK:
-            kg = STOCK[r['id']] if stock is None else stock
-            line = f'{f}: livrări și hrană zilnică în Seria 2026. Stoc acum: <span class="ip-num ip-nowrap">{n(kg)} kg</span>.'
+            st = STOCK[r['id']] if stock is None else stock
+            line = f'{f}: livrări și hrană zilnică în {SERIA}. Stoc acum: <span class="ip-num ip-nowrap">{kg(st)} kg</span>.'
         else:
-            line = f'{f}: livrări în Seria 2026.'
+            line = f'{f}: livrări în {SERIA}.'
         key = '<button type="button" class="ip-btn ip-btn--destructive" aria-disabled="true" aria-describedby="tp-del-why">Șterge tipul</button>'
         why = f'<p class="ip-note ip-m0" id="tp-del-why">Are livrări: rămâne în rapoarte, așa că nu se poate șterge, doar retrage.</p>'
     return (f'<section class="s21-use" aria-labelledby="tp-use-h"><h3 class="ip-cap ip-m0" id="tp-use-h">Folosit la</h3>'
@@ -281,7 +289,11 @@ CSS_PL = M.CSS_PL + CSS21
 pathlib.Path('/tmp/s21').mkdir(exist_ok=True)
 def write(stem, title, root, css, w, h):
     r = M.write(stem, title, root, css, w, h)   # S19's writer: the .dc.html + /tmp/s19/<stem>.html; mirror into /tmp/s21
-    src = pathlib.Path(f'/tmp/s19/{stem}.html'); (pathlib.Path('/tmp/s21') / src.name).write_text(src.read_text(encoding='utf-8'), encoding='utf-8'); src.unlink()
+    # RF12 (as RF03): the render wrapper keeps only the 1024 / 844 floor, so s21_render.py --measure reads the natural height,
+    # not the stored h back (the .dc.html keeps min-height = h)
+    src = pathlib.Path(f'/tmp/s19/{stem}.html'); t = src.read_text(encoding='utf-8'); a = f'min-height:{h}px'
+    assert t.count(a) == 1, stem
+    (pathlib.Path('/tmp/s21') / src.name).write_text(t.replace(a, f'min-height:{1024 if w == 1440 else 844}px'), encoding='utf-8'); src.unlink()
     return r
 STEM, TT = 'S21-tipuri-hrana', 'S21 · Tipuri de hrană'
 D39 = 'exemplu de stare (D39)'
@@ -298,8 +310,8 @@ desk('', '', shell(tlist()))
 desk('--breeder-2', 'Breeder 2 · panoul tipului', vp('ft-breeder2') + tpanel(B2, act_field(True, act_used(B2)), focus_name=True), PH)
 # 3 · Starter (retired, used at Telița): tick Activ to reactivate; Șterge aria-disabled
 desk('--starter', 'Starter · tip retras', vp('ft-starter') + tpanel(ST_, act_field(False, ACT_OFF)), PH)
-# 4 · retire refused (D39 action): Activ unticked on Breeder 2 while 28 252 kg are in stock
-RET_E = (f'Breeder 2 nu se poate retrage: Hîrbovăț mai are <span class="ip-num ip-nowrap">{n(STOCK["ft-breeder2"])} kg</span> în stoc. '
+# 4 · retire refused (D39 action): Activ unticked on Breeder 2 while the ♀ stock is in (real stock at the end of today)
+RET_E = (f'Breeder 2 nu se poate retrage: Hîrbovăț mai are <span class="ip-num ip-nowrap">{kg(STOCK["ft-breeder2"])} kg</span> în stoc. '
          f'Bifează Activ la loc; îl retragi când stocul ajunge la 0 kg.')
 SAVE_NO = '<button type="button" class="ip-btn ip-btn--primary" aria-disabled="true" aria-describedby="tp-act-e">Salvează tipul</button>'
 desk('--retragere-refuzata', f'Breeder 2 · retragere refuzată: stoc la Hîrbovăț · {D39}: Activ debifat',
