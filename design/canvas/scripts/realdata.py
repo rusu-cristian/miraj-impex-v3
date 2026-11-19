@@ -193,6 +193,47 @@ DELIVERIES = [r for r in _DEL['rows'] if r['farm_id'] == 'hirbovat']
 DELIVERIES_TELITA = [r for r in _DEL['rows'] if r['farm_id'] == 'telita']
 UNPRICED = [r for r in DELIVERIES if not r['priced']]
 
+# ---------- alerts: one set per farm and day (D169, D181), shown by S2 (all farms) and S4 Rezumat "De verificat" (the farm) ----------
+LAY_BAND, FEED_BAND, STOCK_LIMIT, MISS_DAYS = 3, 10, 5, 7   # D19: lay ±3 pct, feed ±10 %, stock < 5 zile; C9: 7 days back
+def fed(d, sec, sx): r = sd(d, sec, sx); return bool(r and r['kg'])
+def missing(farm='hirbovat', d=TODAY, days=MISS_DAYS):
+    """C9 Lipsesc date window: [(iso day, compartment, sex)] with birds at the start and at the end of the day (the sale day that
+    empties a compartment is no lipsă) and no Hrană zilnică kg, day d (from 12:00) and the `days` before, newest first.
+    Zilnic (mortality, eggs) is in for every day of the workbook. Telița has no birds (closed 28.02.2026): none."""
+    if farm != 'hirbovat': return []
+    W = [D(d) - dt.timedelta(days=k) for k in range(days + 1)]
+    assert all(day(x) and day(x)['eggs'] is not None for x in W)
+    return [(x.isoformat(), s, sx) for x in W for s in HSECS for sx in 'FM' if alive_start(s, sx, x) and alive(s, sx, x) and not fed(x, s, sx)]
+def lay_below_since(hall, d=TODAY):
+    """first day of the run of days up to d with the hall's daily lay (D156) below guide − LAY_BAND pct, else None."""
+    d = D(d); since = None
+    while day(d, hall) and lay_day(d, hall) is not None and guide_lay(sapt(d)) is not None and lay_day(d, hall) - guide_lay(sapt(d)) < -LAY_BAND:
+        since = d; d -= dt.timedelta(days=1)
+    return since
+def alerts(farm='hirbovat', d=TODAY):
+    """the farm's alert set of day d, in display order: kind 'lay' (hall below the guide band), 'feed' (compartment g ±10 % of the
+    guide), 'missing' (the C9 window, newest first), 'stock' (< STOCK_LIMIT days), 'unpriced' (one row; roles that see prices).
+    'guide' marks the guide-based kinds (dropped where the farm has no guide)."""
+    if farm != 'hirbovat': return []
+    d = D(d); k = sapt(d); out = []
+    for h in HHALLS:
+        if eggs(d, h) and lay_below_since(h, d):
+            out.append(dict(kind='lay', guide=True, date=d, hall=h, lay=lay_day(d, h), guide_pct=guide_lay(k), since=lay_below_since(h, d)))
+    for s in HSECS:
+        for sx in 'FM':
+            g = feed_g(d, sx, s)
+            if has_birds(s, d) and g is not None and abs(g / guide_feed(k, sx) - 1) * 100 > FEED_BAND:
+                out.append(dict(kind='feed', guide=True, date=d, section=s, sex=sx, g=g, guide_g=guide_feed(k, sx)))
+    out += [dict(kind='missing', guide=False, date=D(x), section=s, sex=sx) for x, s, sx in missing(farm, d)]
+    for sx in 'FM':
+        left, avg, run = stock_days(sx, d)
+        if left < STOCK_LIMIT:
+            out.append(dict(kind='stock', guide=False, date=d, sex=sx, kg=stock(d)[sx], days=left, avg=avg, run_out=run))
+    if UNPRICED:
+        out.append(dict(kind='unpriced', guide=False, date=d, n=len(UNPRICED), kg=sum(r['qty_kg'] for r in UNPRICED),
+                        first=D(UNPRICED[0]['date']), last=D(UNPRICED[-1]['date'])))
+    return out
+
 # ---------- counts, arrivals, illustrative records ----------
 _CL = J('counts-latest.json')
 COUNTS = next(f for f in _CL['farms'] if f['farm_id'] == 'hirbovat')

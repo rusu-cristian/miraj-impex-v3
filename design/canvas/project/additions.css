@@ -88,6 +88,7 @@ a.ip-tab,button.ip-tab{text-decoration:none;cursor:pointer;background:transparen
 .ip-tab:active:not(.is-selected):not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
 .ip-tab.is-pressed{color:var(--ink);border-bottom-color:var(--ink-secondary)}
 .ip-tab:disabled,.ip-tab.is-disabled,.ip-tab[aria-disabled="true"]{color:var(--ink-disabled);border-bottom-color:transparent;cursor:not-allowed}
+.ip-screen .ip-tabs{gap:var(--space-4)} /* FV02 (D181): on the phone the tabs sit space-4 apart so a row fits 358 (S4's five tabs were 367 at space-6) */
 
 /* TextField / Select / SectionSelect / CycleSelector / CountInput (.ip-input wrapper or native element). */
 .ip-input > input,.ip-input > select,.ip-input > textarea{flex:1;min-width:0;height:100%;border:0;padding:0;margin:0;background:transparent;color:inherit;font:inherit;outline:none;appearance:none}

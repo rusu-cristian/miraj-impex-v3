@@ -4,7 +4,7 @@ Each `sNN_build.py` writes one screen row of boards into `design/canvas/project/
 as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scripts; python3 -I sNN_build.py $R [--canvas]`.
 
 ## Rules (FIN02G, `canvas_rows.py`)
-- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2944/2426).
+- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2944/2466).
 - canvas.json is written only with `--canvas` (scripts with no canvas step accept and ignore it). Imported builds never write it.
 - Under `--canvas` every existing entry keeps its x and y (w/h/title refreshed in place). A row with no entry yet goes below the
   lowest row (row y + tallest h + 120). A run that adds a board lays the row out again (80 px gaps). Overlapping boards stop the save.
@@ -57,7 +57,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 ## Never run for a row
 - `sNN_render.py` / `s4s_render.py` (any flag) as part of a rebuild: it re-measures in Chrome (fallback fonts) and rewrites `sNN_heights.json`
   (s3/s4t/s8/s11/s12/s14 always, the rest with `--heights`/`--measure`). Run it only to re-measure, then rebuild with `--canvas`.
-- A heights file of another screen as 2nd argument, or a height other than 2944 (s4) / 2426 (s7).
+- A heights file of another screen as 2nd argument, or a height other than 2944 (s4) / 2466 (s7).
 - Scripts from older commits, and `s3_canvas.py` (removed: wrote canvas.json on every run; now `s3_build.py --canvas`).
 
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
@@ -89,7 +89,9 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   `lay_day(d, hall)` (eggs ÷ hens at the start of the day, D156); weekly `week(k, hall, sec)`, `lay_week(k)` (eggs ÷ start-of-day
   hen-days, D156/D159), `WEEKS`. Guides by age week: `guide_row`, `guide_lay`, `guide_feed`, `guide_mort`, `guide_growth`,
   `weigh_guide(k, sx)` (= week k − 1, D157), `GUIDE_LAY_WEEKS`. Feed: `feed_g(d, sx, sec)` (norm g/bird; farm = kg ÷ birds),
-  `feed_kg`, `stock(d)`, `stock_days(sx)` (days left on the 3-day mean, run-out date), `DELIVERIES`, `UNPRICED`, `FEED_TYPE(S)`.
+  `feed_kg`, `stock(d)`, `stock_days(sx)` (days left on the 3-day mean, run-out date), `DELIVERIES`, `UNPRICED`, `FEED_TYPE(S)`. Alerts (D181): `missing(farm, d)` (the C9 Lipsesc date window, d + 7 days back), `lay_below_since(hall, d)`,
+  `alerts(farm, d)` = the farm's one alert set (lay, feed, missing, stock, unpriced), drawn by `s4s_build.alert_rows(role, ng, kinds)` for S4 Rezumat
+  "De verificat" (all) and S2 (owner/viewer without fără preț, manager also without lipsă), same rows and wording.
   Records: `COUNTS` (counts-latest), `ARRIVED`, `TR`, `ILL` / `EVENTS` / `WEIGHINGS_HIR` (illustrative; a `sale` event = one form, DATA04/D168: `sections` [{section, F, M}], totals `F`/`M`, `section` = first compartment for old readers; `SALE_EVENTS`, `sale_codes(e)` → "H6.1, H6.2"), cycles `C26`, `C25`,
   `CTEL`, `CYCLE_START`, `EMPTYING_SINCE`; Telița `PLACEMENT_ROWS`, `WEIGHINGS_TELITA`, `MORT_TELITA`, `FEED_TELITA`; the previous
   flock `PREV_DAILY`/`PREV_WEEKLY`/`PREV_META` with halls mapped to H5–H7 (D158c; use `age_week`). Asserts only the stable key

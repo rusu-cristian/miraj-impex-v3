@@ -1,7 +1,7 @@
 """S2 · Acasă (spec D2): the role's start page on today = 18.11.2026 (D152), Seria 2026 (RF06: realdata only).
 - vet · telefon: header (farm, today, SAPT) · Lipsesc date (MissingRow, C9) · Înregistrează (EntryKeys, 3) · Introdus azi
   (EventRow actions, C8, one row per record type saved today).
-- manager · telefon / desktop: header · De verificat (AlertRow) · zile de hrană (StockReadout per farm × type) ·
+- manager · telefon / desktop: header · De verificat (AlertRow) · stoc hrană (StockReadout per farm × type) ·
   Înregistrează (EntryKeys, 6) · Lipsesc date (farm named first, several farms).
 - proprietar · desktop: compact CycleTrack for Seria 2026 · De verificat across farms · Livrări fără preț (UnpricedCount) ·
   stoc hrană (StockReadout) · ferme (FarmSummary --compact).
@@ -68,11 +68,9 @@ X0D, X1D = XD[0], XD[-1]; assert X0D == cH['start_date'] and X1D == cT['end_date
 # lipsă (as S11 Consum, RF03). The workbook has no kg for H7 ♀ on 13.11 (H7.1, H7.2): two past-day rows (D65: the vet sees
 # them locked, the manager opens the form). Zilnic: every day has its mortality and egg row in the workbook.
 W7 = [TODAY - dt.timedelta(days=k) for k in range(7, -1, -1)]
-def fed(d, sec, sx): r = R.sd(d, sec, sx); return bool(r and r['kg'])
-MISS = [(d.isoformat(), s, sx) for d in reversed(W7) for s in R.HSECS for sx in 'FM'
-        if R.alive_start(s, sx, d) and R.alive(s, sx, d) and not fed(d, s, sx)]
+def fed(d, sec, sx): return R.fed(d, sec, sx)
+MISS = R.missing('hirbovat', TODAY)   # D181: the one C9 window (realdata), also the owner's/viewer's and S4 Rezumat's lipsă alerts
 assert [(R.ddm(d), s, sx) for d, s, sx in MISS] == [('13.11', 'H7.1', 'F'), ('13.11', 'H7.2', 'F')], MISS
-assert all(R.day(d) and R.day(d)['eggs'] is not None for d in W7)          # Zilnic in for every day of the window
 
 # C8 · Introdus azi (Dr. Ceban, today): one row per record type saved today (illustrative event log on the real figures)
 LOG = {e['record']: e for e in R.EVENTS if e['at'][:10] == TODAY.isoformat() and e['user'] == 'Dr. Ceban'}
@@ -221,19 +219,14 @@ INTRO_MGR = f'Nu ai salvat nimic azi. Ce salvezi azi apare aici, pe tipuri; poț
 
 FARM_P = '<div class="ip-ev__main">Hîrbovăț · '
 LIPSA = lamp('warn', 'lipsă')
-def miss_alert(day, sec, sx):  # the owner/viewer have no Lipsesc date block: its rows are their alerts (s4s alert, any day of the window)
-    d0 = dt.date.fromisoformat(day); azi = ' azi' if d0 == TODAY else ''
-    return s4.alert('feed', f'{sec} · hrană {s4.sg(sx)}{azi} – lipsă', f'{dd(d0)} · SAPT {R.sapt(d0)}', LIPSA, ('Deschide secțiunea', f'#sectiune-{sec}'))
 def alerts(owner=False, u='', extra=()):
-    """De verificat = the S4 Rezumat alerts (s4s_build.alerts: lay ±3 pct, feed ±10 %, stock < 5 zile, fără preț).
-    The missing rows have their own block (Lipsesc date) for the manager; the owner has none, so they are alerts (every day of
-    the C9 window, newest first). "fără preț" has its own block for the owner (UnpricedCount); the manager can't add prices
-    (D05), so it is not his alert. extra: alerts appended (S2S state examples)."""
-    al = s4.alerts()
-    up = [a for a in al if 'livrări fără preț' in a]; assert len(up) == 1 and al[-1] == up[0]
-    base = [a for a in al[:-1] if LIPSA not in a]                               # guide and stock alerts
-    stk = [a for a in base if 'Deschide stocul' in a]; gd = [a for a in base if a not in stk]
-    items = (gd + [miss_alert(*m) for m in MISS] + stk if owner else gd + stk) + list(extra)
+    """De verificat = the farms' one alert set (realdata.alerts → s4s_build.alert_rows, D181: the S4 Rezumat rows, same
+    wording), farm named first. The manager's lipsă rows have their own block (Lipsesc date); the owner/viewer have none, so
+    they are alerts (every day of the C9 window, newest first). "fără preț" has its own block for the owner (UnpricedCount);
+    the manager can't add prices (D05), so it is not his alert. extra: alerts appended (S2S state examples)."""
+    items = s4.alert_rows('owner', kinds=('lay', 'feed', 'missing', 'stock') if owner else ('lay', 'feed', 'stock'))
+    stk = [a for a in items if 'Deschide stocul' in a]
+    items += list(extra)
     items = [a.replace('<div class="ip-ev__main">', FARM_P, 1) for a in items]
     LIM = 'limită <span class="ip-num">5 zile</span>'
     items = [a.replace(' · ' + LIM, ' · ' + nw(LIM), 1) for a in items]
@@ -245,7 +238,7 @@ def alerts(owner=False, u='', extra=()):
     return f'<section class="s2-block" aria-labelledby="{u}dv">{head("De verificat", note, u + "dv")}<ul class="ip-list ip-list--alerts" aria-labelledby="{u}dv">{"".join(items)}</ul></section>'  # FIN16: ul/li, as the S4 Rezumat
 N_AL = {o: alerts(o).count('<li class="ip-ev ip-ev--alert">') for o in (False, True)}   # manager 2 (lay H5, H6) · owner 4 (+ 13.11 H7 ♀ lipsă)
 
-def stock(u='', cap='Zile de hrană'):
+def stock(u='', cap='Stoc hrană'):  # D181: one title for every role (was 'Zile de hrană' for the manager)
     def ro(fid, s, sign, word):
         st = 'ok' if s['days_left'] >= 5 else 'warn'
         w0, w1 = W3
@@ -400,7 +393,7 @@ def desktop(role, parts):
 VET = phone([pagehead(CTX_VET, True), missing(), entrykeys(), introdus()], vet=True)
 MGR_P = phone([pagehead(CTX_MGR, True), alerts(), stock(), entrykeys(True), missing(True), introdus_mgr()])  # D87: Introdus azi last
 MGR_D = desktop('Manager', [pagehead(CTX_MGR), f'<div class="s2-cols">{alerts()}{missing(True)}</div>', stock(), entrykeys(True), introdus_mgr()])
-OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols">{alerts(True)}{unpriced()}</div>', stock(cap='Stoc hrană'), farms_block()])
+OWN_D = desktop('Proprietar', [pagehead(CTX_OWN), track(), f'<div class="s2-cols">{alerts(True)}{unpriced()}</div>', stock(), farms_block()])
 
 # ---------- CSS ----------
 PICK = ('body{',)  # FIN15: .ip-screen/__main are additions.css §57; FIN15B: .s7-m0 is ip-m0 (§58)

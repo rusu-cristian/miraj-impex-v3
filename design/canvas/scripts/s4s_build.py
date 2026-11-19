@@ -3,7 +3,7 @@ flag; % is written without a space (D46). Since S4P the default board (s4_build.
 so the shell is identical on all 9 boards; the inferred-start mark and the split chip are system classes (additions.css).
 python3 -I s4s_build.py <repo_root>
 Writes design/canvas/project/S4-ferma-rezumat--<state>.dc.html and /tmp/s4s/<state>.html (plain wrappers)."""
-import sys, json, pathlib, datetime as dt
+import sys, re, json, pathlib, datetime as dt
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import skel as SKL  # FIN11G: §54 skeleton markup
 
 ROOT = pathlib.Path(sys.argv[1])
@@ -124,7 +124,7 @@ stocks = {}
 for _sx, _ft in R.FEED_TYPE.items():
     _left, _avg, _out = R.stock_days(_sx)
     stocks[_ft] = {'stock_kg': R.stock()[_sx], 'days_left': _left, 'avg_daily_kg_last3': _avg, 'run_out_date': _out.isoformat()}
-STOCK_LIMIT = 5                                       # D19: days of feed left
+STOCK_LIMIT = R.STOCK_LIMIT                            # D19: days of feed left (5)
 unpriced = R.UNPRICED
 unpriced_kg = sum(d['qty_kg'] for d in unpriced)
 cum = {'start_counts': R.ARRIVED, 'deaths': R.COUNTS['cycle']['removals'], 'mortality_pct': {}}
@@ -465,46 +465,56 @@ def totals(ng=False):
     tl = NOG if ng else f'ghid {pct(lay_guide)} {lay_lamp(lay_today - lay_guide)}'
     return f'''<div class="ip-stotals" role="group" aria-label="Total fermă Hîrbovăț, {ddate(TODAY)}"><div><span class="ip-cap">Total fermă</span><span class="ip-stotals__sub">{len(FULL)} secțiuni cu păsări</span><span class="ip-stotals__sub ip-num">{ddate(TODAY)} · SAPT {WK}</span></div><div><span class="ip-stotals__key">În viață</span><span class="ip-stotals__val">{pair(n(tot['F']), n(tot['M']))}</span><span class="ip-stotals__sub ip-num">total {n(tot['all'])}</span></div><div><span class="ip-stotals__key">{ico('mortality')}Mort. săpt.</span><span class="ip-stotals__val">{n(-(mort_wk_sex['F']+mort_wk_sex['M']))}</span><span class="ip-stotals__sub">{pair(n(-mort_wk_sex['F']), n(-mort_wk_sex['M']))}</span></div><div><span class="ip-stotals__key">{ico('feed')}Hrană azi</span><span class="ip-stotals__val">{pair(g_f, g_m)}<small>g</small></span>{tf}<span class="ip-stotals__sub s4-nowrap"><span>{EMPTY_NOTE}</span></span></div><div><span class="ip-stotals__key">{ico('weighing')}Greutate {F}</span><span class="ip-stotals__val">{hen_v(n(w_f))}<small>g</small></span><span class="ip-stotals__sub">{tw}</span><span class="ip-stotals__sub ip-num">{", ".join(WSECS)} · {ddate(WDAY)[:5]}</span></div><div><span class="ip-stotals__key">{ico('eggs')}Ouat</span><span class="ip-stotals__val">{n(lay_today,1)}<small>%</small></span><span class="ip-stotals__sub">{tl}</span></div></div>'''
 
-# ---------- alerts (18.11.2026: both halls with birds lay below the guide band; no feed deviation, no missing row, no stock
-# under 5 days; 4 Hîrbovăț deliveries without a price) ----------
-def below_since(hall):  # first day of the run of days up to today with the daily lay (D156) below guide − 3 pct
-    d = R.D(TODAY); since = None
-    while R.day(d, hall) and R.lay_day(d, hall) is not None and R.guide_lay(R.sapt(d)) is not None \
-            and R.lay_day(d, hall) - R.guide_lay(R.sapt(d)) < -3:
-        since = d; d -= dt.timedelta(days=1)
-    return since
-LAY_ALERTS = [h for h in EGG_HALLS if lay_dev(h)]
-assert LAY_ALERTS == ['H5', 'H6'] and (below_since('H5'), below_since('H6')) == (dt.date(2026, 11, 2), dt.date(2026, 11, 1))
+# ---------- alerts: the farm's one alert set (realdata.alerts, D181), drawn here for S4 Rezumat "De verificat" and for S2
+# (s2_build takes its rows through alert_rows). 18.11.2026: H5, H6 lay below the guide band; 13.11 H7.1/H7.2 ♀ feed lipsă
+# (C9 window); no feed deviation, no stock under 5 days; 4 Hîrbovăț deliveries without a price. ----------
+ALERTS = R.alerts('hirbovat', TODAY)
+assert [(a['kind'], a.get('hall') or a.get('section')) for a in ALERTS] == [('lay', 'H5'), ('lay', 'H6'), ('missing', 'H7.1'), ('missing', 'H7.2'), ('unpriced', None)]
+def below_since(hall): return R.lay_below_since(hall, TODAY)
+LAY_ALERTS = [a['hall'] for a in ALERTS if a['kind'] == 'lay']
+assert all(lay_dev(h) for h in LAY_ALERTS) and (below_since('H5'), below_since('H6')) == (dt.date(2026, 11, 2), dt.date(2026, 11, 1))
 LAY_SINCE = {h: below_since(h) for h in LAY_ALERTS}
 h3_since = LAY_SINCE['H6']  # literal-ok: s4t's old name for this hall (= H6, D152)
 _YDAY = R.D(TODAY) - dt.timedelta(days=1)
 alloc = {(s, sx): {'section': s, 'sex': sx, 'today_g': g_today[(s, sx)], 'yesterday_g': R.feed_g(_YDAY, sx, s), 'guide_g': R.guide_feed(WK, sx)}
          for s in FULL for sx in 'FM'}  # the day's norm g/bird per compartment (was the sample's allocations_today)
-MISSING = [(s, sx) for s in FULL for sx in 'FM' if R.alive_start(s, sx) and g_today[(s, sx)] is None]
-assert not MISSING
+MISSING = [(a['section'], a['sex']) for a in ALERTS if a['kind'] == 'missing' and a['date'] == TODAY]   # today's lipsă rows (none on 18.11)
+assert not MISSING and STOCK_LIMIT == R.STOCK_LIMIT
 def alert(k, title, meta, status, act=None):
     a = f'<a class="ip-link ip-ev__act" href="{act[1]}">{act[0]}</a>' if act else ''
     return f'<li class="ip-ev ip-ev--alert">{tile(k)}<div class="ip-ev__main">{title}<div class="ip-ev__meta ip-num">{meta}</div></div>{a}<span class="ip-ev__status">{status}</span></li>'  # FIN16: a row of ul.ip-list
-def alerts(ng=False):
-    out = []
-    if not ng:  # guide-based: lay vs guide (±3 pct), feed ±10 %
-        for h in LAY_ALERTS:
-            e = eggs_today[h]
-            out.append(alert('eggs', f'{h} · ouat <span class="ip-num">{pct(e["lay_pct"])}</span> · ghid <span class="ip-num">{pct(lay_guide)}</span> · <span class="ip-num">{n(e["lay_pct"] - lay_guide, 1)} pct</span>',
-                             f'{ddate(TODAY)} · SAPT {WK} · sub ghid din {ddate(below_since(h))}', lamp('warn', 'abatere'), ('Vezi producția', '#productie')))
-        for sec, sx in ((s, sx) for s in FULL for sx in 'FM' if feed_dev(s, sx)):
-            sxf = hen if sx == 'F' else roo; g = g_today[(sec, sx)]; gg = R.guide_feed(WK, sx)
-            out.append(alert('feed', f'{sec} · hrană {sxf(n(g), " g")} · ghid {sxf(gg, " g")} · <span class="ip-num">{sgn((g / gg - 1) * 100, 0)}%</span>',
-                             f'{ddate(TODAY)} · SAPT {WK}', lamp('warn', 'abatere'), ('Deschide secțiunea', f'#sectiune-{sec}')))
-    for sec, sx in MISSING:  # a compartment with birds and no feed row today (none on 18.11)
-        out.append(alert('feed', f'{sec} · hrană {sg(sx)} azi – lipsă', f'{ddate(TODAY)} · SAPT {WK}', lamp('warn', 'lipsă'), ('Deschide secțiunea', f'#sectiune-{sec}')))
-    for k in (k for k in stocks if stocks[k]['days_left'] < STOCK_LIMIT):  # D19 threshold, not guide-based (none on 18.11)
-        st = stocks[k]
-        out.append(alert('delivery', f'{FT_NAME[k]} · stoc <span class="ip-num">{n(st["stock_kg"])} kg</span> · <span class="ip-num">{n(st["days_left"],1)} zile</span> · limită <span class="ip-num">{STOCK_LIMIT} zile</span>',
-                         f'{ddate(TODAY)} · se termină pe {ddate(st["run_out_date"])} · {n(st["avg_daily_kg_last3"])} kg/zi', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc')))
-    out.append(alert('delivery', f'Hrană · {len(unpriced)} livrări fără preț · <span class="ip-num">{n(unpriced_kg)} kg</span>',
-                     f'{R.drange(unpriced[0]["date"], unpriced[-1]["date"])} · așteaptă prețul', lamp('info', 'informație'), ('Adaugă prețurile', '#preturi-hrana')))
-    return out
+def alert_row(a, role='owner'):
+    """one AlertRow of realdata.alerts, the same wording on S2 and S4. role changes only the link: the vet's past-day lipsă row
+    is locked ("blocat · o completează managerul", D65); every other row and role opens its target."""
+    k, d = a['kind'], a['date']
+    if k == 'lay':
+        return alert('eggs', f'{a["hall"]} · ouat <span class="ip-num">{pct(a["lay"])}</span> · ghid <span class="ip-num">{pct(a["guide_pct"])}</span> · <span class="ip-num">{n(a["lay"] - a["guide_pct"], 1)} pct</span>',
+                     f'{ddate(d)} · SAPT {R.sapt(d)} · sub ghid din {ddate(a["since"])}', lamp('warn', 'abatere'), ('Vezi producția', '#productie'))
+    if k == 'feed':
+        sxf = hen if a['sex'] == 'F' else roo
+        return alert('feed', f'{a["section"]} · hrană {sxf(n(a["g"]), " g")} · ghid {sxf(a["guide_g"], " g")} · <span class="ip-num">{sgn((a["g"] / a["guide_g"] - 1) * 100, 0)}%</span>',
+                     f'{ddate(d)} · SAPT {R.sapt(d)}', lamp('warn', 'abatere'), ('Deschide secțiunea', f'#sectiune-{a["section"]}'))
+    if k == 'missing':
+        azi = ' azi' if d == TODAY else ''
+        row = alert('feed', f'{a["section"]} · hrană {sg(a["sex"])}{azi} – lipsă', f'{ddate(d)} · SAPT {R.sapt(d)}', lamp('warn', 'lipsă'), ('Deschide secțiunea', f'#sectiune-{a["section"]}'))
+        if role == 'vet' and d != TODAY:
+            row = re.sub(r'<a class="ip-link ip-ev__act"[^>]*>.*?</a>', '<span class="ip-note ip-ev__act">blocat · o completează managerul</span>', row, count=1)
+        return row
+    if k == 'stock':
+        ft = R.FEED_TYPE[a['sex']]
+        return alert('delivery', f'{FT_NAME[ft]} · stoc <span class="ip-num">{n(a["kg"])} kg</span> · <span class="ip-num">{n(a["days"],1)} zile</span> · limită <span class="ip-num">{STOCK_LIMIT} zile</span>',
+                     f'{ddate(d)} · se termină pe {ddate(a["run_out"])} · {n(a["avg"])} kg/zi', lamp('warn', 'abatere'), ('Deschide stocul', '#hrana-stoc'))
+    if k == 'unpriced':
+        return alert('delivery', f'Hrană · {a["n"]} livrări fără preț · <span class="ip-num">{n(a["kg"])} kg</span>',
+                     f'{R.drange(a["first"], a["last"])} · așteaptă prețul', lamp('info', 'informație'), ('Adaugă prețurile', '#preturi-hrana'))
+    raise ValueError(a)
+def alert_rows(role='owner', ng=False, kinds=None):
+    """the farm's AlertRows for a role: no guide-based rows without a guide; "fără preț" only for roles that see prices
+    (owner, manager: D64); kinds limits the set (S2: the manager's lipsă rows sit in Lipsesc date, the owner's fără preț in its block)."""
+    return [alert_row(a, role) for a in ALERTS if not (ng and a['guide']) and not (a['kind'] == 'unpriced' and role in ('viewer', 'vet'))
+            and (kinds is None or a['kind'] in kinds)]
+def alerts(ng=False):  # S4 Rezumat "De verificat" (owner): the whole farm set, 5 rows on 18.11
+    return alert_rows('owner', ng)
 assert len(unpriced) == 4 and unpriced_kg == 18160
 
 # ---------- latest records: the illustrative event log on the real daily figures (D152, D155) ----------
@@ -530,7 +540,7 @@ def event_row(e):
         kg = R.feed_kg(d, 'F') + R.feed_kg(d, 'M')
         assert e['summary'] == f'Hrană · ♀ {R.feed_kg(d, "F"):g} kg · ♂ {R.feed_kg(d, "M"):g} kg', e
         miss = '' if len(rows) == len(due) else lamp('warn', f'lipsă {len(due) - len(rows)}')
-        return ev('feed', f'Hrană zilnică · {len(rows)} din {len(due)} rânduri · <span class="ip-num">{n(kg)} kg</span>', meta, miss)
+        return ev('feed', f'Hrană zilnică · {len(rows)} din {len(due)} rânduri · <span class="ip-num">{n(kg, 1)} kg</span>', meta, miss)  # D181: the record's kg, one decimal (as S2/S15)
     if e['record'] == 'sale':
         return ev('sale', f'Vânzare · {R.sale_codes(e)} · {sexpair(e["F"], e["M"])}', meta)  # DATA04 (D168): one record per sale form
     raise ValueError(e)

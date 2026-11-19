@@ -68,8 +68,8 @@ def row(r, mode, g=None, uid=''):
         inp = f'<span class="ip-input ip-input--touch ip-num"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}"/><span class="suffix">g</span></span>'
         right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small>{st}</div>'
     ginp = f'<label class="ip-field" for="g-{gid}"><span class="ip-label">g/pasăre{sr}</span>{inp}</label>'
-    html = f'''<div class="ip-alloc ip-alloc--phone" role="group" aria-label="{sec}, {word}, {n(alive)} în viață" id="r-{gid}">
-<div class="ip-alloc__who"><span class="ip-sex ip-sex--{c} ip-t-heading" aria-hidden="true">{sign}</span><div><div class="ip-t-body-strong">{sec}</div><div class="ip-note"><span class="ip-num">{n(alive)}</span> {word}</div></div></div>
+    html = f'''<div class="ip-alloc ip-alloc--phone" role="group" aria-label="{sec}, {word}, {n(alive)} {B.START_SR}" id="r-{gid}">
+<div class="ip-alloc__who"><span class="ip-sex ip-sex--{c} ip-t-heading" aria-hidden="true">{sign}</span><div><div class="ip-t-body-strong">{sec}</div><div class="ip-note"><span class="ip-num">{n(alive)}</span> {word}<span class="ip-sr"> {B.START_SR}</span></div></div></div>
 {right}
 <div class="ip-alloc__ctl">{sel}{ginp}</div>
 {msg}
@@ -169,7 +169,7 @@ assert round((AB_G - GUIDE[AB_SX]) / GUIDE[AB_SX] * 100) == 11
 ft2, f2 = ftot(b2)
 sv2, nc, tot = savebar(b2, stocklamp(f2), SAVE_KEY)
 assert nc == len(ROWS) and tot == rnd(TOT + b2[idx(AB_SEC, AB_SX)]['kg'] - ROWS[idx(AB_SEC, AB_SX)]['kg'], 1)
-SCROLL2 = 329  # measured at 390 (S7P): H5.2 ♂ row (with its warn line) ends 16 px above the SaveBar; H5.2 ♀ and part of H5.1 ♂ above it
+SCROLL2 = 369  # measured at 390 (S7P; FV01 + 40 for the start-of-day caption): H5.2 ♂ row (with its warn line) ends 16 px above the SaveBar; H5.2 ♀ and part of H5.1 ♂ above it
 boards.append(('abatere', 'abatere' + D39, screen([B.DATE, B.COPY, halls(b2), ft2], sv2, scroll=SCROLL2)))
 
 # 3 · valoare în afara limitei — H5.1 ♀ 350 g typed: error (D57 copy), refuzat, Salvează disabled until fixed (an input

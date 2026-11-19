@@ -149,7 +149,7 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
     else: tag = '<span class="ip-tag ip-tag--neutral">fără pierderi</span>' if nolosses else ''
     box = f'<span class="ip-check__box">{icon("check", 14)}</span>' if nolosses else '<span class="ip-check__box"></span>'
     chk = f'<label class="ip-check{" is-checked" if nolosses else ""}"><input type="checkbox" class="ip-sr" aria-labelledby="t-{uid} fp-{uid}"{" checked" if nolosses else ""}>{box}<span id="fp-{uid}">Fără pierderi azi</span></label>'
-    html = f'''<section class="ip-panel ip-entry" aria-labelledby="t-{uid}"><div class="ip-entry__head"><h3 class="ip-entry__code" id="t-{uid}">{sec}</h3>{tag}<span class="ip-entry__alive">în viață <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>{n(t["F"]["alive_start"])}</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>{n(t["M"]["alive_start"])}</b></span></span></span></div>
+    html = f'''<section class="ip-panel ip-entry" aria-labelledby="t-{uid}"><div class="ip-entry__head"><h3 class="ip-entry__code" id="t-{uid}">{sec}</h3>{tag}<span class="ip-entry__alive">în viață<span class="ip-sr"> la începutul zilei</span> <span class="ip-pair"><span class="ip-sex ip-sex--hen">♀ <b>{n(t["F"]["alive_start"])}</b></span><span class="sep">·</span><span class="ip-sex ip-sex--rooster">♂ <b>{n(t["M"]["alive_start"])}</b></span></span></span></div>
 <div class="ip-entry__grid">{grid}</div>
 <button type="button" class="ip-btn ip-btn--touch ip-btn--ghost ip-entry__more" id="mm-{uid}" aria-labelledby="t-{uid} mm-{uid}" aria-expanded="{"true" if more else "false"}" aria-controls="more-{uid}">{icon("chevup" if more else "chev", 16)}Mai mult · Eroare sexare</button><div class="ip-entry__panel" id="more-{uid}"{panel}</div>
 <div class="ip-entry__foot">{chk if saved is None else saved}</div></section>'''
@@ -185,7 +185,7 @@ def eggs(h, secs, hens, d=TODAY, ro=False):
 
 def hall_head(h, secs, f, m):
     return (f'<header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(secs)}</span></span>'
-            f'<span class="ip-pair"><span class="ip-sr">în viață </span>{sexv("F", n(f))}<span class="sep">·</span>{sexv("M", n(m))}</span></header>')
+            f'<span class="ip-pair"><span class="ip-sr">{B.START_SR} </span>{sexv("F", n(f))}<span class="sep">·</span>{sexv("M", n(m))}</span></header>')
 def halls(d=TODAY, card=None, ro=False):
     """HallCards of day d: per hall with birds its compartment cards (card(sec) → entry(), default entry(sec, d)) and its Ouă
     group; a hall without birds at the start of the day keeps its head and one muted line "goală din <date>" (D158d, as S7).
@@ -204,7 +204,7 @@ def halls(d=TODAY, card=None, ro=False):
         parts.append(f'''<section class="ip-hall" aria-labelledby="h-{h}">{hall_head(h, secs, af, am)}
 <div class="ip-hall__sections">{"".join(c[0] for c in cards)}</div>
 {eh}</section>''')
-    return '<div class="ip-halls">' + ''.join(parts) + '</div>', ALL, EG
+    return B.start_caption(d) + '<div class="ip-halls">' + ''.join(parts) + '</div>', ALL, EG  # D181: start-of-day counts, captioned
 
 HALLS_HTML, ALL, EGGS = halls()
 assert [s for s, _ in ALL] == [s for s in R.HSECS if R.has_birds(s, YDAY)]  # 18.11: H5.1 H5.2 H6.1 H6.2 (H7 empty since 14.11)

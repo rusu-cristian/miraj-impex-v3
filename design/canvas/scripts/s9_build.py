@@ -235,13 +235,13 @@ boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='mutat'), f
 #   the refused value is left out of the SaveBar totals (D77, as S6S/S7S: ♀ – · ♂ –), its figure only on line 2
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([DATE, pick('refuz'), dest(), effect('refuz')],
               B.savebar(sum1('–', '–'), f'{lamp("fault", "refuzat")}<span>{SRC_SEC} {hen(TRY)} ·</span><span>cel mult <span class="ip-num">{n(SRC_F)}</span></span>', MUTA_OFF))))
-# 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft (D60). The Banner sits
-#   right above the EffectPreview and the form is scrolled to its end, so the Banner and the move it names both show above
-#   the SaveBar (S9P; at 390 the Banner at the top would push the preview under the SaveBar)
+# 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft (D60). The Banner is
+#   the form's last part, right above the SaveBar (D141/D181, as S6/S7/S8/S13/S16; was above the EffectPreview, S9P), and the
+#   form is scrolled to its end, so the EffectPreview and the Banner both show above the SaveBar
 ban = SXS.sexify(f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Transferul nu s-a salvat: '
        f'♀ <span class="ip-num">{n(QTY)}</span>, Telița {SRC_SEC} → Hîrbovăț {DST_SEC}, <span class="ip-num">{dd(DAY)}</span>.</p>'
        f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), ban, effect()], B.savebar(sum1(), SUM2, MUTA), view=' ip-screen__view--end')))
+boards.append(('eroare-la-salvare', 'eroare la salvare', screen([DATE, pick('toate'), dest(), effect(), ban], B.savebar(sum1(), SUM2, MUTA), view=' ip-screen__view--end')))
 
 # ---------- 18.11.2026 example flow (D39, real end-of-day counts): Hîrbovăț H6.2 → Telița (empty since 28.02.2026) ----------
 HEAD2 = HEAD.replace(f'SERIA 2026 · {dd(DAY)}', f'SERIA 2026 · {dd(DT)}'); assert dd(DT) in HEAD2

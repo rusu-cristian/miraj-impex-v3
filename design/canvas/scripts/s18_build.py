@@ -39,6 +39,7 @@ HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's18_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
 import skel as SKL
+import canvas_rows as CR   # FV02: board_widths.json (wide boards, D167)
 def load(name, argv):
     sys.argv = argv
     sp = importlib.util.spec_from_file_location(name, HERE / f'{name}.py'); m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
@@ -553,7 +554,23 @@ CSS_SH = ('body{margin:0}\n.s18-screen{height:100%;display:flex}' + SHEET + SC.M
 # ================================================================= write
 FONTS = s4.FONTS; SYS = ROOT / 'design/system'
 pathlib.Path('/tmp/s18').mkdir(exist_ok=True)
+ROOT_D, ROOT_P = '<div class="ip-root s4s-rel" style="padding:0; ', '<div class="ip-root" style="padding:0; width:390px; '
+CSS_PWIDE = '''
+.s4ns-wide > .ip-screen{width:390px}
+.s4ns-wide .ip-tablescroll{width:min-content;min-width:100%;max-width:none;overflow:visible}'''   # as s4ns_build.CSS_PWIDE
+def wide(stem, root, css, w):
+    """D167 4 / D181 (FV02): a board whose Serii table is wider than its page region (beside the docked SidePanel; the phone's
+    358) is drawn wider (board_widths.json): the page keeps its layout (1440 less the panel / 390) and the table runs past its
+    right edge in full (s4s_build.CSS_WIDE / the s4ns phone pattern, canvas only); boards at their base width are unchanged."""
+    W = CR.width(stem, w)
+    if W == w: return root, css, w
+    if w == 1440:
+        assert root.count(ROOT_D) == 1, stem
+        return root.replace(ROOT_D, '<div class="ip-root s4s-rel s4s-wide" style="padding:0; --board-page-w:1440px; ', 1), css + '\n' + s4.CSS_WIDE, W
+    assert w == 390 and root.count(ROOT_P) == 1, stem
+    return root.replace(ROOT_P, f'<div class="ip-root s4ns-wide" style="padding:0; width:{W}px; ', 1), css + CSS_PWIDE, W
 def write(stem, title, root, css, w, h):
+    root, css, W = wide(stem, root, css, w)   # out keeps the base w (phone/desktop); canvas_rows.place widens it again
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>
@@ -572,7 +589,7 @@ def write(stem, title, root, css, w, h):
 </helmet>
 {root}
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{{"$preview":{{"width":{w},"height":{h}}}}}'>
+<script type="text/x-dc" data-dc-script data-props='{{"$preview":{{"width":{W},"height":{h}}}}}'>
 class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 </script>
 </body>
@@ -586,7 +603,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
 <link rel="stylesheet" href="file://{SYS}/tokens.css"><link rel="stylesheet" href="file://{SYS}/components/bundle.css"><link rel="stylesheet" href="file://{SYS}/components/additions.css">
 {FONTS}<style>{css}</style></head><body>{root}</body></html>'''
     pathlib.Path(f'/tmp/s18/{stem}.html').write_text(wrap, encoding='utf-8')
-    print('ok', stem, w, h)
+    print('ok', stem, W, h)
     return {'stem': stem, 'title': title, 'w': w, 'h': h}
 
 STEM, T = 'S18-serii', 'S18 · Serii'

@@ -122,7 +122,7 @@ boards.append(('eroare-la-incarcare', 'vet · eroare la încărcare', 'p', pscre
 # 8b · manager · fermă goală (Telița) — FIN16: the "De verificat" empty state (SYS01 AlertRow: off lamp "nimic de verificat"
 # + one sentence, the list's own empty row li.ip-list__empty, as "nimic introdus"). A manager whose only farm is Telița
 # (D39: the assignment, as board 6), empty since 28.02.2026 (real): no birds, no feed rows, no stock in use, so no alert.
-# Zile de hrană keeps only Telița's off Readout; every entry key is off with the board-6 reason (Livrare hrană included:
+# Stoc hrană keeps only Telița's off Readout; every entry key is off with the board-6 reason (Livrare hrană included:
 # Telița "fără ciclu deschis", D133), so the tab bar key is off too.
 def alerts_none(line, scope, u=''):
     return (f'<section class="s2-block" aria-labelledby="{u}dv">{A.head("De verificat", f"{scope} · {num(D)}", u + "dv")}'
@@ -153,7 +153,7 @@ def skreadouts(k, hid):
 boards.append(('manager-desktop--se-incarca', 'manager · desktop · se încarcă', 'm', A.desktop('Manager', [
     A.pagehead(A.CTX_MGR), STATUS('Acasă'),
     f'<div class="s2-cols">{skblock("De verificat", f"fermele tale · {num(D)}", "dv", sklist(A.N_AL[False]))}{skmissing("fermele tale")}</div>',
-    skblock('Zile de hrană', f'stoc și zile rămase · {num(D)}', 'st', skreadouts(3, 'st')),
+    skblock('Stoc hrană', f'stoc și zile rămase · {num(D)}', 'st', skreadouts(3, 'st')),
     A.entrykeys(True), skblock('Introdus azi', num(D), 'ia', sklist(len(A.MGR_LOG)))])))
 
 # 10 · manager · desktop · zi trecută lipsă (link, D07: managers enter past days; real: 13.11 H7 ♀, as the default) + stoc sub 0
@@ -192,7 +192,7 @@ up0 = (f'<section class="ip-unpriced" aria-labelledby="up"><div class="ip-unpric
        f'<p class="ip-unpriced__fig"><span class="ip-unpriced__val">0<small> livrări</small></span></p><p class="ip-note">Toate livrările au preț.</p>'
        f'<a class="ip-btn ip-btn--secondary" href="#rapoarte-hrana-livrari">Vezi livrările</a></section>')
 boards.append(('proprietar-desktop--toate-cu-pret', 'proprietar · desktop · toate livrările au preț · exemplu de stare (D39)', 'o', A.desktop('Proprietar', [
-    A.pagehead(A.CTX_OWN), A.track(), f'<div class="s2-cols">{A.alerts(True)}{up0}</div>', A.stock(cap='Stoc hrană'), A.farms_block()])))
+    A.pagehead(A.CTX_OWN), A.track(), f'<div class="s2-cols">{A.alerts(True)}{up0}</div>', A.stock(), A.farms_block()])))
 
 # ---------- S2V · Observator (D89) ----------
 def v_alerts(u=''):
@@ -205,7 +205,7 @@ def v_sidebar():
         sb, k = __import__('re').subn(r'<a class="ip-nav" href="' + h + r'">.*?</a>', '', sb, count=1); assert k == 1
     assert sb.count('class="ip-nav') == 3 and '<b>Observator</b>' in sb
     return sb
-V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(cap='Stoc hrană'), A.farms_block(phone)]
+V_PARTS = lambda phone: [A.pagehead(A.CTX_OWN, phone), A.track(phone), v_alerts(), A.stock(), A.farms_block(phone)]
 VIEWER_P = A.phone(V_PARTS(True), viewer=True)
 VIEWER_D = f'<div class="ip-shell">{v_sidebar()}<main class="ip-shell__main">\n{A.desk_heads("".join(V_PARTS(False)))}\n</main></div>'  # FX02: desktop section heads
 for v in (VIEWER_P, VIEWER_D):

@@ -11,7 +11,7 @@ import sys, json, pathlib, datetime as dt
 
 ROOT = pathlib.Path(sys.argv[1])
 A = [a for a in sys.argv[1:] if a != '--canvas']
-H = int(A[1]) if len(A) > 1 else 2426  # RF02 height (was 3162, S7P); s7s/s6 take this default (no int passed by importers)
+H = int(A[1]) if len(A) > 1 else 2466  # FV01 height: + the start-of-day caption (40 px; RF02 2426, was 3162, S7P); s7s/s6 take this default (no int passed by importers)
 EX = ROOT / 'design/data/extracts'
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import realdata as R  # RF02: every figure, date, week and stock from realdata (DATA03 extracts)
@@ -94,6 +94,11 @@ COPY = f'''<div class="s7-copy">
 </div>'''
 
 # ---------- allocation rows ----------
+# D181: the counts on the form (hall heads, rows) are the birds alive at the START of the day (the day's g × birds = kg; S4/S10/S15
+# show end-of-day counts): one caption above the halls says so, and every count's text alternative carries the same words.
+START_SR = 'în viață la începutul zilei'
+def start_caption(d):
+    return f'<p class="ip-note ip-m0">Păsări {START_SR}, <span class="ip-num">{dd(d)}</span></p>'
 def row(r):
     sx, sec, alive = r['sex'], r['section'], r['alive']
     c = 'hen' if sx == 'F' else 'rooster'
@@ -119,8 +124,8 @@ def row(r):
         inp = f'<span class="ip-input ip-input--touch ip-num"><input id="g-{gid}" type="text" inputmode="decimal" value="{g}"/><span class="suffix">g</span></span>'
         right = f'<div class="ip-alloc__kg">{n(kg, 1)}{NB}kg<small>ghid {guide}{NB}g</small>{lamp("ok", "în normă")}</div>'
     ginp = f'<label class="ip-field" for="g-{gid}"><span class="ip-label">g/pasăre<span class="ip-sr">, {sec} {word}</span></span>{inp}</label>'
-    return f'''<div class="ip-alloc ip-alloc--phone" role="group" aria-label="{sec}, {word}, {n(alive)} în viață">
-<div class="ip-alloc__who"><span class="ip-sex ip-sex--{c} ip-t-heading" aria-hidden="true">{"♀" if sx == "F" else "♂"}</span><div><div class="ip-t-body-strong">{sec}</div><div class="ip-note"><span class="ip-num">{n(alive)}</span> {word}</div></div></div>
+    return f'''<div class="ip-alloc ip-alloc--phone" role="group" aria-label="{sec}, {word}, {n(alive)} {START_SR}">
+<div class="ip-alloc__who"><span class="ip-sex ip-sex--{c} ip-t-heading" aria-hidden="true">{"♀" if sx == "F" else "♂"}</span><div><div class="ip-t-body-strong">{sec}</div><div class="ip-note"><span class="ip-num">{n(alive)}</span> {word}<span class="ip-sr"> {START_SR}</span></div></div></div>
 {right}
 <div class="ip-alloc__ctl">{sel}{ginp}</div>
 {msg}
@@ -141,10 +146,10 @@ def halls_html(pairs):
             rs = hs[h]; secs = list(dict.fromkeys(r['section'] for r, _ in rs))
             f = sum(r['alive'] for r, _ in rs if r['sex'] == 'F'); m = sum(r['alive'] for r, _ in rs if r['sex'] == 'M')
             body = f'<div class="ip-hall__sections">{"".join(x for _, x in rs)}</div>'
-        out += f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(secs)}</span></span>{pair(n(f), n(m), sr="în viață ")}</header>
+        out += f'''<section class="ip-hall" aria-labelledby="h-{h}"><header class="ip-hall__head"><span class="ip-cap">Hală</span><h2 class="ip-hall__code" id="h-{h}">{h}</h2><span class="ip-note">secțiuni <span class="ip-num">{" · ".join(secs)}</span></span>{pair(n(f), n(m), sr=START_SR + " ")}</header>
 {body}</section>'''
     assert set(hs) | set(EMPTY) == set(R.HHALLS)
-    return '<div class="ip-halls">' + out + '</div>'
+    return start_caption(TODAY) + '<div class="ip-halls">' + out + '</div>'
 HALLS = halls_html([(r, b[0]) for r, b in zip(ROWS, built)])
 
 # ---------- feed totals (FeedTotals, phone) ----------

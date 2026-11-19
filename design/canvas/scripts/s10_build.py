@@ -298,12 +298,13 @@ toast = SXS.sexify(f'<div class="ip-toastwrap"><div class="ip-toast" role="statu
 saved = [farm(REAL, 'ro'), DATE_RO, rows(REAL, 'ro'), buyer(True), note(True), effect(REAL)]
 boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(REAL.tot, lead='vândut'), f'<span>poți anula până la {num("23:59")}</span>',
               '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Vânzare nouă</button>'), overlay=toast, view=' ip-screen__view--end'), 'vp'))
-# 5 · eroare la salvare — the real sale; online only (spec §1): fault Banner + Reîncearcă right above the EffectPreview, form
-#   scrolled to its end (as S9P), typed values kept as a draft (D60), key stays enabled
+# 5 · eroare la salvare — the real sale; online only (spec §1): fault Banner + Reîncearcă as the form's last part, right above
+#   the SaveBar (D141/D181, as S6/S7/S8/S13/S16; was above the EffectPreview), form scrolled to its end (as S9), typed values
+#   kept as a draft (D60), key stays enabled
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Vânzarea nu s-a salvat: '
        f'{pair(*REAL.tot)}, Hîrbovăț, {num(dd(DT))}.</p>'
        f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen(form(REAL)[:5] + [ban, effect(REAL)], B.savebar(sum1(REAL.tot), SUM2_CONT, SELL), view=' ip-screen__view--end'), 'vp'))
+boards.append(('eroare-la-salvare', 'eroare la salvare', screen(form(REAL)[:5] + [effect(REAL), ban], B.savebar(sum1(REAL.tot), SUM2_CONT, SELL), view=' ip-screen__view--end'), 'vp'))
 # 6 · parțială — the real 14.11.2026 sale that emptied hall H7 (Toate on H7.1 and H7.2), replayed with "today" = 14.11: the farm
 #   keeps birds, the cycle continues, so Înregistrează vânzarea saves directly (no Dialog); form scrolled to its end (the preview)
 boards.append(('partiala', f'parțială · golește hala H7 · reluare {dd(D14)}', screen(form(HALL, date=DATE14),
