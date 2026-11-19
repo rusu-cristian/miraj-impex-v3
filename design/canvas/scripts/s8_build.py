@@ -5,15 +5,17 @@ compact two-line summary; viewport/Toast/Banner CSS from sstate_css, "(opțional
 DateField, SectionSelect phone combobox (closed), SegmentedControl (sex), CountInput (Masa medie, ♀/♂ bar), TextField,
 Readout (+ ip-readout__kv, off lamp D59, ip-readout__live §38), Lamp, Banner, Toast, SaveBar; SegmentedControl fill and
 wrapping field messages are additions.css §38 (S8P). Screen CSS (s8-*) is one-off layout with tokens.
-Content (real only):
-- Hîrbovăț boards (D23, today 16.11.2026, SAPT 40): the latest weighing in the extracts, H1.1 ♀ 3 967 g · CV 7,3% · uniformitate
-  81,9% · 78 păsări (sample-hirbovat-2026.json, D27; Dr. Ceban 10:10 in the event log); previous week 09.11.2026 4 006 g.
-  The laying guide has no body weight (D29): Readout off lamp "FĂRĂ DATE ÎN GHID" (D59).
-- Guide comparison boards replay the last real growth weighings at Telița (weighings-weekly.json + guide-growth.json), "today" =
-  the weighing's date (as D73/D83): H1 ♀ 24.02.2026 2 553 g vs ghid SAPT 21 2 525 g (+1,1%, în normă) and H5-2 ♂ 17.02.2026
-  3 372 g vs ghid SAPT 20 3 040 g (+10,9%, abatere; ±5% D19). Guide week by the D02 formula from placement 07.10.2025. The
-  workbook has no sample size, so Mărime probă stays empty there (optional field).
-- D39 state example: uniformitate typed 819 (for 81,9) on the Hîrbovăț weighing → refused, Salvează disabled.
+Content (RF07: realdata only, today 18.11.2026; weeks D151; a weighing in SAPT k is compared with the guide row of the
+week just ended, k − 1, D157 — the Readout says "ghid la sfârșitul SAPT k−1"):
+- Hîrbovăț (laying farm): the workbook has no weighing, so the boards replay the one illustrative ♀ weighing of the DATA03
+  events (realdata.WEIGHINGS_HIR: compartment, date, SAPT, g, CV, uniformity, sample, Dr. Ceban + time), "today" = its date
+  (as the Telița replays, D73/D83). The laying guide has no body weight (D29): off lamp "FĂRĂ DATE ÎN GHID" (D59). No
+  weighing the week before it: the kv says "fără cântărire" with "–" (craft §6). gol = the form on the real today (18.11.2026),
+  nothing typed; its kv shows that illustrative weighing as last week's.
+- Telița replays (weighings-weekly.json, real; guide-growth via realdata.weigh_guide): abatere = the D157 example (H1 ♀
+  24.02.2026, SAPT 21 vs guide week 20); în normă = the one real Telița weighing on the same day within ±5% (D19) of its
+  guide week (D158e). The workbook has no sample size, so Mărime probă stays empty there (optional field).
+- D39 state example: uniformitate typed ×10 (no decimal comma) on the Hîrbovăț weighing → refused, Salvează disabled.
 python3 -I s8_build.py <repo_root> [heights.json, default s8_heights.json] [--canvas]
 Writes design/canvas/project/S8-cantarire[--<state>].dc.html and /tmp/s8/<stem>.html (plain wrappers for s8_render.py)."""
 import sys, json, pathlib, importlib, datetime as dt
@@ -33,46 +35,52 @@ B.IC.update({  # weighing = RecordTile preview (scale); alert/check already adde
  'weighing': '<path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/>',
 })
 
-EX = ROOT / 'design/data/extracts'
-S = json.load(open(EX / 'sample-hirbovat-2026.json', encoding='utf-8'))
-WW = json.load(open(EX / 'weighings-weekly.json', encoding='utf-8'))
-GG = json.load(open(EX / 'guide-growth.json', encoding='utf-8'))
-GW = {(r['week'], r['sex']): r['body_weight_g'] for r in GG['rows']}
-TSTART = dt.date(2025, 10, 7)  # Telița placement (craft §7); weighings-weekly dates = placement + 7 × age week
-assert '2025-10-07' in WW['meta']['conventions']
-HSTART = B.START; assert HSTART == dt.date(2026, 2, 10)
-def week(d, start): return (d - start).days // 7 + 1  # D02
+import realdata as R  # RF07: every figure, code, date and week from the DATA03 extracts
+TODAY = R.TODAY; assert (B.TODAY, B.WEEK, B.START) == (TODAY, R.WK, R.CYCLE_START)
+TEL_START = R.D(R.CTEL['start_date'])  # Telița cycle from placement (07.10.2025), closed at the last transfer out
 
 SIGN = {'F': '♀', 'M': '♂'}; CLS = {'F': 'hen', 'M': 'rooster'}; WORD = {'F': 'găini', 'M': 'cocoși'}; WORDC = {'F': 'Găini', 'M': 'Cocoși'}
 def dec(v):  # as the workbook: 8,95 / 7,3 / 68
     if v is None: return None
     return n(v, 0 if v == int(v) else (2 if round(v * 100) % 10 else 1))
 
-# ---------- the three real weighings ----------
-def ctx_hirbovat():
-    d = dt.date(2026, 11, 16)
-    cur = next(w for w in S['weighings'] if w['date'] == d.isoformat() and w['section'] == 'H1.1' and w['sex'] == 'F')
-    prev = next(w for w in S['weighings'] if w['date'] == (d - dt.timedelta(days=7)).isoformat() and w['section'] == 'H1.1' and w['sex'] == 'F')
-    assert d == B.TODAY and max(w['date'] for w in S['weighings']) == d.isoformat() and cur['guide_weight_g'] is None
-    return dict(farm='Hîrbovăț', day=d, start=HSTART, wk=week(d, HSTART), sec='H1.1', sx='F', one_sex=False, guide=None,
-                w=cur['avg_weight_g'], cv=cur['cv_pct'], uni=cur['uniformity_pct'], size=cur['sample_size'],
-                prev=(dt.date.fromisoformat(prev['date']), prev['cycle_week'], prev['avg_weight_g']))
+# ---------- the weighings (contexts) ----------
+def _ctx(farm, start, d, sec, sx, one_sex, cur, prev):
+    """one form context: day d, SAPT (D151), guide = the week just ended (D157), the typed record (or None), last week's."""
+    d = R.D(d); wk = R.sapt(d)
+    return dict(farm=farm, day=d, start=start, wk=wk, gwk=wk - 1, guide=R.weigh_guide(wk, sx), sec=sec, sx=sx, one_sex=one_sex,
+                w=cur and cur['avg_weight_g'], cv=cur and cur['cv_pct'], uni=cur and cur['uniformity_pct'], size=cur and cur['sample_size'],
+                prev=prev and (R.D(prev['date']), prev['avg_weight_g']))
+HW = next(w for w in R.WEIGHINGS_HIR if w['sex'] == 'F')  # the illustrative ♀ weighing (DATA03 events)
+def ctx_hirbovat(d):
+    """Hîrbovăț on day d: the illustrative weighing typed if it is that day's, last week's weighing in the kv."""
+    d = R.D(d); cur = HW if R.D(HW['date']) == d else None
+    prev = next((w for w in R.WEIGHINGS_HIR if (w['section'], w['sex']) == (HW['section'], HW['sex']) and R.sapt(w['date']) == R.sapt(d) - 1), None)
+    c = _ctx('Hîrbovăț', R.CYCLE_START, d, HW['section'], HW['sex'], False, cur, prev)
+    assert c['guide'] is None and HW['guide_weight_g'] is None and (cur is None or cur['sapt'] == c['wk'])  # D29: no weight in the laying guide
+    return c
 def ctx_telita(sec, sx, date):
-    d = dt.date.fromisoformat(date)
-    cur = next(r for r in WW['rows'] if r['section'] == sec and r['sex'] == sx and r['date'] == date)
-    prev = next(r for r in WW['rows'] if r['section'] == sec and r['sex'] == sx and r['age_week'] == cur['age_week'] - 1)
-    assert {r['sex'] for r in WW['rows'] if r['section'] == sec} == {sx} and cur['sample_size'] is None
-    wk = week(d, TSTART); pd = dt.date.fromisoformat(prev['date'])
-    return dict(farm='Telița', day=d, start=TSTART, wk=wk, sec=sec, sx=sx, one_sex=True, guide=GW[(wk, sx)],
-                w=cur['avg_weight_g'], cv=cur['cv_pct'], uni=cur['uniformity_pct'], size=None,
-                prev=(pd, week(pd, TSTART), prev['avg_weight_g']))
-HB = ctx_hirbovat()
-assert (HB['w'], HB['cv'], HB['uni'], HB['size'], HB['wk'], HB['prev'][2]) == (3967, 7.3, 81.9, 78, 40, 4006)
-OK = ctx_telita('H1', 'F', '2026-02-24'); WARN = ctx_telita('H5-2', 'M', '2026-02-17')
+    rows = [r for r in R.WEIGHINGS_TELITA if r['section'] == sec and r['sex'] == sx]
+    cur = next(r for r in rows if r['date'] == R.iso(date))
+    prev = next(r for r in rows if r['sapt'] == cur['sapt'] - 1)
+    assert {r['sex'] for r in rows} == {sx} and cur['sample_size'] is None
+    c = _ctx('Telița', TEL_START, date, sec, sx, True, cur, prev)
+    assert (c['wk'], c['gwk'], c['guide']) == (cur['sapt'], cur['guide_week'], cur['guide_weight_g'])  # D151/D157, as the extract
+    return c
+HB = ctx_hirbovat(HW['date'])  # the replay day (10.11.2026, SAPT 58)
+HT = ctx_hirbovat(TODAY)       # today 18.11.2026, SAPT 59: nothing weighed yet, last week's = the illustrative one
+assert HB['prev'] is None and HT['prev'] == (R.D(HW['date']), HW['avg_weight_g']) and HT['wk'] == R.WK
 def dev(c): return (c['w'] - c['guide']) / c['guide'] * 100 if c['guide'] else None
-assert (OK['wk'], OK['guide'], n(dev(OK), 1)) == (21, 2525, '1,1') and abs(dev(OK)) <= 5
-assert (WARN['wk'], WARN['guide'], n(dev(WARN), 1)) == (20, 3040, '10,9') and dev(WARN) > 5
+def norm(c): return abs(dev(c)) <= 5  # D19 weight ±5%
+WARN = ctx_telita('H1', 'F', '2026-02-24')  # Telița: the D157 example, SAPT 21 vs guide week 20
+TEL_DAY = [r for r in R.WEIGHINGS_TELITA if r['date'] == R.iso(WARN['day'])]
+IN = [ctx_telita(r['section'], r['sex'], r['date']) for r in TEL_DAY]
+IN = [c for c in IN if norm(c)]
+assert len(IN) == 1; OK = IN[0]  # D158e: the one Telița weighing that day within ±5% of the week just ended
+assert not norm(WARN) and dev(WARN) > 0 and abs(dev(WARN) - [r for r in TEL_DAY if r['section'] == WARN['sec']][0]['guide_diff_pct']) < 0.05
 def pct(v): return f'{"+" if v > 0 else (MINUS if v < 0 else "")}{n(abs(v), 1)}%'
+def gw(c, fig):  # D157: the guide week used, named (weight at the end of that week); breaks only after the colon
+    return f'<span class="ip-nowrap">ghid la sfârșitul SAPT {c["gwk"]}:</span> <span class="ip-nowrap">{fig}</span>'
 
 # ---------- form parts ----------
 def head(c):
@@ -113,13 +121,13 @@ def msg(kind, mid, text):
 
 def weight(c, v, ro=False, st=None):
     sx = c['sx']; mid = 'w-msg' if st else None
-    # S8P: the lamp word + the comparison ("FĂRĂ DATE ÎN GHID SAPT 40", "ÎN NORMĂ ghid SAPT 21: …"); on abatere the lamp word
-    # + the warn line, which already names the comparison ("ABATERE H5-2 ♂: …", no doubled reading; fix round 1)
+    # S8P: the lamp word + the comparison ("FĂRĂ DATE ÎN GHID la sfârșitul SAPT k−1", "ÎN NORMĂ ghid la sfârșitul SAPT k−1: …");
+    # on abatere the lamp word + the warn line, which already names the comparison (no doubled reading; fix round 1)
     desc = 'ro-lamp ' + mid if st == 'warn' else 'ro-lamp ro-sub'
     m = ''
     if st == 'warn':
         d = dev(c)
-        m = msg('warn', mid, f'{c["sec"]} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: <span class="ip-num">{n(v)}{NB}g</span>, cu <span class="ip-num">{n(abs(d), 1)}%</span> {"peste" if d > 0 else "sub"} ghidul de <span class="ip-num">{n(c["guide"])}{NB}g</span> (prag <span class="ip-num">±5%</span>). Verifică proba; poți salva.')
+        m = msg('warn', mid, f'{c["sec"]} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: <span class="ip-num">{n(v)}{NB}g</span>, cu <span class="ip-num">{n(abs(d), 1)}%</span> {"peste" if d > 0 else "sub"} ghidul de <span class="ip-num">{n(c["guide"])}{NB}g</span> de la sfârșitul <span class="ip-num ip-nowrap">SAPT {c["gwk"]}</span> (prag <span class="ip-num">±5%</span>). Verifică proba; poți salva.')
     val = n(v) if v is not None else ''
     return (f'<div class="ip-field"><label class="ip-label" for="w">Masa medie <span class="ip-sex ip-sex--{CLS[sx]}" aria-hidden="true">{SIGN[sx]}</span><span class="ip-sr">{WORD[sx]}</span></label>'
             f'<span class="ip-input ip-count ip-count--{CLS[sx]}{" is-" + st if st else ""}"><input id="w" inputmode="numeric" pattern="[0-9 &#8239;]*" placeholder="–" autocomplete="off" value="{val}" aria-describedby="{desc}"{" readonly" if ro else ""}/><span class="suffix">g</span></span>{m}</div>')
@@ -135,20 +143,22 @@ def tf(fid, label, v, suffix, mode='decimal', opt=True, ro=False, err=None, why=
             f'<span class="ip-input ip-input--touch ip-num{" is-readonly" if ro else ""}{" is-error" if err else ""}"><input id="{fid}" type="text" inputmode="{mode}" placeholder="–" autocomplete="off" value="{v if v is not None else ""}"{" readonly" if ro else ""}{inv}/><span class="suffix">{suffix}</span></span></div>')
 
 def readout(c, v, refused=False):
-    sx = c['sx']; pdte, pwk, pw = c['prev']
+    sx = c['sx']; pdte, pw = c['prev'] or (None, None)
     if c['guide'] is None:
         lmp = '<span class="ip-rlamp ip-rlamp--off" id="ro-lamp">FĂRĂ DATE ÎN GHID</span>'
-        # fix 2: the lamp word already says it; the live region hears "FĂRĂ DATE ÎN GHID SAPT n" (no repeat, no bare dash)
-        sub = f'<span aria-hidden="true">ghid </span>SAPT {c["wk"]}<span aria-hidden="true">: – fără date în ghid</span>'
+        # fix 2: the lamp word already says it; the live region hears "FĂRĂ DATE ÎN GHID la sfârșitul SAPT k−1" (no repeat, no bare dash)
+        sub = f'<span class="ip-nowrap"><span aria-hidden="true">ghid </span>la sfârșitul SAPT {c["gwk"]}<span aria-hidden="true">:</span></span><span aria-hidden="true"> <span class="ip-nowrap">– fără date în ghid</span></span>'
     elif v is None:
         lmp = '<span class="ip-rlamp ip-rlamp--off" id="ro-lamp">FĂRĂ DATE</span>'
-        sub = f'ghid SAPT {c["wk"]}: {n(c["guide"])} g · scrie masa medie'
+        sub = gw(c, f'{n(c["guide"])} g · scrie masa medie')
     else:
         d = dev(c); ok = abs(d) <= 5  # D19 weight ±5%
         lmp = f'<span class="ip-rlamp ip-rlamp--{"ok" if ok else "warn"}" id="ro-lamp">{"ÎN NORMĂ" if ok else "ABATERE"}</span>'
-        sub = f'ghid SAPT {c["wk"]}: {n(c["guide"])} g · {n(v)} g ({pct(d)})'  # spec C7: "ghid sapt. 41: 3 460 g · 3 412 g (−1,4%)"
+        sub = gw(c, f'{n(c["guide"])} g · {n(v)} g ({pct(d)})')  # spec C7 (D157): the guide row of the week just ended
     val = f'{n(v)}<small> g</small>' if v is not None else '–'
-    diff = f'{"+" if v - pw > 0 else MINUS if v - pw < 0 else ""}{n(abs(v - pw))}<small> g</small>' if v is not None else '–'
+    diff = f'{"+" if v - pw > 0 else MINUS if v - pw < 0 else ""}{n(abs(v - pw))}<small> g</small>' if v is not None and pw is not None else '–'
+    # no weighing the week before: "–" with its reason in the label (craft §6)
+    last = f'<dt>Săpt. trecută · {dd(pdte)}</dt><dd>{n(pw)}<small> g</small></dd>' if pw is not None else '<dt>Săpt. trecută · fără cântărire</dt><dd>–</dd>'
     return f'''<section class="ip-readout" aria-labelledby="ro-h">
 <h2 class="ip-sr" id="ro-h">Față de ghid</h2>
 <div class="ip-readout__live" aria-live="polite" aria-atomic="true">
@@ -156,7 +166,7 @@ def readout(c, v, refused=False):
 <div class="ip-readout__val" aria-hidden="true">{val}</div>
 <div class="ip-readout__sub" id="ro-sub">{sub}</div>
 </div>
-<dl class="ip-readout__kv"><div><dt>Săpt. trecută · {dd(pdte)}</dt><dd>{n(pw)}<small> g</small></dd></div><div><dt>Diferență</dt><dd>{diff}</dd></div></dl>
+<dl class="ip-readout__kv"><div>{last}</div><div><dt>Diferență</dt><dd>{diff}</dd></div></dl>
 </section>'''
 
 def values(c, cv, uni, size, ro=False, uni_err=None, size_why=None):
@@ -191,26 +201,28 @@ def screen(parts, save, overlay='', c=HB):
 
 boards = []  # (slug, state, body)
 C = HB; dv = lambda v: dec(v)
-# 0 · default: Hîrbovăț 16.11.2026, H1.1 ♀ typed, before Salvează; no weight in the laying guide (D29)
-boards.append(('', None, screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size']),
+HBT = f'Hîrbovăț {dd(HB["day"])}'  # replay boards carry their day in the title, as the Telița ones
+# 0 · default: Hîrbovăț replay of the illustrative weighing's day (HB), its values typed, before Salvează; no weight in the laying guide (D29)
+boards.append(('', HBT, screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size']),
                B.savebar(rec14() + what(C, C['w']), status(C, C['w']), SAVE_KEY))))
-# 1 · gol: the form opened, H1.1 ♀ preselected, nothing typed; the comparison waits; Salvează disabled until Masa medie
-boards.append(('gol', 'gol', screen(form(C, None, None, None, None),
-               B.savebar(rec14() + what(C, None), '<span>de completat · Masa medie</span>', SAVE_OFF))))
-# 2 · în normă: Telița H1 ♀ 24.02.2026 (real), ghid SAPT 21 2 525 g, +1,1%
+# 1 · gol: today (HT, 18.11.2026), the form opened, the same compartment ♀ preselected, nothing typed; the comparison waits;
+#   last week's = the illustrative weighing; Salvează disabled until Masa medie
+boards.append(('gol', 'gol', screen(form(HT, None, None, None, None),
+               B.savebar(rec14() + what(HT, None), '<span>de completat · Masa medie</span>', SAVE_OFF), c=HT)))
+# 2 · în normă (OK) / 3 · abatere (WARN, D157 example): Telița replays on the same day (real), vs the guide of the week just ended
 for slug, state, c, st in (('in-norma', f'în normă · Telița {dd(OK["day"])}', OK, None), ('abatere', f'abatere · Telița {dd(WARN["day"])}', WARN, 'warn')):
     boards.append((slug, state, screen(form(c, c['w'], dv(c['cv']), dv(c['uni']), None, st=st),
                    B.savebar(rec14() + what(c, c['w']), status(c, c['w']), SAVE_KEY), c=c)))
-# 4 · valoare refuzată (D39 example): uniformitate 819 typed for 81,9 → outside 0–100%, Salvează disabled, focus to the field
-UNI_BAD = 819
+# 4 · valoare refuzată (D39 example): uniformitate typed ×10 (no decimal comma) → outside 0–100%, Salvează disabled, focus to the field
+UNI_BAD = R.rnd(C['uni'] * 10); assert UNI_BAD > 100
 err = (f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}</span>: uniformitate <span class="ip-num">{UNI_BAD}%</span> e peste limită. '
        f'Scrie o valoare între <span class="ip-num">0</span> și <span class="ip-num">100%</span>.')
-boards.append(('valoare-refuzata', 'valoare refuzată · exemplu de stare (D39)', screen(form(C, C['w'], dv(C['cv']), str(UNI_BAD), C['size'], uni_err=err),
+boards.append(('valoare-refuzata', f'valoare refuzată · {HBT} · exemplu de stare (D39)', screen(form(C, C['w'], dv(C['cv']), str(UNI_BAD), C['size'], uni_err=err),
                B.savebar(rec14() + what(C, C['w']), lamp('fault', 'refuzat') + f'<span>uniformitate <span class="ip-num">{UNI_BAD}%</span></span>', SAVE_OFF))))
 # 5 · salvat: read-only, Toast with Anulează (same day, D07), next step "Cântărire nouă" (as S13 "Livrare nouă", D73)
 toast = (f'<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Cântărire salvată · {C["sec"]} '
          f'{SIGN[C["sx"]]} <span class="ip-num">{n(C["w"])}</span> g</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>')
-boards.append(('salvat', 'salvat', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size'], ro=True),
+boards.append(('salvat', f'salvat · {HBT}', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size'], ro=True),
                B.savebar(rec14() + f'<span>salvat ·</span>{what(C, C["w"])}', '<span>poți modifica până la <span class="ip-num">23:59</span></span>',
                          '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Cântărire nouă</button>'), overlay=toast)))
 # 6 · eroare la salvare (Connectivity: online only, draft kept, retry): the Banner ends the form, right above the SaveBar (D141),
@@ -218,7 +230,7 @@ boards.append(('salvat', 'salvat', screen(form(C, C['w'], dv(C['cv']), dv(C['uni
 ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert">{icon("alert", 16)}<div class="ip-banner__body"><p class="ip-m0">Cântărirea nu s-a salvat: '
        f'{C["sec"]} <span class="ip-sex ip-sex--{CLS[C["sx"]]}">{SIGN[C["sx"]]}</span> <span class="ip-num">{n(C["w"])}</span> g, <span class="ip-num">{dd(C["day"])}</span>.</p>'
        f'<p class="ip-m0">Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne păstrat în browser până la salvare.</p></div><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch ip-banner__key ip-focus" autofocus="autofocus">Reîncearcă</button></div>')
-boards.append(('eroare-la-salvare', 'eroare la salvare', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size']) + [ban],
+boards.append(('eroare-la-salvare', f'eroare la salvare · {HBT}', screen(form(C, C['w'], dv(C['cv']), dv(C['uni']), C['size']) + [ban],
                B.savebar(rec14() + what(C, C['w']), status(C, C['w']), SAVE_KEY))))
 
 CSS = P.CSS + SC.OPT + '''

@@ -39,9 +39,15 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     # S4N: 16.11.2026 is a past day of SAPT 58 (10.11–16.11.2026) in the PeriodTable week keys and the Păsări log (real 16.11 records)
     ('S4-ferma', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     ('S4-ferma--pasari', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58|(?:Mortalitate|Vânzare H\d\.\d), 16\.11\.2026'),
+    # DATA04 (D168): with one record per sale form, the 9 "Ultimele înregistrări" rows reach the real 16.11 sale (SAPT 58, past day)
+    ('S4-ferma', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58 · '),
+    ('S9-transfer', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58 · '),
+    ('S10-vanzare', 'today-16.11', r'16\.11\.2026, \d\d:\d\d · SAPT 58 · '),
     # S4N: real figures that equal old sample ones: Hrană ♀ 3 691,7 kg on 02.11.2026 (day row), Hala 6 ♀ 8 475 alive on a SAPT 57 day (Păsări pe hale)
     ('S4-ferma', 'sample-figure', r'is-hen">3\u202f691,7<'),
     ('S4-ferma--pasari', 'sample-figure', r'is-hen">8\u202f475<'),
+    # RF07: Telița's real weighing of 10.02.2026 (H2 ♀, SAPT 19) is last week's on the S8 zi trecută replay (17.02.2026)
+    ('S8-cantarire--zi-trecuta', 'start-10.02', r'Săpt\. trecută · 10\.02\.2026'),
 ]
 # README order. (id, board stem prefixes, generator scripts)
 ROWS = [
@@ -69,7 +75,7 @@ ROWS = [
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):

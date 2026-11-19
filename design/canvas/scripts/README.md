@@ -28,7 +28,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S10 | `s10_build.py --canvas` (h/title in place; tall default re-measured by `s10_render.py --heights`, RF05) |
 | S2  | `s2_build.py --canvas`, `s2s_build.py --canvas` |
 | S14 | `s14_build.py --canvas`, `s14s_build.py --canvas` |
-| S8  | `s8_build.py --canvas`, `s8s_build.py --canvas` |
+| S8  | `s8_build.py --canvas`, `s8s_build.py --canvas` (h/title in place; heights from `s8_render.py s8_heights.json`, min-height released, RF07) |
 | S15 | `s15_build.py --canvas`, `s15s_build.py --canvas` |
 | S16 | `s16_build.py --canvas`, `s16s_build.py --canvas` |
 | S17 | `s17_build.py --canvas`, `s17s_build.py --canvas` |
@@ -78,7 +78,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   hen-days, D156/D159), `WEEKS`. Guides by age week: `guide_row`, `guide_lay`, `guide_feed`, `guide_mort`, `guide_growth`,
   `weigh_guide(k, sx)` (= week k − 1, D157), `GUIDE_LAY_WEEKS`. Feed: `feed_g(d, sx, sec)` (norm g/bird; farm = kg ÷ birds),
   `feed_kg`, `stock(d)`, `stock_days(sx)` (days left on the 3-day mean, run-out date), `DELIVERIES`, `UNPRICED`, `FEED_TYPE(S)`.
-  Records: `COUNTS` (counts-latest), `ARRIVED`, `TR`, `ILL` / `EVENTS` / `WEIGHINGS_HIR` (illustrative), cycles `C26`, `C25`,
+  Records: `COUNTS` (counts-latest), `ARRIVED`, `TR`, `ILL` / `EVENTS` / `WEIGHINGS_HIR` (illustrative; a `sale` event = one form, DATA04/D168: `sections` [{section, F, M}], totals `F`/`M`, `section` = first compartment for old readers; `SALE_EVENTS`, `sale_codes(e)` → "H6.1, H6.2"), cycles `C26`, `C25`,
   `CTEL`, `CYCLE_START`, `EMPTYING_SINCE`; Telița `PLACEMENT_ROWS`, `WEIGHINGS_TELITA`, `MORT_TELITA`, `FEED_TELITA`; the previous
   flock `PREV_DAILY`/`PREV_WEEKLY`/`PREV_META` with halls mapped to H5–H7 (D158c; use `age_week`). Asserts only the stable key
   figures (♀ 12 561 · ♂ 794, 5 914 eggs, SAPT 59, arrivals ♀ 26 883 · ♂ 3 024); figures still moving are computed, never copied.

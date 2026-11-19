@@ -18,7 +18,7 @@ def readout(variant='stock', kv=3, sub=1, live=False):
     then the kv list (S8 comparison Readout); otherwise cap, value, kv list, sub lines (StockReadout)."""
     cap = f'<div class="ip-readout__cap"><span>{bar("ip-skel--w2")}</span></div>'
     val = f'<div class="ip-readout__val">{bar("ip-skel--w3")}<small>{bar()}</small></div>'
-    subs = f'<div class="ip-readout__sub">{bar("ip-skel--w1")}</div>' * sub
+    subs = f'<div class="ip-readout__sub">{"<br/>".join([bar("ip-skel--w1")] * sub)}</div>'  # sub = lines of one sub block (RF07: S8's two-line comparison)
     kvs = '<dl class="ip-readout__kv">' + f'<div><dt>{bar("ip-skel--w3")}</dt><dd>{bar()}</dd></div>' * kv + '</dl>'
     body = f'<div class="ip-readout__live">{cap}{val}{subs}</div>{kvs}' if live else f'{cap}{val}{kvs}{subs}'
     v = f' ip-readout--{variant}' if variant else ''

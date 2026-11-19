@@ -225,7 +225,7 @@ All forms work at 360px width. Each one shows the farm, the date and the birds' 
 
 ### C7 · Cântărire (vet) — MVP
 - **Fields:** section, sex, date, weight (g), CV %, uniformity %, sample size.
-- **Live comparison** (round 2, D157: a weighing in SAPT n is compared with guide week n − 1): "ghid sapt. 20: 2 370 g · 2 553 g (+7,7%)" (Telița H1 ♀, 24.02.2026, SAPT 21 · abatere).
+- **Live comparison** (round 2, D157: a weighing in SAPT n is compared with guide week n − 1): "ghid la sfârșitul SAPT 20: 2 370 g · 2 553 g (+7,7%)" (Telița H1 ♀, 24.02.2026, SAPT 21 · abatere).
 
 ### C8 · Introdus azi — MVP
 - The user's entries today, grouped by record type with their icons. Edit or delete until 23:59.
