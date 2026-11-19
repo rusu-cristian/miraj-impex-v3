@@ -144,6 +144,7 @@ def hall_pasari(h):
         {'name': f'{ico("sale")}Vânzare', 'leaves': [(sx('F'), 'is-hen', sold('F')), (sx('M'), 'is-rooster', sold('M'))]},
     ]
 
+CAT_HEAD = {c: f'%\u00a0Cat.\u00a0{c}' for c in (1, 2, 3)}   # D183 heads "% Cat. 1" (prefix form as % ouat), never split
 def productie(guide=True, h=None, weeks=WEEKS):
     """Farm Producție (D3/D1): lay % = eggs ÷ start-of-day hens; week and period = eggs ÷ hen-days (D156, D159).
     h (S14N): one hall's figures (the report's hall week rows, spec D3 rowGroups), on the farm's guide of the age week; a
@@ -194,11 +195,23 @@ def productie(guide=True, h=None, weeks=WEEKS):
         if kind == 'w': return R.n(W(key)['egg_g'], 1)
         if kind == 'd': return R.n(D_(key)['egg_g'], 1)
         return R.n(sum(W(k)['egg_g'] * W(k)['eggs'] for k in weeks if W(k)['eggs']) / sum(W(k)['eggs'] or 0 for k in weeks), 1)
+    def cat(c):   # D183 (S4C): Cat. c as % of the row's eggs (form counts, DATA06), one decimal; a row with no eggs is – (never 0)
+        fld = f'cat{c}'
+        def f(kind, key):
+            if kind == 'w': a, b = W(key)[fld], W(key)['eggs']
+            elif kind == 'd': r = D_(key); a, b = (r[fld], r['eggs']) if r else (None, None)
+            else: a, b = sum(W(k)[fld] or 0 for k in weeks), sum(W(k)['eggs'] or 0 for k in weeks)
+            if not b: return (DASH, 'fără ouă')
+            if a is None: return (DASH, 'fără categorii în formular')
+            return R.pct(a / b * 100)
+        return f
     if h is not None:
         hens, eggs, lay, gl, vs, stare, inc, jos, egg_g = (guard(f) for f in (hens, eggs, lay, gl, vs, stare, inc, jos, egg_g))
         share = (lambda s: (lambda fld: guard(s(fld))))(share)
+        cat = (lambda c0: (lambda c: guard(c0(c))))(cat)
     lay_leaves = [('ouă', '', eggs), ('% ouat', '', lay)]
     if guide: lay_leaves += [('ghid', '', gl), ('față de ghid', '', vs), ('stare', 'txt', stare)]
+    lay_leaves += [(CAT_HEAD[c], '', cat(c)) for c in (1, 2, 3)]   # D183/KIT03: after stare (after % ouat without a guide), before incub.
     return [
         {'name': f'{ico("hen")}Găini', 'single': True, 'sr': ' la început de zi', 'cls': 'is-hen', 'leaves': [('', 'is-hen', hens)]},
         {'name': f'{ico("eggs")}Ouat', 'leaves': lay_leaves},
@@ -206,6 +219,12 @@ def productie(guide=True, h=None, weeks=WEEKS):
         {'name': f'{ico("eggs")}Jos', 'leaves': [('ouă', '', jos), ('%', '', share('jos'))]},
         {'name': f'{ico("eggs")}Masă ou', 'single': True, 'sr': ', grame', 'leaves': [('g', '', egg_g)]},
     ]
+def _cat_check():   # D183/DATA06: the week cells = the extract's cat*_pct (count ÷ eggs × 100) to one decimal
+    ou = [g for g in productie() if g['name'].endswith('Ouat')][0]; lv = {lab: fn for lab, _, fn in ou['leaves']}
+    for k in WEEKS:
+        for c in (1, 2, 3): assert lv[CAT_HEAD[c]]('w', k) == R.pct(R.week(k)[f'cat{c}_pct']), (k, c)
+    assert [lv[CAT_HEAD[c]]('w', 59) for c in (1, 2, 3)] == ['0,3%', '6,2%', '1,1%']   # spec D3 sample (KIT03)
+_cat_check()
 def group(groups, word):   # a record group by its visible word ("În viață", "Mortalitate" …), so callers never index by position
     g = [r for r in groups if r['name'].rsplit('</span>', 1)[-1] == word]; assert len(g) == 1, word; return g[0]
 
@@ -487,7 +506,7 @@ html += demo('Păsări · Detaliu Hale · toate săptămânile deschise: golire 
 # 3 Producție · Fermă: lay % on start-of-day hens (D156/D159)
 c3 = f'Producție · {SER}'
 t3, _ = ptable('pc', c3, [('Total fermă', '', productie())])
-html += demo('Producție · Detaliu Fermă · % ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină (D156, D159)',
+html += demo('Producție · Detaliu Fermă · % ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină (D156, D159) · % Cat. 1–3 = din ouăle rândului (D183)',
              block('pc', c3, t3))
 
 # 4 Hrană · Hale: three head rows, combined leaves, grain Săpt. (week rows only, every week closed)

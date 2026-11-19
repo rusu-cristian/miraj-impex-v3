@@ -116,7 +116,7 @@
     "S4-ferma--productie.dc.html": {
       "x": 18568,
       "y": 800,
-      "w": 1440,
+      "w": 1608,
       "h": 1861,
       "expand": "fill",
       "title": "S4 · Fermă · Producție"
@@ -640,21 +640,21 @@
     "S14-rapoarte-productie.dc.html": {
       "x": 0,
       "y": 26601,
-      "w": 2008,
-      "h": 2123,
+      "w": 2240,
+      "h": 2139,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție"
     },
     "S14-rapoarte-productie--se-incarca.dc.html": {
-      "x": 2088,
+      "x": 2320,
       "y": 26601,
-      "w": 2008,
+      "w": 2240,
       "h": 1967,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · se încarcă"
     },
     "S14-rapoarte-productie--fara-date-in-perioada.dc.html": {
-      "x": 4176,
+      "x": 4640,
       "y": 26601,
       "w": 1440,
       "h": 1024,
@@ -662,15 +662,15 @@
       "title": "S14 · Rapoarte · Producție · fără date în perioadă"
     },
     "S14-rapoarte-productie--fara-ghid.dc.html": {
-      "x": 5696,
+      "x": 6160,
       "y": 26601,
-      "w": 1752,
-      "h": 2159,
+      "w": 1984,
+      "h": 2175,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · fără ghid"
     },
     "S14-rapoarte-productie--seria-2025.dc.html": {
-      "x": 7528,
+      "x": 8224,
       "y": 26601,
       "w": 1440,
       "h": 2227,
@@ -678,15 +678,15 @@
       "title": "S14 · Rapoarte · Producție · Seria 2025 (ciclu închis)"
     },
     "S14-rapoarte-productie--observator-se-exporta.dc.html": {
-      "x": 9048,
+      "x": 9744,
       "y": 26601,
-      "w": 2008,
-      "h": 2123,
+      "w": 2240,
+      "h": 2139,
       "expand": "fill",
       "title": "S14 · Rapoarte · Producție · observator · se exportă"
     },
     "S14-rapoarte-productie--eroare-la-incarcare.dc.html": {
-      "x": 11136,
+      "x": 12064,
       "y": 26601,
       "w": 1440,
       "h": 1024,
@@ -694,7 +694,7 @@
       "title": "S14 · Rapoarte · Producție · eroare la încărcare"
     },
     "S14-rapoarte-productie--fara-ferma-de-ouat.dc.html": {
-      "x": 12656,
+      "x": 13584,
       "y": 26601,
       "w": 1440,
       "h": 1024,
@@ -702,14 +702,14 @@
       "title": "S14 · Rapoarte · Producție · fără fermă de ouat · exemplu de stare (D39)"
     },
     "S14-rapoarte-productie--telefon.dc.html": {
-      "x": 14176,
+      "x": 15104,
       "y": 26601,
       "w": 390,
       "h": 3511,
       "title": "S14 · Rapoarte · Producție · telefon"
     },
     "S14-rapoarte-productie--telefon-filtre.dc.html": {
-      "x": 14646,
+      "x": 15574,
       "y": 26601,
       "w": 390,
       "h": 844,
@@ -1961,7 +1961,7 @@
       "title": "S2 · Acasă · manager · fermă goală (Telița) · nimic de verificat · exemplu de stare (D39)"
     },
     "S4-ferma--pasari--pe-hale.dc.html": {
-      "x": 20088,
+      "x": 20256,
       "y": 800,
       "w": 3120,
       "h": 2327,
@@ -1969,7 +1969,7 @@
       "title": "S4 · Fermă · Păsări · pe hale"
     },
     "S4-ferma-rezumat--etichete.dc.html": {
-      "x": 23288,
+      "x": 23456,
       "y": 800,
       "w": 1440,
       "h": 2930,
@@ -1977,7 +1977,7 @@
       "title": "S4 · Fermă · Rezumat · etichete Mortalitate + Vânzare"
     },
     "S4-ferma-rezumat--pas-saptamana.dc.html": {
-      "x": 24808,
+      "x": 24976,
       "y": 800,
       "w": 1536,
       "h": 2232,
@@ -1985,21 +1985,21 @@
       "title": "S4 · Fermă · Rezumat · pas Săpt. (ales în filtre)"
     },
     "S4-ferma-rezumat--telefon.dc.html": {
-      "x": 26424,
+      "x": 26592,
       "y": 800,
       "w": 390,
       "h": 5233,
       "title": "S4 · Fermă · Rezumat · telefon"
     },
     "S4-ferma--pasari--telefon.dc.html": {
-      "x": 26894,
+      "x": 27062,
       "y": 800,
       "w": 390,
       "h": 3035,
       "title": "S4 · Fermă · Păsări · telefon"
     },
     "S4-ferma--pasari--telefon-filtre.dc.html": {
-      "x": 27364,
+      "x": 27532,
       "y": 800,
       "w": 390,
       "h": 844,

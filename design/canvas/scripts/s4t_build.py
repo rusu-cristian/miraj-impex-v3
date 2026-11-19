@@ -181,7 +181,7 @@ def tb_greutate():
                              f'({w["section"]}, {num(ddate(w["date"]))}); cântărire ilustrativă, Hîrbovăț nu are cântăriri în registru.'))
 def tb_productie():
     return ptable('pr', 'Producție', [('Total fermă', '', P.productie())],
-                  after=note('% ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină. Găini = la început de zi (săptămâna: la începutul ei). Stare: ±3 pct față de ghid.'))
+                  after=note('% ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină. Găini = la început de zi (săptămâna: la începutul ei). Stare: ±3 pct față de ghid. % Cat. 1–3 = ouăle categoriei ÷ ouă.'))
 
 # ---------------------------------------------------------------- Readout + GuideChart (S4 geometry: 540×216, drawn 1:1)
 CW, CH = s4.CW, s4.CH

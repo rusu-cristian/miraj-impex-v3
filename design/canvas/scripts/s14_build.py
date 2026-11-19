@@ -4,8 +4,8 @@ python3 -I s14_build.py <repo_root> [heights.json] [--canvas]   (--canvas also w
 Page order (screens S14): filters (Perioadă, Pas Zi / Săpt., Fermă, Exportă) → the PeriodTable (SYS14: every week open with its
 days, D166; per week the farm week row → its daily farm rows → the hall week rows H5 · H6 · H7, spec D3 rowGroups; foot
 "Total perioadă") → the % ouat Readout and the cycle Stats (D92, after the table).
-Columns (spec D3, D167 order): Găini (hens at the start of the day / week, D162) · Ouat (ouă, % ouat, ghid, față de ghid, stare;
-D156/D159 start-of-day basis; guide = Productivitate col I per age week, D184) · Incubabile · Masă ou · Mortalitate (real deaths, D155) · Hrană ♀ g/pasăre ·
+Columns (spec D3, D167 order): Găini (hens at the start of the day / week, D162) · Ouat (ouă, % ouat, ghid, față de ghid, stare, % Cat. 1–3
+of the row's eggs (D183, S4C), jos, % jos; D156/D159 start-of-day basis; guide = Productivitate col I per age week, D184) · Incubabile · Masă ou · Mortalitate (real deaths, D155) · Hrană ♀ g/pasăre ·
 Vânzare (the emptying sales, last group, D155/D167). Builders imported from design/system/scripts/sys14_build.py (through
 s4t_build → s4s_build): productie (farm and hall), farm_pasari / hall_pasari, hrana, ptable(rowgroups=…), block, never copied.
 Seria 2025 (closed): the previous flock's last 4 age weeks SAPT 62–65 on its own calendar (sys14 Cal, as S4 ciclu ales,
@@ -114,6 +114,7 @@ def ptable(guide=True, phone=False, skel=None):
     return cap, t
 NOTE_LAY = ('% ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină. Găini = la început de zi (săptămâna: la începutul ei). '
             f'Stare: {num("±3 pct")} față de ghidul Ross 308 ouat al săptămânii de vârstă.')
+NOTE_CAT = ' % Cat. 1–3 = ouăle categoriei ÷ ouă.'   # D183 (S4C): desktop only (the phone's Ouat tag has no category columns)
 NOTE_ROWS = (f'Sub fiecare săptămână: zilele fermei, apoi halele pe săptămână (ouăle se numără pe hală; zilele pe hale sunt în Fermă › Producție). '
              f'Mortalitate = morți reali; golirea din {num(R.ddm(R.EMPTYING_SINCE))} e Vânzare. Hrană {F}: zi = g din registru, săptămână = kg ÷ zile-găină hrănite. Masă ou = medie pe ouă.')
 # D163 (as S11 Consum and the Fermă Hrană tab): the register's ♀ kg cells of 460 kg/compartiment keep SAPT 57's week figure
@@ -124,18 +125,18 @@ NOTE_ODD = (f'Hrană {F} {num(R.SAPT(57))}: {num(n(W(57)["g_F"], 1) + " g")} pe 
             + t4.odd_note())
 def table(guide=True, phone=False):
     cap, t = ptable(guide, phone)
-    notes = [NOTE_LAY if guide else NOTE_LAY.split(' Stare:')[0] + ' Ciclul nu are ghid: coloanele ghid, față de ghid și stare lipsesc.', NOTE_ROWS, NOTE_ODD]
-    if phone: notes = [notes[0], NOTE_ROWS.split(' Mortalitate')[0], f'Pe telefon tabelul arată o grupă odată ({PHONE_TAG}; ghidul pe al doilea rând al celulei); alege alta din Filtrează. Găini rămâne.']
+    notes = [(NOTE_LAY if guide else NOTE_LAY.split(' Stare:')[0] + ' Ciclul nu are ghid: coloanele ghid, față de ghid și stare lipsesc.') + NOTE_CAT, NOTE_ROWS, NOTE_ODD]
+    if phone: notes = [notes[0][:-len(NOTE_CAT)], NOTE_ROWS.split(' Mortalitate')[0], f'Pe telefon tabelul arată o grupă odată ({PHONE_TAG}; ghidul pe al doilea rând al celulei); alege alta din Filtrează. Găini rămâne.']
     return (f'<section aria-labelledby="pr-h"><h2 class="ip-sr" id="pr-h">Producție pe săptămâni, zile și hale</h2>'
             + P.block('pr', cap, t, bar=False, touch=phone, after=s4.ptnote(*notes)) + '</section>')
-# loading: bars per leaf (ch of the usual figure): Găini 4 · ouă 4 · % 4 · ghid 4 · față 4 · stare 4 · jos 3 · % 4 · inc 4 · % 4 · g 3 · ♀ 2 · ♂ 2 · g 4 · ghid 3 · ♀ 4 · ♂ 3
-SKEL = [4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 3, 2, 2, 4, 3, 4, 3]
-# §54 on the loading table's heads (Vârstă, SAPT, then the 17 leaves): the loaded columns' px (S14N, measured on the
+# loading: bars per leaf (ch of the usual figure): Găini 4 · ouă 4 · % 4 · ghid 4 · față 4 · stare 4 · % Cat. 1–3 4 · 4 · 4 (S4C, D183: "6,2%") · jos 3 · % 4 · inc 4 · % 4 · g 3 · ♀ 2 · ♂ 2 · g 4 · ghid 3 · ♀ 4 · ♂ 3
+SKEL = [4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 3, 2, 2, 4, 3, 4, 3]
+# §54 on the loading table's heads (Vârstă, SAPT, then the 20 leaves): the loaded columns' px (S14N, measured on the
 # wide board). The loaded table is wider than the page (D167), so shares of the 1158 region cannot hold it: the heads declare the
 # loaded px and the loading board's body cells drop their 1% (.s14-skel, screen CSS; Chrome's auto layout lets a cell's %
 # beat a head's px), so every column sits where the loaded one does and the board is as wide as the loaded one
 DATA_W = 259.17
-COLW = [f'{x}px' for x in (110.11, 63.14, 78.36, 78.8, 72.23, 63.14, 106.13, 88.19, 63.14, 63.05, 78.8, 63.14, 113.3, 67.41, 59.59, 89.14, 68.72, 70.97, 63.14)]   # as drawn on the wide board (1720)
+COLW = [f'{x}px' for x in (110.11, 63.14, 78.36, 78.8, 72.23, 63.14, 106.13, 88.19, 78.06, 78.06, 78.06, 63.14, 63.05, 78.8, 63.14, 113.3, 67.41, 59.59, 89.14, 68.72, 70.97, 63.14)]   # as drawn on the wide board (1954; S4C: + % Cat. 1–3, 78.06 each)
 
 # ================================================================= shell (Rapoarte current, as S11)
 def sidebar(series='2026'):
