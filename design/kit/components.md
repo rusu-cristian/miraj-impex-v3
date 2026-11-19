@@ -3,7 +3,7 @@
 Each entry lists its purpose, states and the tokens it uses. Live previews are in the Impex Line Panel design system; markup and styles are in `components/bundle.css` (`ip-` classes).
 
 **Shared behaviour for every component:**
-- `focus-visible` is a 2px `focus` ring with a 2px offset.
+- `focus-visible` is a 2px `focus` ring with a 2px offset; input-type fields draw it on their own edge instead (FW02, D149, see TextField).
 - Touch targets are at least 44px.
 - Phone controls use `control-h-touch`.
 - Icons are decorative unless the component has no text, in which case it needs an `aria-label`.
@@ -112,7 +112,7 @@ Text, decimal, password and note inputs.
 - **Field:** `raised`, 1px `line-strong`, radius `radius-sm`. The label sits above in 12px `ink-secondary`.
 - **Units** are a suffix: g, kg, lei/kg, %.
 - **States:**
-  - focus: `ink` border + `focus` ring
+  - focus: the 2px `focus` ring on the field's own edge, inside its box (covers the border; the field keeps its size, FW02/D149); with an error or warning the `fault`/`warn-lamp` hair stays outermost and the ring runs one hair inside it
   - error: `fault` border + an error line
   - read-only: `sunken`
   - disabled
@@ -125,7 +125,7 @@ Whole-number input for birds and eggs. The sex is marked by a 3px inner left bar
 
 - **Empty:** "–", meaning null, not 0.
 - **Large:** height `count-input-h`, style `readout` (Plex Mono 20).
-- **States:** warning (`warn-lamp` border + a line on `warn-bg`), error (`fault`), saved (read-only).
+- **States:** warning (`warn-lamp` border + a line on `warn-bg`), error (`fault`), saved (read-only); focus as TextField (ring on the edge, the sex bar keeps its 3px beside it, FW02).
 - **Input:** `inputmode="numeric"`. Enter moves to the next field.
 
 
@@ -784,7 +784,7 @@ CSS in additions.css section 53 (both copies, identical). Replaces four copies o
 - **Anatomy:** `div.ip-select` (anchor; the Sidebar adds `ip-series` for its slot) > `div.ip-input.ip-select__btn[role=combobox][tabindex=0]` (`aria-haspopup=listbox`, `aria-expanded`, `aria-controls`, `aria-labelledby` the visible label's id, `aria-describedby` hint or error, `aria-activedescendant` while open) > `span.ip-select__val` (+ Lamp + word) + Lucide chevron (chevron-up while open), then `ul.ip-menu.ip-select__menu[role=listbox][tabindex=-1]` (`hidden` while closed): `li.ip-menu__group[role=presentation]` captions and `li.ip-menu__item.ip-select__opt[role=option][aria-selected]` = `span.ip-select__chk` (aria-hidden; Lucide check on the chosen option, every option keeps the 16px slot) + `span.ip-select__txt` > `span.ip-select__top` (name, then its state at the end: Lamp + word, SexCount pair or reason `ip-note`) + optional `ip-num` line (dates, week). A popup with actions (CycleSelector) = `div.ip-menu.ip-select__menu` > `ul.ip-select__list[role=listbox]` + caption + `button.ip-menu__item.ip-select__act` (leading icon or empty `ip-select__chk`).
 - **Keys (APG select-only):** focus stays on the combobox; ↓/Enter/Space/Alt+↓ open; ↑↓ Home End PgUp PgDn and type-ahead move the active option (`is-active`, `sunken`); Enter/Space/Alt+↑ choose and close; Esc closes unchanged; Tab chooses and moves on. `aria-disabled` options (`ink-disabled`, reason word kept) are never chosen.
 - **Phone:** the same combobox with `ip-input--touch` opens the section 33 BottomSheet: `aria-haspopup="dialog"`, `aria-controls` only while open, no hidden listbox in the page (now also S18's placement rows and the S10/S18 farm fields). Select inside a sheet: the outer sheet goes inert, Esc closes only the top sheet, focus returns to the field (pf-farm; S14 filter sheet, FIN12, D133).
-- **States:** placeholder `is-empty` (`ink-muted`); open = `ink` edge; disabled = `aria-disabled` + `is-disabled` (bundle look), still focusable with the system ring, the hint says why, no list; error = `is-error` + `aria-invalid` + `aria-describedby` the field message. Value 400 like a field value; a value standing in for its row or region's code (Sidebar series, SexCountRow section) is `b` (500). No font reset, so touch values are 17/24 like a native touch select (S9 Din/În and S18 placement sections were 14px).
+- **States:** placeholder `is-empty` (`ink-muted`); open = `ink` edge; disabled = `aria-disabled` + `is-disabled` (bundle look), still focusable with the system ring (on the box's edge since FW02, §68), the hint says why, no list; error = `is-error` + `aria-invalid` + `aria-describedby` the field message. Value 400 like a field value; a value standing in for its row or region's code (Sidebar series, SexCountRow section) is `b` (500). No font reset, so touch values are 17/24 like a native touch select (S9 Din/În and S18 placement sections were 14px).
 - **Unified look:** chevron `ink-secondary` everywhere (the Sidebar series and the CycleSelector had `ink`); the menu sits `space-1` under the field, as wide as it (`min-width: 100%`), z-index 3; the chosen option's check in the leading slot (S19 Ghid had it at the end; S9's Din list gains the empty slot).
 - **Rule applied:** S4 ciclu nou "Ghid" (Fără ghid · Ghiduri de ouat · Ross 308 ouat "ghidul fermei", the same field as S19's Ghid, D112), S18 "Ferma de creștere" (Telița with its state: "goală din 28.02.2026", "6 secțiuni" or the ♀ · ♂ alive on the refused board) and S10 "Fermă" (Hîrbovăț with ♀ · ♂ alive, Telița disabled "goală") became `.ip-select`; S8 "Secțiune" (phone, opens the section 33 BottomSheet of sections with ♀ · ♂ alive or "goală") moved from its own `div.ip-input[role=combobox]` + `s8-grow` to `.ip-select` (fix round 1). Native selects kept (plain names, from a grep of the boards): S6 mortality Motiv (boală, șchiopătare, altul), S7 Tip hrană per section, S11/S17 Fermă filter (Toate fermele, Hîrbovăț, Telița), S17 Utilizator filter, S13 Tip hrană, S22 Rol. FIN12 (D133) brought in the last two: S14/S14S Fermă filter (desktop listbox, phone filter sheet; Telița disabled, reason `ip-note` "creștere, fără ouă") and S13 Fermă (phone boards and desktop panel; Telița disabled "fără ciclu deschis"). Native selects are now only the plain lists above. The select chevron rule lives only in additions.css (fix round 1 dropped the screen copies).
 - **Tokens:** existing only (`ink`, `ink-secondary`, `ink-muted`, `space-1|2|4`, `--ip-fs-small`, `--ip-focus-*`); no new values.
@@ -926,3 +926,9 @@ CSS in additions.css section 66 (new; both copies, identical); S2/S15 desktop ma
 ### FY04 · Failure Banner paragraphs, 19.11.2026
 - **Banner · failure copy** (D147, FINAL2 finding 4): one layout on every failure Banner, lead ¶ retry line + what is kept (Banner › Failure copy › Paragraphs). Moved: S6–S10, S13, S16 save errors and the Banner preview (retry line from the lead into the kept paragraph); S2, S15 load errors, S18 telefon and S19–S22 save errors, S22 resetare eșuată and the OneTimePassword preview (one paragraph split). Text word for word; no CSS change (section 49's body, space-2 between `p`s; SYS12 `banner()` takes a list of paragraphs).
 - **Measured** (fallback fonts): icon on the first line (0) and focus on Reîncearcă on every save error; `role=alert` kept (the Dialog Banner keeps none). Banners +8 (paragraph gap) where they were one paragraph (S15 +26: one more line), the S6–S13/S16 save errors keep their height (S6/S7/S13/S8 still end 32 above the SaveBar). S18 telefon eroare la salvare 1624 → 1632 (its panel body would scroll 8); desktop panel bodies (S19, S21, S22) do not scroll at 1440 or 1280. No new tokens.
+
+### FW02 · Input focus ring on the field edge, 19.11.2026
+- **Field focus** (§68, D149, user): every input-type field (TextField, textarea/Motiv, CountInput, DateField, native select in `.ip-input`, the §53 combobox box incl. aria-disabled, the read-only OneTimePassword field, S11/S12 price inputs, S1 login fields) draws the 2px `focus` ring with `outline-offset: −focus-w`: its outer edge is the field's border-box edge, it covers the border and follows `radius-sm`, so the focused field has its unfocused footprint and lines up with its neighbours. Real `:focus-within`/`:focus-visible` and the demo `is-focus`/`ip-focus` alike; §1, §30 and §53 no longer draw a ring of their own, bundle.css `.ip-input.is-focus` is overridden.
+- **Error / warning + focus:** offset −(focus-w + 2 hair): the `fault`/`warn-lamp` hair stays outermost, a hair of the fill, then the ring (fault and focus are 1.1:1, so they are told apart by the gap, not hue). CountInput's sex bar moves one step in while focused and keeps its 3px beside the ring.
+- **Unchanged:** disabled and read-only looks; keys inside fields (S1 eye ring inset, the field drawing none; DateField calendar key); keys, links, rows, crumbs, checkboxes, segments, headings, FileDrop. Forced colours: the ring stays an outline, in `Highlight`.
+- **Contrast:** `focus` 6.1:1 on raised, 4.7:1 on sunken, 5.1:1 on ground, 5.7:1 on panel. Boards change through additions.css only: no markup, no screen CSS, heights and canvas.json unchanged. Tokens: existing only (`focus`, `--ip-focus-w`, `--ip-hair`, `--ip-mark-w`, `raised`, `rec-hen`, `rec-rooster`).

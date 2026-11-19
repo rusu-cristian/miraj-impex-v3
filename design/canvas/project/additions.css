@@ -94,7 +94,7 @@ a.ip-tab,button.ip-tab{text-decoration:none;cursor:pointer;background:transparen
 .ip-input:hover:not(.is-disabled):not([aria-disabled="true"]):not(.is-readonly):not(.is-error):not(.is-warn):not(.is-focus):not(:disabled):not(:focus-within):not(:has(> :disabled)):not(:has(> [readonly])),
 .ip-input.is-hover{border-color:var(--ink-secondary)}
 .ip-input:focus-within:not(.is-disabled),
-input.ip-input:focus-visible,select.ip-input:focus-visible,textarea.ip-input:focus-visible{border-color:var(--ink);outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+input.ip-input:focus-visible,select.ip-input:focus-visible,textarea.ip-input:focus-visible{border-color:var(--ink)} /* the ring: section 68 (FW02, D149) */
 .ip-input.is-error:focus-within{border-color:var(--fault)}
 .ip-input.is-warn:focus-within{border-color:var(--warn-lamp)}
 .ip-input:disabled,.ip-input:has(> :disabled){background:var(--sunken);color:var(--ink-disabled);border-color:var(--line);cursor:not-allowed}
@@ -1220,7 +1220,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-otp > .ip-label{margin:0}
 .ip-otp__keys{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
 .ip-otp__pw{width:100%;height:auto;min-height:var(--control-h-touch);font:500 var(--ip-readout-size)/var(--ip-readout-lh) var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:var(--space-1);color:var(--ink);cursor:text}
-.ip-otp__pw:focus-visible,.ip-otp__pw.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+/* focus ring on the field's edge: section 68 (FW02, D149) */
 .ip-otp__pw::selection{background:var(--focus);color:var(--raised)} /* after select(): the whole value, clearly marked on sunken */
 .ip-otp__pw.is-selected{background:var(--focus);color:var(--raised)} /* preview-only stand-in for the selected value (no script);
  * it fills the whole field, real ::selection only the text: screens must not use is-selected as a field style. */
@@ -1713,7 +1713,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-select__btn[aria-expanded="true"]{border-color:var(--ink)}
 .ip-select__btn:is(.is-disabled,[aria-disabled="true"]){cursor:not-allowed}
 .ip-select__btn:is(.is-disabled,[aria-disabled="true"]) > .ip-icon{color:inherit}
-.ip-select__btn:is(.is-disabled,[aria-disabled="true"]):is(:focus-visible,.ip-focus){outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+/* disabled box still focusable: its ring sits on the field's edge as every field's, section 68 (FW02, D149) */
 .ip-select__menu{position:absolute;top:calc(100% + var(--space-1));left:0;min-width:100%;z-index:3;list-style:none;margin:0}
 .ip-select__menu[hidden]{display:none}
 .ip-select__list{list-style:none;margin:0;padding:0}
@@ -1994,3 +1994,42 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-shell__main .ip-tablescroll--framed{background:var(--raised)}
 .ip-shell__main .ip-gimp > :is(.ip-drop,.ip-gimp__box):not(:has(~ :is(.ip-drop,.ip-gimp__box))){flex-grow:1}
 .ip-shell__main .ip-gimp > .ip-drop{justify-content:center}
+
+/* =====================================================================================================
+ * FW02 · Input focus ring on the field edge (D149, user 19.11.2026), system-wide. Spec: components.md › Additions › FW02.
+ * ===================================================================================================== */
+
+/* ---------- 68. Field focus ring on the field's own edge (FW02) ---------- */
+/* A focused input-type field draws the system ring (focus-w, focus) on its own edge, inside its box, instead of
+ * focus-offset outside it: the focused field keeps its unfocused size and lines up with the fields beside it.
+ * Fields: TextField and textarea (div/span.ip-input with an input/textarea, or a native input/select/textarea.ip-input:
+ * S11/S12 price inputs, Motiv, S1 login fields, S20 Nume), CountInput (ip-count), DateField, a native select in
+ * .ip-input, the section 53 combobox box (ip-select__btn, also while aria-disabled: still focusable) and the read-only
+ * OneTimePassword field. Static demo: is-focus / ip-focus on the same box.
+ * Plain: outline-offset = −focus-w, so the ring's outer edge is the field's border-box edge: it covers the 1px border
+ * (ink while focused) and 1px inside, and follows radius-sm (outer radius = radius-sm). focus 6.1:1 on raised, 4.7:1
+ * on sunken (read-only), 5.1:1 on ground and 5.7:1 on panel round the field.
+ * Error and warning (is-error, is-warn, aria-invalid): the ring steps two hairs further in, so the fault / warn-lamp
+ * border stays the outermost hair line, a hair of the field's fill, then the green ring: two separate lines that read
+ * apart without hue (fault and focus are 1.1:1 to each other), and the box does not grow.
+ * Disabled and read-only looks are unchanged (only their focus ring moves inside). Keys inside a field (S1 eye, the
+ * DateField calendar key) keep their own rings (section 31: the field draws none while its eye key has focus).
+ * CountInput keeps its full sex bar beside the ring (below). Forced colours: the ring stays an outline, in Highlight, so it shows apart from the CanvasText border.
+ * Was: section 1's focus-within rule, the OneTimePassword rule (section 30) and the disabled-combobox rule (section 53)
+ * drew outline-offset focus-offset (the box looked 4px larger on every side), bundle.css .ip-input.is-focus too. */
+.ip-input:focus-within:not(.is-disabled),
+.ip-input.is-focus,.ip-input.ip-focus,
+:is(input,select,textarea).ip-input:focus-visible,
+.ip-select__btn:is(.is-disabled,[aria-disabled="true"]):is(:focus-visible,.ip-focus),
+.ip-otp__pw:is(:focus-visible,.ip-focus){outline:var(--ip-focus-w) solid var(--focus);outline-offset:calc(-1 * var(--ip-focus-w))}
+.ip-input:is(.is-error,.is-warn,[aria-invalid="true"],:has(> [aria-invalid="true"])):is(:focus-within,.is-focus,.ip-focus){outline-offset:calc(-1 * (var(--ip-focus-w) + var(--ip-hair) + var(--ip-hair)))}
+/* CountInput: the 3px rec-hen / rec-rooster bar (bundle.css inset box-shadow) would lose its outer pixel under the ring,
+ * so while focused it reaches one focus-w further in and shows its full mark-w beside the ring; with an error the
+ * hair gap after the fault edge stays the field's fill and the bar shows its mark-w inside the ring. */
+.ip-count:is(.ip-count--hen,.ip-count--rooster):is(:focus-within,.is-focus,.ip-focus){--ip-count-bar:var(--rec-hen);box-shadow:inset calc(var(--ip-mark-w) + var(--ip-focus-w) - var(--ip-hair)) 0 0 var(--ip-count-bar)}
+.ip-count.ip-count--rooster:is(:focus-within,.is-focus,.ip-focus){--ip-count-bar:var(--rec-rooster)}
+.ip-count:is(.ip-count--hen,.ip-count--rooster):is(.is-error,.is-warn,[aria-invalid="true"],:has(> [aria-invalid="true"])):is(:focus-within,.is-focus,.ip-focus){box-shadow:inset var(--ip-hair) 0 0 var(--raised),inset calc(var(--ip-mark-w) + var(--ip-focus-w) + var(--ip-hair)) 0 0 var(--ip-count-bar)}
+@media (forced-colors: active){
+  .ip-input:focus-within:not(.is-disabled),.ip-input.is-focus,.ip-input.ip-focus,:is(input,select,textarea).ip-input:focus-visible,
+  .ip-select__btn:is(.is-disabled,[aria-disabled="true"]):is(:focus-visible,.ip-focus),.ip-otp__pw:is(:focus-visible,.ip-focus){outline-color:Highlight}
+}

@@ -44,7 +44,7 @@ Don't:
 - **Hierarchy:** one title (24px), clear steps through heading 16, body 14, small 12, caption 11. Hierarchy from size and ink role, not colour.
 - **Alignment:** everything on the 4px grid; icons in one column, labels on one line, numbers in one right-aligned column.
 - **Contrast (WCAG 2.2 AA):** text ≥4.5:1 (use `ink`, `ink-secondary`, `ink-muted`; `ink-disabled` only on disabled); controls, borders that identify a control, and focus ≥3:1 (`line-strong`).
-- **Focus:** `:focus-visible` = 2px `focus` ring, 2px offset, on every interactive element, never removed.
+- **Focus:** `:focus-visible` = 2px `focus` ring, 2px offset, on every interactive element, never removed; input-type fields draw it on their own edge, inside the box (offset −2px, additions §68, D149).
 - **Targets:** ≥44px hit area on touch; phone controls `control-h-touch` (48) and CountInput 56. Desktop 32px controls keep ≥24px and are spaced.
 - **Keyboard:** everything reachable in order; Enter moves to the next CountInput; Dialog focus starts on Anulează; GuideChart has a keyboard readout and a hidden data table; CycleTrack blocks are focusable links with a text summary.
 - **Labels and roles:** visible label above every field; IconButton has `aria-label`; RecordTile is `aria-hidden` with the row text naming the type; RecordChip is `role="checkbox"` + `aria-checked`.
