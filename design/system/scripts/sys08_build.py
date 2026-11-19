@@ -1,5 +1,7 @@
 """Build SYS08 previews (MissingRow, EntryKeys, UnpricedCount): python3 sys08_build.py"""
-import pathlib
+import pathlib, sys, datetime as dt
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'canvas/scripts'))
+import realdata as D                                   # RF09: the design's one data module (realdata, today 18.11.2026)
 ROOT = pathlib.Path(__file__).resolve().parents[1] / 'components'  # from this script's place (design/system/scripts), so a copy writes into itself
 N = ' '  # thin no-break space for thousands
 
@@ -41,7 +43,7 @@ def mrow(entry, section, sexes, date, meta, farm=None, link=True, locked=False, 
     lead = '<span class="ip-sr">Completează: </span>' if link and not locked else ''
     btag = '<span class="ip-tag ip-tag--neutral">blocat</span>' if locked else ''
     title = f'<span class="ip-ev__title">{lead}{pre}{section} · <span class="ip-ev__type">{name}{signs}</span>{btag}</span>'
-    body = f'{tile(rec, icon)}<span class="ip-ev__main">{title}<span class="ip-ev__meta ip-num">{date} · SAPT 40 · {meta}</span></span>'
+    body = f'{tile(rec, icon)}<span class="ip-ev__main">{title}<span class="ip-ev__meta ip-num">{D.dd(date)} · SAPT {D.sapt(date)} · {meta}</span></span>'
     tag = ''
     lamp = '<span class="ip-ev__status"><span class="ip-lamp ip-lamp--warn">lipsă</span></span>'
     gos = f'<span class="ip-ev__go">{svg(IC["chev"], "ip-icon ip-icon--16") if (link and not locked) else ""}</span>'
@@ -53,47 +55,49 @@ def mrow(entry, section, sexes, date, meta, farm=None, link=True, locked=False, 
 def mhead(hid, scope):
     return f'<div class="ip-missing__head"><h2 class="ip-cap" id="{hid}">Lipsesc date</h2><p class="ip-note">{scope}</p></div>'
 
+T = D.TODAY
+WIN = [T - dt.timedelta(days=i) for i in range(7, 0, -1)]          # "ultimele 7 zile" before today
+# real: a compartment × sex with birds at the end of the day and no Hrană zilnică kg in the register (13.11.2026: H7.1, H7.2 ♀)
+MISS = [(d, x, sx) for d in reversed(WIN) for x in D.HSECS for sx in 'FM'
+        if D.sd(d, x, sx) and D.alive(x, sx, d) > 0 and not D.sd(d, x, sx)['kg']]
+assert MISS and all(d < T for d, _, _ in MISS)                     # today's saves are complete (Zilnic 08:15, Hrană 08:44)
+def ieri(d, x, sx):
+    r = D.sd(d - dt.timedelta(days=1), x, sx); return f' · ieri {D.n(r["g"])}{N}g' if r and r['g'] else ''
+def alive_m(d, x, sx): return f'{sex(sx, D.n(D.alive(x, sx, d)))} în viață'
+FARM = D.FARMS['hirbovat']['name']
+EX_SEC = D.HSECS[0]                                                 # D39 examples on a real compartment with birds today
+assert D.has_birds(EX_SEC)
 def missing(sfx):
-    today = f'16.11.2026'
-    real = [
-        mrow('f', 'H3.2', 'M', today, f'{sex("M", "426")} în viață · ieri 157{N}g'),
-        mrow('f', 'H4.2', 'F', today, f'{sex("F", f"4{N}107")} în viață · ieri 156{N}g'),
-    ]
-    scope = 'Hîrbovăț · azi de la <span class="ip-num">12:00</span> · ultimele <span class="ip-num">7</span> zile'
-    early = 'Hîrbovăț · <span class="ip-num">10:40</span> · ultimele <span class="ip-num">7</span> zile'
+    scope = f'{FARM} · azi de la <span class="ip-num">12:00</span> · ultimele <span class="ip-num">7</span> zile'
+    early = f'{FARM} · <span class="ip-num">10:40</span> · ultimele <span class="ip-num">7</span> zile'
     out = []
-    # 1 default (vet, real)
+    # 1 default (vet, real): the past-day gaps are locked for the vet (D07)
+    real = [mrow('f', x, sx, d, 'zi trecută · o completează managerul', locked=True) for d, x, sx in MISS]
     out.append(f'<section class="ip-missing" aria-labelledby="ms-a{sfx}">{mhead("ms-a"+sfx, scope)}<div class="ip-list">{"".join(real)}</div></section>')
-    # 2 state examples (D39)
+    # 2 state examples (D39): today's Zilnic and Hrană zilnică missing (both are saved on the real day)
     ex = [
-        mrow('z', 'H1.1', '', today, f'{sex("F", f"4{N}281")} · {sex("M", "429")} în viață'),
-        mrow('f', 'H4.2', 'F', '15.11.2026', f'zi trecută · o completează managerul', locked=True),
+        mrow('z', EX_SEC, '', T, f'{sex("F", D.n(D.alive(EX_SEC, "F")))} · {sex("M", D.n(D.alive(EX_SEC, "M")))} în viață'),
+        mrow('f', EX_SEC, 'M', T, alive_m(T, EX_SEC, 'M') + ieri(T, EX_SEC, 'M')),
     ]
-    out.append(cap('Exemple de stare (D39): Zilnic lipsă · zi trecută, vet (blocat)') +
+    out.append(cap('Exemple de stare (D39): Zilnic lipsă azi · Hrană zilnică lipsă azi') +
                f'<section class="ip-missing" aria-labelledby="ms-b{sfx}">{mhead("ms-b"+sfx, scope)}<div class="ip-list">{"".join(ex)}</div></section>')
-    # 3 manager, farm named
-    mg = [
-        mrow('f', 'H4.2', 'F', '15.11.2026', f'{sex("F", f"4{N}110")} în viață', farm='Hîrbovăț'),
-        mrow('f', 'H3.2', 'M', today, f'{sex("M", "426")} în viață · ieri 157{N}g', farm='Hîrbovăț'),
-    ]
+    # 3 manager, farm named, past day = link
+    mg = [mrow('f', x, sx, d, alive_m(d, x, sx) + ieri(d, x, sx), farm=FARM) for d, x, sx in MISS]
     out.append(cap('Manager · mai multe ferme: ferma în titlu · zi trecută = link (D07)') +
                f'<section class="ip-missing" aria-labelledby="ms-c{sfx}">{mhead("ms-c"+sfx, "fermele tale · azi de la <span class=\"ip-num\">12:00</span> · ultimele <span class=\"ip-num\">7</span> zile")}<div class="ip-list">{"".join(mg)}</div></section>')
     # 3b before 12:00, past days missing: past-day rows only, today not listed yet
-    pe = [mrow('f', 'H4.2', 'F', '15.11.2026', f'{sex("F", f"4{N}110")} în viață')]
+    pe = [mrow('f', x, sx, d, alive_m(d, x, sx)) for d, x, sx in MISS]
     out.append(cap('Înainte de 12:00 cu zile trecute lipsă (manager): doar zilele trecute, azi nu apare încă') +
                f'<section class="ip-missing" aria-labelledby="ms-g{sfx}">{mhead("ms-g"+sfx, early)}<div class="ip-list">{"".join(pe)}</div></section>')
     # 4 interaction
-    st = [
-        mrow('f', 'H3.2', 'M', today, f'{sex("M", "426")} în viață · ieri 157{N}g', state='is-hover'),
-        mrow('f', 'H3.2', 'M', today, f'{sex("M", "426")} în viață · ieri 157{N}g', state='is-pressed'),
-        mrow('f', 'H3.2', 'M', today, f'{sex("M", "426")} în viață · ieri 157{N}g', state='ip-focus'),
-    ]
+    d0, x0, s0 = MISS[0]
+    st = [mrow('f', x0, s0, d0, alive_m(d0, x0, s0) + ieri(d0, x0, s0), state=k) for k in ('is-hover', 'is-pressed', 'ip-focus')]
     out.append(cap('Stări: hover · apăsat · focus') + f'<div class="ip-list">{"".join(st)}</div>')
-    # 5 empty after 12:00, empty before 12:00, loading
-    out.append(cap('Nimic lipsă (după 12:00) · înainte de 12:00 · se încarcă') +
+    # 5 empty after 12:00, empty before 12:00 (D39: the real window has the gaps above), loading
+    out.append(cap('Nimic lipsă (după 12:00) · înainte de 12:00 (exemple de stare, D39) · se încarcă') +
         f'<div class="ip-stack" style="gap:var(--space-4)">'
         f'<section class="ip-missing" aria-labelledby="ms-d{sfx}">{mhead("ms-d"+sfx, scope)}<div class="ip-list"><p class="ip-missing__empty"><span class="ip-lamp ip-lamp--off">nimic lipsă</span><span>Toate secțiunile cu păsări au Zilnic și Hrană zilnică în ultimele <span class="ip-num">7</span> zile.</span></p></div></section>'
-        f'<section class="ip-missing" aria-labelledby="ms-e{sfx}">{mhead("ms-e"+sfx, early)}<div class="ip-list"><p class="ip-missing__empty"><span class="ip-lamp ip-lamp--off">nimic lipsă</span><span>Zilele <span class="ip-num">09.11.2026–15.11.2026</span> sunt complete. Lipsurile de azi apar de la <span class="ip-num">12:00</span>.</span></p></div></section>'
+        f'<section class="ip-missing" aria-labelledby="ms-e{sfx}">{mhead("ms-e"+sfx, early)}<div class="ip-list"><p class="ip-missing__empty"><span class="ip-lamp ip-lamp--off">nimic lipsă</span><span>Zilele <span class="ip-num">{D.drange(WIN[0], WIN[-1])}</span> sunt complete. Lipsurile de azi apar de la <span class="ip-num">12:00</span>.</span></p></div></section>'
         f'<section class="ip-missing" aria-labelledby="ms-f{sfx}" aria-busy="true">{mhead("ms-f"+sfx, scope)}<div class="ip-list">'
         + ''.join('<div class="ip-ev ip-ev--skel" aria-hidden="true"><span class="ip-skel ip-skel--tile"></span><span class="ip-ev__main"><span class="ip-skel ip-skel--w1"></span><span class="ip-skel ip-skel--w2"></span></span><span class="ip-skel ip-skel--w3"></span></div>' for _ in range(2))
         + '<span class="ip-sr">Se încarcă</span></div></section></div>')
@@ -103,11 +107,11 @@ def build_missing():
     d = missing('-d'); m = missing('-m')
     desk = ''.join(f'<div>{x}</div>' for x in d)
     phone = ''.join(f'<div>{x}</div>' for x in m)
-    html = ('<!-- @dsCard group="Data" height=2940 subtitle="SYS08" -->\n'
+    html = (f'<!-- @dsCard group="Data" height={H_MISS} subtitle="SYS08" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S2 · Acasă · Lipsesc date · desktop (coloană de 560 px)</span><div class="ip-stack" style="width:560px;gap:var(--space-5)">{desk}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{phone}</div></div></div>\n'
-        f'<p class="ip-note" style="margin:0">Hîrbovăț 16.11.2026: sample (D27), sample-hirbovat-2026.json › allocations_today (H3.2 ♂ și H4.2 ♀ fără grame; ieri 157{N}g și 156{N}g), daily (în viață). Zilnic H1.1 lipsă, H4.2 ♀ lipsă pe 15.11 și listele „nimic lipsă” sunt exemple de stare (D39): pe 16.11 Zilnic e salvat la 08:34 și 15.11 e complet. Telița e goală din 28.02.2026, deci nu apare (doar secțiuni cu păsări).</p>\n'
+        f'<p class="ip-note" style="margin:0">{NOTE_MISS}</p>\n'
         '</div>\n')
     (ROOT / 'MissingRow').mkdir(exist_ok=True)
     (ROOT / 'MissingRow' / 'preview.html').write_text(html, encoding='utf-8')
@@ -138,7 +142,7 @@ def keys_block(hid, ks, note='', disabled=False, states=None):
     return f'<section class="ip-entrykeys" aria-labelledby="{hid}"><h2 class="ip-cap" id="{hid}">Înregistrează</h2><ul class="ip-entrykeys__list">{lis}</ul>{n}</section>'
 
 def build_keys():
-    tel = 'Telița e goală din <span class="ip-num">28.02.2026</span>. Intrările se deschid cu ciclul nou.'
+    tel = f'{D.FARMS["telita"]["name"]} e goală din <span class="ip-num">{D.dd(D.CTEL["end_date"])}</span>. Intrările se deschid cu ciclul nou.'
     d = [
         ('Manager · 6 chei · 1136 px, un rând', keys_block('ek-m-d', KEYS)),
         ('Vet · 3 chei · aceeași lățime de cheie', keys_block('ek-v-d', KEYS[:3])),
@@ -152,16 +156,20 @@ def build_keys():
     ]
     dd = ''.join(f'<div>{cap(t)}{b}</div>' for t, b in d)
     mm = ''.join(f'<div>{cap(t)}{b}</div>' for t, b in m)
-    html = ('<!-- @dsCard group="Actions" height=1464 subtitle="SYS08" -->\n'
+    html = (f'<!-- @dsCard group="Actions" height={H_KEYS} subtitle="SYS08" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S2 · Acasă · chei de introducere · 1440 (conținut 1136 px)</span><div class="ip-stack" style="width:1136px;gap:var(--space-5)">{dd}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{mm}</div></div></div>\n'
-        '<p class="ip-note" style="margin:0">Telița: real, ciclu închis 28.02.2026 (cycles.json). Ordinea cheilor: screens.md S2 (vet: Zilnic, Hrană zilnică, Cântărire; managerul adaugă Transfer, Vânzare, Livrare hrană).</p>\n'
+        f'<p class="ip-note" style="margin:0">Telița: real, ciclu închis {D.dd(D.CTEL["end_date"])} (cycles.json). Ordinea cheilor: screens.md S2 (vet: Zilnic, Hrană zilnică, Cântărire; managerul adaugă Transfer, Vânzare, Livrare hrană).</p>\n'
         '</div>\n')
     (ROOT / 'EntryKeys').mkdir(exist_ok=True)
     (ROOT / 'EntryKeys' / 'preview.html').write_text(html, encoding='utf-8')
 
 # ---------------------------------------------------------------- UnpricedCount
+UP = D.UNPRICED; UP_KG = sum(r['qty_kg'] for r in UP)               # real: Hîrbovăț deliveries with no price in the register
+UP_BY = [(D.FEED_TYPES[ft]['name'], [r for r in UP if r['feed_type_id'] == ft]) for ft in ('ft-breeder2', 'ft-cocosi')]
+UP_BY = [(t, rs) for t, rs in UP_BY if rs]
+assert sum(len(rs) for _, rs in UP_BY) == len(UP) and not [r for r in D.DELIVERIES_TELITA if not r['priced']]
 def unpriced(hid, kind='default', touch=False, btn_state=''):
     t = ' ip-btn--touch' if touch else ''
     head = f'<div class="ip-unpriced__head">{tile("feed", "coins")}<h2 class="ip-cap" id="{hid}">Livrări fără preț</h2></div>'
@@ -174,13 +182,12 @@ def unpriced(hid, kind='default', touch=False, btn_state=''):
                 '<p class="ip-unpriced__fig"><span class="ip-unpriced__val">0<small> livrări</small></span></p>'
                 '<p class="ip-note">Toate livrările au preț.</p>'
                 f'<a class="ip-btn ip-btn--secondary{t}" href="#">Vezi livrările</a></section>')
+    lines = ''.join(f'<li><span>{FARM} · {t.replace(" ", "&nbsp;")}</span><span><span class="ip-num">{len(rs)}</span> {"livrare" if len(rs) == 1 else "livrări"} · '
+                    f'<span class="ip-num">{D.n(sum(r["qty_kg"] for r in rs))} kg</span></span></li>' for t, rs in UP_BY)
     return (f'<section class="ip-unpriced" aria-labelledby="{hid}">{head}'
-            f'<p class="ip-unpriced__fig"><span class="ip-unpriced__val">4<small> livrări</small></span><span class="ip-unpriced__kg">76{N}107 kg</span></p>'
-            '<ul class="ip-unpriced__list">'
-            f'<li><span>Hîrbovăț · Breeder&nbsp;2</span><span><span class="ip-num">3</span> livrări · <span class="ip-num">72{N}068 kg</span></span></li>'
-            f'<li><span>Hîrbovăț · Cocoși</span><span><span class="ip-num">1</span> livrare · <span class="ip-num">4{N}039 kg</span></span></li>'
-            '</ul>'
-            '<p class="ip-note">Cea mai veche din <span class="ip-num">04.11.2026</span>. Kg fără preț nu intră în cost.</p>'
+            f'<p class="ip-unpriced__fig"><span class="ip-unpriced__val">{len(UP)}<small> {"livrare" if len(UP) == 1 else "livrări"}</small></span><span class="ip-unpriced__kg">{D.n(UP_KG)} kg</span></p>'
+            f'<ul class="ip-unpriced__list">{lines}</ul>'
+            f'<p class="ip-note">Cea mai veche din <span class="ip-num">{D.dd(min(r["date"] for r in UP))}</span>. Kg fără preț nu intră în cost.</p>'
             f'<a class="ip-btn ip-btn--secondary{t}{" " + btn_state if btn_state else ""}" href="#">Adaugă prețurile</a></section>')
 
 def build_unpriced():
@@ -196,14 +203,25 @@ def build_unpriced():
     ]
     dd = ''.join(f'<div style="width:360px">{cap(t)}{b}</div>' for t, b in d)
     mm = ''.join(f'<div>{cap(t)}{b}</div>' for t, b in m)
-    html = ('<!-- @dsCard group="Data" height=1371 subtitle="SYS08" -->\n'
+    html = (f'<!-- @dsCard group="Data" height={H_UNP} subtitle="SYS08" -->\n'
         '<div class="ip-root ip-stack" style="gap:var(--space-6)">\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">S2 · Acasă · proprietar · desktop (coloană de 360 px)</span><div class="ip-row" style="align-items:flex-start;gap:var(--space-5)">{dd}</div></div>\n'
         f'<div><span class="ip-cap" style="display:block;margin:0 0 var(--space-2)">390 · telefon</span><div class="ip-phone" style="width:390px"><div class="ip-stack" style="padding:var(--space-4);gap:var(--space-5)">{mm}</div></div></div>\n'
-        f'<p class="ip-note" style="margin:0">Sample (D27): sample-hirbovat-2026.json › deliveries: 4 livrări fără preț la Hîrbovăț, 04.11–14.11.2026 (Breeder 2 24{N}068 + 24{N}000 + 24{N}000 kg; Cocoși 4{N}039 kg) = 76{N}107 kg. Toate livrările Telița au preț. „0 livrări” e un exemplu de stare (D39).</p>\n'
+        f'<p class="ip-note" style="margin:0">{NOTE_UNP}</p>\n'
         '</div>\n')
     (ROOT / 'UnpricedCount').mkdir(exist_ok=True)
     (ROOT / 'UnpricedCount' / 'preview.html').write_text(html, encoding='utf-8')
+
+SXS = {'F': '♀', 'M': '♂'}
+NOTE_MISS = (f'{FARM}, azi {D.dd(T)} (realdata, D152). Real: în ultimele 7 zile ({D.drange(WIN[0], WIN[-1])}) lipsește Hrana zilnică doar la '
+             + ', '.join(f'{x} {SXS[sx]}' for _, x, sx in MISS) + f' pe {", ".join(sorted({D.dd(d) for d, _, _ in MISS}))} (grame fără kg în registru; '
+             f'ieri = grama zilei de dinainte, în viață = la sfârșitul zilei); pentru veterinar e o zi trecută, deci blocat; azi Zilnic și Hrana zilnică sunt salvate. '
+             f'Zilnic lipsă și Hrană zilnică lipsă azi la {EX_SEC} și listele „nimic lipsă” sunt exemple de stare (D39). Telița e goală din '
+             f'{D.dd(D.CTEL["end_date"])}, deci nu apare (doar secțiuni cu păsări).')
+NOTE_UNP = (f'Real (feed-deliveries.json): {len(UP)} livrări fără preț la {FARM}, {D.drange(min(r["date"] for r in UP), max(r["date"] for r in UP))} ('
+            + '; '.join(f'{t} ' + ' + '.join(D.n(r['qty_kg']) for r in rs) + ' kg' for t, rs in UP_BY) + f') = {D.n(UP_KG)} kg. Toate livrările Telița au preț. '
+            '„0 livrări” e un exemplu de stare (D39).')
+H_MISS, H_KEYS, H_UNP = 3048, 1464, 1371   # @dsCard heights = the preview page's height at 1440 (sys08_render.py prints it; re-measure after a change)
 
 build_missing(); build_keys(); build_unpriced()
 print('ok')

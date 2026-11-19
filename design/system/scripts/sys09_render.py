@@ -21,6 +21,8 @@ async def main():
             hs = await pg.evaluate("""() => [...document.querySelectorAll('.ip-ev--act,.ip-ev--change')].map(e=>Math.round(e.getBoundingClientRect().height))""")
             tg = await pg.evaluate("""() => [...document.querySelectorAll('.ip-ev__acts .ip-btn,.ip-ev__more .ip-iconbtn,.ip-ev__mod .ip-link,.ip-ev__menu .ip-menu__item')].filter(e=>e.offsetParent).map(e=>{const r=e.getBoundingClientRect();return Math.round(r.height)})""")
             print(comp, 'overflow:', ov[:6], 'row heights:', sorted(set(hs)), 'target heights:', sorted(set(tg)))
+            hh = await pg.evaluate("() => [Math.round(document.querySelector('.ip-root').getBoundingClientRect().height), document.body.scrollHeight]")
+            print(comp, 'height (root, page):', hh, '· @dsCard height =', hh[1])
             await pg.screenshot(path=str(OUT/f'{comp}-{tag}.png'), full_page=True)
             await pg.close()
         await b.close()
