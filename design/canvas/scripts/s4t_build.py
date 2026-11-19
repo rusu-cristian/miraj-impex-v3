@@ -1,6 +1,6 @@
 """Build the S4 · Fermă tab boards (S4N, D154 table first): Păsări, Hrană, Greutate, Producție, one desktop board per tab
-(owner, today 18.11.2026 = SAPT 59, Hîrbovăț · Seria 2026, period "4 săpt." = SAPT 56–59, grain "Săpt." with the current week
-open, D159), and the Rezumat table for the S4 default board (s4_build.py imports tb_rezumat / main_rezumat from here).
+(owner, today 18.11.2026 = SAPT 59, Hîrbovăț · Seria 2026, period "4 săpt." = SAPT 56–59, D159; grain "Zi": every week open
+with its days, newest first, D166), and the Rezumat table for the S4 default board (s4_build.py imports tb_rezumat / main_rezumat from here).
 python3 -I s4t_build.py <repo_root> [--canvas]
 Every tab opens on its PeriodTable (SYS14, additions.css §71): the row and column builders are imported from
 design/system/scripts/sys14_build.py (ptable, block, farm_pasari, hall_pasari, productie, hrana, greutate), never copied;
@@ -72,10 +72,11 @@ def chips(on):
             out += s4.chip(k, CHIPW[k], k in on)
     return f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{out}</div>'
 def filterbar(tab):
-    """D159: period "4 săpt." (SAPT 56–59), grain Săpt.; chips = types of the period (D45). D165: the tag state is shared
+    """D159: period "4 săpt." (SAPT 56–59); grain Zi (D166: every week open, each key can close its week; Săpt. = week rows
+    only); chips = types of the period (D45). D165: the tag state is shared
     across tabs, all on by default (a tab shows the groups of the tags it has)."""
     on = set(PTYPES)
-    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", s4.PERIODS, 1)}{s4.seg("Pas", ["Zi", "Săpt."], 1)}{s4.EXPORT}{chips(on)}</div>'
+    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", s4.PERIODS, 1)}{s4.seg("Pas", ["Zi", "Săpt."], 0)}{s4.EXPORT}{chips(on)}</div>'
 def main(tab, panel):
     return f'''<main class="ip-shell__main s4-main">
 {s4.header('default')}
@@ -94,10 +95,11 @@ PART = (f'<span class="ip-num">{R.ddm(W0)}–{R.ddm(W1)}</span> · {(W1 - W0).da
         f'<span class="ip-num">{W0.day:02d}–{R.ddm(W1)}</span> · {(W1 - W0).days + 1} din 7 zile')    # D165: "17–18.11"
 assert W0.month == W1.month
 FIT = {'rz': (True, True), 'hr': (False, True), 'gr': (True, True), 'pr': (True, True)}  # uid → (dense, wrap), measured at 1440 (S4N fix 1)
-def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=(WK,), weighings=False, after='', dense=False, wrap=False):
+def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None, weighings=False, after='', dense=False, wrap=False):
     """D165: a Fermă table fits the 1440 page; density and wrapping heads only where a table needs them to fit:
     dense = ip-ptable--dense (SYS14: figure cells one spacing step narrower, same row height), wrap = FIN14 .ip-table--wraphead
-    (figure heads may wrap between words). Hale / Compartimente and every table at 1280 may scroll under the sticky column."""
+    (figure heads may wrap between words). Hale / Compartimente and every table at 1280 may scroll under the sticky column.
+    open_weeks None = every week of the period open (D166, SYS14 default)."""
     cap = f'{tab} · {SER}' + (f' · {scope}' if scope else '')
     dense, wrap = FIT.get(uid, (dense, wrap))
     t, _ = P.ptable(uid, cap, sections, open_weeks=open_weeks, weighings=weighings)

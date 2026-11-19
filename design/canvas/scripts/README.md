@@ -4,7 +4,7 @@ Each `sNN_build.py` writes one screen row of boards into `design/canvas/project/
 as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scripts; python3 -I sNN_build.py $R [--canvas]`.
 
 ## Rules (FIN02G, `canvas_rows.py`)
-- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2272/2426).
+- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2944/2426).
 - canvas.json is written only with `--canvas` (scripts with no canvas step accept and ignore it). Imported builds never write it.
 - Under `--canvas` every existing entry keeps its x and y (w/h/title refreshed in place). A row with no entry yet goes below the
   lowest row (row y + tallest h + 120). A run that adds a board lays the row out again (80 px gaps). Overlapping boards stop the save.
@@ -24,8 +24,8 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S12 | `s12_build.py --canvas` (h/title refreshed in place, RF03) |
 | S13 | `s13_build.py --canvas` (h/title refreshed in place, RF03; rewrites the S7 boards byte-identical) |
 | S6  | `s6_build.py --canvas`, `s6s_build.py --canvas` (h/title refreshed in place, RF04) |
-| S9  | `s9_build.py` (no canvas step) |
-| S10 | `s10_build.py --canvas` |
+| S9  | `s9_build.py --canvas` (h/title refreshed in place, RF05) |
+| S10 | `s10_build.py --canvas` (h/title in place; tall default re-measured by `s10_render.py --heights`, RF05) |
 | S2  | `s2_build.py --canvas`, `s2s_build.py --canvas` |
 | S14 | `s14_build.py --canvas`, `s14s_build.py --canvas` |
 | S8  | `s8_build.py --canvas`, `s8s_build.py --canvas` |
@@ -41,7 +41,8 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 S4/S7/S11/S12/S13/S6/S9 entries were placed by hand: their x never changes; y only through `canvas_rows.py relayout`, and the
 S4 Rezumat entries' h/title through `s4s_build.py`/`s4_build.py --canvas` (RF01), the S7 ones through `s7_build.py`/`s7s_build.py --canvas` (RF02),
 the S11/S12/S13 ones through `s11_build.py`/`s12_build.py`/`s13_build.py --canvas` (RF03), the S6 ones through
-`s6_build.py`/`s6s_build.py --canvas` (RF04; s6_render.py reports the natural height with the min-height released → s6_heights.json).
+`s6_build.py`/`s6s_build.py --canvas` (RF04; s6_render.py reports the natural height with the min-height released → s6_heights.json),
+the S9 ones through `s9_build.py --canvas` (RF05).
 
 - Heights (RF03 fix): `s4s_build.write` (the desktop board writer every 1440 row uses) pins the board's `min-height` to the stored h
   only in the `.dc.html`; its `/tmp/s4s/<stem>.html` render wrapper keeps just the 1024 viewport floor, so `sNN_render.py` measures
@@ -50,7 +51,7 @@ the S11/S12/S13 ones through `s11_build.py`/`s12_build.py`/`s13_build.py --canva
 ## Never run for a row
 - `sNN_render.py` / `s4s_render.py` (any flag) as part of a rebuild: it re-measures in Chrome (fallback fonts) and rewrites `sNN_heights.json`
   (s3/s4t/s8/s11/s12/s14 always, the rest with `--heights`/`--measure`). Run it only to re-measure, then rebuild with `--canvas`.
-- A heights file of another screen as 2nd argument, or a height other than 2272 (s4) / 2426 (s7).
+- A heights file of another screen as 2nd argument, or a height other than 2944 (s4) / 2426 (s7).
 - Scripts from older commits, and `s3_canvas.py` (removed: wrote canvas.json on every run; now `s3_build.py --canvas`).
 
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
@@ -88,4 +89,4 @@ the S11/S12/S13 ones through `s11_build.py`/`s12_build.py`/`s13_build.py --canva
   (or in any row/file named). Allowed: Telița codes, Seria 2025 weeks, script lines marked `literal-ok`, its ALLOW list. Each
   RF job adds its row to PORTED.
 - `canvas_rows.py relayout $R [--canvas]`: see Rules. `s4s_render.py [--heights] [--w 1280] [stem …]`: re-measures the S4
-  Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2272).
+  Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2944).

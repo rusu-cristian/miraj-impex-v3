@@ -270,9 +270,10 @@ def leaves_of(sections):
 def wd(d):
     return f'<span aria-hidden="true">{WD[d.weekday()]}</span><span class="ip-sr">{WDF[d.weekday()]}</span> {num(R.ddm(d))}'
 
-def ptable(uid, caption, sections, open_weeks=(), spine='farm', show_sec=None, weeks=WEEKS, weighings=False,
+def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None, weeks=WEEKS, weighings=False,
            focus=None, dense=False, foot=True, skel=False, colw=None):
     if show_sec is None: show_sec = len(sections) > 1
+    if open_weeks is None: open_weeks = tuple(weeks)   # D166: every week of the period open by default; () = grain Săpt.
     L = leaves_of(sections)
     cls = 'ip-table ip-table--rowheads ip-ptable' + (' ip-ptable--phone' if spine == 'phone' else '') + (' ip-ptable--dense' if dense else '')
     tid = f'{uid}-t'
@@ -362,59 +363,59 @@ SER = 'Hîrbovăț · Seria 2026 · SAPT 56–59'
 # loaded column shares of the Păsări · Fermă table at 1440 (section 54: both copies declare them; px / 1126): only the
 # columns whose figures are wider than their head (SAPT "56–59", "34,7%", Vânzare, În viață; Mortalitate ♀ · ♂ as wide as their group head); the others are sized by the head.
 COLW = [None, round(63.2 / 1126 * 100, 2), round(71 / 1126 * 100, 2), round(62 / 1126 * 100, 2), round(60 / 1126 * 100, 2), round(64 / 1126 * 100, 2)] + [round(x / 1126 * 100, 2) for x in (71, 63.1, 71, 63.1)]
-html = '<!-- @dsCard group="Data" height=5000 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
+html = '<!-- @dsCard group="Data" height=10674 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
 
-# 1 Păsări · Fermă: default (current week open), SAPT 58 key focused
+# 1 Păsări · Fermă: default (D166: every week open), SAPT 58 key focused
 c1 = f'Păsări · {SER}'
-t1, _ = ptable('pa', c1, [('Total fermă', '', farm_pasari())], open_weeks=(59,), focus=58, colw=COLW)
-html += demo('Păsări · Detaliu Fermă · Săpt. (implicit: săptămâna curentă deschisă, 2 din 7 zile) · tasta SAPT 58 cu focus',
+t1, _ = ptable('pa', c1, [('Total fermă', '', farm_pasari())], focus=58, colw=COLW)
+html += demo('Păsări · Detaliu Fermă · implicit: toate săptămânile deschise, fiecare cu zilele ei (D166; SAPT 59 are 2 din 7 zile) · tasta SAPT 58 cu focus închide săptămâna',
              block('pa', c1, t1))
 
 # 2 Păsări · Hale: emptying weeks, sales beside real deaths (D155), H7 empty from 14.11 (D158)
 c2 = f'Păsări · {SER} · pe hale'
 secs2 = [('Total fermă', '', farm_pasari())] + [(f'Hala {h[1:]}', GOALA if h == 'H7' else '', hall_pasari(h)) for h in R.HHALLS]
-t2, _ = ptable('pb', c2, secs2, open_weeks=(59, 58))
-html += demo('Păsări · Detaliu Hale · SAPT 59 și 58 deschise: golire prin vânzare (D155), Hala 7 goală din 14.11 (D158) · tabelul derulează lateral, prima coloană rămâne',
+t2, _ = ptable('pb', c2, secs2)
+html += demo('Păsări · Detaliu Hale · toate săptămânile deschise: golire prin vânzare (D155), Hala 7 goală din 14.11 (D158) · tabelul derulează lateral, prima coloană rămâne',
              block('pb', c2, t2, sel='Hale'))
 
 # 3 Producție · Fermă: lay % on start-of-day hens (D156/D159)
 c3 = f'Producție · {SER}'
-t3, _ = ptable('pc', c3, [('Total fermă', '', productie())], open_weeks=(59,))
+t3, _ = ptable('pc', c3, [('Total fermă', '', productie())])
 html += demo('Producție · Detaliu Fermă · % ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină (D156, D159)',
              block('pc', c3, t3))
 
-# 4 Hrană · Hale: three head rows, combined leaves, every week closed
+# 4 Hrană · Hale: three head rows, combined leaves, grain Săpt. (week rows only, every week closed)
 c4 = f'Hrană · {SER} · pe hale'
 secs4 = [('Total fermă', '', hrana())] + [(f'Hala {h[1:]}', GOALA if h == 'H7' else '', hrana(h)) for h in R.HHALLS]
 t4, _ = ptable('pd', c4, secs4, open_weeks=())
-html += demo('Hrană · Detaliu Hale · trei rânduri de cap (secțiune › înregistrare › frunză „♀ efectiv”) · toate săptămânile închise',
+html += demo('Hrană · Detaliu Hale · trei rânduri de cap (secțiune › înregistrare › frunză „♀ efectiv”) · pasul Săpt.: doar rândurile de săptămână, toate închise',
              block('pd', c4, t4, sel='Hale'))
 
 # 5 Greutate · H5.1 (section page, no switch): weighings variant + partial guide
 c5 = f'Greutate · Hîrbovăț › H5.1 · Seria 2026 · SAPT 56–59'
-t5, _ = ptable('pe', c5, [('H5.1', '', greutate())], open_weeks=(58,), weighings=True)
+t5, _ = ptable('pe', c5, [('H5.1', '', greutate())], weighings=True)
 after5 = ('<div class="ip-ptable__after"><p class="ip-note">– fără date în ghid: ghidul are greutăți până la SAPT 25. '
           'Cântărire ilustrativă (Hîrbovăț nu are cântăriri reale, D152).</p></div>')
-html += demo('Greutate · pagina secțiunii H5.1 (fără Detaliu) · varianta weighings: doar ziua cântăririi, „fără cântărire” fără tastă · ghid parțial',
+html += demo('Greutate · pagina secțiunii H5.1 (fără Detaliu) · varianta weighings: săptămânile deschise arată doar ziua cântăririi, „fără cântărire” fără tastă și fără zile · ghid parțial',
              block('pe', c5, t5, bar=False, after=after5))
 
-# 6 Serie (S3): allWeeks, Fermă column, no FilterBar, weeks closed
+# 6 Serie (S3): allWeeks, Fermă column, no FilterBar, every week open (D166)
 c6 = f'Păsări · Seria 2026 · Total serie · SAPT 56–59'
-t6, tid6 = ptable('pf', c6, [('Total serie', '', farm_pasari())], spine='s3', open_weeks=())
+t6, tid6 = ptable('pf', c6, [('Total serie', '', farm_pasari())], spine='s3')
 after6 = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid6}">Arată toate săptămânile</button>'
           f'<p class="ip-note">apoi: SAPT 59 → 1 și „Arată ultimele 4 săptămâni”</p></div>')
 html += demo('Seria 2026 (S3) · allWeeks · coloana Fermă după SAPT · fără FilterBar și fără Detaliu',
              block('pf', c6, t6, bar=False, after=after6))
 
 # 6b S3 at 1280: dense (figure cells space-2 inline, same row height)
-t6b, tid6b = ptable('pj', c6, [('Total serie', '', farm_pasari())], spine='s3', open_weeks=(), dense=True)
+t6b, tid6b = ptable('pj', c6, [('Total serie', '', farm_pasari())], spine='s3', dense=True)
 after6b = f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid6b}">Arată toate săptămânile</button></div>'
 html += demo('Seria 2026 (S3) la 1280 · ip-ptable--dense: celulele cu cifre au un pas de spațiere mai puțin (space-2), aceeași înălțime de rând',
              block('pj', c6 + ' · 1280', t6b, bar=False, after=after6b), '960px')
 
 # 7 States: loading · no data · no guide
 c7 = f'Păsări · {SER}'
-t7, _ = ptable('pg', c7, [('Total fermă', '', farm_pasari())], open_weeks=(59,), skel=[3, 2, 4, 4, 4, 3, 4, 4], colw=COLW)
+t7, _ = ptable('pg', c7, [('Total fermă', '', farm_pasari())], skel=[3, 2, 4, 4, 4, 3, 4, 4], colw=COLW)
 load = (detaliu('pg') + f'<p class="ip-cap ip-ptable__cap" aria-hidden="true">{c7}</p><div aria-busy="true">'
         f'<p class="ip-sr" role="status">Se încarcă tabelul Păsări, SAPT 56–59.</p>{region(t7, c7, hidden=True)}</div>')
 html += demo('Se încarcă · același tabel, bare la geometria încărcată (D132), barele rândurilor de săptămână în rule', load)
@@ -423,14 +424,14 @@ empty = ('<div class="ip-emptybox" role="region" aria-label="Păsări, interval 
          '01.11.2025 și 15.11.2025; a început pe 22.02.2026.</p><button type="button" class="ip-btn ip-btn--secondary">Alege ciclul curent</button></div></div>')
 html += demo('Fără date în perioadă · EmptyState în locul regiunii (D48)', empty)
 c8 = f'Producție · {SER} · fără ghid'
-t8, _ = ptable('ph', c8, [('Total fermă', '', productie(guide=False))], open_weeks=(59,))
+t8, _ = ptable('ph', c8, [('Total fermă', '', productie(guide=False))])
 html += demo('Fără ghid · coloanele ghid și față de ghid lipsesc (D92); antetul paginii poartă Tag-ul <span class="ip-tag ip-tag--neutral">fără ghid</span> · stare ilustrativă pe cifrele reale',
              block('ph', c8, t8))
 
 # 8 Phone 390
 c9 = f'Păsări · {SER} · Mortalitate'
 pa = farm_pasari()
-t9, _ = ptable('pi', c9, [('Total fermă', '', [pa[0], pa[2]])], open_weeks=(59,), spine='phone')
+t9, _ = ptable('pi', c9, [('Total fermă', '', [pa[0], pa[2]])], spine='phone')
 phone = (f'<div class="ip-phone" style="width:390px"><div style="padding:var(--space-4)">'
          + block('pi', c9, t9, touch=True) + '</div></div>')
 html += demo('Telefon 390 · o grupă de coloane (eticheta Mortalitate; În viață rămâne) · rânduri 48 · prima coloană lipită „Ma 17.11 · 406”', phone, '390px')
