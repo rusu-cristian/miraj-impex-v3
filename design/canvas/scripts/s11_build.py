@@ -350,11 +350,20 @@ def cons_rows():
              'skip': (lambda k, h=h: any(fed(k, sec) for sec in R.HALL_SECS[h]))} for h in EMPTY_HALLS]   # an emptied hall: one muted line (D158d)
     return out
 CONS_SKEL = [4, 3, 4, 3, 4, 4, 3, 4, 4]
+# S11L (D193, as S14N): the loading table's heads declare the loaded columns' px (§54; Data, then Vârstă, SAPT and the 9
+# leaves, measured on the loaded 1592 board), its body cells drop their 1% (.s11-skel, loading board CSS only), so every
+# column sits where the loaded one does and the loading board is as wide as the loaded one (board_widths.json)
+CONS_DATA_W = 259.17
+CONS_COLW = [f'{x}px' for x in (110.11, 55.73, 79.63, 70.8, 86.34, 65.92, 118.05, 89.55, 69.13, 121.25, 178.56)]
+CSS_SKEL = '\n.s11-skel .ip-ptable{width:max-content}.s11-skel .ip-ptable.ip-ptable :is(thead th:not([style*="--ip-colw"]),:is(tbody,tfoot) > tr > td){width:auto} /* S11L (D193, as S14N): the loading Consum table keeps the loaded px its heads declare (section 54) */'
 CONS_CAP = f'Consum · Hîrbovăț · Seria 2026 · {R.SAPT(WEEKS[-1])}–{WEEKS[0]} · pe zile și secțiuni'
 def cons_table(skel=False):
     t, _ = P.ptable('cs', CONS_CAP, [('Total fermă', '', cons_groups())], weeks=WEEKS, rowgroups=cons_rows(), skel=CONS_SKEL if skel else False,
-                    more=P.more())   # SYS18 (D190, D192): the load-more row, 4 din 40 (Ciclul curent, D191)
+                    colw=CONS_COLW if skel else None, more=P.more())   # SYS18 (D190, D192): the load-more row, 4 din 40 (Ciclul curent, D191)
     if not skel: assert t.count(s4.PART[0]) == 1; t = t.replace(s4.PART[0], s4.PART[1])   # "17–18.11 · 2 din 7 zile" (D165)
+    if skel:   # S11L: the Data column at its loaded px too (the loaded partial week's label "SAPT 59 · 17–18.11 · 2 din 7 zile")
+        a = '<th scope="col" class="ip-ptable__data" rowspan="2">'; assert t.count(a) == 1
+        t = t.replace(a, a[:-1] + f' style="--ip-colw:{CONS_DATA_W}px">')
     assert t.count('aria-expanded="true"') == (0 if skel else len(WEEKS))   # D166: every week open
     a = 'class="ip-table ip-table--rowheads ip-ptable"'; assert t.count(a) == 1   # dense figure cells; SYS17 (D189): heads on one line, no wraphead
     return t.replace(a, 'class="ip-table ip-table--rowheads ip-ptable ip-ptable--dense"')
@@ -401,7 +410,7 @@ def sec_loading():
             tr = ''.join('<tr>' + ''.join(f'<td{cl(c)}>{sk("s4s-w70")}{sub if i == 0 else ""}</td>' for i, c in enumerate(cols)) + '</tr>' for _ in range(rows))
             return f'<table class="ip-table s11-table {cost}"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table>'
         return f'<div class="ip-tablescroll ip-tablescroll--framed"><table class="ip-table s11-table"><thead><tr>{ths}</tr></thead><tbody>{tr}</tbody></table></div>'  # aria-hidden: scrolls, not a tab stop
-    return f'''<div class="s11-page" aria-busy="true">
+    return f'''<div class="s11-page s11-skel" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă raportul Hrană pentru Seria 2026.</p>
 <section class="ip-block" aria-hidden="true">{sec_head("h-stoc", "Stoc")}<ul class="ip-readouts">{ro * 3}</ul></section>
 <section class="ip-block" aria-hidden="true">{sec_head("h-livrari", "Livrări")}{tbl(del_ths("Proprietar"), 6)}</section>
@@ -472,6 +481,6 @@ BOARDS = [
 ]
 if __name__ == '__main__':
     for stem, title, body in BOARDS:
-        s4.write(stem, title, body, '', H=HEIGHTS.get(stem, 1024), css=CSS)
+        s4.write(stem, title, body, '', H=HEIGHTS.get(stem, 1024), css=CSS + (CSS_SKEL if stem == STEM + '--se-incarca' else ''))   # S11L: S12/S13 reuse CSS, unchanged
     if CANVAS:  # RF03: refresh the 7 hand-placed entries' h/title in place (x, y kept; canvas_rows.place)
         c = CR.load(ROOT); CR.place(c, STEM, [(stem, 1440, HEIGHTS.get(stem, 1024), title) for stem, title, _ in BOARDS]); CR.save(ROOT, c)
