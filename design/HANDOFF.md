@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-20 · Round 3 complete (D182–D189), canvas v1795162838-7551
+Updated: 2026-11-20 · Round 3 complete (D182–D192), canvas v1795162838-7551
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
@@ -7,6 +7,7 @@ Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 1
 Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- SYS18 load-more row in every PeriodTable (D190–D192, user approved): "Încarcă încă 4 săptămâni" last row, extends the period filter, Ciclul curent default, totals = weeks on screen; published 1795162838-7551
 - FINAL5 clean; published 1795132564-e1da (79 files). SYS17 one-line table heads (D189), head_scan.py, boards widened (S4 Rezumat 1616, Producție 1752, S11 1592…)
 - S4C2 S14 phone tag "Incubabile · Cat." (Găini kept, scrolls 39 px, D188) + Seria 2025 % Cat. (D187); kit text updated
 - S4C "% Cat. 1/2/3" in S4 Producție + S14 desktop tables (boards widened: S4 1608, S14 2240); D186 Cat sit with Incubabile, D187 Seria 2025 too (notes/S4C.md)
