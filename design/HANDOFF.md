@@ -1,5 +1,6 @@
 # Handoff
-Updated: 2026-11-20 · Round 3 complete (D182–D192), canvas v1795162838-7551
+**Complete** (user, 20.11.2026: nothing more after S11L).
+Updated: 2026-11-20 · Last commit: 12d4718 · Round 3 complete (D182–D193), canvas v1795162838-7551 (S11L not yet published)
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
@@ -7,6 +8,7 @@ Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 1
 Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- S11L S11 · se încarcă board 1592 like the loaded board (D193, user); Consum skeleton columns match the loaded table within 0.02 px; only that board + canvas.json changed (5 S11 boards to its right +152 x)
 - SYS18 load-more row in every PeriodTable (D190–D192, user approved): "Încarcă încă 4 săptămâni" last row, extends the period filter, Ciclul curent default, totals = weeks on screen; published 1795162838-7551
 - FINAL5 clean; published 1795132564-e1da (79 files). SYS17 one-line table heads (D189), head_scan.py, boards widened (S4 Rezumat 1616, Producție 1752, S11 1592…)
 - S4C2 S14 phone tag "Incubabile · Cat." (Găini kept, scrolls 39 px, D188) + Seria 2025 % Cat. (D187); kit text updated
@@ -20,16 +22,17 @@ Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/arti
 - FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- Nothing queued. Small open item: S11 loading board Consum skeleton narrower than the loaded table (needs widening that board to 1592, against the D189 note "loading boards stay 1440").
+- Nothing queued. Project complete.
 
 ## Waiting on the user
 - To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181, D188 (tag name).
-- Open point 11: feed product names at Hîrbovăț ("Breeder 2"/"Cocoși" stay illustrative, D30).
+- Open point 11: feed product names at Hîrbovăț stay illustrative ("Breeder 2"/"Cocoși", D30; user 20.11: keep until real names are known).
 
 ## Unpublished on the canvas
-- None (v1795132564-e1da holds everything through SYS17/FINAL5).
+- S11L: publish_files (mode patch) `design/canvas/project/S11-rapoarte-hrana--se-incarca.dc.html` → `project/S11-rapoarte-hrana--se-incarca.dc.html` and `design/canvas/project/canvas.json` → `project/canvas.json` on c70b5e5e. Only a chat opened from the canvas page (or the session that made it) can publish; this session got network_off_limit.
 
 ## Things to remember
+- S11L review nits (optional): `.s11-skel` and `.s14-skel` are the same screen rule (loading table with px column widths) → a §71 PeriodTable loading modifier in a system job; CONS_COLW / CONS_DATA_W in s11_build.py measured with fallback fonts, re-measure with Plex if the loaded Consum columns change.
 - 17–18.11.2026 session (S19 → FIN08): each job = fresh builder → fresh reviewer → fix round via SendMessage to the same builder (then a short re-review via SendMessage to the same reviewer when the fix touches system CSS). FIN jobs: builders diff every changed board with a normalising script (strip <style>, map old→new classes) and rebuild per design/canvas/scripts/README.md.
 - Rebuilding boards: follow design/canvas/scripts/README.md (per-row order, "never run" list, import chain). Since FIN02G every generator is safe to rerun.
 - 17–18.11.2026 session: S15–S18 each ran screen → ..S states → ..P polish; builders/reviewers resumed via SendMessage for fix rounds (same helper keeps context). Setări screens (S17, S18) are desktop-led: desktops first, phones after; ..S jobs move the phones right (x only). Generators that own a row: run the base build --canvas then the ..s build --canvas.
