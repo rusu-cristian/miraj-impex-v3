@@ -1,4 +1,4 @@
-"""S14S · Rapoarte · Producție states (S14N: on real data, 18.11.2026 = SAPT 59, period 4 săpt., grain Zi, D159/D166).
+"""S14S · Rapoarte · Producție states (S14N: on real data, 18.11.2026 = SAPT 59, period Ciclul curent (D191), grain Zi, D166).
 Appended to the S14 row after its 5 boards, desktops then the phones:
 - observator · se exportă (desktop): the default page for the Observator role (Sidebar Acasă · Serie · Rapoarte, account
   "Observator", D91/D92: same content, Producție has no prices) with Exportă .xlsx running (spinner in the key, label kept,
@@ -75,7 +75,7 @@ def page_nolay():
 # ================================================================= phone · default (owner, 18.11.2026)
 SLIDERS = ('<path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/>'
            '<path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/>')  # Lucide sliders-horizontal
-SUM = f'4 săpt. · Zi · Hîrbovăț · {X.PHONE_TAG}'
+SUM = f'Ciclul curent · Zi · Hîrbovăț · {X.PHONE_TAG}'   # D191
 # D176: the phone's single-choice group tags (as the Fermă phone's record tags, D160/D171): one column group at a time, Găini stays
 P_TAGS = [('Ouat', 'eggs'), (X.TAG_INC, 'eggs'), ('Masă ou', 'eggs'), ('Mortalitate', 'mortality'), ('Hrană · g/pasăre', 'feed'), ('Vânzare', 'sale')]   # D188: "Incubabile · Cat."
 assert [P.group(X.groups(), w)['name'].rsplit('</span>', 1)[-1] for w, _ in P_TAGS if w != X.TAG_INC] == [w for w, _ in P_TAGS if w != X.TAG_INC]
@@ -121,7 +121,7 @@ def phone_page(sheet=False):
 # ================================================================= phone · filters open (S14P): the system BottomSheet over the page
 X_ICON = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'  # Lucide x (as the S9P sheet's Închide)
 def p_sheet():
-    seg = s4.seg('Perioadă', s4.PERIODS, 1)
+    seg = s4.seg('Perioadă', s4.PERIODS, 0)   # D191: Ciclul curent
     a = '<span class="ip-seg" role="radiogroup" aria-label="Perioadă">'; assert seg.startswith(a)
     seg = ('<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):]).replace(
         '<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1)  # focus starts on the chosen period
@@ -133,7 +133,7 @@ def p_sheet():
             f'<span class="ip-select__val">Hîrbovăț</span>{icon("chev", 16)}</div></div></div>')
     exp = ('<div class="s14-fsheet__exp"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-describedby="pf-exp">'
            f'{icon("download", 16)}Exportă .xlsx</button>'
-           f'<p class="ip-hint" id="pf-exp">Tabelul de pe ecran: Hîrbovăț, <span class="ip-num">{R.SAPT(X.WEEKS[-1])}–{X.WK}</span>, pe zile și hale, {X.PHONE_TAG}.</p></div>')
+           f'<p class="ip-hint" id="pf-exp">Toată perioada aleasă: Hîrbovăț, ciclul curent (<span class="ip-num">{R.SAPT(P.CYCLE_FIRST)}–{X.WK}</span>), pe zile și hale, {X.PHONE_TAG}.</p></div>')   # D191: Exportă = the whole period
     return ('<div class="ip-scrim ip-scrim--sheet">'
             '<div class="ip-sheet s14-fsheet" role="dialog" aria-modal="true" id="pf-sheet" aria-labelledby="pf-t" aria-describedby="pf-d">'
             '<div class="ip-sheet__handle" aria-hidden="true"></div>'

@@ -567,12 +567,28 @@ assert not PSEXERR and not PMOVES and PSALES and PWEIGH  # Eroare sexare / Trans
 # D45: the FilterBar lists the record types with records in the period (Populare: Hîrbovăț is populated by transfer, never placed)
 PTYPES = [k for k, has in (('mortality', R.deaths(P_FROM, P_TO) > 0), ('cull', PCULLS), ('sexerr', PSEXERR), ('transfer', PMOVES),
                            ('sale', PSALES), ('feed', R.feed_kg(P_TO, 'F') > 0), ('weighing', PWEIGH), ('eggs', R.eggs() > 0)) if has]
-assert PTYPES == ['mortality', 'cull', 'sale', 'feed', 'weighing', 'eggs']
+assert PTYPES == ['mortality', 'cull', 'sale', 'feed', 'weighing', 'eggs']   # the record types of the 4 weeks on screen
+# D191 (SYS18): the FilterBar period defaults to "Ciclul curent" (22.02–18.11.2026, SAPT 20–59); the table opens on its last 4
+# weeks with "Încarcă încă 4 săptămâni" (D190). D45: the chips (and the tables' record groups) are the types with records in
+# the chosen period, so the columns stay put while weeks load: the cycle adds Eroare sexare (19.05, illustrative) and Transfer
+# (the arrivals 22–28.02, the H7.2 → H7.1 move of 22.10)
+CYC_FROM = R.D(C26_START)
+def incy(d): return CYC_FROM <= R.D(d) <= P_TO
+CCULLS = [c for c in R.ILL['culls'] if incy(c['date'])]
+CSEXERR = [e for e in R.ILL['sexing_errors'] if incy(e['date'])]
+CMOVES = [m for m in R.TR['internal_moves_hirbovat'] if incy(m['date'])] + [a for a in R.TR['arrivals'] if incy(a['date'])]
+CWEIGH = [w for w in R.WEIGHINGS_HIR if incy(w['date'])]
+CTYPES = [k for k, has in (('mortality', R.deaths(CYC_FROM, P_TO) > 0), ('cull', CCULLS), ('sexerr', CSEXERR), ('transfer', CMOVES),
+                           ('sale', R.sales(CYC_FROM, P_TO)), ('feed', R.feed_kg(P_TO, 'F') > 0), ('weighing', CWEIGH), ('eggs', R.eggs() > 0)) if has]
+assert CTYPES == ['mortality', 'cull', 'sexerr', 'transfer', 'sale', 'feed', 'weighing', 'eggs']
+CYC_WEEKS = list(range(WK, c26['sapt_start'] - 1, -1))   # SAPT 59 … 20: 40 weeks (D190 count)
+assert len(CYC_WEEKS) == 40 and CYC_WEEKS[-1] == P.CYCLE_FIRST == 20
+W8 = [WK - i for i in range(8)]                             # after one press: SAPT 59–52 (SYS18 state boards)
 CHIPW = {'mortality': 'Mortalitate', 'cull': 'Sacrificare', 'sexerr': 'Eroare sexare', 'transfer': 'Transfer', 'sale': 'Vânzare',
          'feed': 'Hrană', 'weighing': 'Cântărire', 'eggs': 'Ouă'}
-def chips4(on):
+def chips4(on, types=None):
     out = ''
-    for k in PTYPES:
+    for k in (types or CTYPES):   # D191: the period's types (D45), the cycle by default
         if k == 'sexerr':
             out += (f'<button type="button" class="ip-chip ip-rec ip-chip--split{"" if k in on else " ip-chip--off"}" role="checkbox" aria-checked="{"true" if k in on else "false"}">'
                     f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>')
@@ -580,9 +596,25 @@ def chips4(on):
             out += chip(k, CHIPW[k], k in on)
     return f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{out}</div>'
 def filterbar4():
-    """D159: period "4 săpt." (SAPT 56–59); grain Zi (D166: every week open, each key can close its week; Săpt. = week rows
+    """D191 (SYS18): period "Ciclul curent" (the table opens on its last 4 weeks, SAPT 56–59, and loads 4 more per press, D190;
+    supersedes D159's "4 săpt." default); grain Zi (D166: every week open, each key can close its week; Săpt. = week rows
     only); chips = types of the period (D45). D165: the tag state is shared across tabs, all on by default."""
-    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 1)}{seg("Pas", ["Zi", "Săpt."], 0)}{EXPORT}{chips4(set(PTYPES))}</div>'
+    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 0)}{seg("Pas", ["Zi", "Săpt."], 0)}{EXPORT}{chips4(set(CTYPES))}</div>'
+# D192 (SYS18): with a period filter set the load-more row shows too; a press widens the filter 4 weeks back, so "4 săpt." reads
+# "8 săpt." after one press (the item keeps its place in the SegmentedControl). The chips follow the period's types (D45):
+# SAPT 52–59 adds Transfer (the H7.2 → H7.1 move of 22.10, SAPT 55)
+def types_of(a, b):
+    def inn(d): return a <= R.D(d) <= b
+    return [k for k, has in (('mortality', R.deaths(a, b) > 0), ('cull', [c for c in CCULLS if inn(c['date'])]), ('sexerr', [e for e in CSEXERR if inn(e['date'])]),
+                             ('transfer', [m for m in CMOVES if inn(m['date'])]), ('sale', R.sales(a, b)), ('feed', R.feed_kg(b, 'F') > 0),
+                             ('weighing', [w for w in CWEIGH if inn(w['date'])]), ('eggs', R.eggs() > 0)) if has]
+assert types_of(P_FROM, P_TO) == PTYPES
+T8 = types_of(R.week_dates(W8[-1])[0], P_TO); assert T8 == ['mortality', 'cull', 'transfer', 'sale', 'feed', 'weighing', 'eggs']
+def filterbar_weeks(k):
+    """the FilterBar with the period "k săpt." (4: as chosen; 8: after one press of the load-more row, D192)"""
+    types = PTYPES if k == 4 else T8
+    per = ['Ciclul curent', f'{k} săpt.', '13 săpt.', 'Interval']
+    return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", per, 1)}{seg("Pas", ["Zi", "Săpt."], 0)}{EXPORT}{chips4(set(types), types)}</div>'
 def ptnote(*lines):  # below the region (ip-ptable__after): what a column means or leaves out
     return '<div class="ip-ptable__after">' + ''.join(f'<p class="ip-note">{l}</p>' for l in lines) + '</div>'
 PW0, PW1 = R.week_dates(WK)[0], R.TODAY
@@ -590,14 +622,17 @@ PART = (f'<span class="ip-num">{R.ddm(PW0)}–{R.ddm(PW1)}</span> · {(PW1 - PW0
         f'<span class="ip-num">{PW0.day:02d}–{R.ddm(PW1)}</span> · {(PW1 - PW0).days + 1} din 7 zile')    # D165: "17–18.11"
 assert PW0.month == PW1.month
 FIT = {'rz': (True, False), 'hr': (False, False), 'gr': (True, False), 'pr': (True, False)}  # uid → (dense, wrap), S4N fix 1, S4NG; SYS17 (D189): no wrapping heads, the board grows wider instead
-def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None, weighings=False, after='', dense=False, wrap=False, skel=None, colw=None):
+def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None, weighings=False, after='', dense=False, wrap=False, skel=None, colw=None,
+           weeks=None, added=None, period=None):
     """dense = ip-ptable--dense (SYS14: figure cells one spacing step narrower, same row height). SYS17 (D189, supersedes D165's
     "fits at 1440"): heads stay on one line, wrap is never set (the FIN14 .ip-table--wraphead is retired); a table wider than
     its page scrolls under the sticky column, on the canvas the board grows wider instead (D167). open_weeks None = every week of the period open (D166, SYS14 default).
     skel = the loading state (§42/§71): the same table, every week open, bars of skel[i] ch per leaf (D132)."""
-    cap = f'{tab} · {SER}' + (f' · {scope}' if scope else '')
+    weeks = weeks or PWEEKS4   # SYS18: the weeks on screen (W8 after one press, "added" = the 4 it appended: focus kept, live region)
+    cap = f'{tab} · Hîrbovăț · Seria 2026 · SAPT {weeks[-1]}–{weeks[0]}' + (f' · {scope}' if scope else '')
     dense, wrap = FIT.get(uid, (dense, wrap))
-    t, _ = P.ptable(uid, cap, sections, open_weeks=open_weeks, weighings=weighings, skel=skel or False, colw=colw)
+    more = P.more(added=added, focus=bool(added), period=period)   # SYS18 (D190, D192): the load-more row before the foot total
+    t, tid = P.ptable(uid, cap, sections, open_weeks=open_weeks, weighings=weighings, skel=skel or False, colw=colw, weeks=weeks, more=more)
     if not skel: assert t.count(PART[0]) == 1; t = t.replace(PART[0], PART[1])   # the partial week's visible dates; its hidden name keeps the full range
     cls = ' '.join(c for c, on in (('ip-table--wraphead', wrap),) if on)
     if cls or dense:
@@ -609,7 +644,7 @@ def ptable(uid, tab, sections, scope='', bar=True, sel='Fermă', open_weeks=None
 def kg0(s):  # Rezumat: feed in whole kg (the Hrană tab keeps 0,1 kg), so the Total fermă table stays narrow (D165)
     def f(kind, key):
         if kind == 'w': return R.n(R.week(key)[f'kg_{s}'])
-        return R.n(R.feed_kg(key, s) if kind == 'd' else sum(R.week(k)[f'kg_{s}'] for k in PWEEKS4))
+        return R.n(R.feed_kg(key, s) if kind == 'd' else sum(R.week(k)[f'kg_{s}'] for k in P.fweeks(key)))
     return f
 def rezumat_groups(ng=False):
     """spec D1 › Rezumat (D165, D167): Total fermă only, no Detaliu, groups by record type: În viață first (D167) · Morți ♀ · ♂
@@ -636,11 +671,11 @@ RZ_SKEL = [4, 4, 2, 1, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 3]   # ch1–ch4 exist (§4
 # column keeps its loaded width; the loaded table is wider than the page (D167; 173 px since SYS17's one-line heads, D189:
 # Vârstă (zile), % ouat, % incub., % jos re-measured), the skeleton fits it, the Data column takes the difference
 RZ_COLW = [round(x / 1158 * 100, 2) for x in (110, 56, 64, 55, 44, 40, 71, 72, 55, 71, 81, 55, 63, 63, 55, 63, 55)]
-def tb_rezumat(ng=False, skel=False):
+def tb_rezumat(ng=False, skel=False, weeks=None, added=None, period=None):
     g = rezumat_groups(ng)
     if skel: assert not ng and len(RZ_SKEL) == sum(len(r['leaves']) for r in g)
     return ptable('rz', 'Rezumat', [('Total fermă', '', g)], bar=False, after='' if skel else ptnote(RZ_NOTE), skel=RZ_SKEL if skel else None,
-                  colw=RZ_COLW if skel else None)
+                  colw=RZ_COLW if skel else None, weeks=weeks, added=added, period=period)
 
 def panel_default(ng=False, banner='', table=None):  # S4N (D154): the Rezumat PeriodTable first in the tab (S4NG: drawn here by default)
     if table is None: table = tb_rezumat(ng)
@@ -842,8 +877,8 @@ def events_past():
         out.append(ev('eggs', f'Ouă · {", ".join(r["hall"] for r in rs)} · <span class="ip-num">{n(sum(r["total_eggs"] for r in rs))}</span> ouă', f'{ddate(d)} · SAPT {rs[0]["age_week"]} · din registru'))
     return out
 
-# S4NG (D170): the past cycle's Rezumat table: its last 4 age weeks (SAPT 62–65) all open, "Arată toate săptămânile" under it
-# (as S3, D160); the register of the previous flock has eggs per hall and deaths, no flock count and no feed (D52): no În viață,
+# S4NG (D170): the past cycle's Rezumat table: its last 4 age weeks (SAPT 62–65) all open, "Încarcă încă 4 săptămâni" under it
+# (SYS18, D190: 4 din 43, the register's weeks SAPT 23–65); the register of the previous flock has eggs per hall and deaths, no flock count and no feed (D52): no În viață,
 # no % ouat or guide, no Hrană; emptying days (from 15.01.2026) are not mortality (D54)
 PCAL = P.Cal(placed=dt.date.fromisoformat(R.D(c25['start_date']).isoformat()) - dt.timedelta(days=c25['age_days_start']), last=R.D(PREV_END))
 assert PCAL.sapt(R.D(PREV_END)) == PFIN == 65 and PCAL.age(R.D(c25['start_date'])) == c25['age_days_start']
@@ -851,7 +886,7 @@ PW4 = [PFIN, PFIN - 1, PFIN - 2, PFIN - 3]
 PBY = {}
 for _r in PD['rows']: PBY.setdefault(R.D(_r['date']), []).append(_r)
 for _k in PW4: assert all(d in PBY for d in PCAL.days(_k)) and sum(r['total_eggs'] for d in PCAL.days(_k) for r in PBY[d]) == pall[_k]['total_eggs']
-def _pdays(kind, key): return [key] if kind == 'd' else PCAL.days(key) if kind == 'w' else [d for k in PW4 for d in PCAL.days(k)]
+def _pdays(kind, key): return [key] if kind == 'd' else PCAL.days(key) if kind == 'w' else [d for k in (key or PW4) for d in PCAL.days(k)]   # 'f': the loaded weeks (SYS18)
 def _prows(kind, key, h=None): return [r for d in _pdays(kind, key) for r in PBY[d] if h is None or r['hall'] == h]   # S14N: h = one hall's rows (S14 hall week rows)
 def p_mort(sx, h=None):
     def f(kind, key):
@@ -874,9 +909,9 @@ def tb_past():
                                                          (short('% incub.', '% incubabile'), '', p_share('hatching_eggs')), (short('jos', 'ouă jos'), '', p_sum('floor_eggs')),
                                                          (short('% jos', '% ouă jos'), '', p_share('floor_eggs'))]}]
     cap = f'Rezumat · Hîrbovăț · Seria 2025 · SAPT {PW4[-1]}–{PW4[0]}, ultimele 4 din SAPT {PWEEKS[0]}–{PFIN}'
-    t, tid = P.ptable('rz', cap, [('Total fermă', '', groups)], weeks=PW4, cal=PCAL)
-    after = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid}">Arată toate săptămânile</button>'
-             f'<p class="ip-note">apoi SAPT {PFIN} → {PWEEKS[0]}. Tabelul începe la SAPT {PWEEKS[0]}, banda ciclurilor la SAPT {c25["sapt_start"]}: '
+    t, tid = P.ptable('rz', cap, [('Total fermă', '', groups)], weeks=PW4, cal=PCAL, more=P.more(first=PWEEKS[0], word='registrului'))   # SYS18 (D190, D192): 4 din 43 (SAPT 23–65)
+    after = (f'<div class="ip-ptable__after">'
+             f'<p class="ip-note">Tabelul începe la SAPT {PWEEKS[0]}, banda ciclurilor la SAPT {c25["sapt_start"]}: '
              f'începutul ciclului e dedus ({ddate(c25["start_date"])}), registrul are date din {ddate(c25["data_start_date"])}. '
              f'Fără efectiv în registru: fără În viață și % ouat; golirea din {ddate(PDEP)} nu apare ca mortalitate.</p></div>')
     assert PWEEKS[0] == c25['data_start_sapt'] == 23 and c25['sapt_start'] == 19   # S4NS: why the table span differs from the CycleTrack

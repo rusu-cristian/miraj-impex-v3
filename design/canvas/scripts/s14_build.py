@@ -1,5 +1,6 @@
 """S14 · Rapoarte · Producție (desktop 1440, S14N): spec D3 / screens S14 round 2 on real data (realdata.py, DATA03 extracts,
-today 18.11.2026 = SAPT 59, D151–D159). Owner view, Hîrbovăț · Seria 2026, period "4 săpt." (SAPT 56–59, D159), grain Zi.
+today 18.11.2026 = SAPT 59, D151–D159). Owner view, Hîrbovăț · Seria 2026, period "Ciclul curent" (D191; the table opens on its last 4 weeks, SAPT 56–59, with the
+load-more row "Încarcă încă 4 săptămâni", SYS18/D190/D192), grain Zi.
 python3 -I s14_build.py <repo_root> [heights.json] [--canvas]   (--canvas also writes the S14 board entries into canvas.json)
 Page order (screens S14): filters (Perioadă, Pas Zi / Săpt., Fermă, Exportă) → the PeriodTable (SYS14: every week open with its
 days, D166; per week the farm week row → its daily farm rows → the hall week rows H5 · H6 · H7, spec D3 rowGroups; foot
@@ -112,7 +113,7 @@ def ptable(guide=True, phone=False, skel=None):
     tag = PHONE_TAG if phone else None
     cap = f'Producție · {SER} · pe zile și hale' + ('' if guide else ' · fără ghid') + (f' · {tag}' if tag else '')
     t, tid = P.ptable('pr', cap, [('Total fermă', '', groups(None, guide, tag))], spine='phone' if phone else 'farm',
-                      skel=skel or False, rowgroups=hall_rows(guide, tag), colw=COLW if skel else None)
+                      skel=skel or False, rowgroups=hall_rows(guide, tag), colw=COLW if skel else None, more=P.more())   # SYS18: 4 din 40
     if not skel and not phone: assert t.count(s4.PART[0]) == 1; t = t.replace(s4.PART[0], s4.PART[1])   # "17–18.11 · 2 din 7 zile" (D165)
     if skel:   # the Data column at its loaded px too (the loaded partial week's label "SAPT 59 · 17–18.11 · 2 din 7 zile")
         a = '<th scope="col" class="ip-ptable__data" rowspan="2">'; assert t.count(a) == 1
@@ -193,7 +194,7 @@ def filterbar(mode='default'):
     if mode == 'empty':
         itv = f'<span class="ip-interval" role="group" aria-label="Interval">{s4.datef("iv-a", "de la", R.dd(IV[0]))}{s4.datef("iv-b", "până la", R.dd(IV[1]))}</span>'
         return f'<div class="ip-filterbar s11-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", s4.PERIODS, 3)}{itv}{PAS()}{farm_select()}{s11.export(True)}</div>'
-    per = s4.seg('Perioadă', ['Tot ciclul'] + s4.PERIODS[1:], 0) if mode == 'past' else s4.seg('Perioadă', s4.PERIODS, 1)   # D159: 4 săpt.; past as S4 ciclu ales
+    per = s4.seg('Perioadă', ['Tot ciclul'] + s4.PERIODS[1:], 0) if mode == 'past' else s4.seg('Perioadă', s4.PERIODS, 0)   # D191: Ciclul curent; past as S4 ciclu ales
     return f'<div class="ip-filterbar s11-filterbar" role="group" aria-label="Filtre">{per}{PAS()}{farm_select()}{s11.export()}</div>'
 
 # ================================================================= after the table: Readout (S4 lay chart) + cycle Stats
@@ -251,11 +252,11 @@ def past_rows():
 assert sorted(h for h in HALLS if (h, 65) not in s4.phall) == ['H5', 'H6']
 def tb_past():
     cap = f'Producție · Hîrbovăț · Seria 2025 · SAPT {PW4[-1]}–{PW4[0]}, ultimele 4 din SAPT {PWEEKS[0]}–{PFIN} · pe zile și hale'
-    t, tid = P.ptable('pr', cap, [('Total fermă', '', past_groups())], weeks=PW4, cal=PCAL, rowgroups=past_rows())
+    t, tid = P.ptable('pr', cap, [('Total fermă', '', past_groups())], weeks=PW4, cal=PCAL, rowgroups=past_rows(),
+                      more=P.more(first=PWEEKS[0], word='registrului'))   # SYS18 (D190, D192): 4 din 43, the register's SAPT 23–65
     assert t.count('aria-expanded="true"') == 4
-    after = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid}">Arată toate săptămânile</button>'
-             f'<p class="ip-note">apoi SAPT {PFIN} → {PWEEKS[0]} (registrul are date din {ddate(c25["data_start_date"])}).</p></div>'
-             + s4.ptnote('Seria 2025 nu are efectiv în registru (nicio populare sau transfer): fără Găini și % ouat; grame de hrană nu există pentru acest ciclu.' + NOTE_CAT,
+    after = (s4.ptnote(f'Registrul are date din {ddate(c25["data_start_date"])} (SAPT {PWEEKS[0]}).',
+                         'Seria 2025 nu are efectiv în registru (nicio populare sau transfer): fără Găini și % ouat; grame de hrană nu există pentru acest ciclu.' + NOTE_CAT,
                          f'Mortalitatea nu include golirea halelor (H5 din {num(R.ddm(DEP["H5"]))}, H6 din {num(R.ddm(DEP["H6"]))}, H7 din {num(R.ddm(DEP["H7"]))}): '
                          f'în zilele de golire registrul trece la morți și păsările scoase, deci o zi sau o săptămână numai cu golire are {DASH}. Jos nu intră în ouă.'))
     return (f'<section aria-labelledby="pr-h"><h2 class="ip-sr" id="pr-h">Producție pe săptămâni, zile și hale, Seria 2025</h2>'

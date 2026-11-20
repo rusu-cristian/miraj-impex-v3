@@ -5,10 +5,11 @@ python3 -I s3_build.py <repo_root> [heights.json] [--canvas]
 Order (D174): PageHeader (Exportă) → CycleTrack full (both farms, transfer link, azi + SAPT readout) → Tabs Păsări · Hrană ·
 Greutate · Producție; the Păsări tab = its PeriodTable (no FilterBar, D63: every column group of the period; no Detaliu; the
 last 4 weeks SAPT 59–56 all open with their days, D166; spine Data · Vârstă (zile) · SAPT · Fermă; "Total serie": În viață
-first, Vânzare last, D167; "Arată toate săptămânile" + notes under it, D160), then its Readouts (Mortalitate cumulată, În viață
+first, Vânzare last, D167; the table foot "Încarcă încă 4 săptămâni" + count, SYS18/D190, then the notes), then its Readouts (Mortalitate cumulată, În viață
 over SAPT 1–59), then "Ferme" (FarmSummary ×2). Each bird counted once in the transfer weeks (Telița until its batch arrives).
-Boards: default, se încarcă, seria închisă (content-width table), fără acces, toate săptămânile (scrolled to SAPT 22–19), telefon
-(single-choice tags, D174).
+Boards: default, 8 săptămâni (after one press, SYS18), începutul seriei (every week loaded to SAPT 1, the region scrolled to the
+transfer weeks SAPT 22–19; replaces "toate săptămânile"), se încarcă, seria închisă (content-width table), fără acces, telefon
+(single-choice tags, D174). The period is the whole series (SAPT 1–59, D190): its record types set the groups (D45).
 Reuses by import: s4t_build (→ s4s_build shell, sidebar, icons, formats, writer, Seria 2025 figures; Păsări groups, Readout
 + GuideChart; sys14_build PeriodTable builders as `P`), s2_build for the phone shell (phone, write_phone, CSS_P; importing
 it rewrites the S2/S7 default boards byte-identical, as s4ns). Figures only from realdata (DATA03 extracts, D151–D159); the
@@ -365,8 +366,7 @@ assert all(ser_alive(sx, d) <= PLC[sx] for sx in 'FM' for d in (R.D('2026-02-2' 
 # --- Păsări groups at series level, by span (kind 'w' week, 'd' day, 'f' the period [FOOT]) ---
 CARVE = R.ILL['culls'] + R.ILL['sexing_errors']           # illustrative records carved from that day's real deaths (DATA03)
 TEL_SE = [(R.D(r['date']), r['sex'], r['sexing_error']) for r in MT['rows'] if r['sexing_error']]
-FOOT = [T.span('f', None)]                               # the foot's span (the 4-week period; the whole series on "toate")
-def sp(kind, key): return FOOT[0] if kind == 'f' else T.span(kind, key)
+def sp(kind, key): return T.span(kind, key)              # 'f': the loaded weeks (SYS18: the foot adds up the weeks on screen)
 def inn(d, a, b): return a <= R.D(d) <= b
 def g_alive(s): return lambda kind, key: n(ser_alive(s, sp(kind, key)[1]))
 def g_mort(s):
@@ -390,24 +390,21 @@ def grp(name, fn, icon_=None):
     return {'name': (P.ico(icon_) if icon_ in P.IC else (T.thico(icon_) if icon_ else '')) + name,
             'leaves': [(P.sx(s), P.SX[s][0], fn(s)) for s in 'FM']}
 SEXERR_ICO = f'<span class="ip-table__ico">{icon("sexerr", 14)}</span>'
-def ser_groups(all_=False):
-    """spec D1 › Series page (D63/D45): every group the period has records for, D167 order. Default period SAPT 56–59:
-    În viață · Mortalitate · % cumulat · Sacrificare · Vânzare. The whole series adds Eroare sexare and Populare. A transfer
-    between the series' farms leaves the series total unchanged (each bird counted once, D174): no Transfer group."""
-    g = [grp('În viață', g_alive), grp('Mortalitate', g_mort, 'mortality'), grp('% cumulat', g_cum, 'mortality'), grp('Sacrificare', g_cull, 'cull')]
-    if all_: g += [{'name': SEXERR_ICO + 'Eroare sexare', 'leaves': grp('', g_sexerr)['leaves']}, grp('Populare', g_place, 'placement')]
-    return g + [grp('Vânzare', g_sale, 'sale')]
+def ser_groups():
+    """spec D1 › Series page (D63/D45): every group the period has records for, D167 order. SYS18 (D190): the period is the
+    whole series (SAPT 1–59) and the table loads it 4 weeks at a time, so the groups are the series' and stay put while weeks
+    load: În viață · Mortalitate · % cumulat · Sacrificare · Eroare sexare · Populare · Vânzare. A transfer between the series'
+    farms leaves the series total unchanged (each bird counted once, D174): no Transfer group."""
+    return [grp('În viață', g_alive), grp('Mortalitate', g_mort, 'mortality'), grp('% cumulat', g_cum, 'mortality'), grp('Sacrificare', g_cull, 'cull'),
+            {'name': SEXERR_ICO + 'Eroare sexare', 'leaves': grp('', g_sexerr)['leaves']}, grp('Populare', g_place, 'placement'), grp('Vânzare', g_sale, 'sale')]
 _tp = T.pasari()   # the farm table's figures for SAPT 56–59 equal the series' (Telița closed): one check per group
-for _i, _g in zip((0, 1, 3, 4), (g_alive, g_mort, g_cull, g_sale)):
+for _i, _g in zip((0, 1, 3, 6), (g_alive, g_mort, g_cull, g_sale)):
     assert all(_tp[_i]['leaves'][j][2]('w', k) == _g(s)('w', k) for j, s in enumerate('FM') for k in WEEKS)
 DENSE = False  # S3N: measured: the series table with its Fermă column fits the 1440 page without the dense cells (D165: only where needed)
-def allweeks(tid, note, all_=False, phone=False):
-    t = ' ip-btn--touch' if phone else ''
-    key = (f'<button type="button" class="ip-btn ip-btn--secondary{t} ip-focus" aria-controls="{tid}">Arată ultimele 4 săptămâni</button>' if all_ else
-           f'<button type="button" class="ip-btn ip-btn--secondary{t}" aria-controls="{tid}">Arată toate săptămânile</button>')
-    return '<div class="ip-ptable__after">' + key + ''.join(f'<p class="ip-note">{x}</p>' for x in note) + '</div>'
+def notes(note):   # SYS18: the notes under the table foot (the load-more key and its count come first, P.more)
+    return '<div class="ip-ptable__after">' + ''.join(f'<p class="ip-note">{x}</p>' for x in note) + '</div>'
 CULL = T.PCULLS[0]
-NOTE_SER = [f'apoi SAPT {WK} → 1: Telița în {TEL_SPAN}, ambele ferme în săptămânile transferului ({num(XSPAN)}).',
+NOTE_SER = [f'Mai vechi: Telița în {TEL_SPAN}, ambele ferme în săptămânile transferului ({num(XSPAN)}). Eroare sexare și Populare au înregistrări în serie ({num(ddate(PL_DATE))}, {num("23.02")}, {num("19.05")}).',
             f'% cumulat = morți din populare ({num(ddate(PL_DATE))}) ÷ păsări populate {pair(n(PLC["F"]), n(PLC["M"]))}. '
             f'Golirea din {num(R.ddm(R.EMPTYING_SINCE))} e Vânzare; Mortalitate = doar morți reali.',
             f'Sacrificarea din {num(R.ddm(CULL["date"]))} ({CULL["section"]} {M} {num(CULL["qty"])}) e ilustrativă și e scăzută din morții zilei. '
@@ -425,45 +422,47 @@ def tb_block(uid, cap, t, after, cls=''):
 def dense(t):
     k = 'class="ip-table ip-table--rowheads ip-ptable"'; assert t.count(k) == 1
     return t.replace(k, 'class="ip-table ip-table--rowheads ip-ptable ip-ptable--dense"', 1)
-def tb_serie():
-    cap = f'Păsări · {SER_CAP}'
-    t, tid = P.ptable('ps', cap, [('Total serie', '', ser_groups())], spine='s3', farm=ferma)
-    assert t.count('aria-expanded="true"') == 4 and t.count('<td>Hîrbovăț</td>') == 4 + 2 + 21 + 1   # D166 every week open; SAPT 56–59 at Hîrbovăț
-    return tb_block('ps', cap, dense(t) if DENSE else t, allweeks(tid, NOTE_SER))
-AWEEKS = [22, 21, 20, 19]   # D174: the "Arată toate" board, scrolled to the transfer weeks
+SER_FIRST = 1                                            # the series' first age week (placement 07.10.2025): SAPT 1–59 = 59 weeks
+W8 = [WK - i for i in range(8)]                          # after one press: SAPT 59–52
+def tb_serie(weeks=None, added=None):
+    weeks = weeks or WEEKS
+    cap = f'Păsări · Seria 2026 · Total serie · SAPT {weeks[-1]}–{weeks[0]}'
+    more = P.more(first=SER_FIRST, word='seriei', added=added, focus=bool(added))   # SYS18 (D190, D192): 4 din 59
+    t, tid = P.ptable('ps', cap, [('Total serie', '', ser_groups())], spine='s3', farm=ferma, weeks=weeks, more=more)
+    assert t.count('aria-expanded="true"') == len(weeks)                                     # D166 every week open
+    if weeks == WEEKS: assert t.count('<td>Hîrbovăț</td>') == 4 + 2 + 21 + 1               # SAPT 56–59 at Hîrbovăț
+    return tb_block('ps', cap, dense(t) if DENSE else t, notes(NOTE_SER))
+AWEEKS = [22, 21, 20, 19]   # D174: the start board, the region scrolled to the transfer weeks
+SALL = list(range(WK, SER_FIRST - 1, -1))                 # SAPT 59 … 1: every week loaded (14 presses: 4 × 14 = 56, the last adds SAPT 3–1)
 def tb_all():
-    """Every week (SAPT 59 → 1) open (D166), the region shown scrolled to SAPT 22–19 (Fermă Telița → Hîrbovăț): the weeks above
-    and below sit behind one muted line each; the foot totals the whole series."""
+    """SYS18 (D190): every week loaded (SAPT 59 → 1) and open (D166), the series' first week reached, so the key gave way to
+    the note "Începutul seriei · SAPT 1" (focus moved to it, the live region said so); the region shown scrolled to SAPT 22–19
+    (Fermă Telița → Hîrbovăț): the weeks above and below sit behind one muted line each; the foot adds up the 59 weeks on
+    screen (0–407, SAPT 1–59, Telița · Hîrbovăț)."""
     cap = f'Păsări · Seria 2026 · Total serie · SAPT 1–{WK}'
-    FOOT[0] = (R.D(cT['start_date']), R.TODAY)
-    try:
-        t, tid = P.ptable('ps', cap, [('Total serie', '', ser_groups(True))], spine='s3', farm=ferma, weeks=AWEEKS)
-    finally:
-        FOOT[0] = T.span('f', None)
-    a0 = R.week_dates(AWEEKS[-1])[0]   # sys14's foot spine: the first shown week's start to today
-    old = f'<td class="num">{R.age_days(a0)}{DASH}{R.age_days(R.TODAY)}</td><td class="num">{AWEEKS[-1]}{DASH}{AWEEKS[0]}</td><td>{ferma("f", None)}'
-    assert t.count(old) == 1   # the foot's spine: the whole series, not the 4 weeks on screen
-    t = t.replace(old, f'<td class="num">0{DASH}{R.age_days(R.TODAY)}</td><td class="num">1{DASH}{WK}</td><td>Telița · Hîrbovăț', 1)
-    ncol = 4 + sum(len(g['leaves']) for g in ser_groups(True))
+    t, tid = P.ptable('ps', cap, [('Total serie', '', ser_groups())], spine='s3', farm=ferma, weeks=AWEEKS, fweeks=SALL,
+                      more=P.more(first=SER_FIRST, word='seriei', added=SALL[-3:]))
+    assert f'<td class="num">0{DASH}{R.age_days(R.TODAY)}</td><td class="num">1{DASH}{WK}</td><td>Telița · Hîrbovăț</td>' in t   # the foot's spine: the whole series
+    ncol = 4 + sum(len(g['leaves']) for g in ser_groups())
     def gap(txt): return f'<tbody class="s3-gap"><tr class="ip-ptable__day ip-ptable__none"><td colspan="{ncol}"><span>{txt}</span></td></tr></tbody>'
     above, below = WK - AWEEKS[0], AWEEKS[-1] - 1
-    i = t.index('<tbody class="ip-ptable__week">'); j = t.index('<tfoot>')
+    i = t.index('<tbody class="ip-ptable__week">'); j = t.index('<tbody class="ip-ptable__morebody">')   # SYS18: the weeks below sit above the start note
     t = t[:i] + gap(f'SAPT {WK}–{AWEEKS[0] + 1} mai sus · {above} săptămâni, fiecare deschisă cu zilele ei') + t[i:j] + gap(f'SAPT {AWEEKS[-1] - 1}–1 mai jos · {below} săptămâni') + t[j:]
     assert t.count('aria-expanded="true"') == 4 and '<td>Telița · Hîrbovăț</td>' in t
-    return tb_block('ps', cap, t, allweeks(tid, NOTE_ALL, all_=True))
+    return tb_block('ps', cap, t, notes(NOTE_ALL))
 def tb_viewer():   # Observator (Hîrbovăț only): the farms it can see; % cumulat on the farm's own basis (from arrival, D162)
     cap = f'Păsări · Seria 2026 · fermele tale (Hîrbovăț) · SAPT {WEEKS[-1]}–{WEEKS[0]}'
-    t, tid = P.ptable('ps', cap, [('Fermele tale', '', T.pasari())], spine='s3', farm=ferma)
-    note = ['apoi SAPT 59 → 20, de la sosirea păsărilor la Hîrbovăț. Doar fermele la care ai acces.',
+    t, tid = P.ptable('ps', cap, [('Fermele tale', '', T.pasari())], spine='s3', farm=ferma, more=P.more())   # 4 din 40 (Hîrbovăț SAPT 20–59)
+    note = [f'Doar fermele la care ai acces: Hîrbovăț, de la sosirea păsărilor (SAPT {P.CYCLE_FIRST}).',
             f'% cumulat = morți din sosire ÷ păsări sosite. Golirea din {num(R.ddm(R.EMPTYING_SINCE))} e Vânzare; Mortalitate = doar morți reali.']
-    return tb_block('ps', cap, dense(t) if DENSE else t, allweeks(tid, note))
+    return tb_block('ps', cap, dense(t) if DENSE else t, notes(note))
 def tb_closed():   # Seria 2025: the register has deaths and eggs, no flock count, no culls or sales (D52, D54); D174: content width
     cap = f'Păsări · Seria 2025 · Total serie · SAPT {s4.PW4[-1]}–{s4.PW4[0]}'
     groups = [{'name': f'{P.ico("mortality")}Mortalitate', 'leaves': [(P.sx('F'), 'is-hen', s4.p_mort('F')), (P.sx('M'), 'is-rooster', s4.p_mort('M'))]}]
-    t, tid = P.ptable('ps', cap, [('Total serie', '', groups)], spine='s3', weeks=s4.PW4, cal=s4.PCAL)
-    note = [f'apoi SAPT {s4.PFIN} → {s4.PWEEKS[0]}: registrul are date din {num(ddate(cP["data_start_date"]))}; începutul ciclului e dedus ({num(ddate(cP["start_date"]))}, SAPT {cP["sapt_start"]}).',
+    t, tid = P.ptable('ps', cap, [('Total serie', '', groups)], spine='s3', weeks=s4.PW4, cal=s4.PCAL, more=P.more(first=s4.PWEEKS[0], word='registrului'))   # 4 din 43
+    note = [f'Registrul are date din {num(ddate(cP["data_start_date"]))} (SAPT {s4.PWEEKS[0]}); începutul ciclului e dedus ({num(ddate(cP["start_date"]))}, SAPT {cP["sapt_start"]}).',
             f'Fără efectiv în registru: fără În viață și % cumulat, deci fără graficele lor. Golirea din {num(ddate(s4.PDEP))} nu apare ca mortalitate; nicio sacrificare sau vânzare în registru.']
-    return tb_block('ps', cap, t, allweeks(tid, note), cls='s3-fit')
+    return tb_block('ps', cap, t, notes(note), cls='s3-fit')
 
 # --- the tab's charts: Mortalitate cumulată and În viață over the series' age weeks (Telița → Hîrbovăț), as S4's Readouts ---
 SWEEKS = list(range(1, WK + 1))
@@ -500,29 +499,32 @@ def panel(mode='default'):
     if mode == 'closed': body = tb_closed()
     elif mode == 'viewer': body = tb_viewer() + '\n' + T.charts(('h-mort', 'Mortalitate cumulată', T.ro_mort()), ('h-alive', 'În viață', T.ro_alive()))
     elif mode == 'all': body = tb_all() + '\n' + ser_charts()
+    elif mode == '8': body = tb_serie(W8, added=W8[4:]) + '\n' + ser_charts()
     else: body = tb_serie() + '\n' + ser_charts()
     return f'<div class="s4-panel s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">\n{body}\n</div>'
 # loading: the same table, every week open, bars at the loaded column widths (D132, D167 d)
-SKEL = [4, 4, 2, 1, 4, 4, 1, 1, 4, 3]   # ch of each leaf's usual figure (ch1–ch4, §42): În viață ♀ ♂, Mortalitate, % cumulat, Sacrificare, Vânzare
+SKEL = [4, 4, 2, 1, 4, 4, 1, 1, 1, 1, 1, 1, 4, 3]   # ch of each leaf's usual figure (ch1–ch4, §42): În viață ♀ ♂, Mortalitate, % cumulat, Sacrificare, Eroare sexare, Populare, Vânzare
 # §54 --ip-colw on the loading table's heads (Vârstă, SAPT, then the 10 leaves): the loaded columns' px at 1440 (s3_render.py, S3N) as shares of
 # the 1158 px region, so every column keeps its loaded width when the data arrives; the Data column takes the rest
-COLW = [round(x / 1158 * 100, 2) for x in (110.1, 63.1, 72, 63.1, 67.4, 59.6, 55.3, 63.1, 59.8, 63, 71, 63.1)]
+# SYS18: the series' groups (Eroare sexare, Populare) make the loaded table 1397 px, wider than the 1158 region: the loading
+# board stays 1440 (D167 d, as S4's), every figure column keeps its loaded px and the Data column takes the difference
+COLW = [round(x / 1158 * 100, 2) for x in (110.1, 63.1, 72, 63.1, 67.4, 59.6, 55.3, 63.1, 59.8, 63, 69.3, 72.5, 52.3, 55.5, 71, 63.1)]
 def panel_loading():
     cap = f'Păsări · {SER_CAP}'
     g = ser_groups(); assert len(SKEL) == sum(len(r['leaves']) for r in g)
-    t, _ = P.ptable('ps', cap, [('Total serie', '', g)], spine='s3', farm=ferma, skel=SKEL, colw=COLW)
+    t, _ = P.ptable('ps', cap, [('Total serie', '', g)], spine='s3', farm=ferma, skel=SKEL, colw=COLW, more=P.more(first=SER_FIRST, word='seriei'))
     if DENSE: t = dense(t)
     ro = s4.SKL.chart_readout('s4-readout', f'0 0 {T.CW} {T.CH}')
     return f'''<div class="s4-panel s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari" aria-busy="true">
 <p class="ip-sr" role="status">Se încarcă Seria 2026: ciclurile, tabelul Păsări (SAPT {WEEKS[-1]}–{WEEKS[0]}) și fermele.</p>
-<section aria-hidden="true"><p class="ip-cap ip-ptable__cap">{cap}</p>{P.region(t, cap, hidden=True)}<div class="ip-ptable__after">{sk("s3-btnsk")}</div></section>
+<section aria-hidden="true"><p class="ip-cap ip-ptable__cap">{cap}</p>{P.region(t, cap, hidden=True)}</section>
 <div class="s4t-split" aria-hidden="true"><section>{ro}</section><section>{ro}</section></div>
 </div>'''
 
 # ---------- page (D174: header → CycleTrack → tabs → table + notes → Readouts → Ferme) ----------
 def page(mode='default'):
     series = '2025' if mode == 'closed' else '2026'
-    hmode = 'default' if mode == 'all' else mode
+    hmode = 'default' if mode in ('all', '8') else mode
     if mode == 'loading':
         top, pn, farms = track_loading(), panel_loading(), summaries_loading()
     else:
@@ -552,22 +554,26 @@ CSS = T.CSS + '''
 .s3-skcard{gap:var(--space-3)}
 .s3-skfig{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-2) 0;border-top:var(--ip-hair) solid var(--rule)}
 .s3-skrow{display:flex;justify-content:space-between}
-.s3-btnsk{width:calc(var(--space-12) * 4);height:var(--control-h);border-radius:var(--radius-sm)} /* the "Arată toate săptămânile" key */
 .s3-h16{height:var(--space-4)}.s3-h20{height:var(--space-5)}
 .s3-w8{width:calc(var(--space-12) + var(--space-6))}.s3-w14{width:calc(var(--space-12) * 2)}.s3-w24{width:calc(var(--space-12) * 4)}
 .s3-w20{width:20%}.s3-w30{width:30%}.s3-w40{width:40%}.s3-w50{width:50%}.s3-w60{width:60%}
 .s3-fit .ip-tablescroll{width:fit-content;max-width:100%} /* D174: a narrow table (Seria 2025: one group) takes its content width, no slack Data column */
 .s3-fit .ip-ptable{width:auto}
-.s3-gap .ip-ptable__none > td{border-bottom:var(--ip-hair) solid var(--line)} /* the "toate" board: the weeks above / below the scrolled view */'''
+.s3-gap .ip-ptable__none > td{border-bottom:var(--ip-hair) solid var(--line)} /* the start board: the weeks above / below the scrolled view */'''
 
 # ---------- phone 390 (owner, D174): single-choice record tags as the Fermă phone (default Mortalitate: În viață + Mortalitate
 # with % cumulat on its cells' second line); no Fermă column: in the transfer weeks the farms ride on the sticky cell's 2nd line ----------
 sys.argv = ['s2_build.py', str(ROOT), str(HERE / 's2_heights.json')]
 A = importlib.import_module('s2_build')   # phone shell; rewrites the S2/S7 default boards byte-identical (as s4ns)
-PTAGS = [('mortality', 'Mortalitate'), ('cull', 'Sacrificare'), ('sale', 'Vânzare')]   # the Păsări types of SAPT 56–59 (D45)
+PTAGS = [('mortality', 'Mortalitate'), ('cull', 'Sacrificare'), ('sexerr', 'Eroare sexare'), ('placement', 'Populare'), ('sale', 'Vânzare')]   # the series' Păsări types (D45, SYS18: the period is the series)
 def radio_tags(on='mortality'):
-    out = ''.join(f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if k == on else " ip-chip--off"}" role="radio" '
-                  f'aria-checked="{"true" if k == on else "false"}" tabindex="{"0" if k == on else "-1"}">{icon(k, 16)}{w}</button>' for k, w in PTAGS)
+    def one(k, w):
+        a = f'role="radio" aria-checked="{"true" if k == on else "false"}" tabindex="{"0" if k == on else "-1"}"'
+        if k == 'sexerr':   # the neutral split chip (D47)
+            return (f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-chip--split{"" if k == on else " ip-chip--off"}" {a}>'
+                    f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>{w}</button>')
+        return f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if k == on else " ip-chip--off"}" {a}>{icon(k, 16)}{w}</button>'
+    out = ''.join(one(k, w) for k, w in PTAGS)
     return (f'<div class="ip-field s3-ptags" role="group" aria-labelledby="pt-tags"><span class="ip-label" id="pt-tags">Tipuri de înregistrări</span>'
             f'<div class="s4-chips" role="radiogroup" aria-labelledby="pt-tags" aria-describedby="pt-tags-h">{out}</div>'
             f'<span class="ip-hint" id="pt-tags-h">Pe telefon tabelul arată un tip odată; În viață rămâne.</span></div>')
@@ -577,10 +583,10 @@ def phone_page():
     g = ser_groups()
     gp = [g[0], P.stacked(g[1], g[2], '% cumulat')]   # D171/S4NS: % cumulat as the Mortalitate cells' second line
     cap = f'Păsări · {SER_CAP} · Mortalitate'
-    t, tid = P.ptable('ps', cap, [('Total serie', '', gp)], spine='phone', farm=ferma_phone)
+    t, tid = P.ptable('ps', cap, [('Total serie', '', gp)], spine='phone', farm=ferma_phone, more=P.more(first=SER_FIRST, word='seriei'))
     assert t.count('aria-expanded="true"') == 4 and '<td>Hîrbovăț' not in t
     note = [NOTE_SER[0], f'Toate zilele de aici: Hîrbovăț; în săptămânile transferului ferma apare sub dată. Golirea din {num(R.ddm(R.EMPTYING_SINCE))} e Vânzare.']
-    tb = tb_block('ps', cap, t, allweeks(tid, note, phone=True))
+    tb = tb_block('ps', cap, t, notes(note))
     pn = f'<div class="s4-panel s3-panel" id="tp-serie" role="tabpanel" aria-labelledby="tab-pasari">\n{radio_tags()}\n{tb}\n{ser_charts(False)}\n</div>'   # Readouts without GuideChart (as S4/S14 phone)
     body = A.phone([header('default', phone=True), track('default', phone=True),
                     f'<section class="ip-block" aria-label="Date pe săptămâni">{tabs()}{pn}</section>', summaries('default', phone=True)])
@@ -607,7 +613,8 @@ BOARDS = [
  (B + '--se-incarca', 'S3 · Seria 2026 · se încarcă', 'loading'),
  (B + '--seria-inchisa', 'S3 · Seria 2026 · seria închisă (Seria 2025)', 'closed'),
  (B + '--fara-acces', 'S3 · Seria 2026 · fără acces (Observator, doar Hîrbovăț)', 'viewer'),
- (B + '--toate-saptamanile', 'S3 · Seria 2026 · toate săptămânile (derulat la SAPT 22–19, transfer)', 'all'),
+ (B + '--8-saptamani', 'S3 · Seria 2026 · 8 săptămâni (după „Încarcă încă 4 săptămâni”)', '8'),
+ (B + '--inceputul-seriei', 'S3 · Seria 2026 · începutul seriei (încărcat până la SAPT 1, derulat la SAPT 22–19, transfer)', 'all'),
 ]
 PHONE = (B + '--telefon', 'S3 · Seria 2026 · telefon')
 if __name__ == '__main__':

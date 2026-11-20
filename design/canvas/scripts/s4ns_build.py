@@ -1,6 +1,6 @@
 """S4NS · S4 Fermă states on real data, table first (spec D1 › States, Filters, phone; PeriodTable phone/states; D160, D166, D167).
 Boards appended to the S4 row after its existing boards (desktops, then phones, D74), owner, today 18.11.2026 = SAPT 59,
-Hîrbovăț · Seria 2026, period "4 săpt." (SAPT 56–59):
+Hîrbovăț · Seria 2026, period "Ciclul curent" (D191; the tables open on its last 4 weeks, SAPT 56–59, D190):
 - Rezumat · etichete Mortalitate + Vânzare (desktop): chips Mortalitate and Vânzare on, the others off (D45 types of the
   period); the table keeps În viață (always on Rezumat) + Morți + Vânzare; the latest records list only those two types.
 - Rezumat · pas Săpt. (ales în filtre) (desktop): grain Săpt. = week rows only, every week closed (each key can open its week
@@ -12,7 +12,9 @@ Hîrbovăț · Seria 2026, period "4 săpt." (SAPT 56–59):
   open (D166); the compact one-farm CycleTrack (358) under the selector (D171); Păsări has the Detaliu SegmentedControl at
   touch size and "% cumulat" with the cull note (D171); Readouts without their GuideChart (as S14 phone).
 - Păsări · telefon · filtre (390×844): the FilterBar BottomSheet open: Perioadă and Pas at touch size, the record-type tags
-  as a radiogroup of touch chips (one on), Exportă.
+  as a radiogroup of touch chips (one on), Exportă (the whole period, D191).
+- SYS18 (D190): Rezumat · 8 săptămâni (desktop) and Păsări · telefon · 8 săptămâni: the table after one press of "Încarcă încă
+  4 săptămâni": SAPT 59–52 open with their days, the foot "Total SAPT 52–59", the key focused, the live region's sentence.
 Reuses by import: s4t_build (→ s4s_build: shell, header, FilterBar parts, Rezumat page and PeriodTable wrapper; Păsări groups,
 panel, Readouts), sys14_build through s4s (`P`: ptable, block, region), s2_build (phone screen, BottomTabBar, phone CSS,
 write_phone; importing it rewrites the S2/S7 default boards byte-identical). Figures only from realdata.
@@ -35,13 +37,14 @@ s4, P, R = T.s4, T.P, T.R
 sys.argv = ['s2_build.py', str(ROOT), str(HERE / 's2_heights.json')]
 A = importlib.import_module('s2_build')                               # phone shell; rewrites the S2/S7 default boards unchanged
 icon, lamp, num = s4.icon, s4.lamp, T.num
-WK, PTYPES, CHIPW = s4.WK, s4.PTYPES, s4.CHIPW
+WK, PTYPES, CHIPW = s4.WK, s4.CTYPES, s4.CHIPW   # D191: the period's (the cycle's) types
 assert P.WEEKS == [WK, WK - 1, WK - 2, WK - 3] == [59, 58, 57, 56]
 
 # ================================================================= shared: the Rezumat page with another FilterBar / table
 FB = s4.filterbar4()
 SEG_ZI = s4.seg('Pas', ['Zi', 'Săpt.'], 0)
 CHIPS_ALL = s4.chips4(set(PTYPES))
+W8 = s4.W8
 assert FB.count(SEG_ZI) == 1 and FB.count(CHIPS_ALL) == 1
 def rz_page(fb=FB, table=None, events=None):
     panel = s4.panel_default(table=table)
@@ -71,6 +74,16 @@ def board_tags():
 # ================================================================= 2. grain Săpt.: week rows only (desktop)
 FB_WEEK = FB.replace(SEG_ZI, s4.seg('Pas', ['Zi', 'Săpt.'], 1))
 NOTE_WEEK = 'Pas Săpt., ales în filtre: doar rândurile de săptămână; fiecare tastă deschide săptămâna ei. Zi (implicit) le arată pe toate cu zilele lor.'
+# ================================================================= SYS18: after one press of "Încarcă încă 4 săptămâni" (desktop)
+def board_4():   # D192: the period "4 săpt." chosen in the FilterBar: the load-more row shows too
+    t = s4.tb_rezumat()
+    assert '4</span> din <span class="ip-num">40' in t
+    return rz_page(s4.filterbar_weeks(4), t)
+def board_8():     # D192: after one press with "4 săpt.": the filter reads "8 săpt.", SAPT 59–52 open, the row keeps focus
+    t = s4.tb_rezumat(weeks=W8, added=W8[4:], period='8 săpt.')
+    assert t.count('aria-expanded="true"') == 8 and 'Total SAPT <span class="ip-num">52–59</span>' in t and '8</span> din <span class="ip-num">40' in t
+    return rz_page(s4.filterbar_weeks(8), t)
+
 def board_week():
     t = s4.ptable('rz', 'Rezumat', [('Total fermă', '', RZ)], bar=False, open_weeks=(), after=s4.ptnote(NOTE_WEEK, s4.RZ_NOTE))
     assert t.count('aria-expanded="false"') == 4 and 'aria-expanded="true"' not in t
@@ -83,7 +96,7 @@ SLIDERS = ('<path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d=
 TAB_TAG = {'rezumat': 'mortality', 'pasari': 'mortality', 'hrana': 'feed', 'greutate': 'weighing', 'productie': 'eggs'}
 assert all(t in PTYPES for t in TAB_TAG.values())
 TAG = TAB_TAG['pasari']
-SUM = f'4 săpt. · Zi · {CHIPW[TAG]}'
+SUM = f'Ciclul curent · Zi · {CHIPW[TAG]}'   # D191
 def p_filter(open_=False):
     st = 'aria-expanded="true" aria-controls="pf-sheet"' if open_ else 'aria-expanded="false"'
     return ('<div class="ip-filterbar s4ns-pfilter" role="group" aria-label="Filtre">'
@@ -148,10 +161,11 @@ def phone(parts, cls=''):
         assert body.count(a) == 1, a; body = body.replace(a, z, 1)
     assert body.count('is-current') == 1
     return body
-def p_table(uid, tab, groups, bar, note, tag):
-    cap = f'{tab} · {s4.SER} · {CHIPW[tag]}'
-    t, _ = P.ptable(uid, cap, [('Total fermă', '', groups)], spine='phone')
-    assert t.count('aria-expanded="true"') == 4                                   # D166: every week open
+def p_table(uid, tab, groups, bar, note, tag, weeks=None, added=None):
+    weeks = weeks or P.WEEKS
+    cap = f'{tab} · Hîrbovăț · Seria 2026 · SAPT {weeks[-1]}–{weeks[0]} · {CHIPW[tag]}'
+    t, tid = P.ptable(uid, cap, [('Total fermă', '', groups)], spine='phone', weeks=weeks, more=P.more(added=added, focus=bool(added)))   # SYS18 (D192): the 48 px load-more row
+    assert t.count('aria-expanded="true"') == len(weeks)                          # D166: every week open
     return (f'<section aria-labelledby="{uid}-h"><h2 class="ip-sr" id="{uid}-h">{tab}: tabel pe săptămâni și zile</h2>'
             + P.block(uid, cap, t, bar=bar, touch=True, after=s4.ptnote(note)) + '</section>')
 
@@ -170,13 +184,14 @@ def phone_rezumat():
 
 # Păsări · telefon: Detaliu (touch) + În viață + Mortalitate (tag Mortalitate; the carved culls sit under Sacrificare)
 PA = T.pasari()
-assert [gname(g) for g in PA] == ['În viață', 'Mortalitate', '% cumulat', 'Sacrificare', 'Vânzare']
+assert [gname(g) for g in PA] == ['În viață', 'Mortalitate', '% cumulat', 'Sacrificare', 'Eroare sexare', 'Transfer', 'Vânzare']
 PA_P = [PA[0], P.stacked(PA[1], PA[2])]          # D171 + S4NS fix 2: În viață + Mortalitate with % cumulat as its cells' second line (4 figure columns)
-def phone_pasari(open_=False):
+def phone_pasari(open_=False, weeks=None, added=None):
     T.EVID[0] = 0
     c = T.PCULLS[0]
     tb = p_table('pa', 'Păsări', PA_P, True, f'Golirea din {R.ddm(R.EMPTYING_SINCE)} e Vânzare; Mortalitate = doar morți reali. % cumulat = morți din sosire ÷ păsări sosite. '
-                 f'Sacrificarea din {R.ddm(c["date"])} ({c["section"]} {s4.M} {c["qty"]}) e ilustrativă și e scăzută din morții zilei. O etichetă odată: alege alta din Filtrează.', TAG)
+                 f'Sacrificarea din {R.ddm(c["date"])} ({c["section"]} {s4.M} {c["qty"]}) e ilustrativă și e scăzută din morții zilei. O etichetă odată: alege alta din Filtrează.', TAG,
+                 weeks=weeks, added=added)
     rows = [NB_USER(T.log_row(e), e) for e in T.LOGE if e['record'] == TAG]           # the event log under the table: the one tag's rows (spec D1 › Columns)
     assert len(rows) == 3
     span = R.drange(T.LOG_FROM, R.TODAY)
@@ -193,23 +208,27 @@ def touch_seg(seg, lid, focus=False):
     a = seg[:seg.index('>') + 1]; assert a.startswith('<span class="ip-seg" role="radiogroup"')
     out = f'<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="{lid}">' + seg[len(a):]
     return out.replace('<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1) if focus else out
-PA_TYPES = [k for k in PTYPES if k in T.BIRD]      # the Păsări tab's types of the period (D45): no Hrană / Cântărire / Ouă
-assert PA_TYPES == ['mortality', 'cull', 'sale']
+PA_TYPES = [k for k in PTYPES if k in T.BIRD]      # the Păsări tab's types of the period (D45, D191: the cycle): no Hrană / Cântărire / Ouă
+assert PA_TYPES == ['mortality', 'cull', 'sexerr', 'transfer', 'sale']
 def radio_chips():
     out = ''
     for k in PA_TYPES:
         on = k == TAG
-        out += (f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if on else " ip-chip--off"}" role="radio" '
-                f'aria-checked="{"true" if on else "false"}" tabindex="{"0" if on else "-1"}">{icon(k, 16)}{CHIPW[k]}</button>')
+        a = f'role="radio" aria-checked="{"true" if on else "false"}" tabindex="{"0" if on else "-1"}"'
+        if k == 'sexerr':   # the neutral split chip (D47), as the desktop FilterBar
+            out += (f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-chip--split{"" if on else " ip-chip--off"}" {a}>'
+                    f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>{CHIPW[k]}</button>')
+            continue
+        out += (f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if on else " ip-chip--off"}" {a}>{icon(k, 16)}{CHIPW[k]}</button>')
     return f'<div class="s4-chips" role="radiogroup" aria-labelledby="pf-tags" aria-describedby="pf-tags-h">{out}</div>'
 def p_sheet():
-    per = touch_seg(s4.seg('Perioadă', s4.PERIODS, 1), 'pf-per', focus=True)
+    per = touch_seg(s4.seg('Perioadă', s4.PERIODS, 0), 'pf-per', focus=True)   # D191: Ciclul curent
     pas = touch_seg(SEG_ZI, 'pf-pas')
     tags = (f'<div class="ip-field" role="group" aria-labelledby="pf-tags"><span class="ip-label" id="pf-tags">Tipuri de înregistrări</span>{radio_chips()}'
             f'<span class="ip-hint" id="pf-tags-h">Pe telefon tabelul arată un tip odată, ales pe fiecare filă; În viață rămâne.</span></div>')
     exp = ('<div class="s4ns-fsheet__exp"><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-describedby="pf-exp">'
            f'{icon("download", 16)}Exportă .xlsx</button>'
-           f'<p class="ip-hint" id="pf-exp">Tabelul de pe ecran: Hîrbovăț, Seria 2026, <span class="ip-num">SAPT 56–59</span>, pe zile, {CHIPW[TAG]}.</p></div>')
+           f'<p class="ip-hint" id="pf-exp">Toată perioada aleasă: Hîrbovăț, Seria 2026, ciclul curent (<span class="ip-num">SAPT {s4.CYC_WEEKS[-1]}–{WK}</span>), pe zile, {CHIPW[TAG]}.</p></div>')   # D191: Exportă = the whole period
     return ('<div class="ip-scrim ip-scrim--sheet">'
             '<div class="ip-sheet s4ns-fsheet" role="dialog" aria-modal="true" id="pf-sheet" aria-labelledby="pf-t" aria-describedby="pf-d">'
             '<div class="ip-sheet__handle" aria-hidden="true"></div>'
@@ -260,10 +279,13 @@ CSS_SHEET = CSS_PHONE + '''
 # ================================================================= boards
 RZB, PAB = 'S4-ferma-rezumat--', 'S4-ferma--pasari--'
 DESK = [(RZB + 'etichete', 'S4 · Fermă · Rezumat · etichete Mortalitate + Vânzare', board_tags),
-        (RZB + 'pas-saptamana', 'S4 · Fermă · Rezumat · pas Săpt. (ales în filtre)', board_week)]
+        (RZB + 'pas-saptamana', 'S4 · Fermă · Rezumat · pas Săpt. (ales în filtre)', board_week),
+        (RZB + '4-saptamani', 'S4 · Fermă · Rezumat · perioada 4 săpt. (rândul „Încarcă încă 4 săptămâni”)', board_4),
+        (RZB + '8-saptamani', 'S4 · Fermă · Rezumat · 8 săpt. (după o apăsare pe „Încarcă încă 4 săptămâni”)', board_8)]
 PHONE = [(RZB + 'telefon', 'S4 · Fermă · Rezumat · telefon', phone_rezumat, False),
          (PAB + 'telefon', 'S4 · Fermă · Păsări · telefon', phone_pasari, False),
-         (PAB + 'telefon-filtre', 'S4 · Fermă · Păsări · telefon · filtre', phone_sheet, True)]
+         (PAB + 'telefon-filtre', 'S4 · Fermă · Păsări · telefon · filtre', phone_sheet, True),
+         (PAB + 'telefon--8-saptamani', 'S4 · Fermă · Păsări · telefon · 8 săptămâni (după „Încarcă încă 4 săptămâni”)', lambda: phone_pasari(weeks=W8, added=W8[4:]), False)]
 out = []
 for stem, title, fn in DESK:
     h = HEIGHTS.get(stem, 1024)

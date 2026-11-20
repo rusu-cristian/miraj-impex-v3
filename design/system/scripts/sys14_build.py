@@ -72,6 +72,12 @@ CAL = Cal()
 ARR_DAY = R.D(min(r['date'] for r in R.SECTION_DAY))   # 22.02.2026, first arrival at Hîrbovăț
 ARR_HALL = {}
 for _r in R.SECTION_DAY: ARR_HALL[(_r['section'].split('.')[0], _r['sex'])] = ARR_HALL.get((_r['section'].split('.')[0], _r['sex']), 0) + _r['arr']
+def fweeks(key):
+    """SYS18 (D190/D191): the foot's weeks. ptable passes the loaded weeks as the foot's key (kind 'f'), so the foot adds up
+    the weeks on screen ("Total SAPT 52–59"); None (older callers) = the default 4 weeks."""
+    return list(key) if key else WEEKS
+def fspan(key):   # the foot's dates: the first loaded week's start to the last loaded day (today)
+    return (R.week_dates(min(key))[0], P_TO) if key else (P_FROM, P_TO)
 def end_of(kind, key):
     if kind == 'w': return min(R.week_dates(key)[1], R.TODAY)
     return key if kind == 'd' else P_TO
@@ -107,8 +113,8 @@ def stacked(main, sub, sub_word='% cumulat'):
             'leaves': [(lab, c, wrap(fa, fb)) for (lab, c, fa), (_, _, fb) in zip(main['leaves'], sub['leaves'])]}
 
 def farm_pasari():
-    def mort(s): return lambda kind, key: R.n(R.week(key)[f'mort_{s}'] if kind == 'w' else R.day(key)[f'mort_{s}'] if kind == 'd' else R.deaths(P_FROM, P_TO, sx=s))
-    def sold(s): return lambda kind, key: R.n(R.week(key)[f'sold_{s}'] if kind == 'w' else R.day(key)[f'sold_{s}'] if kind == 'd' else R.sold(P_FROM, P_TO, sx=s))
+    def mort(s): return lambda kind, key: R.n(R.week(key)[f'mort_{s}'] if kind == 'w' else R.day(key)[f'mort_{s}'] if kind == 'd' else R.deaths(*fspan(key), sx=s))
+    def sold(s): return lambda kind, key: R.n(R.week(key)[f'sold_{s}'] if kind == 'w' else R.day(key)[f'sold_{s}'] if kind == 'd' else R.sold(*fspan(key), sx=s))
     def alive(s): return lambda kind, key: R.n(R.week(key)[f'alive_{s}_end'] if kind == 'w' else R.day(key)[f'alive_{s}'] if kind == 'd' else R.alive_farm(s, P_TO))
     return [   # D167: "În viață" first (right after the spine), "Vânzare" always the last group
         {'name': 'În viață', 'leaves': [(sx('F'), 'is-hen', alive('F')), (sx('M'), 'is-rooster', alive('M'))]},
@@ -126,7 +132,7 @@ def hall_pasari(h):
                 w = R.week(key, h)
                 return (DASH, GOALA) if not w['alive_F_start'] and not w['alive_M_start'] else R.n(w[f'mort_{s}'])
             if kind == 'd': return (DASH, GOALA) if empty_day(key) else R.n(R.day(key, h)[f'mort_{s}'])
-            return R.n(R.deaths(P_FROM, P_TO, sx=s, hall=h))
+            return R.n(R.deaths(*fspan(key), sx=s, hall=h))
         return f
     def sold(s):
         def f(kind, key):
@@ -134,7 +140,7 @@ def hall_pasari(h):
                 w = R.week(key, h)
                 return (DASH, GOALA) if not w['alive_F_start'] and not w['alive_M_start'] else R.n(w[f'sold_{s}'])
             if kind == 'd': return (DASH, GOALA) if empty_day(key) else R.n(R.day(key, h)[f'sold_{s}'])
-            return R.n(R.sold(P_FROM, P_TO, sx=s, hall=h))
+            return R.n(R.sold(*fspan(key), sx=s, hall=h))
         return f
     def alive(s):
         def f(kind, key):
@@ -164,22 +170,23 @@ def productie(guide=True, h=None, weeks=WEEKS):
     def guard(fn):
         def f(kind, key): return (DASH, GOALA) if gone(kind, key) else fn(kind, key)
         return f
-    hd = sum(W(k)['hen_days'] for k in weeks)
+    def wf(key): return list(key) if key else weeks   # SYS18: the foot's key = the loaded weeks
+    def hd(key): return sum(W(k)['hen_days'] for k in wf(key))
     def hens(kind, key):
         if kind == 'w': return R.n(W(key)['alive_F_start'])
-        if kind == 'f': return R.n(W(weeks[-1])['alive_F_start'])
+        if kind == 'f': return R.n(W(wf(key)[-1])['alive_F_start'])
         prev = key - dt.timedelta(days=1)
         return R.n(R.alive_farm('F', prev) if h is None else R.alive_hall(h, 'F', prev))
     def eggs(kind, key):
-        return R.n(W(key)['eggs'] if kind == 'w' else R.eggs(key, h) if kind == 'd' else sum(W(k)['eggs'] or 0 for k in weeks))
+        return R.n(W(key)['eggs'] if kind == 'w' else R.eggs(key, h) if kind == 'd' else sum(W(k)['eggs'] or 0 for k in wf(key)))
     def lay_v(kind, key):
         if kind == 'w': return W(key)['eggs'] / W(key)['hen_days'] * 100
         if kind == 'd': return R.lay_day(key, h)
-        return sum(W(k)['eggs'] or 0 for k in weeks) / hd * 100
+        return sum(W(k)['eggs'] or 0 for k in wf(key)) / hd(key) * 100
     def gl_v(kind, key):
         if kind == 'w': return R.week(key)['guide']['lay_pct']
         if kind == 'd': return R.day(key)['guide_lay_pct']
-        return sum(R.week(k)['guide']['lay_pct'] * W(k)['hen_days'] for k in weeks) / hd   # hen-day weighted
+        return sum(R.week(k)['guide']['lay_pct'] * W(k)['hen_days'] for k in wf(key)) / hd(key)   # hen-day weighted
     def lay(kind, key): return R.pct(lay_v(kind, key))
     def gl(kind, key): return R.pct(gl_v(kind, key))
     def dv(kind, key): return R.rnd(lay_v(kind, key), 1) - R.rnd(gl_v(kind, key), 1)
@@ -188,26 +195,26 @@ def productie(guide=True, h=None, weeks=WEEKS):
         return ('<span class="ip-lamp ip-lamp--warn">abatere</span>' if abs(dv(kind, key)) > 3
                 else '<span class="ip-lamp ip-lamp--ok">în normă</span>')
     def inc(kind, key):
-        return R.n(W(key)['inc'] if kind == 'w' else D_(key)['inc'] if kind == 'd' else sum(W(k)['inc'] for k in weeks))
+        return R.n(W(key)['inc'] if kind == 'w' else D_(key)['inc'] if kind == 'd' else sum(W(k)['inc'] for k in wf(key)))
     def jos(kind, key):
-        return R.n(W(key)['jos'] if kind == 'w' else D_(key)['jos'] if kind == 'd' else sum(W(k)['jos'] for k in weeks))
+        return R.n(W(key)['jos'] if kind == 'w' else D_(key)['jos'] if kind == 'd' else sum(W(k)['jos'] for k in wf(key)))
     def share(field):
         def f(kind, key):
             if kind == 'w': a, b = W(key)[field], W(key)['eggs']
             elif kind == 'd': a, b = D_(key)[field], D_(key)['eggs']
-            else: a, b = sum(W(k)[field] for k in weeks), sum(W(k)['eggs'] or 0 for k in weeks)
+            else: a, b = sum(W(k)[field] for k in wf(key)), sum(W(k)['eggs'] or 0 for k in wf(key))
             return R.pct(a / b * 100)
         return f
     def egg_g(kind, key):
         if kind == 'w': return R.n(W(key)['egg_g'], 1)
         if kind == 'd': return R.n(D_(key)['egg_g'], 1)
-        return R.n(sum(W(k)['egg_g'] * W(k)['eggs'] for k in weeks if W(k)['eggs']) / sum(W(k)['eggs'] or 0 for k in weeks), 1)
+        return R.n(sum(W(k)['egg_g'] * W(k)['eggs'] for k in wf(key) if W(k)['eggs']) / sum(W(k)['eggs'] or 0 for k in wf(key)), 1)
     def cat(c):   # D183 (S4C): Cat. c as % of the row's eggs (form counts, DATA06), one decimal; a row with no eggs is – (never 0)
         fld = f'cat{c}'
         def f(kind, key):
             if kind == 'w': a, b = W(key)[fld], W(key)['eggs']
             elif kind == 'd': r = D_(key); a, b = (r[fld], r['eggs']) if r else (None, None)
-            else: a, b = sum(W(k)[fld] or 0 for k in weeks), sum(W(k)['eggs'] or 0 for k in weeks)
+            else: a, b = sum(W(k)[fld] or 0 for k in wf(key)), sum(W(k)['eggs'] or 0 for k in wf(key))
             if not b: return (DASH, 'fără ouă')
             if a is None: return (DASH, 'fără categorii în formular')
             return R.pct(a / b * 100)
@@ -251,19 +258,19 @@ def hrana(h=None):
         def f(kind, key):
             if kind == 'w': return (DASH, GOALA) if gone(key) else R.n(wk(key)[f'g_{s}'], 1)
             if kind == 'd': return (DASH, GOALA) if dgone(key) else (NOFEED if dg(key, s) is None else R.n(dg(key, s), 1))
-            t = sum(bd(k, s) for k in WEEKS); return R.n(sum(wk(k)[f'kg_{s}'] for k in WEEKS) * 1000 / t, 1)
+            ws = fweeks(key); t = sum(bd(k, s) for k in ws); return R.n(sum(wk(k)[f'kg_{s}'] for k in ws) * 1000 / t, 1)
         return f
     def gd(s):
         def f(kind, key):
             if kind == 'w': return (DASH, GOALA) if gone(key) else R.n(R.week(key)['guide'][f'feed_g_{s}'])
             if kind == 'd': return (DASH, GOALA) if dgone(key) else R.n(R.day(key)[f'guide_g_{s}'])   # the guide holds on a day without feed
-            t = sum(bd(k, s) for k in WEEKS); return R.n(sum(R.week(k)['guide'][f'feed_g_{s}'] * bd(k, s) for k in WEEKS) / t)
+            ws = fweeks(key); t = sum(bd(k, s) for k in ws); return R.n(sum(R.week(k)['guide'][f'feed_g_{s}'] * bd(k, s) for k in ws) / t)
         return f
     def kg(s):
         def f(kind, key):
             if kind == 'w': return (DASH, GOALA) if gone(key) else R.n(wk(key)[f'kg_{s}'], 1)
             if kind == 'd': return (DASH, GOALA) if dgone(key) else R.n(R.day(key, h)[f'kg_{s}'] if h else R.feed_kg(key, s), 1)
-            return R.n(sum(wk(k)[f'kg_{s}'] for k in WEEKS), 1)
+            return R.n(sum(wk(k)[f'kg_{s}'] for k in fweeks(key)), 1)
         return f
     return [
         {'name': f'{ico("feed")}Hrană · g/pasăre', 'leaves': [(sx('F', 'efectiv'), 'is-hen', g('F')), (sx('F', 'ghid'), 'is-hen', gd('F')),
@@ -374,7 +381,7 @@ def wd(d):
     return f'<span aria-hidden="true">{WD[d.weekday()]}</span><span class="ip-sr">{WDF[d.weekday()]}</span> {num(R.ddm(d))}'
 
 def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None, weeks=WEEKS, weighings=False,
-           focus=None, dense=False, foot=True, skel=False, colw=None, cal=CAL, farm=None, rowgroups=None):
+           focus=None, dense=False, foot=True, skel=False, colw=None, cal=CAL, farm=None, rowgroups=None, fweeks=None, more=None):
     """farm (S3N): (kind, key) -> the S3 "Fermă" text ('w' week, 'd' day, 'f' period); on the desktop spines it is the Fermă
     column (spine 's3' without it keeps "Hîrbovăț"); on the phone (D174) there is no column: a day whose farm() is not
     None (the transfer weeks) shows it as the sticky cell's second small line.
@@ -384,6 +391,9 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
     leaf per column), 'empty': k -> None | muted text, 'skip': k -> True to leave the row out that week}: a week the section had no birds is one muted line across the figure
     columns (D158d, "goală din 14.11.2026 · H7.1, H7.2")."""
     if show_sec is None: show_sec = len(sections) > 1
+    # SYS18 (D190/D191): the foot adds up the weeks loaded on screen ("Total SAPT 52–59"); fweeks = the loaded weeks when the
+    # board draws only some of them (S3 start board: the region scrolled to SAPT 22–19 of SAPT 59–1), default = weeks
+    fw = list(fweeks or weeks)
     fcol = spine == 's3' or (farm is not None and spine != 'phone')
     farm_of = farm or (lambda kind, key: 'Hîrbovăț')
     if open_weeks is None: open_weeks = tuple(weeks)   # D166: every week of the period open by default; () = grain Săpt.
@@ -399,9 +409,9 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
         elif kind == 'd':
             s = f'<td class="num">{cal.age(key)}</td><td class="num">{cal.sapt(key)}</td>'
         else:
-            pa, pb = cal.period(weeks)
-            s = f'<td class="num">{cal.age(pa)}{DASH}{cal.age(pb)}</td><td class="num">{weeks[-1]}{DASH}{weeks[0]}</td>'
-        if fcol: s += f'<td>{farm_of(kind, key)}</td>'
+            pa, pb = cal.period(fw)
+            s = f'<td class="num">{cal.age(pa)}{DASH}{cal.age(pb)}</td><td class="num">{fw[-1]}{DASH}{fw[0]}</td>'
+        if fcol: s += f'<td>{farm_of(kind, tuple(fw) if kind == "f" else key)}</td>'
         return s
     def figs(kind, key, L=L):   # S14N: L = another row's leaves of the same shape (rowgroups)
         if skel:
@@ -463,9 +473,12 @@ def ptable(uid, caption, sections, open_weeks=None, spine='farm', show_sec=None,
             GL_ = leaves_of(g['sections']); assert len(GL_) == len(L), (g['label'], len(GL_), len(L))
             rows += f'<tr><th scope="row" class="ip-table__child">{gl}</th>{sp}{figs("w", k, GL_)}</tr>'
         h += f'<tbody class="ip-ptable__week">{rows}</tbody>'
-    if foot:
-        lab = 'Total perioadă' if not skel else '<span class="ip-skel ip-skel--w2"></span>'
-        h += f'<tfoot><tr class="is-total{" ip-table__skel" if skel else ""}"><th scope="row">{lab}</th>{spine_cells("f", None, "") if not skel else skel_spine(spine, fcol)}{figs("f", None)}</tr></tfoot>'
+    if more:   # SYS18 (D192): the load-more row after the last loaded week, before the foot total
+        h += more_row(uid, tid, fw, (1 if spine == 'phone' else 3) + fcol + len(L), more, skel=bool(skel))
+    if foot:   # SYS18 (D191): "Total SAPT 56–59", the span of the weeks on screen (phone: "Total" + the span on a second small line)
+        span_ = num(f'{fw[-1]}{DASH}{fw[0]}')
+        lab = (f'Total<span class="ip-ptable__sub">SAPT {span_}</span>' if spine == 'phone' else f'Total SAPT {span_}') if not skel else '<span class="ip-skel ip-skel--w2"></span>'
+        h += f'<tfoot><tr class="is-total{" ip-table__skel" if skel else ""}"><th scope="row">{lab}</th>{spine_cells("f", None, "") if not skel else skel_spine(spine, fcol)}{figs("f", tuple(fw))}</tr></tfoot>'
     return h + '</table>', tid
 
 def skel_spine(spine='farm', fcol=False):   # Vârstă ("406–407") ch4, SAPT ("59") ch2; S3N: the S3 Fermă text cell ("Hîrbovăț") ch4 at its start
@@ -488,6 +501,43 @@ def block(uid, caption, table_html, bar=True, sel='Fermă', touch=False, after='
     out = (detaliu(uid, sel, touch) if bar else '') + f'<p class="ip-cap ip-ptable__cap" aria-hidden="true">{caption}</p>' + region(table_html, caption)
     return out + after
 
+# SYS18 (D190, D191, D192): the load-more row. The table opens on the last 4 weeks of the period (Fermă / Rapoarte: the chosen
+# period, "Ciclul curent" by default; Serie: the whole series); its last body row, right after the last loaded week and before
+# the foot total, is one cell spanning every column, D150 row height, on a faded fill (ground) with muted text: a button the
+# width of the row, "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40", that appends the next 4 older weeks (open with their
+# days, D166) and keeps focus; a polite live region says what was added. With a period filter set (4 săpt., 13 săpt.,
+# Interval) the row shows too and a press widens the filter 4 weeks back ("4 săpt." → "8 săpt.", D192). When the cycle's
+# first week is on screen the row becomes the muted note "Începutul ciclului · SAPT 20" (focus moves to it after the last press).
+CYCLE_FIRST = 20                                    # Hîrbovăț · Seria 2026 starts at SAPT 20 (22.02.2026): SAPT 20–59 = 40 weeks
+PLUS = '<path d="M5 12h14"/><path d="M12 5v14"/>'   # Lucide plus
+def more(first=CYCLE_FIRST, word='ciclului', added=None, focus=False, period=None):
+    """the load-more row's spec for ptable(more=…): first = the period's first age week; added = the weeks the last press
+    appended (live region, polite); focus = the row keeps focus after a press (board state); period = the FilterBar's period
+    label after the press when a period filter was set ("8 săpt.", D192), named in the live region."""
+    return {'first': first, 'word': word, 'added': added, 'focus': focus, 'period': period}
+def more_row(uid, tid, loaded, ncol, spec, skel=False):
+    loaded = list(loaded); first, word, added = spec['first'], spec['word'], spec['added']
+    total = loaded[0] - first + 1; n_ = len(loaded); assert loaded[-1] >= first and n_ <= total
+    if skel:
+        return (f'<tbody class="ip-ptable__morebody"><tr class="ip-ptable__more ip-table__skel"><td colspan="{ncol}">'
+                f'<span class="ip-skel ip-skel--more"></span></td></tr></tbody>')
+    cnt = (f'<span class="ip-ptable__count"> · SAPT {num(f"{loaded[-1]}{DASH}{loaded[0]}")} · {num(n_)} din {num(total)}'
+           f'<span class="ip-sr"> săptămâni pe ecran</span></span>')
+    msg = f'Au fost adăugate SAPT {added[-1]}{DASH}{added[0]}.' if added else ''
+    if added and spec['period']: msg += f' Perioada: {spec["period"]}.'
+    if loaded[-1] > first:
+        k = min(4, loaded[-1] - first)   # the last press may have fewer than 4 left
+        fc = ' ip-focus' if spec['focus'] else ''
+        lead = (f'<button type="button" class="ip-ptable__load{fc}" aria-controls="{tid}">{svg(PLUS)}<span class="ip-ptable__lbl">'
+                f'Încarcă încă {k} {"săptămână" if k == 1 else "săptămâni"}{cnt}</span></button>')
+        cls = ''
+    else:
+        if added: msg += f' Începutul {word} · SAPT {first}.'
+        lead = f'<span class="ip-ptable__lbl" id="{uid}-start" tabindex="-1">Începutul {word} · SAPT {num(first)}</span>'   # D192: the note alone
+        cls = ' ip-ptable__more--start'
+    live = f'<span class="ip-sr" role="status" aria-live="polite">{msg}</span>'
+    return (f'<tbody class="ip-ptable__morebody"><tr class="ip-ptable__more{cls}"><td colspan="{ncol}">{lead}{live}</td></tr></tbody>')
+
 def demo(cap, body, width='100%'):
     return (f'<section class="ip-stack" style="gap:var(--space-2);max-width:{width}">'
             f'<span class="ip-cap" style="color:var(--ink-secondary)">{cap}</span>{body}</section>')
@@ -497,59 +547,75 @@ SER = 'Hîrbovăț · Seria 2026 · SAPT 56–59'
 # loaded column shares of the Păsări · Fermă table at 1440 (section 54: both copies declare them; px / 1126): only the
 # columns whose figures are wider than their head (SAPT "56–59", "34,7%", Vânzare, În viață; Mortalitate ♀ · ♂ as wide as their group head); the others are sized by the head.
 COLW = [None, round(63.2 / 1126 * 100, 2)] + [round(x / 1126 * 100, 2) for x in (71, 63.1, 71, 62, 60, 64, 71, 63.1)]   # D167 order: În viață, Mortalitate, % cumulat, Vânzare
-html = '<!-- @dsCard group="Data" height=11488 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
+html = '<!-- @dsCard group="Data" height=15280 subtitle="PeriodTable (SYS14)" -->\n<div class="ip-root ip-stack" style="gap:var(--space-12);max-width:1160px">\n'
 
 # 1 Păsări · Fermă: default (D166: every week open), SAPT 58 key focused
 c1 = f'Păsări · {SER}'
-t1, _ = ptable('pa', c1, [('Total fermă', '', farm_pasari())], focus=58, colw=COLW)
-html += demo('Păsări · Detaliu Fermă · implicit: toate săptămânile deschise, fiecare cu zilele ei (D166; SAPT 59 are 2 din 7 zile) · tasta SAPT 58 cu focus închide săptămâna',
+t1, tid1 = ptable('pa', c1, [('Total fermă', '', farm_pasari())], focus=58, colw=COLW, more=more())
+html += demo('Păsări · Detaliu Fermă · perioada Ciclul curent (D191): ultimele 4 săptămâni, toate deschise, fiecare cu zilele ei (D166; SAPT 59 are 2 din 7 zile) · tasta SAPT 58 cu focus închide săptămâna · ultimul rând „Încarcă încă 4 săptămâni” (D190, D192), apoi totalul',
              block('pa', c1, t1))
+
+# 1b after one press with "4 săpt." set (D192): SAPT 59–52 open, the filter now "8 săpt.", the row keeps focus, the polite
+# live region says what was added; the foot adds up the 8 weeks (D191)
+W8 = [WEEKS[0] - i for i in range(8)]   # SAPT 59–52
+c1b = f'Păsări · Hîrbovăț · Seria 2026 · SAPT 52–59'
+t1b, _ = ptable('pk', c1b, [('Total fermă', '', farm_pasari())], weeks=W8, more=more(added=W8[4:], focus=True, period='8 săpt.'))
+html += demo('După o apăsare, cu filtrul „4 săpt.” · SAPT 52–59 deschise, filtrul devine „8 săpt.” (D192) · rândul păstrează focusul · regiunea live: „Au fost adăugate SAPT 52–55. Perioada: 8 săpt.” · totalul = cele 8 săptămâni (D191)',
+             block('pk', c1b, t1b))
+
+# 1c the cycle's first week reached: every week loaded (SAPT 59–20), the region scrolled to SAPT 23–20, the row is the note
+WALL = list(range(WEEKS[0], CYCLE_FIRST - 1, -1))
+c1c = f'Păsări · Hîrbovăț · Seria 2026 · SAPT 20–59'
+t1c, _ = ptable('pl', c1c, [('Total fermă', '', farm_pasari())], weeks=WALL[-4:], fweeks=WALL, more=more(added=WALL[-4:]))
+ncol1c = 3 + sum(len(g['leaves']) for g in farm_pasari())
+_k = t1c.index('<tbody class="ip-ptable__week">')
+t1c = (t1c[:_k] + f'<tbody><tr class="ip-ptable__day ip-ptable__none"><td colspan="{ncol1c}"><span>SAPT {WALL[0]}–{WALL[-5]} mai sus · '
+       f'{len(WALL) - 4} săptămâni, fiecare deschisă cu zilele ei</span></td></tr></tbody>' + t1c[_k:])
+html += demo('Începutul ciclului · toate cele 40 de săptămâni încărcate, derulat la SAPT 23–20 · rândul devine nota „Începutul ciclului · SAPT 20” (focusul trece pe ea) · totalul = SAPT 20–59',
+             block('pl', c1c, t1c))
 
 # 2 Păsări · Hale: emptying weeks, sales beside real deaths (D155), H7 empty from 14.11 (D158)
 c2 = f'Păsări · {SER} · pe hale'
 secs2 = [('Total fermă', '', farm_pasari())] + [(f'Hala {h[1:]}', GOALA if h == 'H7' else '', hall_pasari(h)) for h in R.HHALLS]
-t2, _ = ptable('pb', c2, secs2)
+t2, tid2 = ptable('pb', c2, secs2, more=more())
 html += demo('Păsări · Detaliu Hale · toate săptămânile deschise: golire prin vânzare (D155), Hala 7 goală din 14.11 (D158) · tabelul derulează lateral, prima coloană rămâne',
              block('pb', c2, t2, sel='Hale'))
 
 # 3 Producție · Fermă: lay % on start-of-day hens (D156/D159)
 c3 = f'Producție · {SER}'
-t3, _ = ptable('pc', c3, [('Total fermă', '', productie())])
+t3, tid3 = ptable('pc', c3, [('Total fermă', '', productie())], more=more())
 html += demo('Producție · Detaliu Fermă · % ouat: zi = ouă ÷ găini la început de zi; săptămână și perioadă = ouă ÷ zile-găină (D156, D159) · % Cat. 1–3 = din ouăle rândului (D183)',
              block('pc', c3, t3))
 
 # 4 Hrană · Hale: three head rows, combined leaves, grain Săpt. (week rows only, every week closed)
 c4 = f'Hrană · {SER} · pe hale'
 secs4 = [('Total fermă', '', hrana())] + [(f'Hala {h[1:]}', GOALA if h == 'H7' else '', hrana(h)) for h in R.HHALLS]
-t4, _ = ptable('pd', c4, secs4)
+t4, tid4 = ptable('pd', c4, secs4, more=more())
 html += demo('Hrană · Detaliu Hale · trei rânduri de cap (secțiune › înregistrare › frunză „♀ efectiv”) · toate săptămânile deschise (D167) · tabelul derulează lateral',
              block('pd', c4, t4, sel='Hale'))
 
 # 5 Greutate · H5.1 (section page, no switch): weighings variant + partial guide
 c5 = f'Greutate · Hîrbovăț › H5.1 · Seria 2026 · SAPT 56–59'
-t5, _ = ptable('pe', c5, [('H5.1', '', greutate())], weighings=True)
+t5, tid5 = ptable('pe', c5, [('H5.1', '', greutate())], weighings=True, more=more())
 after5 = ('<div class="ip-ptable__after"><p class="ip-note">– fără date în ghid: ghidul are greutăți până la SAPT 25. '
           'Cântărire ilustrativă (Hîrbovăț nu are cântăriri reale, D152).</p></div>')
 html += demo('Greutate · pagina secțiunii H5.1 (fără Detaliu) · varianta weighings: săptămâna cu cântărire arată ziua ei, celelalte se deschid la un rând „fără cântărire în această săptămână” (D167) · ghid parțial',
              block('pe', c5, t5, bar=False, after=after5))
 
-# 6 Serie (S3): allWeeks, Fermă column, no FilterBar, every week open (D166)
+# 6 Serie (S3): Fermă column, no FilterBar, every week open (D166); the period is the whole series SAPT 1–59 (D190)
 c6 = f'Păsări · Seria 2026 · Total serie · SAPT 56–59'
-t6, tid6 = ptable('pf', c6, [('Total serie', '', farm_pasari())], spine='s3')
-after6 = (f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid6}">Arată toate săptămânile</button>'
-          f'<p class="ip-note">apoi: SAPT 59 → 1 și „Arată ultimele 4 săptămâni”</p></div>')
-html += demo('Seria 2026 (S3) · allWeeks · coloana Fermă după SAPT · fără FilterBar și fără Detaliu',
-             block('pf', c6, t6, bar=False, after=after6))
+t6, tid6 = ptable('pf', c6, [('Total serie', '', farm_pasari())], spine='s3', more=more(first=1, word='seriei'))
+html += demo('Seria 2026 (S3) · coloana Fermă după SAPT · fără FilterBar și fără Detaliu · seria întreagă e perioada: 4 din 59 săptămâni (D190)',
+             block('pf', c6, t6, bar=False))
 
 # 6b S3 at 1280: dense (figure cells space-2 inline, same row height)
-t6b, tid6b = ptable('pj', c6, [('Total serie', '', farm_pasari())], spine='s3', dense=True)
-after6b = f'<div class="ip-ptable__after"><button type="button" class="ip-btn ip-btn--secondary" aria-controls="{tid6b}">Arată toate săptămânile</button></div>'
+t6b, tid6b = ptable('pj', c6, [('Total serie', '', farm_pasari())], spine='s3', dense=True, more=more(first=1, word='seriei'))
 html += demo('Seria 2026 (S3) la 1280 · ip-ptable--dense: celulele cu cifre au un pas de spațiere mai puțin (space-2), aceeași înălțime de rând',
-             block('pj', c6 + ' · 1280', t6b, bar=False, after=after6b), '960px')
+             block('pj', c6 + ' · 1280', t6b, bar=False), '960px')
 
 # 7 States: loading · no data · no guide
 c7 = f'Păsări · {SER}'
-t7, _ = ptable('pg', c7, [('Total fermă', '', farm_pasari())], skel=[4, 4, 3, 2, 4, 4, 4, 3], colw=COLW)
+t7, _ = ptable('pg', c7, [('Total fermă', '', farm_pasari())], skel=[4, 4, 3, 2, 4, 4, 4, 3], colw=COLW, more=more())
 load = (detaliu('pg') + f'<p class="ip-cap ip-ptable__cap" aria-hidden="true">{c7}</p><div aria-busy="true">'
         f'<p class="ip-sr" role="status">Se încarcă tabelul Păsări, SAPT 56–59.</p>{region(t7, c7, hidden=True)}</div>')
 html += demo('Se încarcă · același tabel, bare la geometria încărcată (D132), barele rândurilor de săptămână în rule', load)
@@ -558,17 +624,17 @@ empty = ('<div class="ip-emptybox" role="region" aria-label="Păsări, interval 
          '01.11.2025 și 15.11.2025; a început pe 22.02.2026.</p><button type="button" class="ip-btn ip-btn--secondary">Alege ciclul curent</button></div></div>')
 html += demo('Fără date în perioadă · EmptyState în locul regiunii (D48)', empty)
 c8 = f'Producție · {SER} · fără ghid'
-t8, _ = ptable('ph', c8, [('Total fermă', '', productie(guide=False))])
+t8, tid8 = ptable('ph', c8, [('Total fermă', '', productie(guide=False))], more=more())
 html += demo('Fără ghid · coloanele ghid și față de ghid lipsesc (D92); antetul paginii poartă Tag-ul <span class="ip-tag ip-tag--neutral">fără ghid</span> · stare ilustrativă pe cifrele reale',
              block('ph', c8, t8))
 
 # 8 Phone 390
 c9 = f'Păsări · {SER} · Mortalitate'
 pa = farm_pasari()
-t9, _ = ptable('pi', c9, [('Total fermă', '', [group(pa, 'În viață'), stacked(group(pa, 'Mortalitate'), group(pa, '% cumulat'))])], spine='phone')
+t9, tid9 = ptable('pi', c9, [('Total fermă', '', [group(pa, 'În viață'), stacked(group(pa, 'Mortalitate'), group(pa, '% cumulat'))])], spine='phone', more=more())
 phone = (f'<div class="ip-phone" style="width:390px"><div style="padding:var(--space-4)">'
          + block('pi', c9, t9, touch=True) + '</div></div>')
-html += demo('Telefon 390 · o grupă de coloane (eticheta Mortalitate; În viață rămâne; % cumulat pe al doilea rând al celulei) · rânduri 48 · prima coloană lipită „Ma 17.11 · 406”, datele săptămânii sub SAPT', phone, '390px')
+html += demo('Telefon 390 · o grupă de coloane (eticheta Mortalitate; În viață rămâne; % cumulat pe al doilea rând al celulei) · rânduri 48 · prima coloană lipită „Ma 17.11 · 406”, datele săptămânii sub SAPT · ultimul rând „Încarcă încă 4 săptămâni” la 48', phone, '390px')
 
 html += (f'<p class="ip-note" style="margin:0">Cifre reale Hîrbovăț, Seria 2026, până la {R.dd(R.TODAY)} (extrase DATA03): '
          f'SAPT 59 = {R.drange(*wk_label(59)[:2])} (2 din 7 zile). Mortalitate = morți reali, golirea din 12.11 e Vânzare (D155). '

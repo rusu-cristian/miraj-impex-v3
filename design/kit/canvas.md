@@ -6,6 +6,7 @@
   `project/ds/impexlinepanel/tokens.json` by `copy_file` from the system artifact `95f22f4a-b2df-421d-b638-4d5e9d0656e2` (v `1794843774-ade9`)
   → 272 own files. Version after publish `1795123576-0152` (always re-fetch: `get_artifact`). canvas.json title now "… · runda 2".
   FINAL5 (20.11.2026): patch over `1795128533-4c97` with the 79 files changed since (77 boards, canvas.json, additions.css; D182–D189) → version `1795132564-e1da`, 272 own files.
+  SYS18 (20.11.2026): patch over `1795160506-29b6` with 52 files (47 changed + 5 new boards incl. Main, canvas.json, additions.css; D190–D192 load-more row), remove `project/S3-seria-2026--toate-saptamanile.dc.html` (renamed `--inceputul-seriei`) → version `1795162838-7551`, 276 own files; hashes checked with list_files.
   Only the session that made it can publish to it (`network_off_limit` elsewhere): later sessions hand files to whoever can.
 - STALE (do not use) — previous canvas: slug `e5d5275e-4850-45ce-afa4-d035b0a5bd2b` · URL https://claude.ai/artifact/VP5iig8NNXWPVRw1yS9WUi (created 19.11.2026 by a design-loop session and filled from `design/canvas/project/`; version after the full publish `1795075243-a466`).
 - FV03 (19.11.2026): live version `1795092797-ff63`; FV03's patch (245 changed + 12 added files, remove `project/S2-acasa--zi-trecuta-blocat.dc.html`, `project/S15-introdus-azi--manager-10-11.dc.html`) is NOT published: the helper session got `network_off_limit` (it did not create the artifact), so the coordinator publishes it (2 batches ≤ 256, mode "patch").

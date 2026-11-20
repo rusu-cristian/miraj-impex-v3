@@ -73,7 +73,7 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
    - the SAPT readout per open cycle (the birds' age week, round 2, D151: "SAPT 59")
    - clicking a block opens that farm at that cycle
 3. **Tabs** (D174: right under the track, table first): Păsări · Hrană · Greutate · Producție, aggregated per farm. Round 2 (D154, spec D1 › Series page), each tab in this order:
-   1. ⭐ **Table** (PeriodTable, no Detaliu switch): the last 4 weeks, SAPT 59–56 (newest first, D159/D160), with their days behind the expand key, a "Fermă" column, one "Total serie" group; no FilterBar (D63), Exportă in the header; under the table the key "Arată toate săptămânile" (SAPT 59 → 1, D160) and its notes; on a phone single-choice record tags (default Mortalitate, D174)
+   1. ⭐ **Table** (PeriodTable, no Detaliu switch): the last 4 weeks, SAPT 59–56 (newest first, D159), with their days behind the expand key, a "Fermă" column, one "Total serie" group with the series' record groups (D45); no FilterBar (D63), Exportă in the header (the whole series, D191); the table's last row "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 59" (D190, D192; at SAPT 1 "Începutul seriei · SAPT 1"), the foot "Total SAPT 56–59", then its notes; on a phone single-choice record tags (default Mortalitate, D174)
    2. the tab's charts
 4. **Farm summaries** ("Ferme", after the tabs, D174): one panel per farm with its type, guide, cycle (round 2: its SAPT span, "SAPT 1–21" / "SAPT 20–59"), alive ♀ · ♂ and key figures vs the guide.
 
@@ -84,10 +84,10 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
    - meta: ♀ · ♂ alive · SAPT 59 · from 22.02.2026 (round 2: ♀ 12 561 · ♂ 794, the birds' age week, D151)
    - actions: Mută păsări, Vânzare, and "Ciclu ▾" (Începe ciclu nou, Schimbă ghidul ciclului)
 2. **Cycle selector + compact cycle track for this farm:** past cycles of any series. Selecting one rescopes the page.
-3. **Filter bar:** period (default 4 săpt., D159), grain, record-type chips, export.
+3. **Filter bar:** period (default Ciclul curent, D191; a set period widens with the load-more row, "4 săpt." → "8 săpt.", D192), grain, record-type chips (the period's types, D45), export (the whole period).
 4. **Tabs** (Rezumat · Păsări · Hrană · Greutate · Producție; every tab opens on its table, round 2, D154).
 5. **Rezumat contents** (round 2 order):
-   - ⭐ **a. Table** (PeriodTable, "Total fermă" columns, no Detaliu switch): week rows newest first with their days (Data · Vârstă (zile) · SAPT), last 4 weeks, foot "Total perioadă" (spec D1 › Rezumat, D159).
+   - ⭐ **a. Table** (PeriodTable, "Total fermă" columns, no Detaliu switch): week rows newest first with their days (Data · Vârstă (zile) · SAPT), last 4 weeks of the period, the load-more row "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40" (D190, D192), foot "Total SAPT 56–59" (D191; spec D1 › Rezumat).
    - ⭐ **b. Key readout:** a dark display with the farm's key figure for the cycle type (laying: % lay vs guide; growth: weight ♀ vs guide), plus a small guide chart.
    - **c. Stats vs guide:**
      - alive ♀ · ♂
@@ -104,7 +104,7 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
      - a totals row
    - **e. De verificat:** alerts for this farm.
    - **f. Latest records:** the event log with record icons.
-- **Other tabs** (round 2): 1. the Detaliu switch (Fermă · Hale · Compartimente, default Fermă, D159) and the table (PeriodTable: Total fermă, + hall or compartment groups; chips choose column groups; newest week first, last 4 weeks by default); 2. the tab's charts; 3. Păsări only: the event log with the type chips. Contents as in spec D1. Producție (D183): the Ouat group adds % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs) after "stare", on week and day rows, Total fermă and each hall; ghid = Productivitate col I (D184).
+- **Other tabs** (round 2): 1. the Detaliu switch (Fermă · Hale · Compartimente, default Fermă, D159) and the table (PeriodTable: Total fermă, + hall or compartment groups; chips choose column groups; newest week first, the last 4 weeks of the period with the load-more row before the foot total, D190–D192); 2. the tab's charts; the tab Stats follow the period (cycle figures by default, D191); 3. Păsări only: the event log with the type chips. Contents as in spec D1. Producție (D183): the Ouat group adds % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs) after "stare", on week and day rows, Total fermă and each hall; ghid = Productivitate col I (D184).
 
 ### S5 · Scope page · section level
 Same template. Rezumat shows the section's stats, the latest records and the guide charts. There are no child tiles.
@@ -150,7 +150,7 @@ Farm, date, rows per section with ♀/♂ counts (Toate), buyer, note, effect pr
    - date, farm, type, kg, lei/kg, total, priced by
    - unpriced rows show the info tag "fără preț"
    - the owner edits inline
-4. **Consum:** a weekly table per section with g/bird vs guide. Round 2 (D154): week row (farm) → its 7 daily farm rows when open → section week rows; grain and order as spec D1.
+4. **Consum:** a weekly table per section with g/bird vs guide. Round 2 (D154): week row (farm) → its 7 daily farm rows when open → section week rows; grain and order as spec D1; the load-more row before the foot (D190–D192, replaces "Vezi toate săptămânile").
 5. **Cost:** per cycle, per bird and per egg from priced deliveries, plus a line for the unpriced kg.
 
 ### S12 · Prețuri hrană (owner)
@@ -161,7 +161,7 @@ Farm, date, feed type, kg, note, the stock-after line, Adaugă.
 
 ### S14 · Producție report
 A weekly table by the birds' age week (SAPT), per section, vs the guide. Export.
-Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (newest week first, last 4 weeks by default, D159): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total perioadă"; 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen. Columns add % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs, D183) on farm week and day rows and hall week rows; the Seria 2025 board has them too (from its extract, D187); the phone tag "Incubabile · Cat." shows Găini · incub. ouă with % incub. on a second line · % Cat. 1–3 and scrolls ~39 px under the sticky column (D186, D188); ghid = Productivitate col I (D184).
+Round 2 (D154, spec D3), in this order: 1. filters (Fermă, period, grain Zi / Săpt.); 2. ⭐ the table (period default Ciclul curent, D191; newest week first, the last 4 weeks with the load-more row "· 4 din 40", D190/D192; Seria 2025 "· 4 din 43"): per week the farm's week row with expand key → its 7 daily rows when open → hall week rows H5 · H6 · H7; foot "Total SAPT 56–59" (D191); 3. the % ouat Readout and Stats (D92, after the table). Export = what's on screen. Columns add % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs, D183) on farm week and day rows and hall week rows; the Seria 2025 board has them too (from its extract, D187); the phone tag "Incubabile · Cat." shows Găini · incub. ouă with % incub. on a second line · % Cat. 1–3 and scrolls ~39 px under the sticky column (D186, D188); ghid = Productivitate col I (D184).
 
 ### S15 · Introdus azi
 Today's entries grouped by record type; edit or delete.

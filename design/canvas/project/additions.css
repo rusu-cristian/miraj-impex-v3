@@ -2180,15 +2180,41 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  *   small Mono line (span.ip-ptable__pct, ink-secondary: Păsări Mortalitate "10" / "5,7%" cumulat; group head note "cu % cumulat").
  * - Loading: the same table, tr.ip-table__skel rows (section 42), the week rows' bars in rule on panel; both copies
  *   declare the loaded column shares on their leaf heads (section 54, --ip-colw), so the columns do not move.
- * - Below the region: div.ip-ptable__after (the S3 "Arată toate săptămânile" key, the foot note of a partial guide).
+ * - Load-more row (SYS18, D190/D191/D192), the last body row, after the last loaded week and before the foot total:
+ *   tbody.ip-ptable__morebody > tr.ip-ptable__more > td[colspan=all] > button.ip-ptable__load[aria-controls=table] (plus 16 +
+ *   span.ip-ptable__lbl "Încarcă încă 4 săptămâni" + span.ip-ptable__count " · SAPT 56–59 · 4 din 40") + a polite live region
+ *   span.ip-sr[role=status] ("Au fost adăugate SAPT 52–55. Perioada: 8 săpt."); row-h (phone 48) on ground, ink-muted, the
+ *   whole row the button (hover sunken, pressed rule, both ink-secondary; focus ring inside the row edge); the press keeps
+ *   focus. At the period's first week: tr.ip-ptable__more--start, the muted note "Începutul ciclului · SAPT 20" (tabindex −1,
+ *   focus moves to it). Loading: tr.ip-table__skel with ip-skel--more. The foot row reads "Total SAPT 56–59" (the weeks on
+ *   screen; phone "Total" + the span on a second small line).
+ * - Below the region: div.ip-ptable__after (notes: what a column means or leaves out, the foot note of a partial guide).
  * Tokens only. */
 .ip-ptable__bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3);margin:0 0 var(--space-3)}
 .ip-ptable__cap{display:block;margin:0 0 var(--space-2)}
 .ip-ptable__after{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4);margin-top:var(--space-3)}
 .ip-ptable__after > p{margin:0}
+/* SYS18 (D190, D191, D192): the load-more row, the table's last body row (before the foot total): one cell spanning every
+ * column, row-h (phone 48), faded fill (ground) and muted text; the whole row is the button (hover sunken, pressed rule, focus
+ * ring inside the row's edge); its label sits at the row's start and stays in view when the region scrolls sideways */
+.ip-ptable > tbody.ip-ptable__morebody > tr > td{height:var(--row-h);padding:0;background:var(--ground);text-align:left}
+.ip-ptable__load{display:flex;align-items:center;width:100%;height:calc(var(--row-h) - var(--ip-hair));margin:0;padding:0;border:0;border-radius:0;background:transparent;color:var(--ink-muted);font:inherit;text-align:left;white-space:nowrap;cursor:pointer;transition:background-color var(--ip-dur-key) var(--ip-ease)}
+.ip-ptable__load:hover,.ip-ptable__load.is-hover{background:var(--sunken);color:var(--ink-secondary)}
+.ip-ptable__load:active,.ip-ptable__load.is-pressed{background:var(--rule);color:var(--ink-secondary)}
+.ip-ptable__load:focus-visible,.ip-ptable__load.ip-focus{outline:2px solid var(--focus);outline-offset:-2px}
+.ip-ptable__load > .ip-icon{position:sticky;left:var(--space-3);flex:none;margin-left:var(--space-3);color:inherit}
+.ip-ptable__load > .ip-ptable__lbl{position:sticky;left:calc(var(--space-3) + 16px + var(--space-2));margin-left:var(--space-2)}
+.ip-ptable__more--start .ip-ptable__lbl{position:sticky;left:0;display:inline-block;padding-left:calc(var(--space-3) + 16px + var(--space-4));color:var(--ink-muted)} /* the note's text where the key's label starts */
+.ip-ptable__more--start .ip-ptable__lbl:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.ip-ptable__count{color:inherit}
+.ip-ptable--phone > tbody.ip-ptable__morebody > tr > td{height:var(--control-h-touch)}
+.ip-ptable--phone .ip-ptable__load{height:calc(var(--control-h-touch) - var(--ip-hair))}
+.ip-ptable > tbody.ip-ptable__morebody > tr.ip-table__skel > td{padding-inline:var(--space-3)}
+.ip-skel.ip-skel--more{width:calc(var(--space-12) * 7);background:var(--rule)}
+@media (forced-colors: active){.ip-ptable > tbody.ip-ptable__morebody > tr > td{background:Canvas}}
 .ip-tablescroll:has(> .ip-ptable){max-block-size:var(--ip-ptable-max-h,none);overflow:auto}
 .ip-ptable > thead{position:sticky;top:0;z-index:3}
-/* "Total perioadă" sticks with the first column (section 36 covers thead and tbody only) */
+/* the foot row ("Total SAPT 56–59") sticks with the first column (section 36 covers thead and tbody only) */
 .ip-tablescroll > .ip-ptable > tfoot > tr > :first-child{position:sticky;left:0;z-index:1;border-right:var(--ip-hair) solid var(--rule);background:var(--panel)}
 .ip-ptable :is(thead th:not(.ip-ptable__data):not([style*="--ip-colw"]),tbody td,tfoot td){width:1%} /* a declared share (section 54) wins */
 /* column groups (SYS15, D175): full-height start edges, centred heads; tints = the filter tag colours (SYS16, D177) */
