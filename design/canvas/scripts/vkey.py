@@ -8,8 +8,9 @@ never calls it. The key itself is VO01's `key()` (design/system/scripts/vo01_bui
 - Phone (div.ip-screen, or the S16 / S18 full-screen sheet aside.ip-sidepanel--sheet):
   - BottomSheet open (div.ip-scrim--sheet > .ip-sheet: Înregistrează, FilterBar sheet, SectionSelect): the first child of the
     scrim, space-4 above the sheet's top edge (§78, no measuring);
+  - a form: the floating key is the SaveBar's last child, anchored space-4 above the bar itself (§78, VO03: any bar height);
   - else the floating key (.ip-voicekey--float), the last child of the full-screen sheet (space-4 above its foot) or of the
-    screen (space-4 above the BottomTabBar or the SaveBar, §78 --ip-voice-bar); a screen that is not fixed to its frame
+    screen (space-4 above the BottomTabBar, §78 --ip-voice-bar); a screen that is not fixed to its frame
     (a tall board drawn whole) is the board itself: it is positioned (ip-scrimhost) and the key placed in it (absolute;
     the app uses fixed);
   - a Dialog open (div.ip-scrim--phone): the key stays at its place under the scrim, inert (voice is off inside Dialogs);
@@ -85,6 +86,8 @@ def _phone(html):
     if m:
         end = _close(html, m.start(), 'aside') - len('</aside>')
         return html[:end] + phone_key(html, inert=dialog, hidden=kb) + html[end:]
+    if re.search(r'<div (?:inert )?class="ip-savebar ip-screen__savebar', html):
+        return in_savebar(html, phone_key(html, inert=dialog, hidden=kb))
     m = re.search(r'<div class="ip-screen\b([^"]*)"[^>]*>', html)
     fixed = 'ip-screen--fixed' in m.group(1)
     end = _close(html, m.start(), 'div') - len('</div>')
@@ -93,6 +96,13 @@ def _phone(html):
         tag = m.group(0).replace('class="ip-screen', 'class="ip-screen ip-scrimhost', 1)
         out = out[:m.start()] + tag + out[m.end():]
     return out
+
+
+def in_savebar(html, key):
+    """the key as the SaveBar's last child: §78 anchors it space-4 above the bar's top edge, whatever the bar's height"""
+    m = re.search(r'<div (?:inert )?class="ip-savebar ip-screen__savebar\b[^"]*"[^>]*>', html)
+    end = _close(html, m.start(), 'div') - len('</div>')
+    return html[:end] + key + html[end:]
 
 
 def _desk(html):

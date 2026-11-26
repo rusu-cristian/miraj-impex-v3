@@ -58,7 +58,7 @@ JS = """() => {
         if (k.contains(el) || el === k || !vis(el) || el.closest('.ip-scrim')) continue; const cr = clip(el); if (!cr) continue;
         if (ov(cr)) hits.add(el.tagName.toLowerCase() + '.' + (el.className.baseVal ?? el.className).split(' ')[0]);
       }
-      const view = k.parentElement.querySelector(':scope > .ip-screen__view'); const main = view && view.querySelector(':scope > .ip-screen__main');
+      const view = k.closest('.ip-screen')?.querySelector(':scope > .ip-screen__view'); const main = view && view.querySelector(':scope > .ip-screen__main');
       const mid = view && main && !view.classList.contains('ip-screen__view--end') && main.getBoundingClientRect().bottom > view.getBoundingClientRect().bottom + 0.5;
       if (hits.size) (mid ? (res.mid = []) : res.probs).push('covers ' + [...hits].slice(0, 4).join(' | '));
     }
@@ -72,9 +72,6 @@ JS = """() => {
   return res; }"""
 
 
-# a SaveBar whose two-line summary wraps to three lines is 8 px taller than §78's 73 (FX05 assumes two at 390): the key keeps
-# its 73-based place, 8 above the bar instead of 16 (reported, not over the bar)
-KNOWN_GAP = {'S6-zilnic--abatere.dc.html': 8}
 # taller than its h before VO02 (2352 in 2304, desktop: no key change in height)
 KNOWN_TALL = {'S17-istoric-modificari--observator-marcaj-text.dc.html'}
 
@@ -115,7 +112,7 @@ async def main(argv):
                 stats[r['kind']] += 1; stats['hidden'] += bool(r.get('hidden')); stats['inert'] += bool(r.get('inert'))
                 if r['kind'] == 'phone' and not r.get('hidden'):
                     if r.get('right') != 16: r['probs'].append(f'right {r.get("right")}')
-                    if r.get('gap') not in (None, 16) and not (k in KNOWN_GAP and r.get('gap') == KNOWN_GAP[k]):
+                    if r.get('gap') not in (None, 16):
                         r['probs'].append(f'gap to bar {r.get("gap")}')
                 for q in r['probs']: probs.append(f'{k}: {q}')
                 for q in r.get('mid') or []: mids.append(f'{k}: mid-scroll frame, the key floats over the form below it · {q}')

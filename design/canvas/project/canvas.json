@@ -2133,7 +2133,7 @@
       "y": 23012,
       "w": 390,
       "h": 844,
-      "title": "VO-3 · Voce · S6 Zilnic · vet · telefon · formular precompletat la 08:20 (♀ 3 · ♂ 1 spuse: exemplu, D39)"
+      "title": "VO-3 · Voce · S6 Zilnic · vet · telefon · formular precompletat la 08:20, focus pe primul câmp fără tastatură: tasta rămâne (♀ 3 · ♂ 1 spuse: exemplu, D39)"
     },
     "VO-4-zilnic-clarificare.dc.html": {
       "x": 1410,
@@ -2147,7 +2147,7 @@
       "y": 23012,
       "w": 390,
       "h": 844,
-      "title": "VO-5 · Voce · S7 Hrană zilnică · vet · telefon · precompletat la 08:20: „dă 160 de grame la toate găinile” (♀ 160 g, ghid 157 g)"
+      "title": "VO-5 · Voce · S7 Hrană zilnică · vet · telefon · precompletat la 08:20: „dă 160 de grame la toate găinile” (♀ 160 g, ghid 157 g); focus fără tastatură: tasta rămâne"
     },
     "VO-6-nepermis.dc.html": {
       "x": 2350,
@@ -2178,7 +2178,7 @@
       "w": 1440,
       "h": 1024,
       "expand": "fill",
-      "title": "VO-9 · Voce · S13 Livrare hrană · manager · desktop · se gândește (sus) și, după apăsarea pe text, transcrierea gata de corectat (jos) · pereche de stări (D39)"
+      "title": "VO-9 · Voce · S13 Livrare hrană · manager · desktop · 1 se gândește · 2 după apăsarea pe text, gata de corectat · pereche de stări (D39)"
     },
     "VO-10-livrare-precompletat.dc.html": {
       "x": 8180,
@@ -2186,7 +2186,7 @@
       "w": 1440,
       "h": 1024,
       "expand": "fill",
-      "title": "VO-10 · Voce · S13 Livrare hrană · manager · desktop · formular precompletat: Hîrbovăț, 13.11.2026, Breeder 2, 25 640 kg"
+      "title": "VO-10 · Voce · S13 Livrare hrană · manager · desktop · formular precompletat: Hîrbovăț, 13.11.2026, Breeder 2, 25 640 kg; focus pe Fermă (exemplu, D39)"
     },
     "VO-11-fara-microfon-neinteles.dc.html": {
       "x": 9700,

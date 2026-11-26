@@ -2754,8 +2754,11 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-voicekey--head[aria-disabled="true"]{box-shadow:none}
 .ip-voicekey:focus-visible,.ip-voicekey.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
 .ip-voiceanchor{position:relative;display:inline-flex;flex:none}
+/* VO03 / D199 note 4: beside a docked SidePanel the PageHeader keys wrap under the title and the key sits at the page's left;
+ * right-aligned, the popover would cross the Sidebar, so .ip-voiceanchor--start opens it left-aligned under the key */
+.ip-voiceanchor--start > .ip-voicepanel--pop{right:auto;left:0;transform-origin:top left}
 
-/* The floating phone key (.ip-voicekey--fab.ip-voicekey--float, a direct child of div.ip-screen; fixed in the app, absolute
+/* The floating phone key (.ip-voicekey--fab.ip-voicekey--float, a direct child of div.ip-screen, or of its SaveBar on a form; fixed in the app, absolute
  * in a fixed board frame): bottom right, space-4 from the edge and space-4 above the lowest bar on screen (--ip-voice-bar:
  * the BottomTabBar + the safe-area inset; a SaveBar; the S16 sheet foot); never over a bar or its key. Above content and the
  * bars (z 3), under a Toast and a sheet scrim (4) and the Dialog scrim (5, inert there). When the bar changes the key takes
@@ -2772,17 +2775,20 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-screen:has(.ip-screen__savebar),.ip-sidepanel--sheet{--ip-voice-bar:var(--ip-voice-foot)}   /* VO02: any depth: under a phone Dialog the page and its bar sit in an inert wrapper (S2S) */
 .ip-sidepanel--sheet:has(> .ip-voicekey--float){position:relative}
 .ip-sidepanel--sheet > .ip-voicekey--float{position:absolute}
+/* VO03 / D199 note 4: on a form the key is the SaveBar's last child, anchored to the bar itself (absolute in the sticky bar,
+ * space-4 above its top edge), so it follows any bar height (a summary wrapping to 3 lines, the 101 px bar under 390) */
+.ip-screen__savebar > .ip-voicekey--float{position:absolute;right:var(--space-4);bottom:calc(100% + var(--ip-hair) + var(--space-4))}   /* over the bar's 1px top line */
 .ip-scrim--sheet > .ip-voicekey--fab{position:relative;inset:auto;flex:none;align-self:flex-end;margin:0 var(--space-4) var(--space-4) 0}
 /* Room for the key (spec §8 › Where): every phone view keeps 88 under its content and scrolls a focused field clear of the
  * key and the bar under it; a phone Toast stacks space-2 above the key (amends FIN02 / section 48 on screens with the key). */
-.ip-screen:has(> .ip-voicekey--float) .ip-screen__main{padding-bottom:var(--ip-voice-clear)}
+.ip-screen:has(> .ip-voicekey--float, > .ip-screen__savebar > .ip-voicekey--float) .ip-screen__main{padding-bottom:var(--ip-voice-clear)}
 /* VO02: the full-screen sheet (S16, S18 phone) scrolls its own body: the same 88 under its content, and its scroll-padding */
 .ip-sidepanel--sheet:has(> .ip-voicekey--float) > .ip-sidepanel__body{padding-bottom:var(--ip-voice-clear)}
 .ip-sidepanel--sheet:has(> .ip-voicekey--float:not([hidden])) > .ip-sidepanel__body{scroll-padding-bottom:var(--ip-voice-clear)}
-html:has(.ip-screen > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--tabbar-h) + var(--ip-voice-clear))}
-html:has(.ip-screen__savebar):has(.ip-screen > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w) + var(--ip-voice-clear))}
-@media (max-width: 389.98px){html:has(.ip-screen__savebar):has(.ip-screen > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w) + var(--ip-voice-clear))}}
-.ip-screen:has(> .ip-voicekey--float:not([hidden])) .ip-toastwrap:not(.ip-toastwrap--page),
+html:has(:is(.ip-screen, .ip-screen__savebar) > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--tabbar-h) + var(--ip-voice-clear))}
+html:has(.ip-screen__savebar):has(:is(.ip-screen, .ip-screen__savebar) > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w) + var(--ip-voice-clear))}
+@media (max-width: 389.98px){html:has(.ip-screen__savebar):has(:is(.ip-screen, .ip-screen__savebar) > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w) + var(--ip-voice-clear))}}
+.ip-screen:has(> .ip-voicekey--float:not([hidden]), > .ip-screen__savebar > .ip-voicekey--float:not([hidden])) .ip-toastwrap:not(.ip-toastwrap--page),
 .ip-sidepanel--sheet:has(> .ip-voicekey--float:not([hidden])) > .ip-toastwrap{bottom:calc(var(--space-4) + var(--ip-voice-key) + var(--space-2))}
 .ip-sidepanel--sheet:has(> .ip-voicekey--float:not([hidden])) > .ip-toastwrap{bottom:calc(var(--ip-voice-foot) + var(--space-4) + var(--ip-voice-key) + var(--space-2))}
 
@@ -2813,7 +2819,7 @@ html:has(.ip-screen__savebar):has(.ip-screen > .ip-voicekey--float:not([hidden])
  *   1–3 lines, it grows with the text (field-sizing), then scrolls; Enter runs it) + Execută: desktop a Button, phone a 48
  *   square key (button.ip-btn.ip-btn--touch.ip-voicepanel__run, corner-down-left icon, aria-label "Execută"); on phone the
  *   docked key after it. Execută is secondary, primary while the field holds an edited transcript: tapping the transcript
- *   puts its text in this field (the run stops) and Anulează appears beside Execută (desktop) or in a row under it
+ *   puts its text in this field (the run stops) and Anulează and Execută go in a row under it (desktop, VO03) or Anulează in a row under it
  *   (.ip-voicepanel__footkeys, phone). No second field.
  * Level meter: 12 segments space-1 × space-4, space-1 apart, in a sunken track (radius-xs); lit = ink-secondary, dark =
  * line (the spec's rule is 1.04:1 on sunken: the 12 slots would not show, VO01). A live readout of the microphone, not an

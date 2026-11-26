@@ -96,9 +96,7 @@ VO_CSS = '''
 .vo-strip{display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-6) 0}
 .vo-strip__cell{display:flex;align-items:center;gap:var(--space-4)}
 .vo-strip__cell > .ip-note{margin:0}
-.vo-vp{position:absolute;inset:0;overflow:hidden}
-.vo-popstack{position:absolute;top:calc(100% + var(--space-2));left:0;z-index:5;display:flex;flex-direction:column;gap:var(--space-6);width:var(--panel-w)}
-.vo-popstack > .ip-voicepanel--pop{position:relative;top:auto;right:auto;transform-origin:top left} /* the page in its first 1024 px viewport (in the app it scrolls) */'''
+.vo-vp{position:absolute;inset:0;overflow:hidden} /* the page in its first 1024 px viewport (in the app it scrolls) */'''
 STATUS_PREFILL = lambda k: f'<p class="ip-sr" role="status" aria-live="polite">Am completat {k} câmpuri din ce ai spus. Verifică și salvează.</p>'
 
 
@@ -108,12 +106,13 @@ def strip_pop(section):   # VO01's popover drawing carries a preview-only static
     return section.replace(a, '', 1)
 
 
-def with_anchor(html, inner):
-    """the page's header key (vkey) with its popover: the anchor holds the key in its state and the panel under it"""
+def with_anchor(html, inner, start=False):
+    """the page's header key (vkey) with its popover: the anchor holds the key in its state and the panel under it; start =
+    the popover left-aligned under the key (§78 .ip-voiceanchor--start: beside a docked SidePanel)"""
     html = V.add(html)
     a = f'<span class="ip-voiceanchor">{V.VO.key("head", "rest", V.UID)}</span>'
     assert html.count(a) == 1
-    return html.replace(a, f'<span class="ip-voiceanchor">{inner}</span>', 1)
+    return html.replace(a, f'<span class="ip-voiceanchor{" ip-voiceanchor--start" if start else ""}">{inner}</span>', 1)
 
 
 def describe(html, ctl_id, extra):
@@ -182,7 +181,8 @@ def s6_fixed(main_top='', prefill=False, scrim='', key=True):
             f'{main_top}{S6.DATE}\n{s6_halls(prefill)}\n</main></div>\n{s6_save(prefill)}\n')
     if scrim:
         return body + f'<div class="ip-scrim ip-scrim--sheet">{scrim}</div></div>'
-    return body + (VO.key('fab', 'rest', 'vk', float_=True) if key else '') + '</div>'
+    body += '</div>'
+    return V.in_savebar(body, VO.key('fab', 'rest', 'vk', float_=True)) if key else body
 
 
 def prefill_banner(line2, touch=True, chip=''):
@@ -209,9 +209,9 @@ def vo2():   # listening: the sheet, Lamp Ascult…, meter, 0:04, live transcrip
 
 def vo3():   # Zilnic prefilled from „la H5.1 au murit trei găini și un cocoș”
     bnr = prefill_banner('2 câmpuri: <span class="ip-num">H5.1</span> · ♀ Mortalitate <span class="ip-num">3</span> · ♂ Mortalitate <span class="ip-num">1</span>')
-    body = s6_fixed(bnr + '\n', prefill=True)
+    body = s6_fixed(bnr + '\n', prefill=True)   # the key stays: a voice prefill's focus opens no soft keyboard (D199 note 4)
     body = body[:-len('</div>')] + STATUS_PREFILL(2) + '</div>'
-    phone_doc('VO-3-zilnic-precompletat', 'VO-3 · Voce · S6 Zilnic · vet · telefon · formular precompletat la 08:20 (♀ 3 · ♂ 1 spuse: exemplu, D39)',
+    phone_doc('VO-3-zilnic-precompletat', 'VO-3 · Voce · S6 Zilnic · vet · telefon · formular precompletat la 08:20, focus pe primul câmp fără tastatură: tasta rămâne (♀ 3 · ♂ 1 spuse: exemplu, D39)',
               body, CSS_FORM)
 
 
@@ -251,8 +251,8 @@ def vo5():   # Hrană zilnică prefilled: 160 g on the 4 ♀ rows, the ♂ rows 
     sc = HS.get('VO-5-hrana-zilnica-precompletat@scroll', 0)   # spec §8: scrolled to the first filled row (vo02_render --measure)
     st = f' style="margin-top:calc(-1 * {sc}px)"' if sc else ''
     body = (f'<div class="ip-screen ip-screen--fixed">\n{B.HEAD}\n<div class="ip-screen__view"><main class="ip-screen__main"{st}>\n{bnr}\n{B.DATE}\n{B.COPY}\n{halls}\n</main></div>\n'
-            f'{save}\n{VO.key("fab", "rest", "vk", float_=True)}{STATUS_PREFILL(4)}</div>')
-    phone_doc('VO-5-hrana-zilnica-precompletat', 'VO-5 · Voce · S7 Hrană zilnică · vet · telefon · precompletat la 08:20: „dă 160 de grame la toate găinile” (♀ 160 g, ghid 157 g)',
+            f'{V.in_savebar(save, VO.key("fab", "rest", "vk", float_=True))}{STATUS_PREFILL(4)}</div>')   # key visible: prefill focus, no keyboard
+    phone_doc('VO-5-hrana-zilnica-precompletat', 'VO-5 · Voce · S7 Hrană zilnică · vet · telefon · precompletat la 08:20: „dă 160 de grame la toate găinile” (♀ 160 g, ghid 157 g); focus fără tastatură: tasta rămâne',
               body, CSS_FORM)
 
 
@@ -316,15 +316,25 @@ def vo8():   # răspuns on S14: „care e procentul de ouat săptămâna asta fa
              page, css=X.CSS, h=HS.get('VO-8-productie-raspuns', 2171))
 
 
-def vo9():   # se gândește + transcript corectat: the pair on one board (right: before the tap; left: after it)
-    before = strip_pop(VO.panel('v9a', False, state=('info', 'Mă gândesc…'), said=VO.SAY_P12, said_btn=True, cmd=VO.CMD_P12, key_st='think'))
-    after = strip_pop(VO.panel('v9b', False, state=('off', 'oprit'), edit=VO.SAY_P12))
-    # beside the docked SidePanel the PageHeader actions wrap under the title, the key on the page's left: a popover right-aligned
-    # to it would run over the Sidebar, so here it opens left-aligned under the key (to review: §78 flip); the pair stacks
-    pair = f'<div class="vo-popstack">{before}{after}</div>'
-    page = with_anchor(Q.DESK, VO.key('head', 'think', 'vk') + pair)
-    desk_doc('VO-9-livrare-se-gandeste', 'VO-9 · Voce · S13 Livrare hrană · manager · desktop · se gândește (sus) și, după apăsarea pe text, transcrierea gata de corectat (jos) · pereche de stări (D39)',
-             page, Q.PANEL, css=Q.CSS_D + VO_CSS)
+SAY9 = 'am primit 25\u202f640 de kilograme pentru găini pe 13 noiembrie'   # D199 note 4: spoken figures as digits (thin no-break space)
+CMD9 = 'Livrare hrană · Hîrbovăț · <span class="ip-num">13.11.2026</span> · Breeder 2 · <span class="ip-num ip-nowrap">25\u202f640 kg</span>'
+
+
+def tagged(section, k):   # the pair's step number in the panel head, before the title (board annotation, hidden from readers)
+    a = '<div class="ip-voicepanel__head">'
+    assert section.count(a) == 1
+    return section.replace(a, a + f'<span class="ip-tag ip-tag--neutral" aria-hidden="true">{k}</span>', 1)
+
+
+def vo9():   # se gândește (1) + transcript tapped, ready to fix (2): the pair on one board, stacked under the key
+    before = tagged(strip_pop(VO.panel('v9a', False, state=('info', 'Mă gândesc…'), said=SAY9, said_btn=True, cmd=CMD9, key_st='think')), 1)
+    after = tagged(strip_pop(VO.panel('v9b', False, state=('off', 'oprit'), edit=SAY9)), 2)
+    h1 = HS.get('VO-9-livrare-se-gandeste@pop1', 220)   # the first popover's height (vo02_render.py --measure): the second sits space-4 under it
+    a = '<section class="ip-voicepanel ip-voicepanel--pop"'
+    after = after.replace(a, a + f' style="top:calc(100% + var(--space-2) + {h1}px + var(--space-4))"', 1)
+    page = with_anchor(Q.DESK, VO.key('head', 'think', 'vk') + before + after, start=True)
+    desk_doc('VO-9-livrare-se-gandeste', 'VO-9 · Voce · S13 Livrare hrană · manager · desktop · 1 se gândește · 2 după apăsarea pe text, gata de corectat · pereche de stări (D39)',
+             page, Q.PANEL, css=Q.CSS_D)
 
 
 def vo10():  # Livrare hrană prefilled: Hîrbovăț, 13.11.2026, Breeder 2, 25 640 kg (the real 13.11 delivery)
@@ -365,7 +375,7 @@ def vo10():  # Livrare hrană prefilled: Hîrbovăț, 13.11.2026, Breeder 2, 25 
     bnr = prefill_banner(f'4 câmpuri: Hîrbovăț · <span class="ip-num">{dd(d13)}</span> · {Q.FTN[Q.FT]} · <span class="ip-num ip-nowrap">{n(dl["qty_kg"])} kg</span>', touch=False)
     a = '<div class="ip-sidepanel__body ip-sidepanel__body--form">\n'; assert pnl.count(a) == 1
     pnl = pnl.replace(a, a + bnr + '\n', 1)
-    desk_doc('VO-10-livrare-precompletat', 'VO-10 · Voce · S13 Livrare hrană · manager · desktop · formular precompletat: Hîrbovăț, 13.11.2026, Breeder 2, 25 640 kg',
+    desk_doc('VO-10-livrare-precompletat', 'VO-10 · Voce · S13 Livrare hrană · manager · desktop · formular precompletat: Hîrbovăț, 13.11.2026, Breeder 2, 25 640 kg; focus pe Fermă (exemplu, D39)',
              Q.DESK, pnl + STATUS_PREFILL(4), css=Q.CSS_D)
 
 
@@ -375,7 +385,7 @@ def vo11():  # fără microfon (S6, phone Chrome) + neînțeles (S2), two phones
                     field_focus=True)
     neo = ('<div role="alert" class="ip-stack" style="gap:var(--space-1)"><p>Nu am înțeles „pune trei la hala”.</p>'
            '<p>Încearcă așa: „pune 3 găini moarte la H5.1” sau „ce lipsește azi?”.</p></div>')
-    right = VO.panel('v11b', True, said='pune trei la hala', result=neo + '<div class="ip-voicepanel__keys">'
+    right = VO.panel('v11b', True, said='pune trei la hala', sr='Nu am înțeles „pune trei la hala”.', result=neo + '<div class="ip-voicepanel__keys">'
                      + VO.btn('Spune din nou', 'primary', touch=True) + VO.btn('Scrie comanda', touch=True) + '</div>')
     inner = f'<div class="vo-pair"><div class="vo-frame">{s6_fixed(scrim=left)}</div><div class="vo-frame">{s2_fixed(right)}</div></div>'
     phone_doc('VO-11-fara-microfon-neinteles', 'VO-11 · Voce · telefon · fără microfon (stânga, S6 Zilnic, Chrome) · neînțeles (dreapta, S2 Acasă) · exemple de stare (D39)',
@@ -398,10 +408,7 @@ def vo13():  # S4 phone Producție after „deschide Hîrbovăț la Producție�
     assert s4.CHIPW['eggs'] in pf
     tb = X.table(phone=True)
     panel = f'<div class="s4-panel" id="tp-ferma" role="tabpanel" aria-labelledby="tab-productie">\n{tb}\n</div>'
-    # D195 (SYS20): the selected "Producție" with its dot runs 2 px past its 71.6 px fifth of 358: the short word, full word hidden
-    tabs = T.tabs('productie'); a = 'href="#productie">Producție</a>'; assert tabs.count(a) == 1
-    tabs = tabs.replace(a, 'href="#productie"><span aria-hidden="true">Prod.</span><span class="ip-sr">Producție</span></a>', 1)
-    body = NS.phone([NS.p_header(), NS.p_cycle(), f'<div class="s4-tight">{pf}{tabs}</div>', panel])
+    body = NS.phone([NS.p_header(), NS.p_cycle(), f'<div class="s4-tight">{pf}{T.tabs("productie")}</div>', panel])   # "Prod." from s4ns.phone (D195)
     # the whole page (as the S4 phone boards): header, Producție tab, the table; the Toast is placed in the main, which ends at
     # the tab bar, so it stacks space-2 above the floating key (§78) and the table's last row ends clear of both
     a = '<main class="ip-screen__main s2-main s4-main">'; assert body.count(a) == 1

@@ -1,6 +1,6 @@
 """vo02_render.py · VO02 renders (headless Chrome, fallback fonts, as the sNN_render scripts).
 python3 -I vo02_render.py <repo_root>                 shots of the 13 VO boards → design/shots/VO-1.png … VO-13.png (canvas w × h)
-python3 -I vo02_render.py <repo_root> --measure       VO-5: the scroll that keeps the focused field 16 above the key; VO-13's and VO-8's heights (the S14 page's
+python3 -I vo02_render.py <repo_root> --measure       VO-5: the scroll that keeps the focused field 16 above the key; VO-9: the first popover's height; VO-13's and VO-8's heights (the S14 page's
                                                        natural height) → vo02_heights.json; rebuild vo02_build.py afterwards
 python3 -I vo02_render.py <repo_root> --sample        the 6 sample shell boards (S2 phone, S4 desktop, S6 phone, S14 phone, S16
                                                        desktop, S22 desktop) → design/shots/VO-S*.png (S16 desktop at its top 1024)"""
@@ -29,6 +29,8 @@ async def main():
             r = await pg.evaluate("""() => { const i = document.querySelector('.ip-input.is-focus').getBoundingClientRect(), k = document.querySelector('.ip-voicekey--float').getBoundingClientRect();
               const m = document.querySelector('.ip-screen__main'); return {d: i.bottom + 16 - k.top, cur: -(parseFloat(getComputedStyle(m).marginTop) || 0)}; }""")
             hs['VO-5-hrana-zilnica-precompletat@scroll'] = max(0, round(r['cur'] + r['d'])); await pg.close()
+            pg = await page('VO-9-livrare-se-gandeste')
+            hs['VO-9-livrare-se-gandeste@pop1'] = round(await pg.evaluate("document.querySelector('.ip-voiceanchor .ip-voicepanel--pop').getBoundingClientRect().height")); await pg.close()
             pg = await page('VO-8-productie-raspuns', 1024)
             hs['VO-8-productie-raspuns'] = max(1024, await pg.evaluate('document.documentElement.scrollHeight')); await pg.close()
             HJ.write_text(json.dumps(hs, indent=1) + '\n'); print(hs); return

@@ -199,12 +199,12 @@ The voice key is part of every signed-in shell, not of a screen: no screen adds 
 | Shell | Screens | Key | Panel |
 |---|---|---|---|
 | Phone, BottomTabBar | S2, S3, S4, S5, S11, S12, S14, S15, S17–S22 phones | floating VoiceButton 56 px, bottom right, `space-4` from the edge, `space-4` above the tab bar | BottomSheet; the key docks in its foot |
-| Phone, form with SaveBar | S6–S10, S13 | floating, `space-4` above the SaveBar (never over it) | BottomSheet |
+| Phone, form with SaveBar | S6–S10, S13 | floating, `space-4` above the SaveBar (never over it), anchored to the bar itself so it follows any bar height (D199 note 4) | BottomSheet |
 | Phone, full-screen sheet | S16 Corectează, S9P SectionSelect sheet | floating, `space-4` above the sheet foot | BottomSheet over the sheet |
 | Phone, BottomSheet open | Înregistrează menu, FilterBar sheet, SectionSelect | floating above the sheet's top edge, on the scrim | replaces the open sheet (it comes back on close) |
 | Phone, Dialog open | any | under the scrim, inert (form Dialogs can be opened prefilled by voice before; confirm Dialogs never) | – |
 | Desktop page | S2–S22 | IconButton, last key on the right of the PageHeader actions | popover under the key, right edges aligned, `panel-w` wide |
-| Desktop, SidePanel open | S9, S10, S16, S18–S22 panels | stays in the PageHeader | popover as above (commands act on the open panel first) |
+| Desktop, SidePanel open | S9, S10, S16, S18–S22 panels | stays in the PageHeader | popover as above (commands act on the open panel first); where the header keys wrap under the title beside the panel, left-aligned under the key (`.ip-voiceanchor--start`, §78, D199 note 4) |
 | Desktop, Dialog open | any | under the page scrim, inert | – |
 | Signed out | S1 | none | – |
 
@@ -221,7 +221,7 @@ The voice key is part of every signed-in shell, not of a screen: no screen adds 
 7. **VO-7 · desktop manager · S5 Hîrbovăț › H5 Păsări · executat:** „arată-mi mortalitatea la H5 pe ultimele 8 săptămâni” → the H5 section page, Păsări, chip Mortalitate, period "8 săpt." (SAPT 52–59), header key at rest, Toast "Am deschis Hîrbovăț › H5 · Păsări: Mortalitate, 8 săpt." + Anulează.
 8. **VO-8 · desktop owner · S14 Producție · răspuns:** popover with „care e procentul de ouat săptămâna asta față de ghid?” and "Sapt. 59 (2 din 7 zile): ouat 40,4%, ghid 57,6%, sub ghid cu 17,2 puncte." + Lamp "abatere", "Am deschis Rapoarte · Producție" + Anulează; the table behind it on SAPT 56–59.
 9. **VO-9 · desktop manager · S13 Livrare hrană · se gândește + transcript editat:** „am primit 25 640 de kilograme pentru găini pe 13 noiembrie” tapped into the TextField with Execută, Lamp "Mă gândesc…" stopped; key with spinner (state pair on one board: before/after the tap).
-10. **VO-10 · desktop manager · S13 · formular precompletat:** farm Hîrbovăț, 13.11.2026, ♀ feed, 25 640 kg marked, stock-after line, Banner, focus on kg.
+10. **VO-10 · desktop manager · S13 · formular precompletat:** farm Hîrbovăț, 13.11.2026, ♀ feed, 25 640 kg marked, stock-after line, Banner, focus on Fermă (the first filled field, spec §8; D199 note 4).
 11. **VO-11 · phone · fără microfon + neînțeles:** two phones side by side: warn Banner "Microfonul e blocat pentru Impex Line." with the phone Chrome steps and the focused text field; "Nu am înțeles „…”." with two S2 examples.
 12. **VO-12 · phone · fără conexiune:** failure Banner "Comanda nu s-a trimis: „pune 3 găini moarte la H5.1”." + Reîncearcă focused, transcript kept in the field; and the VoiceButton states strip (idle, listening, thinking, disabled "Fără conexiune") at 1:1.
 13. **VO-13 · phone manager · S4 Hîrbovăț · Toast above the key:** „deschide Hîrbovăț la Producție” → the Producție tab (table SAPT 56–59), Toast "Am deschis Hîrbovăț · Producție" + Anulează stacked `space-2` above the floating key, the key `space-4` above the 5-item tab bar, the table's last row scrolled clear of both.

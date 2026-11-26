@@ -71,6 +71,9 @@ def hint(sec, sx, d=TODAY):
 def removed(r): return r['mortality'] + r['culls'] + r['sexing_errors']  # D53: per sex, refused above alive_start
 def most(r): return max(0, r['alive_start'] - r['culls'] - r['sexing_errors'])  # the most Mortalitate still accepted
 SIGN = {'F': '♀', 'M': '♂'}; CLS = {'F': 'hen', 'M': 'rooster'}; WORD = {'F': 'găini', 'M': 'cocoși'}
+def dead(sx, v):  # VO03: number + gender agreement ("1 găină moartă", "3 găini moarte", "1 cocoș mort", "3 cocoși morți"; 20 or more take "de")
+    w = {('F', 1): 'găină moartă', ('F', 2): 'găini moarte', ('M', 1): 'cocoș mort', ('M', 2): 'cocoși morți'}[(sx, 1 if v == 1 else 2)]
+    return ('de ' if v % 100 >= 20 or (v >= 100 and v % 100 == 0) else '') + w
 def cnt(v):
     return f'{n(v)}'
 def field(kind, sec, sx, uid, val, ro, hint_html='', st=None, msg_id=None):
@@ -121,7 +124,7 @@ def entry(sec, d=TODAY, ov=None, saved=None, reasons=None, more=False):
             msgs += (f'<p class="ip-err ip-entry__msg ip-m0" id="{mid[sx]}">{icon("alert", 14)}<span>{sec} <span class="ip-sex ip-sex--{CLS[sx]}">{SIGN[sx]}</span>: Mortalitate + Sacrificare + Eroare sexare =&#160;<span class="ip-num">{n(removed(t[sx]))}</span>, '
                      f'peste cei <span class="ip-num">{n(a)}</span> {WORD[sx]} în viață pe <span class="ip-num">{dd(d)}</span>. La Mortalitate scrie cel mult <span class="ip-num">{n(most(t[sx]))}</span>.</span></p>')
         elif st[sx] == 'warn':
-            msgs += (f'<p class="ip-warnline ip-entry__msg ip-m0" id="{mid[sx]}" role="status">{icon("warn", 14)}<span>{sec}: <span class="ip-num">{n(v)}</span> {WORD[sx]} moarte, '
+            msgs += (f'<p class="ip-warnline ip-entry__msg ip-m0" id="{mid[sx]}" role="status">{icon("warn", 14)}<span>{sec}: <span class="ip-num">{n(v)}</span> {dead(sx, v)}, '
                      f'de peste 3 ori media pe 7 zile (<span class="ip-num">{n(hint(sec, sx, d)[1], 1)}</span>). Verifică numărătoarea; poți salva.</span></p>')
     motiv = ''
     for sx in 'FM':  # SYS05: Sacrificare > 0 shows its Motiv under it (read-only on a saved day: label + readonly input)

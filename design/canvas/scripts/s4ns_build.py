@@ -200,7 +200,11 @@ def phone(parts, cls=''):
                  ('<div class="ip-screen">', f'<div class="ip-screen s4ns-phone{cls}">')):
         assert body.count(a) == 1, a; body = body.replace(a, z, 1)
     assert body.count('is-current') == 1
-    return body
+    # D195 / D199 note 4 (VO03): on a phone the fifth tab is the short word, the full word hidden ("Producție" with the selected
+    # dot runs past its 71.6 px fifth of 358); the same on every S4/S5 phone tab row, selected or not
+    a = 'href="#productie">Producție</a>'
+    assert body.count(a) == 1
+    return body.replace(a, 'href="#productie"><span aria-hidden="true">Prod.</span><span class="ip-sr">Producție</span></a>', 1)
 def p_table(uid, tab, groups, bar, note, tag, weeks=None, added=None):
     weeks = weeks or P.WEEKS
     cap = f'{tab} · Hîrbovăț · Seria 2026 · SAPT {weeks[-1]}–{weeks[0]} · {CHIPW[tag]}'

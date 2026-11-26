@@ -147,8 +147,8 @@ def ferma_mgr():
 # ---------------------------------------------------------------------------------------------------------- VoicePanel
 def foot(uid, phone_, value='', focus=False, edit=False, key_st='open', data=False):
     """the panel foot: the one command field (textarea, 1–3 lines, grows) + Execută (desktop Button; phone 48 square key with
-    corner-down-left) + on phone the docked key. edit: an edited transcript in the field: Execută primary, Anulează beside
-    (desktop) or under it (phone)."""
+    corner-down-left) + on phone the docked key. edit: an edited transcript in the field: Execută primary, Anulează under it
+    (desktop: both keys in a row under the full-width field, VO03; phone: Anulează under the field)."""
     t = ' ip-input--touch' if phone_ else ''
     fo = ' is-focus' if focus else ''
     dv = ' data-vo="field"' if data else ''
@@ -168,6 +168,8 @@ def foot(uid, phone_, value='', focus=False, edit=False, key_st='open', data=Fal
         cancel = f'<button type="button" class="ip-btn ip-btn--secondary{" ip-btn--touch" if phone_ else ""}" data-vo="undo"{hid}>Anulează</button>'
     if phone_:
         rest = run + key('fab', key_st, uid) + (f'<div class="ip-voicepanel__footkeys">{cancel}</div>' if cancel else '')
+    elif edit:   # VO03 (D199 note 4): desktop, an edited transcript: the field takes the full width, Anulează · Execută under it
+        rest = f'<div class="ip-voicepanel__footkeys">{cancel}{run}</div>'
     else:
         rest = cancel + run
     return f'<div class="ip-voicepanel__foot">{fld}{rest}</div>'
