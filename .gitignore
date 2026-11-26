@@ -1,1 +1,6 @@
 __pycache__/
+.claude/team/
+.claude/agent-memory-local/
+.env
+.env.*
+!.env.example
