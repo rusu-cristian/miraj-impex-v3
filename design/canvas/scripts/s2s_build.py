@@ -22,6 +22,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve()
 HERE = pathlib.Path(__file__).resolve().parent
 HP = HERE / 's2_heights.json'
 sys.path.insert(0, str(HERE))
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 sys.argv = ['s2_build.py', str(ROOT), str(HP)]
 A = importlib.import_module('s2_build')        # writes the S2 default boards (and S7, unchanged)
 import sstate_css as SC
@@ -245,7 +246,7 @@ for slug, state, kind, body in boards:
     stem, title = f'{STEM0}--{slug}', f'{TITLE0} · {state}'
     if kind == 'p':
         css = CSS_PS
-        root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>'
+        root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{V.add(body)}</div>'
         dc = f'''<!doctype html>
 <html lang="ro">
 <head>

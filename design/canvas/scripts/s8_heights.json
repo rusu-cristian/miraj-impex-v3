@@ -1,15 +1,15 @@
 {
- "S8-cantarire": 927,
- "S8-cantarire--gol": 921,
- "S8-cantarire--in-norma": 947,
- "S8-cantarire--abatere": 991,
- "S8-cantarire--valoare-refuzata": 975,
+ "S8-cantarire": 983,
+ "S8-cantarire--gol": 977,
+ "S8-cantarire--in-norma": 1003,
+ "S8-cantarire--abatere": 1047,
+ "S8-cantarire--valoare-refuzata": 1031,
  "S8-cantarire--salvat": 1015,
- "S8-cantarire--eroare-la-salvare": 1129,
- "S8-cantarire--se-incarca": 927,
+ "S8-cantarire--eroare-la-salvare": 1185,
+ "S8-cantarire--se-incarca": 983,
  "S8-cantarire--alege-sectiunea": 844,
- "S8-cantarire--zi-trecuta": 1072,
+ "S8-cantarire--zi-trecuta": 1128,
  "S8-cantarire--ferma-fara-pasari": 844,
- "S8-cantarire--deja-introdus": 1006,
- "S8-cantarire--gol-telita": 941
+ "S8-cantarire--deja-introdus": 1062,
+ "S8-cantarire--gol-telita": 997
 }

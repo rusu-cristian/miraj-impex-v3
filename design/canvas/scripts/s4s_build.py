@@ -5,6 +5,7 @@ python3 -I s4s_build.py <repo_root>
 Writes design/canvas/project/S4-ferma-rezumat--<state>.dc.html and /tmp/s4s/<state>.html (plain wrappers)."""
 import sys, re, json, pathlib, datetime as dt
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import skel as SKL  # FIN11G: §54 skeleton markup
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 
 ROOT = pathlib.Path(sys.argv[1])
 EX = ROOT / 'design/data/extracts'
@@ -1018,7 +1019,7 @@ def write(stem, title, body, overlay='', H=None, css=None, vp=None):
     wide = W > 1440
     if wide:  # D167 (S4NG): the page keeps its 1440 layout, its wide tables extend past the page's right edge in full
         vps += '; --board-page-w:1440px'; css = css + '\n' + CSS_WIDE
-    root = f'<div class="ip-root s4s-rel{" s4s-wide" if wide else ""}" style="padding:0; min-height:{H}px{vps}">{body}{overlay}</div>'
+    root = f'<div class="ip-root s4s-rel{" s4s-wide" if wide else ""}" style="padding:0; min-height:{H}px{vps}">{V.add(body + overlay)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

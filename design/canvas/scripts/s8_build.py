@@ -21,6 +21,7 @@ Writes design/canvas/project/S8-cantarire[--<state>].dc.html and /tmp/s8/<stem>.
 import sys, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s8_heights.json')  # heights default: s8_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 HS = json.loads(HP.read_text()) if HP and HP.exists() else {}
@@ -246,7 +247,7 @@ pathlib.Path('/tmp/s8').mkdir(exist_ok=True)
 for slug, state, body in boards:
     stem = STEM0 + (f'--{slug}' if slug else ''); title = TITLE0 + (f' · {state}' if state else '')
     H = HS.get(stem, 844)
-    root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

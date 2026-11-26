@@ -22,6 +22,7 @@ Writes design/canvas/project/S10-vanzare[--<state>].dc.html, /tmp/s10/<stem>.htm
 import sys, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s10_heights.json')  # heights default: s10_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
@@ -340,6 +341,7 @@ VH = P.VH
 def write_phone(slug, state, body, kind):
     stem = STEM0 + (f'--{slug}' if slug else ''); title = f'{TITLE0} · {state}'
     h = HEIGHTS.get(stem, 2400) if kind == 'tall' else VH
+    body = V.add(body)   # VO02
     root = (f'<div class="ip-root" style="padding:0; width:390px; min-height:{h}px">{body}</div>' if kind == 'tall'
             else f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>')
     dc = f'''<!doctype html>

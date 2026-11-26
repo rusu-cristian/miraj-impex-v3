@@ -19,6 +19,7 @@ height with the min-height released, s6_render.py)."""
 import sys, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s6_heights.json')  # heights default: s6_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 STEM, TITLE = 'S6-zilnic', 'S6 · Zilnic'
@@ -249,7 +250,7 @@ BODY = f'''<div class="ip-screen">
 </div>'''
 
 CSS = B.CSS  # FIN15: "din ♀ …" on one line is HallCard's span.ip-eggs__base (additions.css)
-root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{BODY}</div>'
+root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{V.add(BODY)}</div>'
 dc = f'''<!doctype html>
 <html lang="ro">
 <head>

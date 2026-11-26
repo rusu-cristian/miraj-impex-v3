@@ -13,6 +13,7 @@ Writes design/canvas/project/S6-zilnic--<state>.dc.html and /tmp/s6s/<stem>.html
 import sys, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s6s_heights.json'); ROOT = ROOT.resolve()
 HERE = pathlib.Path(__file__).resolve().parent
 SCROLL = json.loads(HP.read_text()).get('scroll', {}) if HP.exists() else {}
@@ -185,7 +186,7 @@ pathlib.Path('/tmp/s6s').mkdir(exist_ok=True)
 meta = []
 for slug, state, body in boards:
     stem, title = f'{STEM0}--{slug}', f'{TITLE0} · {state}'
-    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{V.add(body)}</div>'
     css = CSS + CSS_EXTRA.get(slug, '')
     dc = f'''<!doctype html>
 <html lang="ro">

@@ -4,7 +4,7 @@ Each `sNN_build.py` writes one screen row of boards into `design/canvas/project/
 as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scripts; python3 -I sNN_build.py $R [--canvas]`.
 
 ## Rules (FIN02G, `canvas_rows.py`)
-- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2962/2466).
+- 2nd argument = heights file; omitted, it is the screen's own `sNN_heights.json` (s4/s7 take an int height; defaults 2962/2522).
 - canvas.json is written only with `--canvas` (scripts with no canvas step accept and ignore it). Imported builds never write it.
 - Under `--canvas` every existing entry keeps its x and y (w/h/title refreshed in place). A row with no entry yet goes below the
   lowest row (row y + tallest h + 120). A run that adds a board lays the row out again (80 px gaps). Overlapping boards stop the save.
@@ -44,6 +44,7 @@ as first argument: `R=$(git rev-parse --show-toplevel); cd $R/design/canvas/scri
 | S21 | `s21_build.py --canvas` (RF12: realdata; h/title in place; heights `s21_render.py --measure` → s21_heights.json, render wrapper keeps only the 1024/844 floor) |
 | S22 | `s22_build.py --canvas`, `s22s_build.py --canvas` |
 | S1  | `s1_build.py --canvas` |
+| VO  | `vo02_build.py --canvas` (VO02: the 13 voice boards in their row under V1, built from the S rows above by import; VO-5 scroll, VO-8/VO-13 heights from `vo02_render.py --measure` → vo02_heights.json; checks: `vo02_check.py` = one voice key per S board, never over a bar) |
 | Main | after `canvas_rows.py relayout`: `main_build.py --canvas` (FV03: the 00 · Index board lists the rows and board counts from canvas.json; w/h in place) |
 S4/S7/S11/S12/S13/S6/S9 entries were placed by hand: their x never changes; y only through `canvas_rows.py relayout`, and the
 S4 Rezumat entries' h/title through `s4s_build.py`/`s4_build.py --canvas` (RF01), the S7 ones through `s7_build.py`/`s7s_build.py --canvas` (RF02),
@@ -58,7 +59,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 ## Never run for a row
 - `sNN_render.py` / `s4s_render.py` (any flag) as part of a rebuild: it re-measures in Chrome (fallback fonts) and rewrites `sNN_heights.json`
   (s3/s4t/s8/s11/s12/s14 always, the rest with `--heights`/`--measure`). Run it only to re-measure, then rebuild with `--canvas`.
-- A heights file of another screen as 2nd argument, or a height other than 2962 (s4) / 2466 (s7).
+- A heights file of another screen as 2nd argument, or a height other than 2962 (s4) / 2522 (s7; VO02: 2466 + the 88 px voice-key clearance).
 - Scripts from older commits, and `s3_canvas.py` (removed: wrote canvas.json on every run; now `s3_build.py --canvas`).
 
 ## Import chain (a change re-runs every row downstream; imported rows are rewritten byte-identical)
@@ -76,6 +77,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   `sys12_build.py` (UserRow/OneTimePassword previews) and the S22 row.
 - SYS20 (D195): FilterBar chips = `div.ip-filterbar__chips > div.ip-chips` from s4s_build (`CHIPS`, `filterbar`, `chips4`) and s17_build (`chips`); phone sheet tags `ip-chips--wrap ip-chips--fill` (s4ns, s3, s14s, s17s); phone sheet segs `ip-seg--fill` with the short words (s4ns `touch_seg`, s14s, s17s); phone Detaliu short word in sys14 `detaliu(touch=True)`.
 - sstate_css.py ← s2s, s6s, s7s, s8, s9, s10, s13, s14s, s15s, s16, s18 (s15 and later get it through these too).
+- vkey.py (VO02, D199): `add(markup)` places the voice key in every board writer (s4s.write, s2.write_phone, s6, s7, s7s, s8, s8s, s9, s10, s13, s15, s16, s18, s19 → s20–s22, s2s, s6s) from design/system/scripts/vo01_build.py's `key()`; a change re-runs every row. vo02_build ← s2, s6 (→ s7), s4ns (→ s4t, s4s), s14, s13 (→ s7s, s11).
 - canvas_rows.py: args/row_y/place/save for every build above.
 - sexsign.py (SX01, additions.css §72): the ♀/♂ sign markup (`sign`, `figure`, `sexify`) ← s4t (Readouts, legends: S4, S3, S14, S16, S17 through it), s3, s6, s6s, s8, s9, s10, s11, s15s, s16s and the system previews sys04/05/08/09/11/14 (at write). A change re-runs those rows and previews.
 - skel.py (FIN11G, additions.css §54): skeleton markup and table column shares (readout, track, field, line, widths) ← s2s, s6s, s7s, s8s, s11 (S12/S13/S14 through it), s14, s16s, s18 (+ s18s), s19 (+ s19s, s21, s22), s20 (+ s20s), s21, s22. A change re-runs those rows.

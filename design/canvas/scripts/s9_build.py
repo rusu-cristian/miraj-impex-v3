@@ -21,6 +21,7 @@ Writes design/canvas/project/S9-transfer[--<state>].dc.html, /tmp/s9/<stem>.html
 import sys, re, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s9_heights.json')  # heights default: s9_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
@@ -234,7 +235,7 @@ boards.append(('salvat', 'salvat', screen(saved, B.savebar(sum1(lead='mutat'), f
 # 3 · refuzat — ♀ 4 500 typed over the ♀ 4 383 alive (D39 state example): row error, preview = fault Banner, Mută disabled;
 #   the refused value is left out of the SaveBar totals (D77, as S6S/S7S: ♀ – · ♂ –), its figure only on line 2
 boards.append(('refuzat', 'refuzat · peste cei în viață · exemplu de stare (D39)', screen([DATE, pick('refuz'), dest(), effect('refuz')],
-              B.savebar(sum1('–', '–'), f'{lamp("fault", "refuzat")}<span>{SRC_SEC} {hen(TRY)} ·</span><span>cel mult <span class="ip-num">{n(SRC_F)}</span></span>', MUTA_OFF))))
+              B.savebar(sum1('–', '–'), f'{lamp("fault", "refuzat")}<span>{SRC_SEC} {hen(TRY)} ·</span><span>cel mult <span class="ip-num">{n(SRC_F)}</span></span>', MUTA_OFF), view=' ip-screen__view--end')))   # VO02: at its end (47 px lower) the voice key clears the refusal Banner
 # 4 · eroare la salvare — online only (spec §1): fault Banner + Reîncearcă, typed values kept as a draft (D60). The Banner is
 #   the form's last part, right above the SaveBar (D141/D181, as S6/S7/S8/S13/S16; was above the EffectPreview, S9P), and the
 #   form is scrolled to its end, so the EffectPreview and the Banner both show above the SaveBar
@@ -280,7 +281,7 @@ boards.append(('alege-sectiunea', 'alege secțiunea · exemplu de stare (D39)', 
 # 6 · ciclu nou — the same move with Telița's first section chosen: the EffectPreview opens a cycle at Telița in the birds'
 #   age week, sapt. 59 (D151; CycleTrack open mark with the transfer bar), Hîrbovăț keeps birds and its cycle continues, sapt. 59
 boards.append(('ciclu-nou', 'ciclu nou · exemplu de stare (D39)', screen([DATE2, pick('toate', mv=M2), dest(mv=M2), effect(mv=M2)],
-              B.savebar(sum1(M2.qf, M2.qm, mv=M2), SUM2_NEW, MUTA), head=HEAD2)))
+              B.savebar(sum1(M2.qf, M2.qm, mv=M2), SUM2_NEW, MUTA), head=HEAD2, view=' ip-screen__view--end')))   # VO02: at its end (89 px lower) the voice key sits on the 88 px clearance, not on the Efect
 
 SCSS = '''
 .s9-in > .ip-sexrow__sel{flex:none}
@@ -314,7 +315,7 @@ STEM0, TITLE0 = 'S9-transfer', 'S9 · Transfer'
 VH = P.VH
 def write_phone(slug, state, body):
     stem = STEM0 + (f'--{slug}' if slug else ''); title = f'{TITLE0} · {state}'
-    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

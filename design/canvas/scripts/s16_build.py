@@ -26,6 +26,7 @@ s4s_build; neither writes on import) and sstate_css (s13-/s9-/s7s- screen pieces
 import sys, re, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s16_heights.json'); ROOT = ROOT.resolve()  # heights default: s16_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 HS = json.loads(HP.read_text()) if HP and HP.exists() else {}
@@ -307,6 +308,7 @@ SYS = ROOT / 'design/system'
 FONTS = s4.FONTS
 pathlib.Path('/tmp/s16').mkdir(exist_ok=True)
 def write(stem, title, root, css, w, h):
+    root = V.add(root)   # VO02
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

@@ -65,6 +65,10 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     # S4NG: the S9/S10 desktop backdrop is the Rezumat page with its table: SAPT 58 ends 16.11.2026 (the week's hidden name)
     ('S9-transfer--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     ('S10-vanzare--desktop', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    # VO02: the voice boards over S14 Producție (VO-8) and the S13 desktop over S11 Consum (VO-9, VO-10) carry their pages' week keys and Consum figure
+    ('VO-', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),   # every VO board with a PeriodTable (VO-7 H5, VO-8, VO-9, VO-10, VO-13)
+    ('VO-9-livrare', 'sample-figure', r'is-hen(?: ip-ptable__[\w-]+)*">3\u202f691,7<'),
+    ('VO-10-livrare', 'sample-figure', r'is-hen(?: ip-ptable__[\w-]+)*">3\u202f691,7<'),
     # S4N: real figures that equal old sample ones: Hrană ♀ 3 691,7 kg on 02.11.2026 (day row), Hala 6 ♀ 8 475 alive on a SAPT 57 day (Păsări pe hale)
     ('S4-ferma', 'sample-figure', r'is-hen(?: ip-ptable__[\w-]+)*">3\u202f691,7<'),   # SYS15/SYS16: + the column group classes (__g, __g--<type>, __gs)
     ('S4-ferma--pasari', 'sample-figure', r'is-hen(?: ip-ptable__[\w-]+)*">8\u202f475<'),   # S4NG: În viață is a section's first column (D167); SYS15: + group classes
@@ -113,6 +117,7 @@ ROWS = [
     ('S22', ['S22-'], ['s22_build.py', 's22s_build.py', 's22_render.py']),
     ('S1', ['S1-'], ['s1_build.py', 's1_render.py']),
     ('SH', ['Main'], ['sstate_css.py', 'skel.py']),
+    ('VO', ['VO-'], ['vo02_build.py', 'vo02_render.py', 'vo02_check.py', 'vkey.py']),   # VO02: the voice boards (real data, D199)
     # RF11: system previews/READMEs a row's job ports (no boards); paths from this folder
     ('SYS10', [], ['../../system/scripts/sys10_build.py', '../../system/components/SectionTree/README.md',
                    '../../system/components/SectionTree/preview.html']),
@@ -126,7 +131,7 @@ ROWS = [
     # RF14: the PeriodTable builder and preview (S4/S3/S14 Producție guide columns, D184)
     ('SYS14', [], ['../../system/scripts/sys14_build.py', '../../system/components/PeriodTable/preview.html']),
 ]
-PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11', 'S22', 'S1', 'SYS12', 'SYS13', 'SYS14'}  # rows whose RF job landed: their hits fail the default run
+PORTED = {'S4R', 'S4T', 'S7', 'S11', 'S12', 'S13', 'S6', 'S9', 'S10', 'S8', 'S2', 'S15', 'S16', 'S3', 'S14', 'S17', 'S18', 'S19', 'SYS10', 'S21', 'S20', 'SYS11', 'S22', 'S1', 'SYS12', 'SYS13', 'SYS14', 'VO'}  # rows whose RF job landed: their hits fail the default run
 
 
 def scan(path):

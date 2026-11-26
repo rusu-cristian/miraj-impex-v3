@@ -27,7 +27,7 @@
 .s8-pair > .ip-fieldmsg{grid-column:1 / -1}
 .s8-main--toast{padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--space-4) + var(--space-8))} /* the last field scrolls clear of the Toast (48 key + 2x12 padding + 16 from the edge) */</style>
 </helmet>
-<div class="ip-root" style="padding:0; width:390px; min-height:1015px"><div class="ip-screen s8-screen">
+<div class="ip-root" style="padding:0; width:390px; min-height:1015px"><div class="ip-screen ip-scrimhost s8-screen">
 <header class="ip-formhead">
 <a class="ip-iconbtn ip-iconbtn--touch" href="#inregistreaza" aria-label="Înapoi la Înregistrează"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></a>
 <span class="ip-tile ip-rec ip-rec--weighing" aria-hidden="true"><svg class="ip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span>
@@ -48,7 +48,7 @@
 <div class="ip-toastwrap"><div class="ip-toast" role="status"><svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="ip-toast__txt">Cântărire salvată · H5.1 <span class="ip-nowrap"><span class="ip-sex ip-sex--hen" aria-hidden="true">♀</span><span class="ip-sr">găini</span> <span class="ip-num">3 960</span></span> g</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>
 </div>
 <div class="ip-savebar ip-screen__savebar"><span class="ip-savebar__sum ip-savebar__sum--2l" id="sb-sum"><span class="ip-savebar__line"><span class="ip-rec ip-rec--weighing"><svg class="ip-icon ip-icon--14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h18"/><path d="m6 7-3 7a3 3 0 0 0 6 0z"/><path d="m18 7-3 7a3 3 0 0 0 6 0z"/></svg></span><span>salvat ·</span><span>H5.1 <span class="ip-sex ip-sex--hen">♀ <b>3 960 g</b></span></span></span><span class="ip-savebar__line"><span>poți modifica până la <span class="ip-num">23:59</span></span></span></span><button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Cântărire nouă</button></div>
-</div></div>
+<button type="button" style="position:absolute" class="ip-voicekey ip-voicekey--fab ip-voicekey--float" aria-label="Comandă vocală" aria-pressed="false" aria-keyshortcuts="Control+Shift+Space" aria-describedby="vk-d"><svg class="ip-icon ip-icon--22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg><span class="ip-spin" aria-hidden="true"></span></button><span class="ip-sr" id="vk-d">Comandă vocală · Ctrl+Shift+Space</span></div></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1015}}'>
 class Component extends DCLogic { renderVals() { return {}; } }

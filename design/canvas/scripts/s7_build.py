@@ -11,9 +11,10 @@ import sys, json, pathlib, datetime as dt
 
 ROOT = pathlib.Path(sys.argv[1])
 A = [a for a in sys.argv[1:] if a != '--canvas']
-H = int(A[1]) if len(A) > 1 else 2466  # FV01 height: + the start-of-day caption (40 px; RF02 2426, was 3162, S7P); s7s/s6 take this default (no int passed by importers)
+H = int(A[1]) if len(A) > 1 else 2522  # VO02: + 56 (the 88 px voice-key clearance under the form, was 32); FV01 2466: + the start-of-day caption (40 px; RF02 2426, was 3162, S7P); s7s/s6 take this default (no int passed by importers)
 EX = ROOT / 'design/data/extracts'
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 import realdata as R  # RF02: every figure, date, week and stock from realdata (DATA03 extracts)
 from realdata import NB, MINUS, n, dd, rnd
 
@@ -210,7 +211,7 @@ CSS = '''body{margin:0}
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">'
 SYS = ROOT / 'design/system'
 STEM, TITLE = 'S7-hrana-zilnica', 'S7 · Hrană zilnică'
-root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{BODY}</div>'
+root = f'<div class="ip-root" style="padding:0; width:390px; min-height:{H}px">{V.add(BODY)}</div>'
 dc = f'''<!doctype html>
 <html lang="ro">
 <head>

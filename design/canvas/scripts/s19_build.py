@@ -39,6 +39,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's19_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 import skel as SKL
 sys.argv = ['s18_build.py', str(ROOT)]
 sp = importlib.util.spec_from_file_location('s18_build', HERE / 's18_build.py')
@@ -321,6 +322,7 @@ CSS_PL = T.CSS_PL + CSS19 + '''
 FONTS = s4.FONTS; SYS = ROOT / 'design/system'
 pathlib.Path('/tmp/s19').mkdir(exist_ok=True)
 def write(stem, title, root, css, w, h):
+    root = V.add(root)   # VO02
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

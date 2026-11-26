@@ -18,6 +18,7 @@ Writes design/canvas/project/S2-acasa[--<role>].dc.html, /tmp/s2/<stem>.html (ph
 import sys, re, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s2_heights.json')  # heights default: s2_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
@@ -419,7 +420,7 @@ def write_phone(stem, title, body, css=None, fixed=False):
     CSS_P_ = css or CSS_P
     h = HEIGHTS.get(stem, 844)
     hs = f'height:{h}px; overflow:hidden' if fixed else f'min-height:{h}px'  # FIN15B: a fixed screen (ip-screen--fixed) takes the frame's height
-    root = f'<div class="ip-root" style="padding:0; width:390px; {hs}">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; {hs}">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

@@ -18,6 +18,7 @@ Writes design/canvas/project/S15-introdus-azi[--<state>].dc.html, /tmp/s15/<stem
 import sys, json, pathlib, importlib, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s15_heights.json'); ROOT = ROOT.resolve()  # heights default: s15_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 HS = json.loads(HP.read_text()) if HP and HP.exists() else {}
@@ -176,7 +177,7 @@ SYS = ROOT / 'design/system'
 pathlib.Path('/tmp/s15').mkdir(exist_ok=True)
 def write(stem, title, body, css, h, fixed):
     style = f'padding:0; width:390px; height:{h}px; overflow:hidden' if fixed else f'padding:0; width:390px; min-height:{h}px'
-    root = f'<div class="ip-root" style="{style}">{body}</div>'
+    root = f'<div class="ip-root" style="{style}">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

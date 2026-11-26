@@ -38,6 +38,7 @@ ROOT = pathlib.Path(ARGS[0]).resolve(); HERE = pathlib.Path(__file__).resolve().
 HP = pathlib.Path(ARGS[1]) if len(ARGS) > 1 else HERE / 's18_heights.json'
 HEIGHTS = json.loads(HP.read_text()) if HP.exists() else {}
 sys.path.insert(0, str(HERE))
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 import skel as SKL
 import canvas_rows as CR   # FV02: board_widths.json (wide boards, D167)
 def load(name, argv):
@@ -570,6 +571,7 @@ def wide(stem, root, css, w):
     assert w == 390 and root.count(ROOT_P) == 1, stem
     return root.replace(ROOT_P, f'<div class="ip-root s4ns-wide" style="padding:0; width:{W}px; ', 1), css + CSS_PWIDE, W
 def write(stem, title, root, css, w, h):
+    root = V.add(root)   # VO02
     root, css, W = wide(stem, root, css, w)   # out keeps the base w (phone/desktop); canvas_rows.place widens it again
     dc = f'''<!doctype html>
 <html lang="ro">

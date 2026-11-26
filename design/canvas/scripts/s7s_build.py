@@ -12,6 +12,7 @@ import sys, pathlib, importlib, datetime as dt
 ROOT = pathlib.Path(sys.argv[1]); CANVAS = '--canvas' in sys.argv[2:]
 sys.argv = ['s7_build.py', str(ROOT)]
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 B = importlib.import_module('s7_build')
 import skel as SKL
 import realdata as R
@@ -200,7 +201,7 @@ tot5 = rnd(sum(b['kg'] for b in b5), 1); br2 = f5[0]['after']
 assert tot5 == TOT and rnd(br2, 1) == R.stock(TODAY)['F']
 sv5, _, _ = savebar(b5, '<span>Dr. Ceban ·</span><span>poți modifica până la <span class="ip-num">23:59</span></span>', '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch">Editează</button>', lead='salvat')
 toast = f'''<div class="ip-toastwrap"><div class="ip-toast" role="status">{icon("check", 16)}<span class="ip-toast__txt">Hrană zilnică salvată · <span class="ip-num">{len(b5)}</span> rânduri · <span class="ip-num">{n(tot5, 1)}</span> kg · stoc {FTN[BR]}: <span class="ip-num">{n(br2)}</span> kg</span><button type="button" class="ip-link ip-toast__undo">Anulează</button></div></div>'''
-boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE}</div>', halls(b5), ft5], sv5, overlay=toast)))
+boards.append(('salvat', 'salvat', screen([B.DATE, f'<div class="s7-copy">{GLINE}</div>', halls(b5), ft5], sv5, view_cls='ip-screen__view--end', overlay=toast)))   # VO02: at its end, as S6/S10 salvat: the voice key on the 88 px clearance, the Toast space-2 above it
 
 # 6 · eroare la salvare — connectivity: fault Banner + Reîncearcă (focus, S16P), typed values kept (draft in the browser); the Banner
 #   ends the form, scrolled to its end, right above the SaveBar (D141, as S9/S10)
@@ -238,7 +239,7 @@ SYS = ROOT / 'design/system'
 pathlib.Path('/tmp/s7s').mkdir(exist_ok=True)
 for slug, state, body in boards:
     stem, title = f'{STEM0}--{slug}', f'{TITLE0} · {state}'
-    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

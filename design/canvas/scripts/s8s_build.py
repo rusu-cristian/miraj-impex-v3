@@ -30,6 +30,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 HP = HERE / 's8_heights.json'
 sys.argv = ['s8_build.py', str(ROOT), str(HP)]
 sys.path.insert(0, str(HERE))
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 import skel as SKL
 with contextlib.redirect_stdout(io.StringIO()):
     E = importlib.import_module('s8_build')  # rewrites S7 + the 7 S8 boards, byte-identical
@@ -173,7 +174,7 @@ for slug, state, body in boards:
     stem, title = f'{STEM0}--{slug}', f'{TITLE0} · {state}'
     H = 844 if slug == 'alege-sectiunea' else HS.get(stem, 844)
     hs = f'height:{H}px; overflow:hidden' if slug == 'alege-sectiunea' else f'min-height:{H}px'  # FIN15B: the fixed sheet screen takes the frame's height
-    root = f'<div class="ip-root" style="padding:0; width:390px; {hs}">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; {hs}">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>

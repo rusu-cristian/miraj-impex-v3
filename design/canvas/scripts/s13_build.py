@@ -11,6 +11,7 @@ Writes design/canvas/project/S13-livrare-hrana[--<state>].dc.html, /tmp/s13/<ste
 import sys, re, json, pathlib, importlib, importlib.util, datetime as dt
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import canvas_rows as CR
+import vkey as V   # VO02: the voice key on every signed-in board (spec §8, D199; vkey.add in the writer)
 ROOT, HP, CANVAS = CR.args('s13_heights.json')  # heights default: s13_heights.json
 HERE = pathlib.Path(__file__).resolve().parent
 
@@ -201,7 +202,7 @@ STEM0, TITLE0 = 'S13-livrare-hrana', 'S13 · Livrare hrană'
 VH = P.VH
 def write_phone(slug, state, body):
     stem = STEM0 + (f'--{slug}' if slug else ''); title = f'{TITLE0} · {state}'
-    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{body}</div>'
+    root = f'<div class="ip-root" style="padding:0; width:390px; height:{VH}px; overflow:hidden">{V.add(body)}</div>'
     dc = f'''<!doctype html>
 <html lang="ro">
 <head>
