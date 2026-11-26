@@ -12,7 +12,7 @@ NAMES = {  # screen → its name on the index (the default board's title without
     'S6': 'Zilnic', 'S7': 'Hrană zilnică', 'S8': 'Cântărire', 'S9': 'Transfer', 'S10': 'Vânzare',
     'S11': 'Rapoarte · Hrană', 'S12': 'Prețuri hrană', 'S13': 'Livrare hrană', 'S14': 'Rapoarte · Producție',
     'S15': 'Introdus azi', 'S16': 'Corectează', 'S17': 'Istoric modificări', 'S18': 'Serii', 'S19': 'Ferme și secțiuni',
-    'S20': 'Ghiduri', 'S21': 'Tipuri de hrană', 'S22': 'Utilizatori', 'M1': 'Mișcare (sistem, interactiv)'}
+    'S20': 'Ghiduri', 'S21': 'Tipuri de hrană', 'S22': 'Utilizatori', 'M1': 'Mișcare (sistem, interactiv)', 'V1': 'Voce (sistem: tastă, panou, marcaj)'}
 SUMMARY = ('Runda 2 (19.11.2026): date reale până la 18.11.2026 · săptămâni după vârsta păsărilor (azi SAPT 59) · '
            'tabelul întâi: fiecare raport pornește de la tabelul pe perioade.')
 

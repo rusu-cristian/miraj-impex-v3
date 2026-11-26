@@ -1,0 +1,9 @@
+# VoiceMark
+
+Marks a form field filled by a voice command until the user edits it by hand, presses Anulează completarea, or saves (spec §8 F1, D199). additions.css §78 (VO01); spec components.md › Additions › VO00 / VO01.
+
+- **Markup:** `span.ip-voicemark[aria-hidden=true][id]` in the field's label line, after the label: Lucide mic 14 + "din voce" (small 12/16, `info`, lowercase like the system's marks); a typed value it replaced adds " · înainte <span class=ip-num>2</span>". A hidden lead `span.ip-sr` "completat " inside it; the field's `aria-describedby` names its id, so the description is "completat din voce" while the name stays the label's.
+- **Where:** CountInput and TextField labels, Select, SegmentedControl, Checkbox (inside `label.ip-check`), AllocationRow's g/pasăre line, a DataTable row's §69 detail row. The field's own border, sex bar, warning and refusal are unchanged. On a phone's two-column CountInput grid the mark wraps under the label; an EntryCard grid that holds a mark lays each field out as a 3-row subgrid (label · field · message), so the pair's inputs stay on one line.
+- **Form summary:** the info Banner with action (FIN03, §49) as the form's first block: "Am completat din ce ai spus. Verifică și salvează." / what was filled with Mono figures ("2 câmpuri: H5.1 · ♀ Mortalitate 3 · ♂ Mortalitate 1") + Anulează completarea; focus on the first filled field; the shell's status region says "Am completat 2 câmpuri din ce ai spus. Verifică și salvează.".
+- **Audit:** a save that still carries a mark writes `sursa: voce` and the transcript in Istoric modificări (D199 note).
+- **Preview:** the mark on each field type, then the formular precompletat at 390 (S6 Zilnic, H5.1, 18.11.2026 08:20, spoken figures sample) and 1440 (S13 Livrare hrană, 13.11.2026, 25 640 kg Breeder 2).

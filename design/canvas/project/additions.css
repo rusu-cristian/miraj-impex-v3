@@ -2698,3 +2698,216 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 /* keyboard: instant */
 :is(.ip-tabs,.ip-seg):has(> :focus-visible)::before,:is(.ip-tabs,.ip-seg):has(> :focus-visible) > *,
 .ip-tabs:has(> :focus-visible) > .ip-tab::before{transition-duration:0ms}
+
+/* =====================================================================================================
+ * VO01 · Voice: VoiceButton, VoicePanel, VoiceMark (D199 + its note, spec §8 F1 Comenzi vocale). Spec: components.md ›
+ * Additions › VO00 / VO01. Previews: components/VoiceButton, VoicePanel, VoiceMark; canvas board V1 · Voce.
+ * ===================================================================================================== */
+
+/* ---------- 78. Voice (VO01) ---------- */
+/* Sizes, all from existing tokens (no new token): the phone key is the CountInput height (56); a phone view keeps 88 clear
+ * under its content (key + space-4 above and below it, WCAG 2.4.11); a SaveBar and the S16 sheet foot are a touch key +
+ * space-3 padding × 2 + their top hair (73 at 390; under 390 a SaveBar summary may wrap to 4 lines: 101, as section 63). */
+:root{
+  --ip-voice-key:var(--count-input-h);
+  --ip-voice-clear:calc(var(--count-input-h) + var(--space-4) * 2);
+  --ip-voice-foot:calc(var(--control-h-touch) + var(--space-3) * 2 + var(--ip-hair));
+  --ip-voice-bar:env(safe-area-inset-bottom);   /* the lowest bar under the floating key; the screen sets it below */
+}
+@media (max-width: 389.98px){:root{--ip-voice-foot:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-3) * 2 + var(--ip-hair))}}
+
+/* VoiceButton · button.ip-voicekey: a toggle (aria-pressed), name "Comandă vocală", aria-keyshortcuts="Control+Shift+Space";
+ * holds the Lucide mic (svg.ip-icon) and the Button spinner (span.ip-spin), one shown at a time by aria-busy, so the script
+ * only sets attributes. Two looks:
+ * - desktop .ip-voicekey--head (not .ip-iconbtn: section 1's IconButton hover would paint a latched key sunken): draws the
+ *   IconButton's secondary look itself, control-h square, 16 px icon, the last key of the PageHeader actions, inside
+ *   span.ip-voiceanchor (the popover's anchor); title = the tooltip "Comandă vocală · Ctrl+Shift+Space". The phone key
+ *   carries the same text as its description (aria-describedby → span.ip-sr).
+ * - phone .ip-voicekey--fab: round 56, 22 px icon, raised + line-strong + shadow-overlay (D199: the recorded exceptions to
+ *   "round = lamps and the centre key" and to the overlay-shadow list). .ip-voicekey--float places it (below).
+ * States: rest · hover sunken · press 0.97 (section 75's key press) · latched [aria-pressed=true] graphite control +
+ * on-control (desktop drops its key shadow like a pressed key; the phone key keeps shadow-overlay: it still floats) ·
+ * thinking [aria-busy=true] latched + the spinner in place of the mic, the name kept · disabled [aria-disabled=true] sunken +
+ * ink-disabled + 1px line, still focusable, its reason in aria-describedby ("Fără conexiune") · focus the system ring
+ * (round on the phone key). No pulse, no ring, no level on the key: the state word and the meter live in the VoicePanel.
+ * Latch and unlatch are colour only (120), also under reduced motion. */
+.ip-voicekey{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;margin:0;padding:0;
+  background:var(--raised);color:var(--ink);border:var(--ip-hair) solid var(--line-strong);font:inherit;cursor:pointer;
+  transition-property:background-color,border-color,color,box-shadow,transform;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
+.ip-voicekey[hidden]{display:none}   /* the soft keyboard is open: out of view and of the reading order */
+.ip-voicekey--head{width:var(--control-h);height:var(--control-h);border-radius:var(--radius-sm);box-shadow:var(--shadow-key);color:var(--ink-secondary)}
+.ip-voicekey--fab{width:var(--ip-voice-key);height:var(--ip-voice-key);border-radius:var(--radius-round);box-shadow:var(--shadow-overlay)}
+@media (hover: hover) and (pointer: fine){
+  .ip-voicekey:hover:not([aria-pressed="true"]):not([aria-disabled="true"]):not([aria-busy="true"]){background:var(--sunken)}
+  .ip-voicekey[aria-pressed="true"]:hover:not([aria-busy="true"]){background:var(--control-hover);border-color:var(--control-hover)}
+}   /* hover only where a pointer hovers: a tapped phone key would keep a sticky grey */
+.ip-voicekey.is-hover:not([aria-pressed="true"]){background:var(--sunken)}
+.ip-voicekey:active:not([aria-disabled="true"]):not([aria-busy="true"]){transform:scale(var(--ip-press-scale))}
+.ip-voicekey[aria-pressed="true"]{background:var(--control);color:var(--on-control);border-color:var(--control)}
+.ip-voicekey[aria-pressed="true"].is-hover{background:var(--control-hover);border-color:var(--control-hover)}
+.ip-voicekey--head[aria-pressed="true"]{box-shadow:none}
+.ip-voicekey[aria-busy="true"]{cursor:progress}
+.ip-voicekey[aria-busy="true"] > .ip-icon,.ip-voicekey:not([aria-busy="true"]) > .ip-spin{display:none}
+.ip-voicekey > .ip-spin{border-color:var(--ink-muted);border-top-color:currentColor}   /* section 46's spinner on the graphite key */
+.ip-voicekey--fab > .ip-spin{width:var(--space-5);height:var(--space-5)}                /* the 22 px icon's place */
+.ip-voicekey[aria-disabled="true"]{background:var(--sunken);color:var(--ink-disabled);border-color:var(--line);cursor:not-allowed}
+.ip-voicekey--head[aria-disabled="true"]{box-shadow:none}
+.ip-voicekey:focus-visible,.ip-voicekey.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-voiceanchor{position:relative;display:inline-flex;flex:none}
+
+/* The floating phone key (.ip-voicekey--fab.ip-voicekey--float, a direct child of div.ip-screen; fixed in the app, absolute
+ * in a fixed board frame): bottom right, space-4 from the edge and space-4 above the lowest bar on screen (--ip-voice-bar:
+ * the BottomTabBar + the safe-area inset; a SaveBar; the S16 sheet foot); never over a bar or its key. Above content and the
+ * bars (z 3), under a Toast and a sheet scrim (4) and the Dialog scrim (5, inert there). When the bar changes the key takes
+ * its new place at once (no transition on its position). The same element moves, re-parented by the script:
+ * - over an open BottomSheet: the first child of div.ip-scrim--sheet, before the sheet: a flex item at the right edge,
+ *   space-4 above the sheet's top edge, on the scrim;
+ * - while the VoicePanel is open: docked in the panel's foot (.ip-voicepanel__foot), after Execută, same right edge; moving
+ *   a focused element drops its focus, so the script focuses the key again right after the move (Space/Enter still stops).
+ * While the soft keyboard is open (a focused field, read from the visual viewport) the script sets `hidden`. */
+.ip-voicekey--float{position:fixed;right:var(--space-4);bottom:calc(var(--ip-voice-bar) + var(--space-4));z-index:3}
+.ip-screen--fixed:has(> .ip-voicekey--float){position:relative}
+.ip-screen--fixed > .ip-voicekey--float{position:absolute}
+.ip-screen:has(> .ip-screen__tabbar){--ip-voice-bar:calc(var(--tabbar-h) + env(safe-area-inset-bottom))}
+.ip-screen:has(> .ip-screen__savebar),.ip-sidepanel--sheet{--ip-voice-bar:var(--ip-voice-foot)}
+.ip-sidepanel--sheet:has(> .ip-voicekey--float){position:relative}
+.ip-sidepanel--sheet > .ip-voicekey--float{position:absolute}
+.ip-scrim--sheet > .ip-voicekey--fab{position:relative;inset:auto;flex:none;align-self:flex-end;margin:0 var(--space-4) var(--space-4) 0}
+/* Room for the key (spec §8 › Where): every phone view keeps 88 under its content and scrolls a focused field clear of the
+ * key and the bar under it; a phone Toast stacks space-2 above the key (amends FIN02 / section 48 on screens with the key). */
+.ip-screen:has(> .ip-voicekey--float) .ip-screen__main{padding-bottom:var(--ip-voice-clear)}
+html:has(.ip-screen > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--tabbar-h) + var(--ip-voice-clear))}
+html:has(.ip-screen__savebar):has(.ip-screen > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--control-h-touch) + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w) + var(--ip-voice-clear))}
+@media (max-width: 389.98px){html:has(.ip-screen__savebar):has(.ip-screen > .ip-voicekey--float:not([hidden])){scroll-padding-bottom:calc(var(--ip-lh-small) * 4 + var(--space-1) * 3 + var(--space-6) + var(--ip-hair) + var(--ip-hair) + var(--ip-focus-offset) + var(--ip-focus-w) + var(--ip-voice-clear))}}
+.ip-screen:has(> .ip-voicekey--float:not([hidden])) .ip-toastwrap:not(.ip-toastwrap--page),
+.ip-sidepanel--sheet:has(> .ip-voicekey--float:not([hidden])) > .ip-toastwrap{bottom:calc(var(--space-4) + var(--ip-voice-key) + var(--space-2))}
+.ip-sidepanel--sheet:has(> .ip-voicekey--float:not([hidden])) > .ip-toastwrap{bottom:calc(var(--ip-voice-foot) + var(--space-4) + var(--ip-voice-key) + var(--space-2))}
+
+/* VoicePanel · section.ip-voicepanel[role=region][aria-label="Comandă vocală"], not a modal (no focus trap):
+ * - phone: the BottomSheet: div.ip-scrim.ip-scrim--sheet[data-state] > section.ip-sheet.ip-voicepanel (handle, head, body,
+ *   foot), up to 60% of the screen, the body scrolls; sheet motion (section 75: rises 280, scrim fades). A tap on the scrim
+ *   cancels.
+ * - desktop: .ip-voicepanel--pop, a popover in span.ip-voiceanchor under the header key: right edges aligned, space-2
+ *   below it, panel-w wide, panel + 1px line + radius-md + shadow-overlay; menu motion: scale 0.95 + opacity from its top
+ *   right corner (under the key), 120. Closes on Esc, Închide, a click outside, or after a run that navigates.
+ * Parts, top to bottom (each optional per state):
+ * - head .ip-voicepanel__head: h2 "Comandă vocală" (ip-t-heading) · p.ip-voicepanel__state[role=status][aria-live=polite]
+ *   (Lamp + word: "Ascult…" ok, "Mă gândesc…" info, "aștept permisiunea" info; the panel's one polite region: it also
+ *   carries an answer or a clarification question once, as hidden text) · .ip-voicepanel__time Mono "0:04" (outside the
+ *   region: a ticking clock is not announced) · Închide IconButton (touch on phone), pushed to the end.
+ * - body .ip-voicepanel__body (scrolls), space-4 between its blocks:
+ *   - level .ip-voicepanel__level: div.ip-voicemeter[aria-hidden][data-level="0…12"] > 12 × i (+ the hint, small muted);
+ *   - transcript p.ip-voicepanel__said (partial: .is-partial, ink-secondary; final: ink) in „…”, or button.ip-voicepanel__said
+ *     (thinking or after a result; pencil icon, described "Apasă pe text ca să-l corectezi"), whose text the script moves
+ *     into the foot field (below); under it p.ip-voicepanel__cmd, the normalised
+ *     command in Mono small with ♀/♂ signs and section codes;
+ *   - result .ip-voicepanel__result: an answer (p, Mono figures, a Lamp line, p.ip-voicepanel__opened "Am deschis …" +
+ *     Anulează link); a clarification (p question + div.ip-chips.ip-voicechips[role=radiogroup] of
+ *     button.ip-chip.ip-voicechip[role=radio], ≤ 3 + "Alta…", + Spune din nou); a Banner (info refusal, warn fără
+ *     microfon, the section 49 failure Banner with Reîncearcă); keys div.ip-voicepanel__keys;
+ *   - examples .ip-voicepanel__ex: "Poți spune:" + 2–4 button.ip-btn.ip-btn--ghost.ip-voiceex (each fills the text field).
+ * - foot .ip-voicepanel__foot: the one command field "Scrie comanda" (span.ip-input.ip-voicepanel__text > textarea rows=1:
+ *   1–3 lines, it grows with the text (field-sizing), then scrolls; Enter runs it) + Execută: desktop a Button, phone a 48
+ *   square key (button.ip-btn.ip-btn--touch.ip-voicepanel__run, corner-down-left icon, aria-label "Execută"); on phone the
+ *   docked key after it. Execută is secondary, primary while the field holds an edited transcript: tapping the transcript
+ *   puts its text in this field (the run stops) and Anulează appears beside Execută (desktop) or in a row under it
+ *   (.ip-voicepanel__footkeys, phone). No second field.
+ * Level meter: 12 segments space-1 × space-4, space-1 apart, in a sunken track (radius-xs); lit = ink-secondary, dark =
+ * line (the spec's rule is 1.04:1 on sunken: the 12 slots would not show, VO01). A live readout of the microphone, not an
+ * animation: the script writes data-level (0–12) at most 15 times a second; segments change at once (no transition, no
+ * easing), also under reduced motion. Stopped = data-level="0". */
+.ip-voicepanel{display:flex;flex-direction:column;min-height:0;background:var(--panel);color:var(--ink)}
+.ip-sheet.ip-voicepanel{max-height:60%;padding-bottom:0}
+.ip-voicepanel--pop{position:absolute;top:calc(100% + var(--space-2));right:0;z-index:5;width:var(--panel-w);
+  max-height:calc(100vh - var(--header-h) - var(--space-8));border:var(--ip-hair) solid var(--line);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-overlay);transform-origin:top right;text-align:left}
+.ip-voicepanel--pop[data-state]{transition-property:opacity,transform,display;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease);transition-behavior:allow-discrete}
+.ip-voicepanel--pop[data-state="closed"]{display:none;opacity:0;transform:scale(var(--ip-pop-scale))}
+@starting-style{.ip-voicepanel--pop[data-state="open"]{opacity:0;transform:scale(var(--ip-pop-scale))}}
+.ip-voicepanel__head{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1) var(--space-3);padding:var(--space-2) var(--space-2) var(--space-1) var(--space-4)}
+.ip-voicepanel--pop > .ip-voicepanel__head{padding-top:var(--space-2)}
+.ip-voicepanel__head > h2{margin:0}
+.ip-voicepanel__state{margin:0;display:inline-flex;align-items:center;min-height:var(--ip-lh-small)}
+.ip-voicepanel__time{font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-secondary)}
+.ip-voicepanel__close{margin-left:auto}
+.ip-voicepanel__body{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-2) var(--space-4) var(--space-4)}
+.ip-voicepanel__body p{margin:0}
+.ip-voicepanel__body:empty{display:none}   /* an edited transcript: only the head and the foot field */
+.ip-voicepanel__level{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
+.ip-voicepanel__hint,.ip-voicepanel__note{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-muted)}
+.ip-voicemeter{display:inline-flex;flex:none;gap:var(--space-1);padding:var(--space-1);background:var(--sunken);border-radius:var(--radius-xs)}
+.ip-voicemeter > i{display:block;width:var(--space-1);height:var(--space-4);background:var(--line);transition:none}
+.ip-voicemeter[data-level="1"] > i:nth-child(-n+1),.ip-voicemeter[data-level="2"] > i:nth-child(-n+2),
+.ip-voicemeter[data-level="3"] > i:nth-child(-n+3),.ip-voicemeter[data-level="4"] > i:nth-child(-n+4),
+.ip-voicemeter[data-level="5"] > i:nth-child(-n+5),.ip-voicemeter[data-level="6"] > i:nth-child(-n+6),
+.ip-voicemeter[data-level="7"] > i:nth-child(-n+7),.ip-voicemeter[data-level="8"] > i:nth-child(-n+8),
+.ip-voicemeter[data-level="9"] > i:nth-child(-n+9),.ip-voicemeter[data-level="10"] > i:nth-child(-n+10),
+.ip-voicemeter[data-level="11"] > i:nth-child(-n+11),.ip-voicemeter[data-level="12"] > i{background:var(--ink-secondary)}
+.ip-voicepanel__said{margin:0;font:inherit;color:var(--ink);overflow-wrap:anywhere}   /* body 14/20 (the .ip-root text) */
+.ip-voicepanel__said.is-partial{color:var(--ink-secondary)}
+button.ip-voicepanel__said{display:flex;align-items:flex-start;gap:var(--space-2);width:calc(100% + var(--space-2) * 2);margin:calc(-1 * var(--space-1)) calc(-1 * var(--space-2));
+  padding:var(--space-1) var(--space-2);background:transparent;border:0;border-radius:var(--radius-sm);text-align:left;cursor:text;
+  transition-property:background-color;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
+button.ip-voicepanel__said > span{flex:1;min-width:0}
+button.ip-voicepanel__said > .ip-icon{flex:none;margin-top:calc(var(--space-1) / 2);color:var(--ink-muted)}
+button.ip-voicepanel__said:hover,button.ip-voicepanel__said.is-hover{background:var(--sunken)}
+.ip-voicepanel__body .ip-voicepanel__cmd{margin-top:calc(-1 * var(--space-2));font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-secondary)}   /* tied to the transcript: space-2 under it */
+.ip-voicepanel__result{display:flex;flex-direction:column;gap:var(--space-3)}
+.ip-voicepanel__q{font-weight:500}
+.ip-voicepanel__opened{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary)}
+.ip-voicepanel__opened > .ip-link{display:inline-flex;align-items:center;min-height:var(--space-6);margin:calc((1lh - var(--space-6)) / 2) 0 calc((1lh - var(--space-6)) / 2) var(--space-2);
+  padding:0;background:none;border:0;font:inherit;font-weight:500;color:var(--info);vertical-align:middle}   /* Anulează: a link key, 24 px target on the 16 px line (D46) */
+.ip-sheet .ip-voicepanel__opened > .ip-link{min-height:var(--control-h-touch);margin-block:calc((1lh - var(--control-h-touch)) / 2)}   /* phone: 48 px, the line unchanged (as the Toast undo, section 48) */
+.ip-voicepanel__keys{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.ip-voicechips{align-self:flex-start}   /* equal chips at the widest one (section 74); a phone clarification adds .ip-chips--fill */
+.ip-voicechip{--b:var(--raised);--c:var(--ink);border-color:var(--line-strong)}
+.ip-voicechip:hover:not(:disabled):not([aria-disabled="true"]),.ip-voicechip.is-hover{background:var(--sunken)}
+.ip-voicechip[aria-checked="true"]{background:var(--sunken);border-color:var(--ink)}
+.ip-voicepanel__ex{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.ip-voicepanel__ex > p{font-size:var(--ip-fs-small);line-height:var(--ip-lh-small);color:var(--ink-secondary);margin-bottom:var(--space-1)}
+.ip-btn.ip-voiceex{height:auto;min-height:var(--control-h);max-width:calc(100% + var(--space-2) * 2);margin-inline:calc(-1 * var(--space-2));padding:var(--space-1) var(--space-2);
+  justify-content:flex-start;text-align:left;white-space:normal;font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--ink-secondary)}
+.ip-btn.ip-voiceex.ip-btn--touch{align-self:stretch;max-width:none;min-height:var(--control-h-touch);border-radius:0}
+.ip-btn.ip-voiceex.ip-btn--touch + .ip-voiceex{border-top-color:var(--rule)}   /* phone: 48 px rows read as one list, a rule between them */
+.ip-voicepanel__foot{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--space-2);padding:var(--space-3) var(--space-4);border-top:var(--ip-hair) solid var(--line);background:var(--panel)}
+.ip-sheet > .ip-voicepanel__foot{padding-bottom:calc(var(--space-3) + env(safe-area-inset-bottom))}
+.ip-voicepanel--pop > .ip-voicepanel__foot{border-radius:0 0 var(--radius-md) var(--radius-md)}
+.ip-voicepanel__foot > .ip-field{flex:1 1 0;min-width:0}
+.ip-voicepanel__foot > .ip-btn{flex:none}
+.ip-voicepanel__text{height:auto;min-height:var(--control-h);align-items:stretch;padding-block:0}
+.ip-voicepanel__text.ip-input--touch{min-height:var(--control-h-touch)}
+.ip-voicepanel__text > textarea{--ip-vt-pad:calc((var(--control-h) - 2 * var(--ip-hair) - 1lh) / 2);flex:1;min-width:0;margin:0;padding:var(--ip-vt-pad) 0;
+  border:0;background:transparent;color:inherit;font:inherit;resize:none;field-sizing:content;max-height:calc(3lh + 2 * var(--ip-vt-pad));overflow-y:auto}
+.ip-voicepanel__text.ip-input--touch > textarea{--ip-vt-pad:calc((var(--control-h-touch) - 2 * var(--ip-hair) - 1lh) / 2)}
+.ip-voicepanel__text > textarea:focus-visible{outline:none}   /* the ring is the field's own (section 68, :focus-within) */
+.ip-btn.ip-voicepanel__run{width:var(--control-h-touch);padding:0}
+.ip-voicepanel__footkeys{flex:1 0 100%;display:flex;justify-content:flex-end;gap:var(--space-2)}
+.ip-voicepanel__foot > .ip-voicekey--fab{position:static}
+@media (forced-colors: active){
+  .ip-voicekey[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:Highlight}
+  .ip-voicemeter > i{forced-color-adjust:none;background:GrayText}
+  .ip-voicemeter[data-level="1"] > i:nth-child(-n+1),.ip-voicemeter[data-level="2"] > i:nth-child(-n+2),.ip-voicemeter[data-level="3"] > i:nth-child(-n+3),
+  .ip-voicemeter[data-level="4"] > i:nth-child(-n+4),.ip-voicemeter[data-level="5"] > i:nth-child(-n+5),.ip-voicemeter[data-level="6"] > i:nth-child(-n+6),
+  .ip-voicemeter[data-level="7"] > i:nth-child(-n+7),.ip-voicemeter[data-level="8"] > i:nth-child(-n+8),.ip-voicemeter[data-level="9"] > i:nth-child(-n+9),
+  .ip-voicemeter[data-level="10"] > i:nth-child(-n+10),.ip-voicemeter[data-level="11"] > i:nth-child(-n+11),.ip-voicemeter[data-level="12"] > i{background:CanvasText}
+}
+
+/* VoiceMark · span.ip-voicemark in a field's label line, after the label (CountInput, TextField, Select, SegmentedControl,
+ * Checkbox labels; AllocationRow's g/pasăre line; a DataTable row's §69 detail row): Lucide mic 14 + "din voce", small
+ * 12/16, info text, lowercase like the system's marks; a typed value it replaced: "din voce · înainte <span.ip-num>2</span>".
+ * aria-hidden inside the label (it stays out of the field's name) with an id the field's aria-describedby names: its hidden
+ * lead (span.ip-sr "completat ") makes the description "completat din voce (· înainte 2)". It goes when the user edits the
+ * field by hand, presses Anulează completarea, or saves; the field's own border, sex bar, warning and refusal are unchanged.
+ * Where the label line has no room for it (two CountInputs side by side on a phone, "înainte"), it wraps under the label. */
+.ip-voicemark{display:inline-flex;align-items:center;gap:var(--space-1);font:400 var(--ip-fs-small)/var(--ip-lh-small) var(--font-sans);color:var(--info);
+  white-space:nowrap;text-transform:none;letter-spacing:normal}
+.ip-voicemark > .ip-icon{flex:none}
+.ip-voicemark .ip-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.ip-label > .ip-voicemark{margin-left:var(--space-1)}
+.ip-label:has(> .ip-voicemark){flex-wrap:wrap;row-gap:0}
+/* A pair of fields whose labels differ in lines (one mark wraps, its neighbour has none) keeps its inputs on one line: each
+ * field of an EntryCard grid holding a mark takes three rows of the grid (label · field · message) as a subgrid, so the
+ * taller label sets the row for both. Fields with one message line (the EntryCard's); only grids that hold a mark. */
+.ip-entry__grid:has(.ip-voicemark) > .ip-field{grid-row:span 3;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:subgrid;row-gap:var(--space-1)}
+.ip-entry__grid:has(.ip-voicemark) > .ip-field > .ip-label{align-self:end}
+@media (forced-colors: active){.ip-voicemark{color:LinkText}}
