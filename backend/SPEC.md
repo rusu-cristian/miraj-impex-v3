@@ -1,13 +1,14 @@
 # Impex Line · Backend specification
 
-Status: 26.11.2026 · written after design round 3 (voice, D199) · for the Claude Code agent that builds the backend.
-Companion file: `backend/schema.sql` (PostgreSQL 16 DDL, loads clean; its views reproduce the golden values of §11.7 on the Hîrbovăț extract).
+Status: 27.11.2026 · written after design round 3 (voice, D199); stack parts rewritten for **Go + PostgreSQL** (D202, user 27.11.2026) · for the Claude Code agent that builds the backend.
+Companion file: `backend/schema.sql` (PostgreSQL 16 DDL; the goose baseline migration `0001`, sqlc-friendly; loads clean in one transaction; its views reproduce the golden values of §11.7 on the Hîrbovăț extract).
+Stack in one line: **a Go API service (net/http, pgx/v5 + sqlc, goose) on PostgreSQL 16; the Vue/Nuxt online-only PWA is only the front end and calls it over `/api`** (§1, §12).
 
 ---
 
 ## 0. How to use this document
 
-**Reading order.** §1 scope → §2 glossary → §3 roles → §4 data model with `schema.sql` open beside it → §5 calculations → §6 rules and refusals → §7 API → §8 voice → §9 live updates → §10 exports/imports → §11 non-functional + golden tests → §12 build plan → §13 open questions. §5, §6 and §11.7 are the parts tests are written against.
+**Reading order.** §1 scope and stack → §2 glossary → §3 roles → §4 data model with `schema.sql` open beside it → §5 calculations → §6 rules and refusals → §7 API (JSON conventions and Go types in §7.0) → §8 voice → §9 live updates → §10 exports/imports → §11 non-functional + golden tests → §12 Go implementation (stack, module layout, sqlc, worked example, build plan) → §13 open questions. §5, §6 and §11.7 are the parts tests are written against; §1–§11 say *what*, §12 says *how in Go*.
 
 **Source-of-truth files** (all paths from the repo root; read them for detail, this spec wins where it is more precise):
 
@@ -21,8 +22,8 @@ Companion file: `backend/schema.sql` (PostgreSQL 16 DDL, loads clean; its views 
 | `design/kit/components.md` | Exact UI rules where the backend must compute what a component shows (EntryCard refusal bounds, StockReadout, CostBlock, GuideImportPreview). |
 | `design/kit/open-questions.md` | Unresolved product questions 1–21 (see §13). |
 | `design/data/extracts/*.json` + `README.md` + `key-figures-18-11.md` | Real data to 18.11.2026 ("today" on every board, D152); seed and golden values. |
-| `design/data/scripts/data03_build.py`, `data03_check.py` | Workbook → data mapping, sale/death split (D155), lay basis (D156/D159), Cat 1–3 (D183), stock pairing; the reference for the one-time migration (§10.3). |
-| `design/canvas/scripts/realdata.py` | Reference implementation of every derived figure the screens show (alive, lay, feed g, stock days, alerts, missing). |
+| `design/data/scripts/data03_build.py`, `data03_check.py` | Workbook → data mapping, sale/death split (D155), lay basis (D156/D159), Cat 1–3 (D183), stock pairing; the reference for the one-time migration (§10.3). They stay Python (workbook → extracts, already run); the Go command `cmd/migrate-history` reads their output. |
+| `design/canvas/scripts/realdata.py` | Reference implementation of every derived figure the screens show (alive, lay, feed g, stock days, alerts, missing). Python reference only: port the formulas to Go (`internal/calc`), don't call it. |
 | `design/canvas/project/*.dc.html` | The boards; exact Romanian copy of every message quoted in §6 was taken from them. |
 
 **Conventions in this document.** "Romanian strings" in `"…"` are returned or shown verbatim (keep diacritics: ă â î ș ț, the comma-below forms). `{x}` are placeholders filled with formatted values (§11.3). Copy marked *(proposed)* has no board yet: keep it, the user reviews it. Figures are the real Hîrbovăț Seria 2026 data at 18.11.2026 unless marked *illustrative*.
@@ -30,6 +31,12 @@ Companion file: `backend/schema.sql` (PostgreSQL 16 DDL, loads clean; its views 
 ---
 
 ## 1. Scope and non-goals
+
+**Stack and deployment (D202, user 27.11.2026)**
+- **Backend = one Go service** (`cmd/api`, §12) on **PostgreSQL 16**. Every rule of §3–§11 lives in it: auth, permissions, calculations, validation, audit, live events, voice, exports. It is a separate deployable with its own Dockerfile (§11.13) and its own repo directory (`backend/`, a Go module).
+- **Front end = Vue/Nuxt, an online-only PWA** (D08). Nuxt only renders and calls the Go API over HTTPS JSON (+ one SSE stream, + one WebSocket for voice). Nuxt has **no** server API routes, no database access and no business rules; whether Nuxt runs SSR or ships a static build is a front-end decision. Client-side form checks are a convenience: the Go API re-validates everything.
+- **Same origin (recommended)**: one public origin, e.g. `https://app.example`, behind a reverse proxy (Caddy, nginx or a managed load balancer): `/api/*` → Go, everything else → Nuxt. The `il_session` cookie is then first-party, `SameSite=Lax` works, no CORS is needed, the CSP stays `'self'`. The proxy must: pass `/api/live` unbuffered and without a short read timeout (SSE, §9), pass the WebSocket upgrade on `/api/voice/stream` (§8.2), forward `X-Forwarded-For`/`X-Forwarded-Proto` (the Go side trusts them only from `TRUSTED_PROXIES`, §11.10), and keep request bodies ≤ 2 MB.
+- **If the API must live on another origin** (e.g. `https://api.example` beside `https://app.example`): it must be the **same site** (same registrable domain), otherwise browsers treat `il_session` as a third-party cookie and drop it; a different site is not supported. CORS on the Go side, for the configured `APP_ORIGIN` only: `Access-Control-Allow-Origin: <APP_ORIGIN>` (never `*`), `Access-Control-Allow-Credentials: true`, `Vary: Origin`, allowed methods `GET, POST, PUT, PATCH, DELETE`, allowed headers `Content-Type, Last-Event-ID, X-Voice-Run`, preflight `Access-Control-Max-Age: 600`; preflights from any other origin get no CORS headers. The front end sends `credentials: 'include'` and opens SSE with `new EventSource(url, { withCredentials: true })`. The cookie stays host-only on the API host (no `Domain=`), `SameSite=Lax`. The Origin checks of §11.4 compare against `APP_ORIGIN` exactly as on one origin.
 
 **In scope (MVP)**
 - Sign-in, users, farm access (A1, A2, S1, S22).
@@ -249,7 +256,7 @@ One row per **save action** (not per field):
 Rules: every write is logged, creates included (needed for "who entered what" and for voice transcripts). Istoric (§7.10) lists every action except plain `create` from the forms, but it does list a `create` that carries a voice transcript (the first-use notice promises the text "rămâne în Istoric modificări") *(assumption, open question 18)*. Price set and price change are logged (C6). Auto cycle open/close are logged with `user_id = null`. The table is append-only (revoke UPDATE/DELETE from the app role).
 
 ### 4.11 Live outbox, voice usage, settings
-- `live_event(id bigserial, at, farm_ids[], type, payload)`: written in the same transaction as the change, `NOTIFY live_event` after commit; the SSE handler replays from `Last-Event-ID` (24 h retention). §9.
+- `live_event(id bigserial, at, farm_ids[], type, payload)`: written in the same transaction as the change together with `select pg_notify('live_event', id::text)` (PostgreSQL delivers a notification only when the transaction commits, and drops it on rollback); the SSE handler replays from `Last-Event-ID` (24 h retention). §9.
 - `voice_usage(user_id, day, commands, audio_seconds, llm_tokens_in/out)`: cost tracking without text (§8.9).
 - `app_setting`: D19 thresholds and limits (seeded in `schema.sql`); code reads them once per request.
 
@@ -651,7 +658,7 @@ The deactivated check runs only after a correct password (no account probing). L
 ## 7. API
 
 ### 7.0 Conventions
-- **Transport**: JSON over HTTPS, Nuxt 3 server routes under `/api` (file layout in §12.3). Request and response bodies are camelCase. Dates `YYYY-MM-DD` (local days), timestamps ISO 8601 with offset (`2026-11-18T13:16:00+02:00`). Sex `"F"`/`"M"`. Numbers are JSON numbers at full precision (≤ 4 decimals); formatting is client-side (§11.3) except the few preformatted strings named below (`toast`, `message`, `label`).
+- **Transport**: JSON over HTTPS, served by the Go API under `/api` (routes registered on the stdlib `http.ServeMux`, module layout §12.3); the Nuxt front end calls it same-origin through the reverse proxy (§1). Request and response bodies are camelCase. Dates `YYYY-MM-DD` (local days), timestamps ISO 8601 with offset (`2026-11-18T13:16:00+02:00`). Sex `"F"`/`"M"`. Numbers are JSON numbers at full precision (≤ 4 decimals); formatting is client-side (§11.3) except the few preformatted strings named below (`toast`, `message`, `label`). The Go realisation of these conventions is §7.0a; validation §7.0b.
 - **Auth**: HttpOnly cookie `il_session` (§11.4). Every route except `POST /api/auth/login` requires it → `401 UNAUTHENTICATED`.
 - **Authorization**: §3 on every route; farm-scoped routes check `farmId` (and `peerFarmId`) against the caller's farms → `403 FARM_FORBIDDEN` "Nu ai acces la această fermă.".
 - **Errors**: one envelope:
@@ -661,13 +668,93 @@ The deactivated check runs only after a correct password (no account probing). L
                   "message": "H2: 4 500 depășește cele 4 383 găini în viață la Telița pe 28.02.2026. Introdu cel mult 4 383." } ],
   "warnings": [] } }
 ```
-  Codes: `VALIDATION` 400 (shape; zod issues in `issues[]`), `UNAUTHENTICATED` 401, `FORBIDDEN` / `FARM_FORBIDDEN` / `PAST_DAY_VET` / `PRICE_FORBIDDEN` / `ACCOUNT_DISABLED` 403, `NOT_FOUND` 404, `ALREADY_ENTERED` / `CONFIRM_REQUIRED` / `SERIES_CLOSED` / `STALE` 409, `REFUSED` 422 (business rules §6), `RATE_LIMITED` 429 (+ `retryAfterSeconds`), `VOICE_UNAVAILABLE` 503.
+  Codes: `VALIDATION` 400 (shape: malformed JSON, unknown field, wrong type, missing required field; the problems in `issues[]`, §7.0b), `UNAUTHENTICATED` 401, `FORBIDDEN` / `FARM_FORBIDDEN` / `PAST_DAY_VET` / `PRICE_FORBIDDEN` / `ACCOUNT_DISABLED` 403, `NOT_FOUND` 404, `ALREADY_ENTERED` / `CONFIRM_REQUIRED` / `SERIES_CLOSED` / `STALE` 409, `REFUSED` 422 (business rules §6), `RATE_LIMITED` 429 (+ `retryAfterSeconds`), `VOICE_UNAVAILABLE` 503.
 - **Warnings** never block: successful responses carry `warnings: [{ code, sectionCode?, sex?, message }]`.
 - **Dry run**: every write that shows an effect preview accepts `"dryRun": true` and returns `{ effects, warnings, refusals }` without writing (transfer, sale, correction, delete, new cycle, series create, series age change, guide save). The client calls it on change (debounced 300 ms).
-- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same body), so "Reîncearcă" never saves twice.
+- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same `entry` and `toast`, rebuilt from the stored save; §12.5 notes), so "Reîncearcă" never saves twice.
 - **Optimistic concurrency**: entry reads return `version` (= `updated_at ?? created_at`); edits send `ifVersion`; mismatch → `409 STALE` *(proposed)* "Înregistrarea s-a schimbat între timp. Reîncarcă și încearcă din nou."
 - **Every successful write** returns `toast` (the exact Toast text), the affected entity, `asOf`, and emits live events (§9).
 - **Pagination**: cursor-based (`cursor` opaque, `nextCursor` null at the end) except the PeriodTable, whose cursor is the oldest loaded SAPT (§7.4).
+
+### 7.0a JSON in Go (struct tags, numbers, dates, null vs omitted)
+Every request and response body is a named Go struct in the module's `dto.go` (§12.3) with an explicit `json:"…"` tag on **every** field; sqlc row types (§12.4) never reach the wire. `encoding/json` from the standard library is the codec.
+| Topic | Rule (Go) |
+|---|---|
+| Names | camelCase tags exactly as the JSON in this spec (`json:"clientRequestId"`, `json:"F"`, `json:"M"`); no reliance on Go field names. Maps only where the keys are data: PeriodTable `cells`/`status`/`reasons` (keys `"{leaf}"`, `"{leaf}@{sectionCode}"`), `voice` `args`, `form.values`. |
+| Decoding | One helper `httpx.Decode[T](w, r, maxBytes)`: `http.MaxBytesReader` (64 KiB for JSON bodies; 2 MB guide upload §7.17; 1 MB audio §8.2), `Content-Type` must be `application/json`, `dec.DisallowUnknownFields()` (a misspelt field is a 400, not silently ignored), exactly one JSON value (a second `Decode` must return `io.EOF`). Decode errors become `400 VALIDATION` with one issue naming the JSON path. |
+| Encoding | One helper `httpx.JSON(w, status, v)`: `Content-Type: application/json; charset=utf-8`, `enc.SetEscapeHTML(false)` (keeps `›`, `<`, `&` readable in toasts), `Cache-Control: no-store` on every `/api` response. |
+| Integers | Counts, eggs, SAPT, age days: `int` (fits `int32` in the DB). In **requests**, user-typed counts decode into `*num.Num` (below) so that `2.5` reaches `Validate()` and gets the Romanian sentence naming the section (Z2) instead of a generic decode error; `Validate()` converts to `int32`. |
+| Decimals | Type `num.Num` (wraps `shopspring/decimal.Decimal`, §11.2): `MarshalJSON` writes a **JSON number** (never quoted) rounded half away from zero to ≤ 4 decimals, trailing zeros dropped (`40.4024…` → `40.4024`, `2303.2`); `UnmarshalJSON` accepts a JSON number only (a string is a 400). No `float64` for kg, lei, grams or percentages anywhere on the server; charts too use `num.Num`. |
+| Days | Type `timex.Day` (a civil date, no time zone): JSON `"YYYY-MM-DD"`, parsed with `time.Parse("2006-01-02", s)` and checked (`2026-02-30` → 400). It implements the pgx date scanner/valuer interfaces so sqlc can map `date` to it (verify the interface names at implementation). Never a `time.Time` for a local day (a UTC midnight shifts the day). |
+| Instants | `time.Time` in Go and `timestamptz` in SQL, stored UTC. Type `timex.LocalTime` marshals `t.In(timex.Chisinau).Format(time.RFC3339)` → `"2026-11-18T13:16:00+02:00"` (seconds, offset, no fraction, never `Z`). `asOf`, `at`, `createdAt`, `now` use it. |
+| Enums | `"F"`/`"M"`, roles, kinds, statuses are Go string types generated by sqlc from the PostgreSQL enums (`dbq.Sex`, `dbq.UserRole`, …) or small string types in the DTO package; requests check membership in `Validate()`. |
+| IDs | `uuid.UUID` (`github.com/google/uuid`), JSON string. |
+| `null` vs omitted | **`null`** = the value exists in the shape but is unknown or empty: the client shows `–` (`"endDate": null`, `"pricePerKg": null` on an unpriced delivery for owner/manager, table cells, `"more": null`, `"start": null`). Go: a pointer (`*num.Num`, `*timex.Day`, `*uuid.UUID`, `*string`) **without** an omit option. **Omitted** = the field doesn't apply to this row/state (`partial`, `startInferred`, `emptySince`, `tag`, `noGuide`, `empty`): tag option `omitzero` (Go ≥ 1.24; omits the zero value, so a nil slice/map is omitted but an empty non-nil one is written as `[]`/`{}`). **Never sent** = fields the caller may not see (lei for vet/viewer, D200): not a nil pointer but a **different struct type** chosen by role (`reports.DeliveryRow` vs `reports.DeliveryRowPriced`, which embeds it and adds `PricePerKg`, `TotalLei` and the `pricedBy`/`actions` fields), so a forgotten check can't leak a price; tests assert the viewer JSON has no `pricePerKg`, `totalLei`, `lei*`, `cost` key. |
+| Lists | Always `[]`, never `null` (`warnings: []`, `weeks: []`): constructors initialise slices with `make([]T, 0)`; a test walks every golden response and fails on a JSON `null` array. |
+| Requests: absent vs `null` | For create bodies both mean "empty" (spec C1: empty is null, never 0): a nil pointer creates no row, `0` creates a 0 row. For PATCH bodies where absent = "leave as is" and `null` = "clear" (`PATCH /api/cycles/:id/guide { guideId \| null }`, `PATCH /api/farms/:id { guideId? }`) use `httpx.Optional[T]` (`Set bool; Null bool; V T`, `UnmarshalJSON` sets `Set` when the key appears). |
+
+Shared Go types used below (package `httpx` unless named):
+```go
+type ErrorBody struct {
+	Error APIError `json:"error"`
+}
+type APIError struct {
+	Code              string     `json:"code"`                       // VALIDATION, REFUSED, FARM_FORBIDDEN, …
+	Message           string     `json:"message"`                    // the Romanian sentence (Banner / SaveBar)
+	Refusals          []Refusal  `json:"refusals,omitzero"`          // REFUSED: always non-nil (written as [] when empty)
+	Warnings          []Warning  `json:"warnings,omitzero"`          // REFUSED: always non-nil
+	Issues            []Issue    `json:"issues,omitzero"`            // VALIDATION
+	EntryID           *uuid.UUID `json:"entryId,omitzero"`           // ALREADY_ENTERED
+	Dialog            *Dialog    `json:"dialog,omitzero"`            // CONFIRM_REQUIRED (§6.6 title/body)
+	RetryAfterSeconds *int       `json:"retryAfterSeconds,omitzero"` // RATE_LIMITED
+}
+type Refusal struct {
+	Field             string     `json:"field,omitzero"` // form path ("F", "sections[2].F.mortality")
+	SectionCode       string     `json:"sectionCode,omitzero"`
+	Sex               string     `json:"sex,omitzero"`
+	Max               *int       `json:"max,omitzero"` // §6.1 bound for a removal
+	Min               *int       `json:"min,omitzero"` // §6.1 bound for a lowered inflow
+	FirstNegativeDate *timex.Day `json:"firstNegativeDate,omitzero"`
+	LastNegativeDate  *timex.Day `json:"lastNegativeDate,omitzero"`
+	MinAliveEnd       *int       `json:"minAliveEnd,omitzero"`
+	Message           string     `json:"message"`
+}
+type Warning struct {
+	Code        string `json:"code"` // MORTALITY_SPIKE, FEED_GUIDE, STOCK_NEGATIVE, WEIGHT_GUIDE, …
+	SectionCode string `json:"sectionCode,omitzero"`
+	Sex         string `json:"sex,omitzero"`
+	Message     string `json:"message"`
+}
+type Issue struct {
+	Path    string `json:"path"`    // JSON path: "sections[0].F.mortality"
+	Code    string `json:"code"`    // not_integer, out_of_range, required, unknown_field, bad_date, bad_type, too_long
+	Message string `json:"message"` // Romanian: the §6 sentence where one exists, else a short generic one
+}
+type SexPair[T any] struct {
+	F T `json:"F"`
+	M T `json:"M"`
+}
+type WriteMeta struct { // embedded in every create body (fields are promoted in JSON)
+	ClientRequestID *uuid.UUID `json:"clientRequestId"`
+	Source          string     `json:"source"` // "manual" (default) | "voice"
+	VoiceTranscript *string    `json:"voiceTranscript"`
+	VoiceToken      *string    `json:"voiceToken"`
+	DryRun          bool       `json:"dryRun"`
+}
+type EntryRef struct {
+	ID      uuid.UUID `json:"id"`
+	Kind    string    `json:"kind"`
+	Version string    `json:"version"` // RFC 3339 of updated_at ?? created_at (opaque to the client)
+}
+```
+`httpx.WriteError(w, err)` is the only way errors leave a handler: it maps typed Go errors (`*httpx.Error`, `*entries.RefusedError`, `pgconn.PgError` codes `23505` → `ALREADY_ENTERED`/name clash by constraint name, `23P01` → cycle overlap refusal, `context.DeadlineExceeded` → 503) to the envelope; anything unexpected → `500 INTERNAL` "A apărut o eroare. Încearcă din nou." *(proposed)*, logged with the request id, no details to the client.
+
+### 7.0b Validation (one approach: explicit `Validate()` methods)
+Every request struct has a method `Validate(v *httpx.Validator)` written in plain Go; **go-playground/validator is not used**. Why: the messages are exact Romanian sentences with section codes, sex-word agreement ("cele 4 383 găini" / "cei 93 cocoși"), formatted numbers and dates (§6, §11.3); struct tags can express "1 ≤ g ≤ 300" but not "H1.1 ♀: 350 g e peste limită. Scrie o valoare între 1 și 300 g.", so tags would need a second translation layer keyed by field and tag, which is where messages drift. Plain methods keep each rule next to its sentence and are trivially table-tested.
+- **Level 1 — shape, no database** (`Validate()` on the decoded struct): required fields, enums, integrality, fixed ranges (g 1–300, % 0–100, Motiv 1–200 trimmed, buyer ≤ 120, login pattern), no duplicate sections in one body. Failures → `400 VALIDATION` with `issues[]`; the `message` of each issue is the §6 sentence when §6 has one (e.g. H1 "H1.1 ♀: 350 g e peste limită. Scrie o valoare între 1 și 300 g." needs the section code, so the validator gets a resolver for codes from the bootstrap data the handler already loaded) and the `error.message` is the first issue's message.
+- **Level 2 — business rules with database state** (in the service, inside the write transaction, after the farm lock): §6.1 counts, Z3/Z4/Z6, H2–H5, cycle rules, uniqueness (`ALREADY_ENTERED`), time windows. Failures → `422 REFUSED` with `refusals[]`/`warnings[]`, or the specific 403/409 code of §6/§7.0.
+- **Messages**: every Romanian string of §6–§8 is a Go function in `internal/platform/messages/ro.go` with typed parameters (`messages.FeedOutOfRange(section string, sex dbq.Sex, g num.Num) string`); the formatters of §11.3 (`fmtx.Int`, `fmtx.Dec1`, `fmtx.Day`, `fmtx.SexWord`) live beside them. Tests snapshot each function's output against the exact strings quoted in this spec.
+- The validator collects all issues (it doesn't stop at the first), in document order, so the client can mark every field at once.
 
 ### 7.1 Auth (A1, S1)
 | Method · path | Body / response | Notes |
@@ -772,6 +859,112 @@ Rules:
 - **States**: no data in the period → `weeks: []`, `chips: []`, `empty: { "next": "Alege ciclul curent" }`; no guide → guide leaves omitted and `noGuide: true` (header Tag "fără ghid"); partial guide → null + `no_guide`.
 - **Performance**: one SQL pass per page (deltas grouped by day for the page's weeks + one running-count seed at the page start), §11.6.
 
+Go types (package `periodtable`; the query string is parsed by hand into `TableQuery`, unknown params → 400):
+```go
+type TableQuery struct {
+	View      string     // farm | section | series | report-production | report-feed
+	FarmID    *uuid.UUID // farmId
+	SectionID *uuid.UUID // sectionId
+	SeriesID  *uuid.UUID // seriesId
+	CycleID   *uuid.UUID // cycleId (nil = open cycle, else the latest)
+	Tab       string     // rezumat | pasari | hrana | greutate | productie ("" = per-view default)
+	Period    Period     // parsed from "cycle" | "weeks:4" | "interval:2026-11-01,2026-11-15"
+	Detail    string     // farm | halls | sections
+	Types     []string   // chips; nil = every type of the period
+	Grain     string     // day | week
+	Before    *int       // oldest SAPT already loaded (exclusive)
+	Count     int        // weeks per page, default 4
+	Sapt      *int       // one week only
+	FromSapt  *int       // load every week from here up to the newest not yet loaded
+}
+type Period struct {
+	Kind     string    // cycle | weeks | interval
+	Weeks    int       // weeks:n
+	From, To timex.Day // interval
+}
+
+type TableResponse struct {
+	Scope   Scope           `json:"scope"`
+	Period  PeriodInfo      `json:"period"`
+	Chips   []string        `json:"chips"`
+	Groups  []Group         `json:"groups"`
+	Weeks   []WeekRow       `json:"weeks"`
+	Loaded  *Loaded         `json:"loaded,omitzero"` // absent when weeks is empty
+	More    *More           `json:"more"`            // null at the first week of the period
+	Start   *StartNote      `json:"start"`           // null until the first week is loaded
+	Totals  *Totals         `json:"totals,omitzero"`
+	Notes   []string        `json:"notes"`
+	Empty   *EmptyState     `json:"empty,omitzero"` // { "next": "Alege ciclul curent" }
+	NoGuide bool            `json:"noGuide,omitzero"`
+	AsOf    timex.LocalTime `json:"asOf"`
+}
+type Scope struct {
+	View      string     `json:"view"`
+	FarmID    *uuid.UUID `json:"farmId,omitzero"`
+	SectionID *uuid.UUID `json:"sectionId,omitzero"`
+	CycleID   *uuid.UUID `json:"cycleId,omitzero"`
+	SeriesID  *uuid.UUID `json:"seriesId,omitzero"`
+	Label     string     `json:"label"`
+}
+type PeriodInfo struct {
+	Kind       string    `json:"kind"`
+	Label      string    `json:"label"`
+	SaptFrom   int       `json:"saptFrom"`
+	SaptTo     int       `json:"saptTo"`
+	From       timex.Day `json:"from"`
+	To         timex.Day `json:"to"`
+	WeeksTotal int       `json:"weeksTotal"`
+}
+type Group struct {
+	ID     string `json:"id"`
+	Record string `json:"record"`
+	Label  string `json:"label"`
+	Scope  string `json:"scope"` // "farm" or a section id for detail groups
+	Leaves []Leaf `json:"leaves"`
+}
+type Leaf struct {
+	ID    string `json:"id"` // "alive.F", "egg.layPct", …
+	Label string `json:"label,omitzero"`
+	Kind  string `json:"kind,omitzero"` // count | level | rate | guide | status | text
+}
+type Cells map[string]*num.Num // nil value = "–"; its reason is in Reasons[key]
+
+type WeekRow struct {
+	Sapt      int               `json:"sapt"`
+	From      timex.Day         `json:"from"`
+	To        timex.Day         `json:"to"`
+	DaysInRow int               `json:"daysInRow"`
+	Partial   bool              `json:"partial,omitzero"`
+	Label     string            `json:"label"`
+	Cells     Cells             `json:"cells"`
+	Status    map[string]string `json:"status,omitzero"`  // key → in_norma | abatere
+	Reasons   map[string]string `json:"reasons,omitzero"` // key → missing | empty_since:2026-11-14 | no_guide | …
+	Days      []DayRow          `json:"days,omitzero"`    // grain=day
+	Halls     []WeekRow         `json:"halls,omitzero"`   // report-production: hall week rows
+}
+type DayRow struct {
+	Date    timex.Day         `json:"date"`
+	AgeDays int               `json:"ageDays"`
+	Sapt    int               `json:"sapt"`
+	Weekday string            `json:"weekday"`       // Lu Ma Mi Jo Vi Sâ Du
+	Farm    string            `json:"farm,omitzero"` // series view text column
+	Cells   Cells             `json:"cells"`
+	Status  map[string]string `json:"status,omitzero"`
+	Reasons map[string]string `json:"reasons,omitzero"`
+}
+type Loaded struct{ SaptFrom, SaptTo, Weeks int } // tags: saptFrom, saptTo, weeks
+type More struct {
+	Before, Remaining int
+	Label             string
+}                                     // tags: before, remaining, label
+type StartNote struct{ Label string } // tag: label
+type Totals struct {
+	Label string
+	Cells Cells
+} // tags: label, cells (+ status/reasons like WeekRow)
+```
+(`Loaded`, `More`, `StartNote`, `Totals` are written on one line here; in code every field carries its camelCase tag like the others.) Cells hold full-precision `num.Num` values: counts are integral decimals (`12561`), rates keep ≤ 4 decimals (the example above shows 2 for brevity).
+
 ### 7.4b Tab charts and Stats (D154 "charts after the table", D191 Stats follow the period)
 `GET /api/charts?<view, ids, cycleId, tab, period, detail>` — same scope params as `/api/table`, whole period (not paged) →
 | Tab | `charts[]` (series per point: `{ sapt | date, value, guide? }`) | `stats[]` (follow the period; cycle by default) |
@@ -838,6 +1031,45 @@ POST /api/entries/daily
 → 201 { "entry": { "id": "…", "kind": "daily", "version": "…" }, "warnings": [],
         "toast": "Zilnic salvat · 4 secțiuni · ♀ −3 · ♂ 0", "alive": { "F": 12561, "M": 794 }, "asOf": "…" }
 ```
+Go types (package `entries`; the full handler is the worked example of §12.5):
+```go
+type DailyCreateRequest struct {
+	httpx.WriteMeta                // clientRequestId, source, voiceTranscript, voiceToken, dryRun
+	FarmID          uuid.UUID      `json:"farmId"`
+	Date            timex.Day      `json:"date"`
+	Sections        []DailySection `json:"sections"`
+	Eggs            []DailyEggs    `json:"eggs"`
+}
+type DailySection struct {
+	SectionID uuid.UUID `json:"sectionId"`
+	NoLosses  bool      `json:"noLosses"` // "Fără pierderi azi": 0 rows for mortality and cull of the sexes present
+	F         *DailySex `json:"F"`
+	M         *DailySex `json:"M"`
+}
+type DailySex struct { // nil = field left empty → no row (empty is null, never 0)
+	Mortality   *num.Num `json:"mortality"`
+	Cull        *num.Num `json:"cull"`
+	CullReason  *string  `json:"cullReason"`  // boala | schiopatare | altul
+	SexingError *num.Num `json:"sexingError"` // signed
+}
+type DailyEggs struct { // sectionId = the egg unit (hall, or a section without parent and children)
+	SectionID  uuid.UUID `json:"sectionId"`
+	Floor      *num.Num  `json:"floor"`
+	Cat1       *num.Num  `json:"cat1"`
+	Cat2       *num.Num  `json:"cat2"`
+	Cat3       *num.Num  `json:"cat3"`
+	Hatching   *num.Num  `json:"hatching"`
+	AvgWeightG *num.Num  `json:"avgWeightG"`
+}
+type EntryWriteResponse struct { // shared by every entry create / edit / correction / delete / undo / restore
+	Entry    httpx.EntryRef      `json:"entry"`
+	Warnings []httpx.Warning     `json:"warnings"`
+	Toast    string              `json:"toast"`
+	Alive    *httpx.SexPair[int] `json:"alive,omitzero"` // farm alive after the save (Zilnic, Transfer, Vânzare, corrections)
+	AsOf     timex.LocalTime     `json:"asOf"`
+}
+```
+`DailyCreateRequest.Validate` (level 1, §7.0b): date parses; ≥ 1 section or egg row; each `sectionId` once; counts integral and ≥ 0 except `sexingError` (Z2); `cullReason` in the enum; `noLosses` not combined with typed mortality/cull for the same section; egg counts integral ≥ 0, `avgWeightG` 20–120 (Z8). Everything else (Z1, Z3–Z7, Z9, §6.1) is level 2 inside the transaction.
 ```http
 POST /api/entries/feed-daily
 { "farmId": "…", "date": "2026-11-18", "rows": [ { "sectionId": "…H5.1", "sex": "F", "feedTypeId": "…breeder2", "g": 160 }, "…8 rows…" ] }
@@ -879,7 +1111,7 @@ POST /api/entries/delivery
 | Route | Who / rule | Body |
 |---|---|---|
 | `GET /api/entries/:id` | anyone who can see the farm | the whole save as its form (D172): every section × sex value, eggs, rows; `version`; author/time; `corrected`; `actions` for the caller |
-| `PUT /api/entries/:id` | **edit** (author in the creation-day window, no reason, D70 A) or **correction** (manager/owner, `reason` required, D70 B, E1) — the server decides from caller + window; a vet outside the window → 403 | `{ ifVersion, values: <same shape as create>, reason?, dryRun?, source?, voiceTranscript? }` |
+| `PUT /api/entries/:id` | **edit** (author in the creation-day window, no reason, D70 A) or **correction** (manager/owner, `reason` required, D70 B, E1) — the server decides from caller + window; a vet outside the window → 403 | `{ ifVersion, values: <same shape as create>, reason?, dryRun?, source?, voiceTranscript?, voiceToken? }` (the transcript is kept only with a valid `voiceToken`, as on creates) |
 | `DELETE /api/entries/:id` | author in the window (no reason) or manager/owner with `reason` | `{ reason?, sectionId?, dryRun? }` (`sectionId`: S15 per-section delete of Zilnic values, D98) |
 | `POST /api/entries/:id/undo` | author in the window: undo the create (= delete, logged `undo`) | `{}` |
 | `POST /api/entries/:id/restore` | the deleter in the same day (Toast Anulează after Șterge) | `{}` → §6.1 re-checked |
@@ -890,6 +1122,33 @@ Correction dry-run response:
   "refusals": [], "warnings": [ { "code": "MORTALITY_SPIKE", "message": "H6.1: 4 găini moarte, de peste 3 ori media pe 7 zile (0,9). Verifică numărătoarea; poți salva." } ] }
 ```
 Saved correction Toast: "Corecție salvată · H5.2 ♀ 1 → 3 · în viață ♀ 4 281"; the record then reads "corectat · modificat de Ion Rusu · 18.11.2026, 10:12". Delete Toast: "Mortalitate ștearsă · 17.11.2026 · 4 secțiuni · în viață azi ♀ 12 568".
+Go types for edit / Corectează (package `entries`):
+```go
+type EntryUpdateRequest struct {
+	IfVersion       string          `json:"ifVersion"`
+	Values          json.RawMessage `json:"values"` // decoded by the stored entry's kind into DailyCreateRequest, FeedDailyCreateRequest, …
+	Reason          *string         `json:"reason"` // Motiv: required for a correction, ignored for a same-day author edit
+	DryRun          bool            `json:"dryRun"`
+	Source          string          `json:"source"`
+	VoiceTranscript *string         `json:"voiceTranscript"`
+	VoiceToken      *string         `json:"voiceToken"`
+}
+type CorrectionPreview struct { // dryRun response (200)
+	Changes  []Change        `json:"changes"`
+	Effects  []string        `json:"effects"`
+	Refusals []httpx.Refusal `json:"refusals"`
+	Warnings []httpx.Warning `json:"warnings"`
+}
+type Change struct { // also the element type of audit_log.changes (jsonb)
+	Key     string   `json:"key"` // "H5.2 · găini moarte"
+	Section string   `json:"section,omitzero"`
+	Sex     string   `json:"sex,omitzero"`
+	Field   string   `json:"field,omitzero"` // mortality, cull, cullReason, sexingError, cat1, g, …
+	Old     *num.Num `json:"old"`            // null = was empty
+	New     *num.Num `json:"new"`            // null = cleared
+}
+```
+The handler loads the entry, decodes `Values` with `DisallowUnknownFields` into the create type of its kind (the date and farm in `values` must equal the stored ones: the date is not editable, D101), runs the same level-1 `Validate()`, then `entries.Service.Update(ctx, principal, id, req)` decides edit vs correction (§3.2), checks `IfVersion` (`409 STALE`), requires a trimmed `Reason` of 1–200 for a correction (§6.15 messages), computes the diff (`[]Change`, "Nu ai schimbat nicio cifră." when empty), and runs the same transaction as a create (§12.5) with `action = update`, `entry.corrected = true` for a correction. A saved edit/correction returns `EntryWriteResponse`.
 
 ### 7.9 Cycles (B4)
 | Route | Body | Result |
@@ -1003,7 +1262,7 @@ Every Toast of a setup save returns `undoToken` (HMAC-signed: audit row id + use
 
 ### 8.1 Architecture
 ```
-browser (VoicePanel)                         server (Nitro)                                   providers
+browser (VoicePanel)                         Go API (internal/voice)                          providers
  mic → MediaRecorder (opus/webm; iOS mp4)  ──► POST /api/voice/stt  (or WS /api/voice/stream) ──► STT (ro-RO, streaming, EU)
                                            ◄── { transcript }  (partials over WS)
  transcript (editable) + screen context    ──► POST /api/voice/command ──► prompt + 81 intent tools ──► LLM (tool call, temp 0)
@@ -1021,6 +1280,70 @@ browser (VoicePanel)                         server (Nitro)                     
 | `GET /api/voice/stream` (WebSocket, optional; the upgrade is refused with 403 unless `Origin` equals the app origin and the session cookie is valid; one stream per user) | binary audio chunks (250 ms), then `{"type":"end"}` | `{"type":"partial","text":"pune trei găini"}` … `{"type":"final","text":"…"}` (the live transcript of the "Ascult…" state) |
 | `POST /api/voice/command` | `{ runId, transcript, edited: bool, context }` or `{ runId, pending, choice }` (a clarification chip) | `{ runId, transcript, normalized, action }` (§8.5) |
 Audio lives only in request memory (never on disk, never in logs) and is discarded after the STT call; the client keeps it in memory only to retry a failed transcription (spec §8 "Reîncearcă").
+
+**Go realisation of the voice endpoints** (package `voice`):
+- `POST /api/voice/stt`: `http.MaxBytesReader(w, r.Body, 1<<20)` and `io.ReadAll` into a `[]byte` that is passed to `STTProvider.Transcribe` and then dropped (no temp file, no logging of the body); `Content-Type` must be one of the four audio types; `X-Voice-Run` must parse as a UUID; the provider call runs under `context.WithTimeout(r.Context(), 6*time.Second)`; duration over 20 s → 400 (the provider's reported duration or the container header, verify per provider).
+- `GET /api/voice/stream` (WebSocket, library `github.com/coder/websocket`): the auth middleware runs **before** the upgrade (no session → 401, no upgrade); then `websocket.Accept(w, r, &websocket.AcceptOptions{OriginPatterns: []string{appHost}})` — the library refuses a cross-origin `Origin` unless it matches the patterns, which is the CSWSH check (§11.4); verify option names at implementation. One stream per user: a `sync.Map` of user id → active stream; a second upgrade while one is open → `409` before `Accept`. Limits: `conn.SetReadLimit(64 << 10)` per message (a 250 ms opus chunk is a few KiB), ≤ 1 MiB of audio in total and ≤ 20 s wall time per stream (`context.WithTimeout`), 25 s idle (each `Read` gets its own deadline context), then `conn.Close(websocket.StatusPolicyViolation, "limit")`. The handler clears the server's write deadline for this connection (`http.NewResponseController(w).SetWriteDeadline(time.Time{})` before `Accept`; §9 explains why). Messages out: `wsjson.Write(ctx, conn, partial)`; binary frames in go straight to `STTStream.Write`.
+- `POST /api/voice/command`: `VoiceCommandRequest` → pipeline (§8.6) → `VoiceCommandResponse`; whole run under a 10 s context (LLM 8 s inside it).
+```go
+type VoiceCommandRequest struct {
+	RunID      uuid.UUID     `json:"runId"`
+	Transcript string        `json:"transcript"` // ≤ 500 characters (runes), else 400
+	Edited     bool          `json:"edited"`
+	Context    *VoiceContext `json:"context"` // required unless Pending is set
+	Pending    *string       `json:"pending"` // signed clarify token (60 s)
+	Choice     *string       `json:"choice"`  // the chip label chosen
+}
+type VoiceContext struct {
+	Screen  string       `json:"screen"` // "S6"
+	Tab     *string      `json:"tab"`
+	Panel   *string      `json:"panel"`
+	Sheet   *string      `json:"sheet"`
+	Scope   VoiceScope   `json:"scope"`   // seriesId, farmId, cycleId, sectionId (all *uuid.UUID)
+	Filters VoiceFilters `json:"filters"` // period, grain, types, detail, loadedSaptFrom
+	Form    *VoiceForm   `json:"form"`    // name, date, mode, values map[string]json.RawMessage
+	Client  VoiceClient  `json:"client"`  // device, now (informational only: the server uses its own clock)
+}
+type VoiceCommandResponse struct {
+	RunID      uuid.UUID `json:"runId"`
+	Transcript string    `json:"transcript"`
+	Normalized string    `json:"normalized"`
+	Action     Action    `json:"action"`
+}
+
+// Action is one of the concrete action structs of §8.5; each writes its own "type".
+type Action interface{ actionType() string }
+type NavigateAction struct {
+	Type  string            `json:"type"` // "navigate"
+	Route string            `json:"route"`
+	Query map[string]string `json:"query,omitzero"`
+	Toast string            `json:"toast"`
+	Undo  bool              `json:"undo"`
+}
+type PrefillAction struct {
+	Type         string            `json:"type"` // "prefill"
+	Form         string            `json:"form"`
+	Route        string            `json:"route"`
+	Query        map[string]string `json:"query"`
+	Mode         string            `json:"mode"`    // new | edit | correct
+	EntryID      *uuid.UUID        `json:"entryId"` // null for mode new
+	Fields       []PrefillField    `json:"fields"`
+	Banner       Banner            `json:"banner"`
+	Normalized   string            `json:"normalized"`
+	Focus        string            `json:"focus"`
+	ContinueWith *ContinueWith     `json:"continueWith,omitzero"`
+	VoiceToken   string            `json:"voiceToken"`
+}
+type PrefillField struct {
+	Path     string          `json:"path"`     // "sections.H5.1.F.mortality"
+	Value    json.RawMessage `json:"value"`    // number, string or bool as the form field takes it
+	Previous json.RawMessage `json:"previous"` // null when the field was empty
+	Label    string          `json:"label"`
+}
+
+// AnswerAction, ClarifyAction, RefuseAction, ConfirmAction, ExportAction, NotUnderstoodAction, ClientAction follow the
+// JSON of §8.5 field for field in the same way.
+```
 
 ### 8.3 Context sent with every command (client → server)
 ```json
@@ -1178,6 +1501,25 @@ Mode: **I** imediat (navigate/filter + Toast with Anulează; export without) · 
 ```
 `prefill` also carries `voiceToken` = HMAC-SHA256(server secret, runId ‖ userId ‖ form ‖ sha256(transcript) ‖ exp), `exp` = now + 10 min. `prefill.mode`: `new`; `edit` (the caller's own save from today, D07); `correct` (a past save or someone else's today, manager/owner, D70 B; Motiv filled only if spoken); a vet on someone else's save → `refuse` (D71). A field that already held a typed value different from the spoken one is replaced and carries `previous` ("din voce · înainte 2"). `pending` is an HMAC-signed token (60 s) with the resolved intent so a chip choice resumes without another LLM call; "Alta…" (`other.selector`: `section`, `farm`, `feedType`) opens the screen's own selector.
 
+**Signed tokens in Go** (package `platform/tokens`, standard library only: `crypto/hmac`, `crypto/sha256`, `crypto/hkdf`, `encoding/base64`). One helper signs every short-lived token of the API — `voiceToken` (10 min), clarify `pending` (60 s), setup `undoToken` (until 23:59, §7.19b), price `undoToken` (§7.13) — each with its own key derived from `APP_SECRET` (§11.10) by HKDF-SHA256 with a purpose label (`"il voice-token v1"`, `"il voice-pending v1"`, `"il undo v1"`), so a token of one kind never verifies as another.
+```go
+// voiceToken = base64url(payload) + "." + base64url(HMAC-SHA256(key, payload))
+// payload    = runId "|" userId "|" form "|" hex(sha256(transcript)) "|" exp (unix seconds)
+func SignVoice(key []byte, runID, userID uuid.UUID, form, transcript string, exp time.Time) string {
+	sum := sha256.Sum256([]byte(transcript))
+	payload := strings.Join([]string{runID.String(), userID.String(), form, hex.EncodeToString(sum[:]),
+		strconv.FormatInt(exp.Unix(), 10)}, "|")
+	mac := hmac.New(sha256.New, key)
+	mac.Write([]byte(payload))
+	return b64.EncodeToString([]byte(payload)) + "." + b64.EncodeToString(mac.Sum(nil)) // b64 = base64.RawURLEncoding
+}
+
+// VerifyVoice recomputes the MAC over the decoded payload and compares with hmac.Equal (constant time), then checks
+// exp > now, userId = the caller, form = the endpoint's form, and the hash = sha256 of the voiceTranscript sent with the
+// save. Any failure → the transcript is dropped and the save is recorded as manual (§8.9); never an error to the client.
+```
+The token carries a hash, not the transcript, so it reveals nothing; `transcript` is the text as finally sent (an edited transcript gets a new run and a new token).
+
 ### 8.6 Server validation pipeline (in this order)
 1. **Defaults** from context: no farm → the scope's farm, else the user's only farm, else `clarify` "La ce fermă?" (Telița · Hîrbovăț); no date → today; "săptămâna asta" → the scope's current SAPT.
 2. **Resolve references**: farm/section/feed type/guide/series/user against the caller's visible entities (diacritics-insensitive). A hall where a compartment is needed → `clarify` "La care secțiune din H5?" with its compartments (> 3 → the 3 with birds first + "Alta…"). A record (P15, F11, Q14) → the save that holds that value (type, date, section).
@@ -1205,7 +1547,7 @@ Server-side Romanian templates; figures formatted per §11.3; status as Lamp + w
 Answers are written only (no speech synthesis); they use only figures the user may see on the screen that opens.
 
 ### 8.8 Romanian numbers and codes
-The model converts; the server re-checks with a deterministic `parseRoNumber()` on the transcript span the model cites (`sourceText` optional property on numeric params) and, on disagreement, prefers the deterministic value and marks the field. Test table:
+The model converts; the server re-checks with a deterministic `voice.ParseRoNumber()` on the transcript span the model cites (`sourceText` optional property on numeric params) and, on disagreement, prefers the deterministic value and marks the field. Test table:
 | Spoken | Value |
 |---|---|
 | "trei" / "trei găini" | 3 |
@@ -1233,25 +1575,76 @@ The model converts; the server re-checks with a deterministic `parseRoNumber()` 
 - LLM failure/timeout → a deterministic **fast path** handles the common navigation intents without the model (N01, N05–N09, N11–N14, F01, F02, F08, F14, X01–X04 via a keyword grammar: "deschide|arată|du-mă" + page words + farm/section codes + period words); anything else → `503`.
 - The fast path also runs **before** the LLM for exact matches ("deschide Acasă"), saving cost and latency.
 
-### 8.11 Provider-agnostic interfaces and recommendation
-```ts
-interface SttProvider { name: string
-  transcribe(audio: Buffer, mime: string, opts: { language: 'ro-RO'; hints: string[] }): Promise<{ text: string; durationSec: number }>
-  stream?(opts): { write(chunk: Buffer): void; end(): void; events: AsyncIterable<{ type: 'partial' | 'final'; text: string }> } }
-interface IntentProvider { name: string
-  parse(input: { system: string; context: object; tools: ToolDef[]; transcript: string }): Promise<{ tool: string; args: unknown; usage: { in: number; out: number } }> }
+### 8.11 Provider-agnostic interfaces (Go), the generated tool list, and recommendation
+```go
+package voice
+
+type STTOptions struct {
+	Language string   // "ro-RO"
+	Hints    []string // the caller's farm names, section codes, feed types (phrase boosting where supported)
+}
+type Transcript struct {
+	Text        string
+	DurationSec float64 // reporting only (voice_usage.audio_seconds), never money
+}
+type STTProvider interface {
+	Name() string
+	Transcribe(ctx context.Context, audio []byte, mime string, opts STTOptions) (Transcript, error)
+}
+
+// Optional: a provider that streams implements this too (checked with a type assertion).
+type STTStreamer interface {
+	Stream(ctx context.Context, mime string, opts STTOptions) (STTStream, error)
+}
+type STTStream interface {
+	Write(chunk []byte) error // binary audio chunk from the WebSocket
+	CloseSend() error         // client sent {"type":"end"}
+	Events() <-chan STTEvent  // closed after the final event or on error
+	Err() error
+}
+type STTEvent struct {
+	Final bool // false = partial
+	Text  string
+}
+
+type ToolDef struct {
+	Name        string // "P01_mortalitate", "clarify", "neinteles"
+	Description string
+	InputSchema json.RawMessage // JSON Schema, additionalProperties false everywhere
+}
+type IntentInput struct {
+	System     string // static part (cacheable) + the dynamic context of §8.3, as the provider needs it
+	Context    json.RawMessage
+	Tools      []ToolDef
+	Transcript string
+}
+type IntentResult struct {
+	Tool  string
+	Args  json.RawMessage // validated against the tool's schema by the pipeline before use
+	Usage Usage           // input/output/cached tokens → voice_usage
+}
+type IntentProvider interface {
+	Name() string
+	Parse(ctx context.Context, in IntentInput) (IntentResult, error)
+}
 ```
-`hints` = the user's farm names, section codes, feed types (phrase boosting where the STT supports it).
+Implementations live in `internal/voice/providers/<name>` and are chosen by `STT_PROVIDER` / `INTENT_PROVIDER` (§11.10); `providers/fake` returns scripted results for tests and CI. Errors and timeouts from either interface map to `503 VOICE_UNAVAILABLE` (STT) or to the fast path / 503 (intent, §8.10).
+
+**The action catalogue and the per-user tool schemas.** The 81 intents of §8.5 plus `clarify` and `neinteles` are static Go data in `internal/voice/catalogue.go`: one `Intent{ID, Tool, Description, Mode, Roles, Params}` per row, where `Params` is built with a few schema helpers (`obj(req("items", arr(obj(req("section", ref("Section")), req("sex", ref("Sex")), req("count", ref("Count")))))), opt("farm", ref("Farm")), …)`) and `ref` points into the shared definitions of §8.4. Per command, `voice.BuildTools(principal, visible)`:
+1. keeps only the intents allowed for the caller's role (§8.5 roles column), plus `clarify` and `neinteles`;
+2. fills the user-dependent enums from the caller's visible entities: `Farm` (farm names), `Section` (union of section codes), `FeedType` (active types), guides, series names, user names (owner only); an enum that would be empty is replaced by a plain `string` so the model can still say what it heard and the server answers with `clarify` / `refuse`;
+3. inlines the `$defs` into each tool's `input_schema` (no `$ref` left; verify whether the chosen provider accepts `$ref` before relying on it) and marshals each schema with sorted enum values and a fixed property order, so the same user gets byte-identical tools on every command (the provider's prompt cache keys on the exact prefix; static system prompt first, then the tools).
+A golden test writes the generated tool list per role on the dev seed to `internal/voice/testdata/tools_<role>.json` and fails on any unreviewed change; another test checks every catalogue intent has a role list, a mode and an action builder.
 **Recommendation** (verify model ids, regions and data terms at implementation; open question 13):
-- **Intent**: Anthropic Claude, a small fast tier, through the Anthropic API or an EU-region deployment on AWS Bedrock / Google Vertex if EU processing is required; tool use with strict schemas, `tool_choice: any`, temperature 0, prompt caching for the tool list. One call per command.
-- **STT**: a streaming ro-RO recogniser with an EU region and a no-retention option (e.g. Azure AI Speech or Google Cloud Speech-to-Text), chosen after a test in a hall with fans (open question 16); keep the adapter so it can be swapped.
+- **Intent**: Anthropic Claude, a small fast tier, through the Anthropic API or an EU-region deployment on AWS Bedrock / Google Vertex if EU processing is required; tool use with strict schemas, `tool_choice: any`, temperature 0, prompt caching for the tool list. One call per command. In Go: the official Anthropic Go SDK (`github.com/anthropics/anthropic-sdk-go`; verify its tool-use and cache-control API at implementation) behind `IntentProvider`.
+- **STT**: a streaming ro-RO recogniser with an EU region and a no-retention option (e.g. Azure AI Speech or Google Cloud Speech-to-Text), chosen after a test in a hall with fans (open question 16); keep the adapter so it can be swapped. In Go: the vendor's Go SDK if it has one for streaming recognition, else its REST/WebSocket API with `net/http` / `coder/websocket` (verify at implementation).
 
 ---
 
 ## 9. Live updates (D197; MO03)
 
 - **Transport**: Server-Sent Events, `GET /api/live` (`text/event-stream`), one connection per tab, cookie-authenticated. Heartbeat comment every 25 s. Proxy-safe headers (`Cache-Control: no-cache`, `X-Accel-Buffering: no`).
-- **Source**: every write inserts `live_event` rows in its transaction and `NOTIFY live_event, '<id>'` after commit; each Nitro instance `LISTEN`s and fans out to its connections. Replay: the browser's `Last-Event-ID` → events with `id > last` from `live_event` (24 h); older → `event: resync` (the client refetches the page).
+- **Source**: every write inserts `live_event` rows in its transaction and calls `pg_notify('live_event', id::text)` in the same transaction (delivered at commit, dropped on rollback); each Go API instance `LISTEN`s on one dedicated connection and fans out to its connections (§9.1). Replay: the browser's `Last-Event-ID` → events with `id > last` from `live_event` (24 h); older → `event: resync` (the client refetches the page).
 - **Authorization filter** per connection: deliver an event only if its `farm_ids` intersect the user's farms (owner: all; empty `farm_ids` = global setup events, delivered to the owner, plus `user.changed` to the user concerned). Price payloads (`price.*`, lei fields) go only to owner and manager.
 - **Event types and payloads** (ids only + the minimum to place the change; the client refetches the affected queries — never trust event figures for display beyond the Toast/"noi" bar):
 | `event:` | `data` |
@@ -1268,22 +1661,100 @@ interface IntentProvider { name: string
 - **"Actualizat hh:mm"** in the page head = the local time of the newest applied event (or the page fetch `asOf`). On reconnect the client shows the last value until replay finishes.
 - **Reconnection**: `retry: 3000`; exponential back-off up to 30 s on the client; after 5 failures the page shows its normal offline/error Banner (online only, D08).
 
+### 9.1 SSE in Go (package `live`)
+**Handler** `GET /api/live` (cookie auth like every route; no request body):
+```go
+func (h *Handler) Stream(w http.ResponseWriter, r *http.Request) {
+	p := auth.PrincipalFrom(r.Context())
+	rc := http.NewResponseController(w)
+	_ = rc.SetWriteDeadline(time.Time{}) // lift http.Server.WriteTimeout for this response only (see caveat)
+	hd := w.Header()
+	hd.Set("Content-Type", "text/event-stream")
+	hd.Set("Cache-Control", "no-cache")
+	hd.Set("X-Accel-Buffering", "no")
+	w.WriteHeader(http.StatusOK)
+
+	sub := h.hub.Subscribe(p) // subscribe BEFORE replay so nothing falls between the two
+	defer h.hub.Unsubscribe(sub)
+	fmt.Fprint(w, "retry: 3000\n\n")
+	last := parseLastEventID(r) // header Last-Event-ID (int64), 0 when absent
+	if last > 0 {
+		evs, tooOld := h.store.Since(r.Context(), last, 24*time.Hour) // id > last, at > now() − 24 h, ordered by id
+		if tooOld {
+			writeEvent(w, Event{Type: "resync"})
+		} else {
+			last = writeAll(w, p, evs)
+		}
+	}
+	_ = rc.Flush()
+
+	heartbeat := time.NewTicker(25 * time.Second)
+	defer heartbeat.Stop()
+	var batch []Event
+	flushTimer := time.NewTimer(time.Hour)
+	flushTimer.Stop()
+	for {
+		select {
+		case <-r.Context().Done(): // client gone, or server shutdown (hub closes sub.C)
+			return
+		case ev, ok := <-sub.C:
+			if !ok {
+				return
+			}
+			if ev.ID <= last || !visible(p, ev) {
+				continue
+			} // dedupe against the replay; farm + price filter
+			if len(batch) == 0 {
+				flushTimer.Reset(time.Second)
+			} // coalesce per connection for 1 s
+			batch = append(batch, ev)
+		case <-flushTimer.C:
+			last = writeAll(w, p, batch)
+			batch = batch[:0]
+			if rc.Flush() != nil {
+				return
+			}
+		case <-heartbeat.C:
+			fmt.Fprint(w, ": ping\n\n")
+			if rc.Flush() != nil {
+				return
+			}
+		}
+	}
+}
+```
+Each event is written as `id: <live_event.id>\nevent: <type>\ndata: <one-line JSON>\n\n`; the payload is filtered per caller before writing (price fields only for owner/manager, D200).
+
+**Hub (per-farm fan-out)**: `live.Hub` holds `map[uuid.UUID]map[*Sub]struct{}` (farm id → subscribers), one set for owners (they get every farm), and `map[uuid.UUID]*Sub` by user id for `user.changed`. `Publish(ev)` takes a read lock, looks up the subscribers of `ev.farm_ids` (empty = global: owners, plus the user concerned for `user.changed`) and does a **non-blocking** send on each `Sub.C` (buffer 64). A full buffer marks the subscriber as lagging: the hub closes its channel, the handler returns, the browser reconnects with `Last-Event-ID` and replays from the table — a slow client never blocks the hub or the listener. When a user's role or farms change, their sessions are revoked (§4.3) and the open stream ends at its next auth check (the handler re-reads the session every 5 min and on `user.changed`).
+
+**Postgres LISTEN/NOTIFY with pgx (multi-instance)**: each instance runs one goroutine `live.Listener` holding a dedicated `*pgx.Conn` (acquired outside the pool, or `pool.Acquire` + `Hijack`; verify at implementation) that runs `LISTEN live_event` and loops on `conn.WaitForNotification(ctx)`. A notification's payload is the event id; the listener reads that row (`select … from live_event where id = $1`) and publishes it. On a connection error it reconnects with back-off, re-runs `LISTEN`, and catches up with `where id > $lastSeen and at > now() − interval '24 hours' order by id`; ids already published are skipped. With one instance the same path runs (no in-process shortcut), so single- and multi-instance behave the same. Ids come from a sequence, so two transactions on different farms can commit out of id order: live delivery is unaffected (the listener fetches each notified id), while a replay after a disconnect (`id > Last-Event-ID`) can miss an event that committed during the disconnect with a lower id; the client therefore refetches the visible page queries after every reconnect (cheap, and it already shows the last values meanwhile).
+
+**Purge**: a ticker in one instance (guarded by `pg_try_advisory_lock` on a fixed key) deletes `live_event` rows older than 24 h every hour, as the maintenance role (§11.4: the app role has no DELETE).
+
+**`http.Server` timeouts caveat**: `WriteTimeout` is a deadline for the whole response, so a server-wide `WriteTimeout: 60s` would cut every SSE stream (and the voice WebSocket) after 60 s. Keep `ReadHeaderTimeout` (10 s), `ReadTimeout` (30 s), `WriteTimeout` (60 s) and `IdleTimeout` (120 s) for ordinary requests, and in the two long-lived handlers clear the deadline per response with `http.NewResponseController(w).SetWriteDeadline(time.Time{})` (and the read deadline for the WebSocket). Also: no compression middleware and no request-timeout middleware on `/api/live` (both buffer or cancel the stream); the reverse proxy needs buffering off and a read timeout above the 25 s heartbeat (nginx: `proxy_buffering off; proxy_read_timeout 1h;`). On shutdown, `srv.RegisterOnShutdown(hub.Close)` ends every stream so `srv.Shutdown` doesn't wait for them; clients reconnect to another instance and replay.
+
 ---
 
 ## 10. Exports and imports
 
 ### 10.1 Export .xlsx (D5, D191; spec D1 › Export)
-- Library: `exceljs` (streaming writer for long periods).
+- Library: **excelize** (`github.com/xuri/excelize/v2`), package `export`. Each sheet is written with its `StreamWriter` (`f.NewStreamWriter(sheet)`; rows via `SetRow(cell, []any{excelize.Cell{StyleID: …, Value: …}})`, header group cells via `MergeCell`, then `Flush`), so a whole cycle of day rows stays small in memory; the file goes to the response with `f.Write(w)` after the headers are set, then `f.Close()`. Styles are created once per file (`f.NewStyle` with custom number formats `#,##0`, `#,##0.0`, `0.0`, `#,##0.00`, `dd.mm.yyyy`; bold for week rows). Data comes from the same `periodtable` builder as `/api/table` with "all weeks" (no paging) and the caller's role, so lei columns are absent for vet/viewer by construction. Verify the streaming API names at implementation.
 - **What**: the whole chosen period (every week, not only the loaded ones): open weeks with their days, closed weeks as week rows (grain Săpt.), the column groups, chips, Detaliu level and order shown on screen; **one sheet per tab** of the page (S4: Rezumat · Păsări · Hrană · Greutate · Producție; report pages: one sheet per table/part).
 - **Layout**: head lines (farm, cycle "Seria 2026 · Hîrbovăț · 22.02.2026–azi · SAPT 20–59", period, chips, Detaliu, "Exportat de {name} · 18.11.2026, 13:20"), then the two header rows (group, leaf), then rows: week rows bold with the "SAPT 58 · 10.11–16.11" label, day rows with Data (Excel date, `dd.mm.yyyy`) · Vârstă (zile) · SAPT; a foot "Total SAPT 20–59".
 - **Values**: numbers as numbers (counts `#,##0`, kg `#,##0.0`, % as the number 41.1 with format `0.0` and "%" in the header, lei `#,##0.00`); a `–` cell exports empty and its reason goes to the sheet's note line under the table ("Celule goale: H7 goală din 14.11.2026; H7.1, H7.2 ♀ 13–14.11.2026 fără hrană în registru."). Viewer exports have no lei columns and no Cost sheet.
-- File name: `{Farm}-{Tab}-SAPT{a}-{b}.xlsx` without diacritics. Response within 3 s for a whole cycle (§11.6).
+- File name: `{Farm}-{Tab}-SAPT{a}-{b}.xlsx` without diacritics (`textkey.ASCII`: NFD via `golang.org/x/text/unicode/norm`, drop combining marks, so "Hîrbovăț" → "Hirbovat"). Response within 3 s for a whole cycle (§11.6). Day cells are written as `time.Time` values at UTC midnight with the date style (Excel stores no zone), never as text.
 
 ### 10.2 Guide import
-`.xlsx` / `.csv` / pasted table → preview → save (§6.12, §7.17). Parsing is server-side (same code for preview and save; the save re-parses the rows sent by the client, never trusts client validation).
+`.xlsx` / `.csv` / pasted table → preview → save (§6.12, §7.17). Parsing is server-side (same code for preview and save; the save re-parses the rows sent by the client, never trusts client validation). Go, package `guides`:
+- Upload: `r.ParseMultipartForm(2 << 20)` behind `http.MaxBytesReader(w, r.Body, 2<<20+4096)`; the file is read into memory and never stored. The format is decided by content, not by the name only: an `.xlsx` must open with `excelize.OpenReader(bytes.NewReader(b))` (first sheet, `GetRows`), anything else is tried as text; neither → G1.
+- CSV: `encoding/csv` with `Comma` = `;` when the header line has more `;` than `,`, else `,`; `LazyQuotes = true`; `FieldsPerRecord = -1`; a UTF-8 BOM is stripped. A pasted table (`{ text }`) uses `Comma = '\t'`.
+- Header matching and name keys: `textkey.Key(s)` = NFD, drop combining marks (both ș/ş and ț/ţ fold to s/t), lower-case, drop spaces and unit words (`g`, `%`); the same function fills `name_key` for farms, guides, feed types and series (D111, D114, D116).
+- Numbers: `guides.ParseNumber` implements §6.12 (decimal comma or point, thousands separators, trailing `%`/`g`) and returns `num.Num`; the G1–G15 fixtures of §11.8 are its table test.
 
 ### 10.3 One-time history migration (D09)
-A developer CLI (`pnpm migrate:history --extracts design/data/extracts`), idempotent (it refuses to run on a database that already holds a `migration` entry unless `--replace`). It reads the **extracts** (already cleaned and checked by `data03_build.py` / `data03_check.py`; the workbook mapping, the sale split and the Cat. pairing are documented there), not the workbooks. One `entry(kind='migration', source='migration')` per farm; every row created points to it; `audit_log` gets one `create` row per farm with counts.
+A developer command in Go, **`cmd/migrate-history`** (`cd backend && go run ./cmd/migrate-history --db "$DATABASE_URL" --extracts ../design/data/extracts [--replace] [--seed-dev]`), idempotent (it refuses to run on a database that already holds a `migration` entry unless `--replace`). It reads the **extracts** (already cleaned and checked by `data03_build.py` / `data03_check.py`; the workbook mapping, the sale split and the Cat. pairing are documented there), not the workbooks. One `entry(kind='migration', source='migration')` per farm; every row created points to it; `audit_log` gets one `create` row per farm with counts. The whole import is **one transaction** (bulk rows with pgx `CopyFrom` / sqlc `:copyfrom`), so a failed verification leaves the database untouched.
+
+**Go or Python — decision: Go.** The two-stage pipeline stays: *workbooks → extracts* is the existing Python (`design/data/scripts/data01…data03_build.py`, openpyxl, already run; its JSON output is committed and is the migration's only input), and *extracts → database* is the Go command, which mirrors the mapping rules that `data03_build.py` documents and this section restates (transfer pairs by arrival date, link differences as `adjustment`, sales from 12.11, Telița feed types by date, eggs with Cat. 1–3, unpriced deliveries). Why Go for the second stage: (1) the loader is a library (`internal/migratehistory`, exposed by the command) that the Go test harness calls in-process to build the golden fixture (§11.8), so CI needs no Python and the fixture is always loaded by the same code as production; (2) its verification step calls the real services (`calc`, `periodtable`, `ledger.CheckCounts`) to reproduce every golden value of §11.7, which only Go can do; (3) it writes through the sqlc queries and the same enum/decimal/day types, so a schema change breaks it at compile time instead of at go-live; (4) one toolchain in the Docker image and CI. Re-implementing the openpyxl workbook parsing in Go is **not** planned: if the workbooks change, rerun the Python scripts, then this command.
 
 | Target | From | Rule |
 |---|---|---|
@@ -1300,8 +1771,8 @@ A developer CLI (`pnpm migrate:history --extracts design/data/extracts`), idempo
 | Eggs | `hirbovat-daily.json` `hall_day` (eggs, inc, jos, cat1–3, egg_g) | one `egg_production` per hall-day with eggs (first eggs 10.03.2026; every such hall-day has Cat. 1–3 from the form, so `total_eggs` = the register's eggs on all 757 hall-days, D18 check); hall-days without eggs → no row |
 | Weighings | `weighings-weekly.json` | one `weighing` per row (sex from the section; redated rows as given) |
 | Seria 2025 | `eggs-hirbovat-prev-daily.json` (old hall codes → H5–H7, D158c) | `egg_production` per hall-day; `legacy_mortality` per compartment-day (`emptying = true` on depopulation days) |
-| Not migrated | `illustrative-events-hirbovat.json`, `sample-hirbovat-2026.json`, users Dr. Ceban / Ion Rusu | illustrative design data (D27, D152); production users are created by the owner (S22); the first owner by `pnpm create-owner` |
-**Verification after migration** (fail the CLI if any differs): every golden value of §11.7; `alive_end ≥ 0` everywhere; Hîrbovăț arrivals ♀ 26 883 · ♂ 3 024; deliveries Hîrbovăț 69 · 9 562 437 lei; stock end 18.11.2026 Breeder 2 31 664,9 · Cocoși 1 781; eggs Σ 5 073 155 to 18.11.2026.
+| Not migrated | `illustrative-events-hirbovat.json`, `sample-hirbovat-2026.json`, users Dr. Ceban / Ion Rusu | illustrative design data (D27, D152); production users are created by the owner (S22); the first owner by `go run ./cmd/create-owner` |
+**Verification after migration** (inside the transaction, before commit; roll back and exit non-zero if any differs): every golden value of §11.7; `alive_end ≥ 0` everywhere; Hîrbovăț arrivals ♀ 26 883 · ♂ 3 024; deliveries Hîrbovăț 69 · 9 562 437 lei; stock end 18.11.2026 Breeder 2 31 664,9 · Cocoși 1 781; eggs Σ 5 073 155 to 18.11.2026.
 
 ---
 
@@ -1311,6 +1782,8 @@ A developer CLI (`pnpm migrate:history --extracts design/data/extracts`), idempo
 - Business time zone **Europe/Chisinau** (EET/EEST). All `date` columns are local days; timestamps are stored UTC (`timestamptz`). The DB runs in UTC; `app_today()` converts.
 - A day starts at 00:00 local. "Until 23:59" = while `app_today()` equals the local date of `created_at`. "Missing from 12:00" = local noon. "Azi/Ieri" in forms are local.
 - DST days have 23/25 hours; nothing is computed per hour, so no special case.
+- **Go**: `timex.Chisinau, err = time.LoadLocation("Europe/Chisinau")` once at start-up (fail fast); `cmd/api` and the other commands `import _ "time/tzdata"` so the zone database is embedded in the binary (the distroless image has no `/usr/share/zoneinfo` guarantee). All "now" comes from an injected `timex.Clock` (`Now() time.Time`); `timex.Today(clock)` = the civil `Day` of `clock.Now().In(Chisinau)`. Handlers never call `time.Now()` directly (a lint rule or review check), so tests freeze time at 2026-11-18T12:00 local.
+- **Go ↔ SQL day**: Go computes `today` and passes it as a query parameter wherever a query needs it; the only SQL that reads `app_today()` are the views (`v_section_sex_day` dense range, `v_cycle`). Production leaves `app.today` unset (both clocks are the real one); tests set it on every pooled connection (`pgxpool.Config.AfterConnect` runs `select set_config('app.today', '2026-11-18', false)`) together with the frozen `Clock`, so Go and SQL agree. The pool sets `timezone = 'UTC'` in `ConnConfig.RuntimeParams`.
 
 ### 11.2 Types
 | Quantity | SQL type | API |
@@ -1323,7 +1796,7 @@ A developer CLI (`pnpm migrate:history --extracts design/data/extracts`), idempo
 | lei/kg | `numeric(12,4)` | number |
 | % (guide) | `numeric(5,2)` | number |
 | weights | `numeric(7,1)`, egg weight `numeric(5,2)` | number |
-Never use JS floats for money sums server-side: sum in SQL `numeric` or with `decimal.js`.
+Never use `float64` for kg, lei, grams or percentages on the server. **Recommendation: `github.com/shopspring/decimal`** in Go code, registered with pgx through `github.com/jackc/pgx-shopspring-decimal` (`pgxdecimal.Register(conn.TypeMap())` in `AfterConnect`), and sqlc overrides mapping `numeric` → `decimal.Decimal` / nullable → `decimal.NullDecimal` (§12.4). Why not `pgtype.Numeric`: it is a transport type (no arithmetic, no rounding), so every formula of §5 would convert anyway. Sums stay in SQL `numeric` where the query can do them; Go does the ratios and the single final rounding (`Decimal.Round(n)`, half away from zero; verify the rounding mode with the D82 test cases of §5.15 at implementation). JSON goes through `num.Num` (§7.0a).
 
 ### 11.3 Formats (client-side; the server uses the same rules for Toasts, voice answers and xlsx head lines)
 - Thousands: U+202F narrow no-break space ("14 080", "1 098"); decimal comma ("2,41 kg"); true minus U+2212 ("−82"); `+` on positive differences ("+7,7%").
@@ -1334,14 +1807,14 @@ Never use JS floats for money sums server-side: sum in SQL `numeric` or with `de
 - Sex: ♀ găini / ♂ cocoși (icons with hidden words in the UI).
 
 ### 11.4 Auth and security
-- Passwords: argon2id (`@node-rs/argon2`, m = 19 MiB, t = 2, p = 1); generated passwords 12 chars from `abcdefghjkmnpqrstuvwxyz23456789` via CSPRNG; never logged; responses carrying one are `Cache-Control: no-store`.
-- Session: cookie `il_session` = 32 random bytes base64url, `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`; the DB stores `sha256(token)`; sliding expiry (extended on use, at most once per hour); revoked on logout, reset, deactivation.
-- CSRF: SameSite=Lax + every non-GET must be `application/json` (or multipart for uploads/audio) and carry a matching `Origin`.
-- Login throttling (A1): 5 failed attempts for a login within 15 min → locked 5 min (429 with the A1 sentence); 20 failures per IP within 15 min → 429; constant-time compare; same message for unknown login and wrong password.
-- Authorization in one place (`requireRole`, `requireFarm`, `canEditEntry`) and tested by the §3.3 matrix. Prices are removed from DTOs for vet/viewer (not just hidden).
+- Passwords: argon2id via `golang.org/x/crypto/argon2` — `argon2.IDKey(password, salt, 2 /*t*/, 19*1024 /*m KiB = 19 MiB*/, 1 /*p*/, 32)`, 16-byte salt from `crypto/rand`; stored as the PHC string `$argon2id$v=19$m=19456,t=2,p=1$<salt b64>$<hash b64>` (raw std base64), parameters read back from the string on verify so they can be raised later (re-hash on the next successful login when they differ); compare with `crypto/subtle.ConstantTimeCompare`. An unknown login still runs one `IDKey` against a fixed dummy hash, so timing doesn't reveal which logins exist. Hashing is bounded by a semaphore (4 at a time; 19 MiB each). Generated passwords: 12 chars from `abcdefghjkmnpqrstuvwxyz23456789` via `crypto/rand` (`rand.Int` per character, no modulo bias); never logged; responses carrying one are `Cache-Control: no-store`.
+- Session: cookie `il_session` = 32 bytes from `crypto/rand`, `base64.RawURLEncoding`; set with `http.Cookie{Name: "il_session", Path: "/", MaxAge: 2592000, HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode}`; the DB stores `sha256(token)` (`user_session.token_hash`); the auth middleware looks it up joined to an **active** `app_user` with `revoked_at is null and expires_at > now()`, puts an `auth.Principal{UserID, Name, Role, FarmIDs (nil = owner, all farms)}` in the request context, and slides `expires_at` (+30 days) at most once per hour (`last_seen_at` older than 1 h). Revoked on logout, reset, deactivation, and any change of the user's role or farms (§4.3). Logout clears the cookie (`MaxAge: -1`).
+- CSRF: `SameSite=Lax` plus, on every method other than GET/HEAD/OPTIONS: the `Origin` header must equal `APP_ORIGIN` (when `Origin` is absent, `Sec-Fetch-Site` must be `same-origin`; when both are absent → `403 FORBIDDEN`), and `Content-Type` must be `application/json` (or `multipart/form-data` for `/api/guides/preview`, an audio type for `/api/voice/stt`). Go 1.25 added `http.CrossOriginProtection` to `net/http`, which implements the `Sec-Fetch-Site`/`Origin` part; use it (with `APP_ORIGIN` as the trusted origin) if the chosen Go version has it, keep the Content-Type rule in our middleware (verify at implementation). No CSRF token is needed with these two checks.
+- Login throttling (A1): counted in PostgreSQL (`login_attempt`), so it holds across instances and restarts: before checking the password, `count(*) where login = $1 and not success and at > now() − 15 min` ≥ 5 and the latest of them < 5 min ago → `429 RATE_LIMITED` with the A1 sentence and `retryAfterSeconds` (+ `Retry-After` header); the same per IP with 20. The client IP is `r.RemoteAddr`, or the right-most untrusted address of `X-Forwarded-For` when the request comes from a `TRUSTED_PROXIES` address (§11.10). Same message for unknown login and wrong password. Voice limits (§8.9) use the same pattern on `voice_usage` plus an in-memory per-user `golang.org/x/time/rate` limiter for the per-minute cap.
+- Authorization in one place (package `auth`: `RequireRole(roles...)` middleware, `p.CanSeeFarm(id)`, `entries.CanEdit(p, entry, today)`) and tested by the §3.3 matrix. Prices are removed from DTOs for vet/viewer by type (§7.0a), not just hidden.
 - WebSocket `/api/voice/stream`: `Origin` must equal the app origin (cross-site WebSocket hijacking; SameSite cookies don't cover it), session checked on upgrade, idle timeout 25 s.
 - Headers: HSTS, CSP (self + the STT WebSocket origin), `X-Content-Type-Options`, `Referrer-Policy: same-origin`, `Permissions-Policy: microphone=(self)`.
-- SQL only through the query builder / parameterized SQL. `audit_log` and `live_event`: no UPDATE/DELETE grant for the app role (a purge job runs as a separate role).
+- SQL only through sqlc-generated queries or pgx calls with `$n` parameters; never `fmt.Sprintf` of request values into SQL (the dynamic PeriodTable SQL of §12.4 assembles only whitelisted fragments). `audit_log` and `live_event`: no UPDATE/DELETE grant for the app role (a purge job runs as a separate role).
 - Uploads: guide files ≤ 2 MB, parsed in memory, never stored; audio ≤ 1 MB, never stored.
 - Backups: daily base backup + WAL (PITR 14 days); EU hosting.
 
@@ -1402,83 +1875,428 @@ Fixture: the dev seed (§11.9) loaded from the extracts, clock frozen at **2026-
 | 37 | correction 17.11 H5.2 ♀ 1 → 3 (illustrative) leaves H5.2 ♀ end 17.11 4 283, 18.11 4 281 | §6.1 check passes; audit diff "H5.2 · găini moarte 1 → 3" |
 | 38 | H7 empty since 14.11.2026 ("goală din 14.11") | `empty_since` |
 
-### 11.8 Testing
-- **Unit**: §5 formulas (age/week edges, partial weeks, rounding half-up from full precision, guide weighting), §6 message builders (exact strings, agreement găini/cocoși), `parseRoNumber` (§8.8), guide parser (G1–G15 fixtures incl. the "645" paste and the week-1 laying file).
-- **Integration** (real PostgreSQL via testcontainers or the CI service): golden values §11.7; never-below-0 with retroactive edits (raise a death count on 17.11 H5.2 until refused: bound 4 284); cycle reconcile (transfer that empties Telița closes it; a correction that raises it again reopens; manual cycle); idempotent retries; soft delete + restore; audit rows per action.
-- **Permissions**: the §3.3 matrix as a table-driven test over every route.
-- **Voice**: an eval set of ≥ 150 transcripts (every catalogue example + misheard/ambiguous variants) → expected `action`; run against the chosen providers before release (open question 16); CI runs the server pipeline with a mocked `IntentProvider`.
-- **Live**: SSE replay after disconnect; farm filter; price events not delivered to viewers.
+### 11.8 Testing (Go)
+- **Tooling**: the standard `testing` package, table-driven tests (`for _, tc := range []struct{ name string; … }{…} { t.Run(tc.name, …) }`), `github.com/google/go-cmp/cmp` for diffs, golden files under `testdata/` with an `-update` flag. `go test -race ./...` in CI. No assertion framework is required.
+- **Unit** (no database): §5 formulas in `calc` (age/week edges 13 → SAPT 2, 14 → 3; partial weeks; rounding half away from zero from full precision: 168 122 ÷ 186 088 → 90,3; guide weighting by hen-/bird-days), §6 message functions (exact strings, agreement găini/cocoși, U+202F and U+2212 in numbers), `voice.ParseRoNumber` (the §8.8 table), `guides.ParseNumber` and the guide parser (G1–G15 fixtures incl. the "645" paste and the week-1 laying file), `num.Num` JSON round trips, `timex.Day` parsing, token sign/verify (expired, wrong user, wrong form, wrong transcript, wrong purpose key).
+- **Database for integration tests**: one PostgreSQL 16 per test run. Default: **testcontainers-go** (`github.com/testcontainers/testcontainers-go/modules/postgres`) started in `TestMain` of a shared `internal/testdb` package; when `TEST_DATABASE_URL` is set (CI service container or a local `docker compose up db`), that server is used instead and no container is started. `testdb` applies the goose migrations, runs `migratehistory.Load` on `design/data/extracts` (+ the dev users and `illustrative-events-hirbovat.json`), and keeps the result as a **template database** (`il_seed`); each test that writes gets its own `create database t_<n> template il_seed` (fast file copy), read-only tests share one copy. Every pool used by tests sets `app.today = '2026-11-18'` in `AfterConnect` and the services get `timex.FixedClock(2026-11-18T12:00 Europe/Chisinau)` (§11.1, §11.7).
+- **Golden values**: `TestGolden` is one table with the 38 rows of §11.7 (`{id: 12, name: "lay 18.11", got: func(t) any {…}, want: …}`), each calling the real service (`periodtable.Build`, `calc.Stock`, `reports.Cost`, …) — never a hand-written SQL copy of the formula. PeriodTable responses are additionally compared as JSON golden files (`testdata/table_farm_rezumat_cycle.json`, …), which also guards §7.0a (no `null` arrays, camelCase, no lei for the viewer).
+- **Rules**: never-below-0 with retroactive edits (raise a death count on 17.11 H5.2 until refused: bound 4 284; the inflow bound 4 383), cycle reconcile (a transfer that empties Telița closes it; a correction that raises it reopens it; a manual cycle; the C2 other-series refusal and its D201 pass), idempotent retries (same `clientRequestId` twice → one entry, second answer 200), soft delete + restore, `STALE` on a wrong `ifVersion`, audit rows per action (`changes` keys as §4.10).
+- **Concurrency (transaction + advisory lock)**: (1) two goroutines each save a Vânzare of ♂ 4 from Hîrbovăț H6.2 on 18.11, where 5 cocoși are alive after the day's saved movements — they start together (a barrier channel) on separate pool connections; exactly one gets 201, the other 422 with the §6.1 Vânzare message ("cel mult 1"), and `alive_end ≥ 0` holds everywhere; (2) after a first transfer puts birds into Telița, two transfers in opposite directions (Hîrbovăț → Telița and Telița → Hîrbovăț) start at the same instant and both finish (ascending farm-id lock order: no deadlock; a 5 s `context.WithTimeout` fails the test on a hang); (3) the same two saves with the lock call removed (a test-only `ledger.LockFarms` stub) must be able to break the invariant, proving the test detects a missing lock — run under `-race`, repeated `-count=20` in CI's nightly job.
+- **Permissions**: the §3.3 matrix as one table-driven test over every route registered in `cmd/api` (method, path, role → expected status), against an `httptest.Server` running the real handler chain; a route missing from the table fails the test.
+- **HTTP contract**: decoder tests (unknown field → 400 with `issues[0].path`, a string where a number is expected, body over the limit → 413 mapped to `VALIDATION`), CSRF/Origin middleware, cookie flags on login, CORS headers only for `APP_ORIGIN` when cross-origin mode is configured.
+- **Voice**: an eval set of ≥ 150 transcripts (every catalogue example + misheard/ambiguous variants) → expected `action`; run against the chosen providers before release (open question 16) with `go test ./internal/voice -run TestEval -tags eval`; CI runs the server pipeline with `providers/fake`. WebSocket tests use `httptest.Server` + `coder/websocket.Dial`: wrong `Origin` refused, size and time limits close the stream.
+- **Live**: SSE replay after disconnect (`Last-Event-ID`), farm filter, price events not delivered to viewers, a lagging subscriber dropped without blocking others, and two API instances in one test process sharing one database (event saved through instance A arrives on a stream of instance B via LISTEN/NOTIFY).
 
 ### 11.9 Migrations and seeding
-- Migrations: SQL files run by the ORM's migrator; `0001_baseline.sql` = `backend/schema.sql`. Views are re-created in later migrations with `create or replace view`.
-- `pnpm seed:dev`: runs the history migration (§10.3) on the extracts + creates illustrative users (Proprietar, Ion Rusu manager on both farms, Dr. Ceban vet on Hîrbovăț, an Observator) with dev passwords, and optionally loads `illustrative-events-hirbovat.json` (culls, a sexing error, two weighings, the shared correction) for UI states — dev only, never in production.
-- `pnpm create-owner --name --login`: prints a generated password once.
+- Migrations: **goose** (`github.com/pressly/goose/v3`), SQL files in `backend/db/migrations/`, embedded with `//go:embed` and applied by `api migrate up` (a subcommand of the `cmd/api` binary) as a release step **before** the new version starts — not on every instance start. `0001_baseline.sql` = `backend/schema.sql`, byte for byte (the file already carries the `-- +goose` annotations; at M0 move it with `git mv backend/schema.sql backend/db/migrations/0001_baseline.sql` and from then on that file is what this spec calls `schema.sql`). Later changes are new numbered files (`0002_roles.sql`, …); views change with `create or replace view` (or `drop view … ; create view …` when columns change) in a new migration, never by editing `0001`. Verify at implementation how the goose version in use serialises concurrent runs.
+- Roles: the database owner role runs migrations; the API connects as `il_app`, which gets `select, insert, update, delete` on the tables except `audit_log` and `live_event` (`select, insert` only, §4.10) and `usage` on sequences; a maintenance role `il_maint` purges `live_event` and `login_attempt`. Roles are created by infrastructure; their grants are migration `0002_roles.sql`.
+- `go run ./cmd/migrate-history --seed-dev …`: runs the history migration (§10.3) on the extracts + creates illustrative users (Proprietar, Ion Rusu manager on both farms, Dr. Ceban vet on Hîrbovăț, an Observator) with dev passwords, and loads `illustrative-events-hirbovat.json` (culls, a sexing error, two weighings, the shared correction) for UI states — dev only: the command refuses `--seed-dev` when `APP_ENV=production`.
+- `go run ./cmd/create-owner --name "…" --login …`: creates the first owner and prints a generated password once (§6.10 rules; refuses when an active owner exists unless `--force`).
+
+### 11.10 Configuration (environment variables)
+Read once at start-up by `internal/platform/config` with `os.LookupEnv`; a missing required variable stops the process with one log line listing all of them. Secrets are never logged (the config type's `LogValue()` redacts them).
+| Variable | Example | Notes |
+|---|---|---|
+| `APP_ENV` | `production` · `staging` · `dev` | dev enables the seed command and text logs |
+| `DATABASE_URL` | `postgres://il_app:…@db:5432/impex?sslmode=require` | required; pgxpool DSN |
+| `DB_MAX_CONNS` | `10` | pool size per instance (+ 1 dedicated LISTEN connection) |
+| `LISTEN_ADDR` | `:8080` | |
+| `APP_ORIGIN` | `https://app.example` | required; Origin/CSRF/WebSocket checks and CORS (§1, §11.4) |
+| `CORS_ENABLED` | `false` | `true` only in the cross-origin deployment of §1 |
+| `TRUSTED_PROXIES` | `10.0.0.0/8,127.0.0.1/32` | CIDRs whose `X-Forwarded-For` / `X-Forwarded-Proto` are believed |
+| `APP_SECRET` | 32+ random bytes, base64 | required; HKDF root for every signed token (§8.5) |
+| `STT_PROVIDER`, `INTENT_PROVIDER` | `azure` · `google` · `anthropic` · `fake` | voice adapters (§8.11); `fake` refused in production |
+| `ANTHROPIC_API_KEY`, `INTENT_MODEL`, `STT_*` | – | provider credentials, model id, region (EU) |
+| `LOG_LEVEL`, `LOG_FORMAT` | `info`, `json` | §11.11 |
+Thresholds and limits stay in `app_setting` (§4.11), not in the environment.
+
+### 11.11 Logging (log/slog)
+- `log/slog` with `slog.NewJSONHandler(os.Stdout, …)` in production (text handler in dev); one logger built in `main` and passed down (no package-level globals beyond `slog.SetDefault`).
+- An access-log middleware writes one line per request: `request_id` (from `X-Request-ID` set by the proxy, else generated and returned in the response header), `method`, the matched route pattern (`r.Pattern`, e.g. `PUT /api/entries/{id}`), `status`, `duration_ms`, `user_id`, `bytes`. Errors (5xx) add the error chain; panics are recovered by a middleware, logged with the stack and answered with the 500 envelope.
+- Never logged: request or response bodies, cookies, `Authorization`, passwords and one-time passwords, tokens, voice transcripts and audio (§8.9: voice lines carry `run_id`, intent id, provider, timings, token counts only), Motiv texts.
+
+### 11.12 Health checks and shutdown
+- `GET /healthz` (liveness): 200 `ok` while the process serves; no database call.
+- `GET /readyz` (readiness): 200 when `pool.Ping` answers within 1 s, the goose version in the database equals the newest embedded migration, and the LISTEN connection is up; else 503 with the failing check names. Both paths are outside `/api`, unauthenticated, not logged at info level, and need not be exposed by the public proxy.
+- Shutdown: `signal.NotifyContext(ctx, SIGINT, SIGTERM)`; readiness turns 503 first, then `srv.Shutdown` with a 20 s budget (SSE streams and the voice WebSocket are closed by `RegisterOnShutdown` hooks, §9.1), then the listener and the pool close.
+
+### 11.13 Dockerfile
+```dockerfile
+# build: Go current stable (pin the exact version that go.mod's toolchain line names)
+FROM golang:<go-version> AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api \
+ && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/migrate-history ./cmd/migrate-history \
+ && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/create-owner ./cmd/create-owner
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /out/ /usr/local/bin/
+USER nonroot:nonroot
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/api"]
+CMD ["serve"]
+```
+The binaries embed the migrations and tzdata, so the image needs nothing else (CA certificates for the provider APIs come with the distroless base). Release: run `api migrate up` once (a one-off container with the same image), then roll the `serve` containers. The extracts are not in the image: `migrate-history` runs once from a developer machine or a one-off job with the repo mounted. Verify the base image tag at implementation.
 
 ---
 
-## 12. Recommended implementation
+## 12. Recommended implementation (Go + PostgreSQL, D202)
 
-### 12.1 Stack-agnostic shape
-- **Domain services** own every rule of §5–§6: `counts` (running counts, bounds), `cycles` (reconcile), `entries` (create/edit/correct/delete/undo with audit), `feed` (consumption, stock, cost), `production`, `guides` (parse, validate), `alerts`, `table` (PeriodTable builder), `voice`. Routes are thin: parse (zod) → authorize → call a service → map to DTO.
-- **One transaction per save** (READ COMMITTED): `pg_advisory_xact_lock` on every touched farm in ascending id order (§6.1 step 0) → write rows → §6.1 check → reconcileCycles → audit_log → live_event → commit → NOTIFY. Setup writes (farm, section, feed type, series, cycle) take the same farm lock when they touch a farm.
-- Heavy reads in SQL (views §4.12 + window functions); presentation shaping (groups, labels, reasons) in TypeScript.
+### 12.1 Shape
+- **Domain services** own every rule of §5–§6: `ledger` (running counts, the §6.1 bounds, `ReconcileCycles` §6.4, farm locks), `calc` (§5 formulas: age/week, lay, feed, stock, cost, weighing, missing, alerts), `entries` (create/edit/correct/delete/undo/restore with audit), `reports` (feed: consumption, stock, deliveries, cost; production), `guides` (parse, validate), `periodtable` (PeriodTable builder), `voice`. **Handlers are thin**: decode (`httpx.Decode`) → `Validate()` (§7.0b) → authorize (`auth`) → call a service → map to the DTO → `httpx.JSON`. Services take `context.Context`, an `auth.Principal` and a typed request; they never see `*http.Request`.
+- **One transaction per save** (READ COMMITTED): `pg_advisory_xact_lock` on every touched farm in ascending id order (§6.1 step 0) → write rows → §6.1 check → `ReconcileCycles` → `audit_log` → `live_event` + `pg_notify` → commit (the notification is delivered at commit). Setup writes (farm, section, feed type, series, cycle) take the same farm lock when they touch a farm. The worked example is §12.5.
+- **Heavy reads in SQL** (views §4.12 + window functions, one pass per page); presentation shaping (groups, labels, reasons, Romanian strings) in Go.
+- No ORM, no web framework, no dependency-injection container: `cmd/api/main.go` builds the pool, the services and the handlers by hand and registers the routes.
 
 ### 12.2 Concrete stack
-- **Nuxt 3 / Nitro server routes** (same repo as the Vue front end), Node 22.
-- **PostgreSQL 16** (EU-hosted, managed, PITR).
-- **Drizzle ORM** + drizzle-kit migrations (preferred over Prisma here: first-class raw SQL, partial indexes, exclusion constraints, views and `numeric` without workarounds). Use `sql` templates for the views.
-- **zod** for every request body and query; share schemas with the client for form validation messages that don't need the DB.
-- `@node-rs/argon2`, `exceljs`, `xlsx`-free CSV parsing with `papaparse`, `decimal.js` for money in TS, `date-fns` + `@date-fns/tz` (or Temporal polyfill) for Europe/Chisinau days.
-- SSE via h3 `createEventStream`; `pg` client `LISTEN`.
-- Voice adapters per §8.11; the Anthropic TypeScript SDK for the recommended intent provider.
-- Tests: Vitest + testcontainers-postgres; Playwright for a few end-to-end flows.
+- **Go**: the current stable release at implementation time (verify; ≥ 1.24 is required for the `omitzero` tag option and `crypto/hkdf`, ≥ 1.22 for method/wildcard routing; 1.25 adds `http.CrossOriginProtection`). Pin it with the `go` and `toolchain` lines of `go.mod` and the same version in the Dockerfile and CI.
+- **Router: the standard library `net/http.ServeMux`** with Go 1.22+ patterns (`mux.Handle("PUT /api/entries/{id}", …)`, `r.PathValue("id")`). Chosen over chi: the API is ~90 plain REST routes; method + wildcard patterns, precedence rules and conflict detection at registration (the mux panics on ambiguous patterns) cover it; middleware is ordinary `func(http.Handler) http.Handler` composition; `r.Pattern` gives the route template for logs. One dependency less, nothing to learn beyond the standard library.
+- **PostgreSQL 16** (EU-hosted, managed, PITR), extension `btree_gist`.
+- **pgx/v5** (`github.com/jackc/pgx/v5`, `pgxpool`) as driver and **sqlc** (`sqlc-dev/sqlc`, `sql_package: pgx/v5`) for every static query; hand-written pgx SQL only for the dynamic reads listed in §12.4. Why not GORM: the schema is SQL-first — views, partial unique indexes, an exclusion constraint, a generated column, window functions, advisory locks, LISTEN/NOTIFY, `numeric` money — which GORM can't model and would hide behind reflection; GORM's auto-migration would compete with goose and `schema.sql`; its query builder produces SQL you only see at run time. sqlc keeps the SQL readable in `db/queries/*.sql`, checks it against the schema at generate time, and emits plain typed Go with no runtime reflection; pgx adds what the app needs beyond that (`CopyFrom` for the migration, `WaitForNotification` for live updates, batches, native `pgtype`).
+- **goose** (`github.com/pressly/goose/v3`) for migrations (§11.9); sqlc reads the same directory (it ignores `-- +goose Down` sections).
+- **shopspring/decimal** + `jackc/pgx-shopspring-decimal` (§11.2); **google/uuid**; **golang.org/x/crypto/argon2** (§11.4); `crypto/hmac`, `crypto/sha256`, `crypto/hkdf`, `crypto/rand` from the standard library; **golang.org/x/text** (normalisation for name keys and file names); **golang.org/x/time/rate** (voice per-minute cap).
+- **excelize** (`github.com/xuri/excelize/v2`) for `.xlsx` export and guide import; `encoding/csv` for CSV/TSV.
+- **coder/websocket** (`github.com/coder/websocket`) for `/api/voice/stream`.
+- **log/slog** (§11.11).
+- Voice providers: the Anthropic Go SDK for the recommended intent provider; the STT vendor's SDK or HTTP API (§8.11).
+- Tests: `testing`, testcontainers-go (postgres module), go-cmp (§11.8). Playwright end-to-end flows belong to the front-end repo and run against a real API.
+- Lint: `go vet`, `staticcheck`, `gofmt` in CI (and `sqlc vet` / `sqlc diff` so generated code never drifts from `db/queries`).
+Library names only: take the current release of each when the module is created, and verify any API marked "verify at implementation".
 
 ### 12.3 Module layout
+The Go module lives in `backend/` (module path chosen at M0, e.g. `<git host>/<org>/impex-line/backend`).
 ```
-server/
-  api/
-    auth/login.post.ts  logout.post.ts  me.get.ts
-    bootstrap.get.ts
-    table.get.ts  export.get.ts
-    series/index.get.ts  index.post.ts  [id]/page.get.ts  [id]/age.patch.ts  [id]/close.post.ts
-    farms/index.get.ts  index.post.ts  [id].patch.ts  [id]/page.get.ts  [id]/summary.get.ts  [id]/journal.get.ts  [id]/cycles.post.ts  [id]/sections.post.ts
-    sections/[id].patch.ts  [id]/retire.post.ts  [id]/page.get.ts  [id]/summary.get.ts
-    cycles/[id]/guide.patch.ts
-    home.get.ts
-    forms/daily.get.ts  feed-daily.get.ts  weighing.get.ts  transfer.get.ts  sale.get.ts  delivery.get.ts
-    entries/daily.post.ts  feed-daily.post.ts  weighing.post.ts  transfer.post.ts  sale.post.ts  delivery.post.ts
-    entries/today.get.ts  [id].get.ts  [id].put.ts  [id].delete.ts  [id]/undo.post.ts  [id]/restore.post.ts
-    deliveries/index.get.ts  prices.post.ts  prices/undo.post.ts  [id]/price.patch.ts
-    reports/production.get.ts  feed.get.ts
-    audit/index.get.ts
-    guides/index.get.ts  index.post.ts  preview.post.ts  [id].get.ts  [id]/rows.put.ts  [id].delete.ts
-    feed-types/index.get.ts  index.post.ts  [id].patch.ts  [id].delete.ts
-    users/index.get.ts  index.post.ts  [id].patch.ts  [id]/reset-password.post.ts  [id]/deactivate.post.ts  [id]/reactivate.post.ts
-    voice/stt.post.ts  stream.ts  command.post.ts
-    live.get.ts
-  domain/  counts.ts cycles.ts entries.ts feed.ts production.ts guides/ (parse.ts validate.ts) alerts.ts table/ (groups.ts rows.ts totals.ts) audit.ts live.ts voice/ (catalogue.ts prompt.ts pipeline.ts answers.ts ro-numbers.ts providers/)
-  db/      schema.ts (drizzle) views.sql migrations/ client.ts
-  lib/     auth.ts permissions.ts errors.ts messages.ro.ts (every §6 string) format.ts time.ts
-  cli/     migrate-history.ts create-owner.ts seed-dev.ts
+backend/
+  go.mod  go.sum  sqlc.yaml  Dockerfile  Makefile        (make generate | test | lint | run)
+  SPEC.md                                                (this file)
+  cmd/
+    api/                main.go (serve | migrate up|status), routes.go (every §7 route → handler), wiring.go
+    migrate-history/    main.go: flags, calls internal/migratehistory (§10.3; --replace, --seed-dev)
+    create-owner/       main.go (§11.9)
+  db/
+    migrations/         0001_baseline.sql (= schema.sql, goose), 0002_roles.sql, …
+    queries/            sqlc input, one file per module: auth.sql users.sql farms.sql sections.sql series.sql cycles.sql
+                        entries.sql ledger.sql calc.sql reports.sql prices.sql guides.sql audit.sql live.sql voice.sql settings.sql
+    embed.go            //go:embed migrations/*.sql  → var Migrations embed.FS
+  internal/
+    db/                 pool.go (pgxpool + AfterConnect: decimal codec, timezone UTC, app.today in tests), tx.go (InTx, Tx),
+                        errors.go (pgconn codes → typed errors); dbq/ = sqlc output (generated, never edited)
+    platform/
+      config/           env → Config (§11.10)
+      httpx/            Decode, JSON, WriteError, APIError/Refusal/Warning/Issue, Optional[T], WriteMeta, middleware
+                        (request id, access log, recover, auth, CSRF/Origin, CORS, security headers, body limits)
+      timex/            Day, LocalTime, Clock, Chisinau, Today, week helpers
+      num/              Num (decimal JSON), rounding helpers
+      fmtx/             §11.3 formatters (U+202F, U+2212, "41,1%", dd.mm.yyyy, SAPT labels)
+      messages/         ro.go: every Romanian string of §6–§8 as a typed function
+      textkey/          Key (name_key), ASCII (file names)
+      tokens/           HMAC sign/verify with HKDF purpose keys (§8.5)
+    auth/               login/logout/me, sessions, argon2id, throttling, Principal, RequireRole, CanSeeFarm
+    users/              §7.19 + one-time passwords
+    farms/              §7.16 farms and sections, §7.2 bootstrap, §7.3 farm/section pages, §7.6 summary, §7.5 journal, §7.9 cycles routes
+    series/             §7.15 series, placement entry, age change, close, series page + cycle track
+    entries/            §7.8 form state, creates (daily, feed-daily, weighing, transfer, sale, delivery), edit/correct/delete/
+                        undo/restore, Introdus azi; dto.go, validate.go, service.go, handler.go
+    ledger/             LockFarms, CheckCounts (§6.1), ReconcileCycles (§6.4), alive/inflow lookups shared by entries, series, farms
+    calc/               §5 formulas as pure functions over rows (no SQL), + the SQL readers they need; alerts (§5.12), missing (§5.11)
+    periodtable/        §7.4 /api/table and §7.4b /api/charts builder (dynamic SQL, §12.4), groups, rows, totals, load-more
+    reports/            §7.11 production, §7.12 feed (stock, deliveries, cost), §7.7 home (Acasă blocks per role)
+    prices/             §7.13 Prețuri, price undo
+    guides/             §7.17 + parser/validator (§6.12, §10.2)
+    audit/              audit row builder (changes, record types, summary), §7.10 Istoric, §7.19b setup undo
+    live/               Hub, Listener (LISTEN/NOTIFY), SSE handler, Emit (insert live_event + pg_notify), purge (§9)
+    voice/              catalogue.go (§8.5), tools.go (BuildTools §8.11), prompt.go, pipeline.go (§8.6), answers.go (§8.7),
+                        ronumbers.go (§8.8), fastpath.go (§8.10), stt.go / stream.go / command.go handlers, providers/{anthropic,<stt>,fake}
+    export/             §7.14 / §10.1 xlsx writers per page (uses periodtable and reports)
+    migratehistory/     §10.3 loader + verification (used by cmd/migrate-history and internal/testdb)
+    testdb/             test-only: container or TEST_DATABASE_URL, template DB with the golden fixture (§11.8)
 ```
-`messages.ro.ts` holds every Romanian string of §6–§8 as functions of typed parameters, so tests can snapshot them.
+Rules: a module exposes `NewService(…)`, `NewHandler(…)` and `(*Handler).Routes(mux *http.ServeMux, mw httpx.Chain)`; modules call each other only through services (or the shared `ledger`/`calc`), never through handlers; `dbq` types stay inside services (DTOs are built in each module's `dto.go`). Import direction: `cmd` → modules → `ledger`/`calc`/`audit`/`live` → `db`/`platform`; no cycles (the compiler enforces it).
 
-### 12.4 Build order (milestones follow the screens' build order, screens.md)
+### 12.4 Data access: sqlc + pgx
+`sqlc.yaml` (verify keys against the sqlc version in use):
+```yaml
+version: "2"
+sql:
+  - engine: postgresql
+    schema: db/migrations
+    queries: db/queries
+    gen:
+      go:
+        package: dbq
+        out: internal/db/dbq
+        sql_package: pgx/v5
+        emit_interface: true
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        overrides:
+          - db_type: uuid
+            go_type: github.com/google/uuid.UUID
+          - db_type: uuid
+            nullable: true
+            go_type: { import: github.com/google/uuid, type: UUID, pointer: true }
+          - db_type: pg_catalog.numeric
+            go_type: github.com/shopspring/decimal.Decimal
+          - db_type: pg_catalog.numeric
+            nullable: true
+            go_type: github.com/shopspring/decimal.NullDecimal
+          - db_type: date
+            go_type: <module>/internal/platform/timex.Day
+          - db_type: date
+            nullable: true
+            go_type: { import: <module>/internal/platform/timex, type: Day, pointer: true }
+```
+`schema.sql` was checked in PostgreSQL 16 (it loads, the views return the golden values) but `sqlc generate` has not been run against it yet (no module download was possible when this was written): run it at M0 and fix any query-side typing per the table below. If sqlc's own type inference falls short on a query, enable its database-backed analysis against the migrated dev/CI database (`database:` block in `sqlc.yaml`; verify at implementation) rather than casting around it.
+
+**What `schema.sql` does for sqlc**: no psql meta-commands and no `BEGIN/COMMIT`; function bodies dollar-quoted inside `-- +goose StatementBegin/End`; every view lists its columns (no `t.*`) and casts every computed column (`::integer`, `::numeric`, `::boolean`, `::date`), so `v_section_sex_day.alive_end` is `int32`, `v_feed_stock.stock_end` is `decimal.Decimal`, `v_egg_day.lay_pct` a nullable decimal, instead of `interface{}`. View columns are generated as nullable by default: wrap with `coalesce` in the query or read pointers.
+
+**Constructs sqlc can't type or generate, and how to query them**
+| Construct | Where | How |
+|---|---|---|
+| Dynamic column sets and filters | PeriodTable, charts, export (`tab` × `detail` × `types` × grain) | hand-written in `periodtable/sql.go`: a fixed per-tab SQL with every column of that tab, filters as parameters, the only variable fragments chosen from a whitelist (never request text); executed with `tx.Query(ctx, sql, args…)` and scanned with `pgx.CollectRows(rows, pgx.RowToStructByName[deltaRow])` into structs with `db:"…"` tags |
+| `set app.today` | tests | `SET` takes no parameters: use `select set_config('app.today', $1, false)` with `pool.Exec` in `AfterConnect` |
+| `generate_series` over parameter dates | dense day lists for a page | cast the output: `select g::date as date from generate_series(sqlc.arg(from_date)::date, sqlc.arg(to_date)::date, interval '1 day') g` (sqlc then sees `date`) |
+| Arrays of ids, overlap filters | farm scope, audit filter | `farm_id = any(sqlc.arg(farm_ids)::uuid[])`, `farm_ids && sqlc.arg(farm_ids)::uuid[]` (explicit casts so sqlc picks `[]uuid.UUID`) |
+| Optional filters | journal, audit | `(sqlc.narg(section_id)::uuid is null or section_id = sqlc.narg(section_id))` |
+| `jsonb` (`audit_log.changes`, `old_values`, `new_values`, `live_event.payload`, `app_setting.value`) | audit, live, settings | sqlc gives `[]byte`; marshal/unmarshal typed Go structs (`[]entries.Change`, live payload structs) in the service |
+| Enum arrays / enum filters | record types, actions | cast in SQL (`sqlc.arg(kinds)::entry_kind[]`); sqlc's generated enum types have `Valid()` |
+| Generated column `egg_production.total_eggs` | eggs insert | never in an INSERT/UPDATE column list; read it like any column |
+| Advisory lock | every write | `-- name: LockFarm :exec` / `select pg_advisory_xact_lock(hashtextextended(sqlc.arg(farm_id)::uuid::text, 0));` |
+| Notification | every write | `-- name: NotifyLive :exec` / `select pg_notify('live_event', sqlc.arg(id)::bigint::text);` |
+| LISTEN / `WaitForNotification` | `live.Listener` | pgx connection API directly, not sqlc |
+| Bulk inserts | `migratehistory` | sqlc `:copyfrom` or `pgx.CopyFrom` (COPY bypasses nothing: constraints and partial unique indexes still apply) |
+| Constraint errors | every write | `var pgErr *pgconn.PgError; errors.As(err, &pgErr)` → `pgErr.Code` (`23505`, `23P01`, `23514`, `23503`) + `pgErr.ConstraintName` → the typed error of §7.0a (`bird_event_daily_uq`/`egg_production_uq`/`feed_allocation_uq`/`weighing_uq` → `ALREADY_ENTERED` with the owning entry id looked up by key) |
+
+### 12.5 Worked example: the Zilnic save, end to end
+`POST /api/entries/daily` (§7.8, rules §6.1–§6.2). Decode → validate → transaction → lock → insert → §6.1 check → `ReconcileCycles` → audit → `live_event` + NOTIFY → response. Code is a sketch for structure; names of helpers are this spec's, signatures may differ.
+
+```go
+// internal/entries/handler.go
+func (h *Handler) CreateDaily(w http.ResponseWriter, r *http.Request) {
+	p := auth.PrincipalFrom(r.Context())                       // set by the auth middleware (401 before this)
+	req, err := httpx.Decode[DailyCreateRequest](w, r, 64<<10) // 1. decode: size limit, unknown fields → 400
+	if err != nil {
+		httpx.WriteError(w, err)
+		return
+	}
+	if issues := req.Validate(h.boot.Codes(r.Context(), req.FarmID)); len(issues) > 0 { // 2. level-1 validation (§7.0b)
+		httpx.WriteError(w, httpx.Invalid(issues))
+		return
+	}
+	res, err := h.svc.CreateDaily(r.Context(), p, req) // 3–11
+	if err != nil {
+		httpx.WriteError(w, err) // 403/409/422 envelope, or 500
+		return
+	}
+	status := http.StatusCreated
+	if res.Replayed || req.DryRun {
+		status = http.StatusOK
+	}
+	httpx.JSON(w, status, res.Body)
+}
+```
+```go
+// internal/entries/daily.go
+func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCreateRequest) (Result, error) {
+	today := timex.Today(s.clock)
+	// 3. authorization and the checks that need no farm state
+	switch {
+	case !p.Role.In(auth.Vet, auth.Manager, auth.Owner):
+		return Result{}, httpx.Forbidden()
+	case !p.CanSeeFarm(req.FarmID):
+		return Result{}, httpx.FarmForbidden() // "Nu ai acces la această fermă."
+	case req.Date.After(today):
+		return Result{}, httpx.Refused(messages.FutureDate(req.Date, today))
+	case p.Role == auth.Vet && req.Date != today:
+		return Result{}, httpx.PastDayVet() // Z1 "Pentru zilele trecute cere managerului."
+	}
+	if req.ClientRequestID != nil { // idempotent retry: answer from the stored save
+		if prev, ok, err := s.replay(ctx, p, *req.ClientRequestID); err != nil || ok {
+			return prev, err
+		}
+	}
+	src, transcript := s.tokens.VoiceSource(p, "zilnic", req.WriteMeta) // §8.9: manual unless the voiceToken verifies
+
+	var out Result
+	err := s.db.InTx(ctx, func(tx db.Tx) error { // 4. one READ COMMITTED transaction
+		q := tx.Q                                                    // *dbq.Queries bound to tx
+		if err := ledger.LockFarms(ctx, q, req.FarmID); err != nil { // 5. pg_advisory_xact_lock, ascending ids
+			return err
+		}
+		st, err := s.loadDailyState(ctx, q, req.FarmID, req.Date) // under the lock: sections with alive_start + inflows
+		if err != nil {                                           // saved that day, egg units, live value keys, mean7,
+			return err // cycle + series status, guide lay %
+		}
+		if st.SeriesClosed {
+			return httpx.SeriesClosed(st.SeriesName) // 409 SERIES_CLOSED
+		}
+		plan := planDaily(st, req)  // 6. level-2 rules: Z3 Z4 Z5 Z7 Z9 refusals, Z6 warnings,
+		if len(plan.Refusals) > 0 { //    rows to insert, the toast and audit summary
+			return plan.RefusedError() // 422 REFUSED (or 409 ALREADY_ENTERED for Z9)
+		}
+		if req.DryRun {
+			out = Result{Body: plan.Preview()}
+			return db.ErrRollback // InTx rolls back and returns nil for this sentinel
+		}
+		entryID, err := q.InsertEntry(ctx, dbq.InsertEntryParams{ // 7. insert the save and its child rows
+			Kind: dbq.EntryKindDaily, FarmID: req.FarmID, Date: req.Date,
+			Source: src, ClientRequestID: req.ClientRequestID, CreatedBy: &p.UserID,
+		})
+		if err != nil {
+			return s.mapInsertErr(ctx, err, req) // 23505 entry_client_request_uq → errReplay
+		}
+		for _, ev := range plan.BirdEvents { // mortality, cull + reason, sexing_error per section × sex
+			if err := q.InsertBirdEvent(ctx, ev.Params(entryID)); err != nil {
+				return s.mapInsertErr(ctx, err, req) // 23505 bird_event_daily_uq → 409 ALREADY_ENTERED + entryId
+			}
+		}
+		for _, eg := range plan.Eggs { // one egg_production per hall (total_eggs is generated)
+			if err := q.InsertEggProduction(ctx, eg.Params(entryID)); err != nil {
+				return s.mapInsertErr(ctx, err, req)
+			}
+		}
+		bad, err := ledger.CheckCounts(ctx, q, plan.Affected, req.Date) // 8. §6.1 over every later day, after the change
+		if err != nil {
+			return err
+		}
+		if len(bad) > 0 {
+			return refusedFromBounds(bad, plan) // field + banner messages with max/min bounds
+		}
+		cyc, err := ledger.ReconcileCycles(ctx, q, req.FarmID, req.Date, today) // 9. §6.4 (a Zilnic save can empty a farm)
+		if err != nil {
+			return err
+		}
+		if err := audit.Write(ctx, q, audit.Row{ // 10. one audit row per save action (§4.10)
+			UserID: &p.UserID, Action: dbq.AuditActionCreate, Entity: "entry", EntityID: entryID,
+			EntryID: &entryID, EntryKind: dbq.EntryKindDaily, RecordTypes: plan.RecordTypes,
+			FarmIDs: []uuid.UUID{req.FarmID}, RecordDate: &req.Date, Summary: plan.Summary,
+			NewValues: plan.Snapshot(), Source: src, VoiceTranscript: transcript,
+		}); err != nil {
+			return err
+		}
+		if err := audit.WriteCycleChanges(ctx, q, cyc); err != nil { // cycle_auto_close / cycle_reopen rows, user_id null
+			return err
+		}
+		alive, err := q.FarmAliveEnd(ctx, dbq.FarmAliveEndParams{FarmID: req.FarmID, Date: today})
+		if err != nil {
+			return err
+		}
+		if err := live.Emit(ctx, q, // 11. live_event rows + pg_notify (delivered at commit)
+			live.EntryCreated(entryID, dbq.EntryKindDaily, plan, p),
+			live.CountsChanged(req.FarmID, req.Date, plan.SectionCodes, alive),
+			live.CycleEvents(cyc)...,
+		); err != nil {
+			return err
+		}
+		out = Result{Body: EntryWriteResponse{
+			Entry:    httpx.EntryRef{ID: entryID, Kind: "daily", Version: version(s.clock.Now())},
+			Warnings: plan.Warnings, // Z6 MORTALITY_SPIKE etc., never nil
+			Toast:    plan.Toast(),  // "Zilnic salvat · 4 secțiuni · ♀ −3 · ♂ 0"
+			Alive:    &httpx.SexPair[int]{F: int(alive.F), M: int(alive.M)},
+			AsOf:     timex.LocalTime(s.clock.Now()),
+		}}
+		return nil
+	})
+	if errors.Is(err, errReplay) { // a concurrent duplicate won the unique index
+		prev, _, rerr := s.replay(ctx, p, *req.ClientRequestID)
+		return prev, rerr
+	}
+	return out, err
+}
+```
+```go
+// internal/db/tx.go
+var ErrRollback = errors.New("rollback")
+
+func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
+	err := pgx.BeginTxFunc(ctx, s.pool, pgx.TxOptions{IsoLevel: pgx.ReadCommitted}, func(t pgx.Tx) error {
+		return fn(Tx{Tx: t, Q: dbq.New(t)})
+	})
+	if errors.Is(err, ErrRollback) {
+		return nil
+	}
+	return err
+}
+
+// internal/ledger/lock.go
+func LockFarms(ctx context.Context, q *dbq.Queries, ids ...uuid.UUID) error {
+	ids = slices.Clone(ids)
+	slices.SortFunc(ids, func(a, b uuid.UUID) int { return bytes.Compare(a[:], b[:]) }) // = ascending text order
+	for _, id := range slices.Compact(ids) {
+		if err := q.LockFarm(ctx, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+```
+```sql
+-- db/queries/ledger.sql (sqlc)
+-- name: LockFarm :exec
+select pg_advisory_xact_lock(hashtextextended(sqlc.arg(farm_id)::uuid::text, 0));
+
+-- name: NegativeCounts :many
+-- §6.1 step 2: the (section, sex) pairs that would go below 0 on or after the earliest changed day.
+select section_id, sex,
+       min(date)::date        as first_negative_date,
+       max(date)::date        as last_negative_date,
+       min(alive_end)::integer as min_alive_end
+from v_section_sex_day
+where section_id = any(sqlc.arg(section_ids)::uuid[])
+  and date >= sqlc.arg(from_date)::date
+  and alive_end < 0
+group by section_id, sex;
+
+-- name: FarmAliveEnd :one
+select coalesce(sum(alive_end) filter (where sex = 'F'), 0)::integer as f,
+       coalesce(sum(alive_end) filter (where sex = 'M'), 0)::integer as m
+from v_farm_sex_day
+where farm_id = sqlc.arg(farm_id) and date = sqlc.arg(date)::date;
+
+-- db/queries/entries.sql
+-- name: InsertEntry :one
+insert into entry (kind, farm_id, peer_farm_id, date, series_id, buyer, note, source, client_request_id, created_by)
+values (sqlc.arg(kind), sqlc.arg(farm_id), sqlc.narg(peer_farm_id), sqlc.arg(date), sqlc.narg(series_id),
+        sqlc.narg(buyer), sqlc.narg(note), sqlc.arg(source), sqlc.narg(client_request_id), sqlc.narg(created_by))
+returning id;
+
+-- name: InsertBirdEvent :exec
+insert into bird_event (entry_id, farm_id, section_id, date, sex, type, qty, cull_reason, peer_section_id, note)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+
+-- db/queries/live.sql
+-- name: InsertLiveEvent :one
+insert into live_event (farm_ids, type, payload) values (sqlc.arg(farm_ids)::uuid[], sqlc.arg(type), sqlc.arg(payload)) returning id;
+
+-- name: NotifyLive :exec
+select pg_notify('live_event', sqlc.arg(id)::bigint::text);
+```
+Notes on the example:
+- **Order matters**: the lock is taken before any count is read, so `loadDailyState`, the per-day bound (Z5), `CheckCounts` and `ReconcileCycles` all see a stable farm; a second save of the same farm waits at `LockFarm` until this one commits, then sees its rows (READ COMMITTED reads the newest committed data per statement).
+- **Idempotency** (§7.0): `replay` finds the entry by `client_request_id` and the same `created_by` and rebuilds `EntryWriteResponse` from the stored rows (same `entry` and `toast`; `alive`/`asOf` as of now; `warnings: []`); the same id from a different user (random UUIDs: practically impossible) gets `409 STALE` The unique index `entry_client_request_uq` settles the race between two identical concurrent requests.
+- **Errors inside `InTx`** roll the transaction back; nothing is half-saved, and no notification is sent (it would only be delivered at commit).
+- **Edits and corrections** (`PUT /api/entries/{id}`) use the same steps with the stored entry's farm (both farms for a transfer, ascending ids), soft-delete/update/insert of child rows by key, `action = update`, the diff as `changes`, and `ifVersion` compared under the lock.
+- The same skeleton serves every write: only `loadXState`, `planX` and the child inserts change per kind.
+
+### 12.6 Build order (milestones follow the screens' build order, screens.md)
 | M | Deliver | Done when |
 |---|---|---|
-| M0 | repo wiring, DB baseline (`schema.sql`), auth (login/logout/me, sessions, throttling), permissions helpers, error envelope, `create-owner` | login works; matrix tests for auth routes |
-| M1 | history migration + dev seed; counts views; golden tests 1–12, 26–27 | §10.3 verification passes |
-| M2 | PeriodTable (`/api/table`) for farm Rezumat + load-more + totals; farm page + summary (S4) | goldens 13–25 |
-| M3 | Hrană zilnică form + save (S7), stock/days left (S11 Stoc), feed reports + Consum | goldens 26–28 |
-| M4 | series page + track (S3); S11 Livrări, Cost; Prețuri (S12); Livrare (S13) | goldens 29–31 |
-| M5 | Zilnic (S6) incl. eggs/Cat., entries edit/correct/delete/undo with audit, §6.1 | golden 33, 37; correction refusals |
-| M6 | remaining tabs (Păsări + Jurnal, Greutate, Producție), section/hall pages (S5) | |
-| M7 | Transfer (S9), Vânzare (S10), cycle reconcile, manual cycle, guide change | cycle tests |
-| M8 | Acasă per role (S2), alerts, Lipsesc date | golden 14, 34 |
-| M9 | Producție report (S14), Cântărire (S8), Introdus azi (S15), Corectează (S16), Istoric (S17), export .xlsx | golden 32 |
-| M10 | Setări: Serii (S18), Ferme (S19), Ghiduri + import (S20), Tipuri (S21), Utilizatori (S22) | G1–G15, U1–U9 |
-| M11 | live updates (SSE) | replay + filter tests |
-| M12 | voice: STT adapter, command pipeline, catalogue, answers, fast path, eval set | eval ≥ 95 % intent accuracy on the set *(target, to agree)* |
+| M0 | Go module in `backend/`, `go.mod` toolchain pin, `sqlc.yaml`, `git mv` of `schema.sql` to `db/migrations/0001_baseline.sql` + `0002_roles.sql`, `cmd/api` (`serve`, `migrate`), `platform` (config, slog, httpx decode/JSON/errors/middleware, timex, num, fmtx, tokens), `db` (pool, InTx, error mapping), auth (login/logout/me, argon2id, sessions, throttling, CSRF/Origin), `/healthz` `/readyz`, Dockerfile, CI (`gofmt`, `go vet`, `staticcheck`, `sqlc diff`, `go test -race` with testcontainers), `cmd/create-owner` | login works end to end through the reverse proxy; auth rows of the §3.3 matrix test pass; image builds and starts |
+| M1 | `internal/migratehistory` + `cmd/migrate-history` (+ `--seed-dev`), `internal/testdb` template fixture, `calc` age/week/counts, golden test harness | §10.3 verification passes; goldens 1–12, 26–27 |
+| M2 | `periodtable` (`/api/table`) for farm Rezumat + load-more + totals; farm page + summary (S4); JSON golden files | goldens 13–25 |
+| M3 | Hrană zilnică form state + save (S7) on the §12.5 skeleton, stock/days left (S11 Stoc), feed report + Consum | goldens 26–28 |
+| M4 | series page + track (S3); S11 Livrări, Cost; Prețuri (S12) + price undo tokens; Livrare (S13) | goldens 29–31; viewer JSON has no price keys |
+| M5 | Zilnic (S6) incl. eggs/Cat. (§12.5), entries edit/correct/delete/undo/restore with audit, `ledger.CheckCounts` | goldens 33, 37; correction refusals; the concurrency tests of §11.8 |
+| M6 | remaining tabs (Păsări + Jurnal, Greutate, Producție), section/hall pages (S5), `/api/charts` | |
+| M7 | Transfer (S9), Vânzare (S10), `ledger.ReconcileCycles`, manual cycle (D201), guide change | cycle tests; opposite-direction transfer test |
+| M8 | Acasă per role (S2), alerts, Lipsesc date | goldens 14, 34 |
+| M9 | Producție report (S14), Cântărire (S8), Introdus azi (S15), Corectează (S16), Istoric (S17), `export` (.xlsx with excelize) | golden 32; export of a whole cycle ≤ 3 s |
+| M10 | Setări: Serii (S18), Ferme (S19), Ghiduri + import (S20), Tipuri (S21), Utilizatori (S22), setup undo tokens | G1–G15, U1–U9; full §3.3 matrix |
+| M11 | `live`: Hub, Listener (LISTEN/NOTIFY), SSE handler, purge | replay, filter, lagging-subscriber and two-instance tests |
+| M12 | `voice`: providers (STT, Anthropic intent, fake), `/stt`, WebSocket `/stream`, catalogue + `BuildTools`, pipeline, answers, fast path, tokens, eval set | eval ≥ 95 % intent accuracy on the set *(target, to agree)*; WebSocket limit tests |
 
 ---
 

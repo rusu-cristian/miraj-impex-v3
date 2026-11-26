@@ -1,11 +1,14 @@
+-- +goose Up
 -- =====================================================================================================================
--- Impex Line · PostgreSQL schema (target: PostgreSQL 16)
+-- Impex Line · PostgreSQL schema (target: PostgreSQL 16) · baseline migration
 -- Companion of backend/SPEC.md §4 (tables) and §5 (derived calculations). Decision ids (Dnn) refer to
 -- design/kit/decisions-current.md; later decisions win over older spec text.
+-- The backend is a Go service (SPEC §12, D202): this file is copied verbatim to db/migrations/0001_baseline.sql (goose)
+-- and is the schema sqlc reads (sqlc.yaml `schema: db/migrations`). The `-- +goose` lines are plain comments to psql.
 --
 -- Principles
 --   * Bird counts are NEVER stored as truth (D01, PRODUCT "Counts come from events"): alive = running SUM(bird_event.qty)
---     per section × sex. Views below derive every count; snapshots, if added later, are caches (SPEC §4.13).
+--     per section × sex. Views below derive every count; snapshots, if added later, are caches (SPEC §4.2).
 --   * One form save = one `entry` row (D168, D172, D178); its figures live in child tables that point back to it.
 --     Corrections act on the whole entry; every change is in `audit_log`.
 --   * Soft delete: entry.deleted_at, mirrored on its child rows in the same transaction (partial unique indexes and views
@@ -13,10 +16,22 @@
 --     that the screens let the owner delete (D114, D116).
 --   * Empty is null, never 0 (spec C1): a 0 row means "entered 0" (e.g. "Fără pierderi azi"), no row means "not entered".
 --   * Dates are local days in Europe/Chisinau (SPEC §11.1). Timestamps are timestamptz.
--- Sanity-checked with psql 16 (schema loads clean, views return the golden values of SPEC §11.7 on the Hîrbovăț extract).
+--
+-- Loading and tooling
+--   * No psql meta-commands and no BEGIN/COMMIT: goose runs the file in one transaction; by hand use
+--     `psql -v ON_ERROR_STOP=1 --single-transaction -f backend/schema.sql`.
+--   * Function bodies are dollar-quoted and wrapped in `-- +goose StatementBegin/StatementEnd` (they contain `;` or `$$`).
+--   * sqlc: every view column has an explicit type (casts below), so generated Go fields are int32 / pgtype.Numeric /
+--     pgtype.Date / bool instead of interface{}. Views list their columns (no `t.*`). What sqlc cannot type or
+--     generate is listed in SPEC §12.4 (dynamic PeriodTable SQL, generate_series over a parameter range, the
+--     `app.today` setting): those queries are hand-written with pgx and scanned with pgx.CollectRows.
+--   * The generated column `egg_production.total_eggs` must never appear in an INSERT/UPDATE column list.
+--   * Constraint errors the Go code maps (SPEC §7.0): 23505 unique (ALREADY_ENTERED, name clashes), 23P01 exclusion
+--     (cycle_no_overlap), 23514 check (incl. cycle_guide_type_trg), 23503 foreign key.
+-- Checked 27.11.2026 with PostgreSQL 16.15: loads clean in one transaction; with the Hîrbovăț extract loaded and
+-- `set app.today = '2026-11-18'` the views return alive ♀ 12 561 · ♂ 794, lay 41,1 %, stock 31 664,9 / 1 781 kg (SPEC §11.7).
 -- =====================================================================================================================
 
-begin;
 
 create extension if not exists btree_gist;   -- exclusion constraint on cycle date ranges
 
@@ -52,12 +67,16 @@ create type audit_action     as enum ('create', 'update', 'delete', 'undo', 'res
 -- ---------------------------------------------------------------------------------------------------------------------
 -- The business day (SPEC §11.1). All "today", "same day until 23:59" and "missing from 12:00" rules use this clock.
 -- Tests freeze the day with `set app.today = '2026-11-18'` (SPEC §11.7); production leaves it unset.
+-- +goose StatementBegin
 create or replace function app_today() returns date
   language sql stable as $$
     select coalesce(nullif(current_setting('app.today', true), '')::date, (now() at time zone 'Europe/Chisinau')::date) $$;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 create or replace function app_now_local() returns timestamp
   language sql stable as $$ select now() at time zone 'Europe/Chisinau' $$;
+-- +goose StatementEnd
 
 -- ---------------------------------------------------------------------------------------------------------------------
 -- Users, access, sessions (spec A1, A2; D78, D118, D119)
@@ -220,6 +239,7 @@ create unique index cycle_one_open_per_farm on cycle (farm_id) where end_date is
 
 -- cycle.guide_id must have the farm's type (B1, B4). A trigger, not a composite FK: a closed cycle keeps its guide even
 -- if the farm's type changes later (D110 allows a type change only while no cycle is open).
+-- +goose StatementBegin
 create or replace function cycle_guide_type_check() returns trigger language plpgsql as $$
 begin
   if new.guide_id is not null and
@@ -228,6 +248,7 @@ begin
   end if;
   return new;
 end $$;
+-- +goose StatementEnd
 create trigger cycle_guide_type_trg before insert or update of guide_id, farm_id on cycle
   for each row execute function cycle_guide_type_check();
 create index cycle_series_idx on cycle (series_id);
@@ -507,26 +528,35 @@ insert into app_setting (key, value, note) values
 -- =====================================================================================================================
 
 -- Age and week (D151)
+-- +goose StatementBegin
 create or replace function age_days(p_series uuid, p_date date) returns integer
   language sql stable as $$
     select s.age_at_placement_days + (p_date - s.placement_date) from series s where s.id = p_series $$;
+-- +goose StatementEnd
+-- +goose StatementBegin
 create or replace function sapt(p_series uuid, p_date date) returns integer
   language sql stable as $$ select floor(age_days(p_series, p_date) / 7.0)::int + 1 $$;
+-- +goose StatementEnd
 comment on function sapt(uuid, date) is 'SAPT = floor(age_days / 7) + 1: 13 days → 2, 14 days → 3; Seria 2026 18.11.2026 → age 407, SAPT 59.';
+
+-- Explicit column lists and casts below are for sqlc (typed Go fields); they do not change any value.
 
 -- The cycle a farm-day belongs to
 create or replace view v_cycle as
-select c.*, s.name as series_name, s.placement_date, s.age_at_placement_days,
-       age_days(c.series_id, c.start_date)                     as age_days_start,
-       sapt(c.series_id, c.start_date)                         as sapt_start,
-       sapt(c.series_id, coalesce(c.end_date, app_today()))    as sapt_end_or_today,
-       (c.end_date is null)                                    as is_open
+select c.id, c.series_id, c.farm_id, c.guide_id, c.start_date, c.end_date, c.started_by, c.start_inferred, c.ended_by,
+       c.start_reason, c.created_at, c.created_by,
+       s.name as series_name, s.placement_date, s.age_at_placement_days,
+       age_days(c.series_id, c.start_date)::integer                    as age_days_start,
+       sapt(c.series_id, c.start_date)::integer                        as sapt_start,
+       sapt(c.series_id, coalesce(c.end_date, app_today()))::integer   as sapt_end_or_today,
+       (c.end_date is null)::boolean                                   as is_open
 from cycle c join series s on s.id = c.series_id;
 
 -- Live bird events with display counts
 create or replace view v_bird_event as
-select e.*, n.kind as entry_kind, n.created_by, n.created_at,
-       case when e.type in ('mortality', 'cull', 'sale') then -e.qty end as count_removed
+select e.id, e.entry_id, e.farm_id, e.section_id, e.date, e.sex, e.type, e.qty, e.cull_reason, e.peer_section_id, e.note,
+       n.kind as entry_kind, n.created_by, n.created_at,
+       (case when e.type in ('mortality', 'cull', 'sale') then -e.qty end)::integer as count_removed
 from bird_event e
 join entry n on n.id = e.entry_id
 where e.deleted_at is null and n.deleted_at is null;
@@ -534,16 +564,16 @@ where e.deleted_at is null and n.deleted_at is null;
 -- Per section × sex × day deltas (only days with events)
 create or replace view v_section_sex_delta as
 select section_id, farm_id, sex, date,
-       coalesce(sum(qty) filter (where type = 'placement'), 0)                as placed,
-       coalesce(-sum(qty) filter (where type = 'mortality'), 0)               as deaths,
-       coalesce(-sum(qty) filter (where type = 'cull'), 0)                    as culls,
-       coalesce(sum(qty) filter (where type = 'sexing_error'), 0)             as sexing_error,
-       coalesce(sum(qty) filter (where type = 'transfer' and qty > 0), 0)     as transfer_in,
-       coalesce(-sum(qty) filter (where type = 'transfer' and qty < 0), 0)    as transfer_out,
-       coalesce(-sum(qty) filter (where type = 'sale'), 0)                    as sold,
-       coalesce(sum(qty) filter (where type = 'adjustment'), 0)               as adjustment,
-       sum(qty)                                                               as delta,
-       bool_or(type = 'mortality')                                            as mortality_entered
+       coalesce(sum(qty) filter (where type = 'placement'), 0)::integer                as placed,
+       coalesce(-sum(qty) filter (where type = 'mortality'), 0)::integer               as deaths,
+       coalesce(-sum(qty) filter (where type = 'cull'), 0)::integer                    as culls,
+       coalesce(sum(qty) filter (where type = 'sexing_error'), 0)::integer             as sexing_error,
+       coalesce(sum(qty) filter (where type = 'transfer' and qty > 0), 0)::integer     as transfer_in,
+       coalesce(-sum(qty) filter (where type = 'transfer' and qty < 0), 0)::integer    as transfer_out,
+       coalesce(-sum(qty) filter (where type = 'sale'), 0)::integer                    as sold,
+       coalesce(sum(qty) filter (where type = 'adjustment'), 0)::integer               as adjustment,
+       sum(qty)::integer                                                               as delta,
+       bool_or(type = 'mortality')::boolean                                            as mortality_entered
 from v_bird_event
 group by section_id, farm_id, sex, date;
 
@@ -556,13 +586,14 @@ with b as (
   select b.section_id, b.farm_id, b.sex, g::date as date
   from b, generate_series(b.d0, b.d1, interval '1 day') g
 )
-select d.section_id, d.farm_id, d.sex, d.date,
-       coalesce(x.placed, 0) as placed, coalesce(x.deaths, 0) as deaths, coalesce(x.culls, 0) as culls,
-       coalesce(x.sexing_error, 0) as sexing_error, coalesce(x.transfer_in, 0) as transfer_in,
-       coalesce(x.transfer_out, 0) as transfer_out, coalesce(x.sold, 0) as sold, coalesce(x.adjustment, 0) as adjustment,
-       coalesce(x.mortality_entered, false) as mortality_entered,
-       sum(coalesce(x.delta, 0)) over w - coalesce(x.delta, 0) as alive_start,
-       sum(coalesce(x.delta, 0)) over w                         as alive_end
+select d.section_id, d.farm_id, d.sex, d.date::date as date,
+       coalesce(x.placed, 0)::integer as placed, coalesce(x.deaths, 0)::integer as deaths, coalesce(x.culls, 0)::integer as culls,
+       coalesce(x.sexing_error, 0)::integer as sexing_error, coalesce(x.transfer_in, 0)::integer as transfer_in,
+       coalesce(x.transfer_out, 0)::integer as transfer_out, coalesce(x.sold, 0)::integer as sold,
+       coalesce(x.adjustment, 0)::integer as adjustment,
+       coalesce(x.mortality_entered, false)::boolean as mortality_entered,
+       (sum(coalesce(x.delta, 0)) over w - coalesce(x.delta, 0))::integer as alive_start,
+       (sum(coalesce(x.delta, 0)) over w)::integer                         as alive_end
 from days d
 left join v_section_sex_delta x using (section_id, farm_id, sex, date)
 window w as (partition by d.section_id, d.sex order by d.date rows between unbounded preceding and current row);
@@ -571,15 +602,16 @@ comment on view v_section_sex_day is 'Invariant (PRODUCT, spec §1): alive_end >
 -- Farm × sex × day totals (= Σ sections, D156: never a register Total row)
 create or replace view v_farm_sex_day as
 select farm_id, sex, date,
-       sum(alive_start) as alive_start, sum(alive_end) as alive_end,
-       sum(placed) as placed, sum(deaths) as deaths, sum(culls) as culls, sum(sexing_error) as sexing_error,
-       sum(transfer_in) as transfer_in, sum(transfer_out) as transfer_out, sum(sold) as sold, sum(adjustment) as adjustment
+       sum(alive_start)::integer as alive_start, sum(alive_end)::integer as alive_end,
+       sum(placed)::integer as placed, sum(deaths)::integer as deaths, sum(culls)::integer as culls,
+       sum(sexing_error)::integer as sexing_error, sum(transfer_in)::integer as transfer_in,
+       sum(transfer_out)::integer as transfer_out, sum(sold)::integer as sold, sum(adjustment)::integer as adjustment
 from v_section_sex_day
 group by farm_id, sex, date;
 
 -- Egg unit per section: the hall (parent) or the section itself
 create or replace view v_egg_unit as
-select s.id as section_id, s.farm_id, coalesce(s.parent_id, s.id) as egg_unit_id
+select s.id as section_id, s.farm_id, coalesce(s.parent_id, s.id)::uuid as egg_unit_id
 from section s
 where not exists (select 1 from section c where c.parent_id = s.id);
 
@@ -587,8 +619,8 @@ where not exists (select 1 from section c where c.parent_id = s.id);
 create or replace view v_egg_day as
 select ep.farm_id, ep.section_id as egg_unit_id, ep.date,
        ep.total_eggs, ep.hatching_eggs, ep.floor_eggs, ep.cat1, ep.cat2, ep.cat3, ep.avg_egg_weight_g,
-       h.hens_start,
-       case when h.hens_start > 0 and ep.total_eggs is not null then 100.0 * ep.total_eggs / h.hens_start end as lay_pct
+       h.hens_start::integer as hens_start,
+       (case when h.hens_start > 0 and ep.total_eggs is not null then 100.0 * ep.total_eggs / h.hens_start end)::numeric as lay_pct
 from egg_production ep
 join entry n on n.id = ep.entry_id and n.deleted_at is null
 left join lateral (
@@ -601,8 +633,8 @@ where ep.deleted_at is null;
 -- Daily feed consumption (kg) per allocation: g × birds at the start of the day (DATA03), or the migrated typed kg
 create or replace view v_feed_consumption as
 select fa.id, fa.entry_id, fa.farm_id, fa.section_id, fa.date, fa.sex, fa.feed_type_id, fa.g_per_bird,
-       coalesce(d.alive_start, 0) as birds_start,
-       coalesce(fa.kg_recorded, fa.g_per_bird * coalesce(d.alive_start, 0) / 1000.0) as kg   -- exact; round only for display
+       coalesce(d.alive_start, 0)::integer as birds_start,
+       coalesce(fa.kg_recorded, fa.g_per_bird * coalesce(d.alive_start, 0) / 1000.0)::numeric as kg   -- exact; round only for display
 from feed_allocation fa
 join entry n on n.id = fa.entry_id and n.deleted_at is null
 left join v_section_sex_day d on d.section_id = fa.section_id and d.sex = fa.sex and d.date = fa.date
@@ -611,25 +643,28 @@ where fa.deleted_at is null;
 -- Stock movements per farm × feed type × day, and the running stock at the end of each movement day
 create or replace view v_feed_stock as
 with m as (
-  select fd.farm_id, fd.feed_type_id, fd.date, fd.qty_kg as delivered, 0::numeric as consumed, 0::numeric as adjusted
+  select fd.farm_id, fd.feed_type_id, fd.date, fd.qty_kg::numeric as delivered, 0::numeric as consumed, 0::numeric as adjusted
   from feed_delivery fd join entry n on n.id = fd.entry_id and n.deleted_at is null where fd.deleted_at is null
   union all
-  select farm_id, feed_type_id, date, 0, kg, 0 from v_feed_consumption
+  select farm_id, feed_type_id, date, 0::numeric, kg, 0::numeric from v_feed_consumption
   union all
-  select a.farm_id, a.feed_type_id, a.date, 0, 0, a.qty_kg from feed_stock_adjustment a
+  select a.farm_id, a.feed_type_id, a.date, 0::numeric, 0::numeric, a.qty_kg::numeric from feed_stock_adjustment a
 ), d as (
   select farm_id, feed_type_id, date, sum(delivered) as delivered, sum(consumed) as consumed, sum(adjusted) as adjusted
   from m group by farm_id, feed_type_id, date
 )
-select d.*, sum(delivered - consumed + adjusted) over (partition by farm_id, feed_type_id order by date) as stock_end
+select farm_id, feed_type_id, date,
+       delivered::numeric as delivered, consumed::numeric as consumed, adjusted::numeric as adjusted,
+       (sum(delivered - consumed + adjusted) over (partition by farm_id, feed_type_id order by date))::numeric as stock_end
 from d;
 comment on view v_feed_stock is 'stock_end(date) = Σ deliveries − Σ consumption + Σ adjustments up to that day. Hîrbovăț 18.11.2026: Breeder 2 31 664,9 kg · Cocoși 1 781 kg.';
 
 -- Section codes with their hall (labels for tables, audit keys)
 create or replace view v_section_label as
 select s.id, s.farm_id, s.code, s.parent_id, p.code as hall_code,
-       exists (select 1 from section c where c.parent_id = s.id) as is_hall,
-       s.retired_at is not null as retired
+       exists (select 1 from section c where c.parent_id = s.id)::boolean as is_hall,
+       (s.retired_at is not null)::boolean as retired
 from section s left join section p on p.id = s.parent_id;
 
-commit;
+-- +goose Down
+-- Baseline: no down migration (restore from a backup instead).
