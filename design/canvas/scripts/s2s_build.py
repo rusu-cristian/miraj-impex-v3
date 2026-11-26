@@ -194,6 +194,27 @@ up0 = (f'<section class="ip-unpriced" aria-labelledby="up"><div class="ip-unpric
 boards.append(('proprietar-desktop--toate-cu-pret', 'proprietar · desktop · toate livrările au preț · exemplu de stare (D39)', 'o', A.desktop('Proprietar', [
     A.pagehead(A.CTX_OWN), A.track(), f'<div class="s2-cols">{A.alerts(True)}{up0}</div>', A.stock(), A.farms_block()])))
 
+# 13 · proprietar · desktop · 2 înregistrări noi (MO03, D197; D39: the 2 records): the owner has read down to Ferme (the page
+# scrolled to its end, 1440×1024 viewport), 2 records arrive; nothing is applied under the reader: the bar "2 înregistrări noi
+# · Arată" floats at the top (additions.css §76 .ip-livedock, sticky, 0 high), the page still shows the 13:16 state
+# ("Actualizat 13:16", the last applied record, the real 13:16 sale). Board CSS (this board only) stands in for the scroll.
+LAST = R.EVENTS[0]; assert LAST['at'] == '2026-11-18T13:16'
+LIVEBAR = ('<div class="ip-livedock s2s-dock"><button type="button" class="ip-livebar" aria-describedby="s2s-lv">'
+           '<svg class="ip-icon ip-icon--16" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>'
+           '<span>2 înregistrări noi</span><span aria-hidden="true">·</span><span class="ip-livebar__key">Arată</span></button>'
+           '<span class="ip-sr" id="s2s-lv">Le adaugă în pagină și urcă la începutul ei.</span></div>'
+           '<span class="ip-sr" role="status" aria-live="polite">2 înregistrări noi. Apasă Arată ca să le vezi.</span>')
+CTX_AT = f'{A.CTX_OWN} · <span class="ip-live__at">ACTUALIZAT {LAST["at"][11:16]}</span>'
+boards.append(('proprietar-desktop--inregistrari-noi', 'proprietar · desktop · 2 înregistrări noi, derulat la Ferme (live, D197) · exemplu de stare (D39): cele 2 înregistrări', 'o',
+    A.desktop('Proprietar', [LIVEBAR, '<div class="s2s-away">', A.pagehead(CTX_AT), A.track(), f'<div class="s2-cols">{A.alerts(True)}{A.unpriced()}</div>',
+                             A.stock(), A.farms_block(), '</div>'])))
+# the scroll, drawn: the page (1127 at 1440) scrolled to its end in the 1024 viewport = 103 px up; the content starts at 24 − 103 = −79
+# (main padding 24, the dock moved up to space-2 under the viewport's top, then the main's 24 gap); board-only lines
+CSS_X = {'proprietar-desktop--inregistrari-noi': """
+.s2s-dock{margin-top:calc(var(--space-2) - var(--space-6))}
+.s2s-away{display:flex;flex-direction:column;gap:var(--space-6);margin-top:-111px} /* board only: 8 + 24 − 111 = −79 */
+.ip-shell__main:has(> .s2s-away){overflow:clip}"""}
+
 # ---------- S2V · Observator (D89) ----------
 def v_alerts(u=''):
     al = A.alerts(True, u)  # the owner's 4 alerts: the lipsă rows link to the section page (Deschide secțiunea), never to a form
@@ -259,7 +280,7 @@ class Component extends DCLogic {{ renderVals() {{ return {{}}; }} }}
         out.append((stem, title, VH, 390))
     else:
         h = HEIGHTS.get(stem, 1024)
-        s4.write(stem, title, body, H=h, css=CSS_DS)
+        s4.write(stem, title, body, H=h, css=CSS_DS + CSS_X.get(slug, ''))   # CSS_X: board-only lines (MO03)
         out.append((stem, title, h, 1440))
 V_OUT = [A.write_phone(f'{STEM0}--observator', f'{TITLE0} · observator · telefon', VIEWER_P)]  # FY03: phone farms are ip-fsum--touch, no screen copy
 h = HEIGHTS.get(f'{STEM0}--observator-desktop', 1024)

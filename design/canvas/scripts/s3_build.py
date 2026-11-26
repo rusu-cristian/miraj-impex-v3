@@ -167,6 +167,8 @@ def track(mode='default', phone=False):
 <div class="s4-tight"><div class="ip-trackbox">{svgs}</div>{legend}</div>
 </section>'''
 
+XIN_LIVE = [a for a in R.TR['arrivals'] if a['date'] == '2026-02-28']   # MO03 (D39): the last real Telița → Hîrbovăț day, shown as arriving today
+assert [a['section'] for a in XIN_LIVE] == ['H7.1', 'H7.2']
 def track_svg(mode, TW):
     phone = TW == TW_P
     LX = 72 if phone else 88            # lane-label column
@@ -223,12 +225,20 @@ def track_svg(mode, TW):
         assert xt + 4 + RO_W <= TW
         g += (f'<line class="today" x1="{xt}" x2="{xt}" y1="{top}" y2="{H + 4}"/><text class="todaylbl" x="{xt}" y="{top - 3}" text-anchor="middle">azi {R.ddm(TODAY)}</text>'
               f'<rect class="ro" x="{round(xt + 4, 1)}" y="{yh}" width="{RO_W}" height="16" rx="2"/><text class="rotxt" x="{round(xt + 4 + RO_W / 2, 1)}" y="{yh + 12}" text-anchor="middle">SAPT {WK}</text>')
+        if mode == 'xfer':   # MO03 (D197), D39: a transfer arriving today, drawn with the 28.02.2026 H2 → H7.1, H7.2 figures (7 001 găini)
+            xq = sum(a['qty'] for a in XIN_LIVE); xs = ', '.join(a['section'] for a in XIN_LIVE)
+            yt2, yb2 = ly['telita'] + 23, ly['hirbovat'] + 3; ym2 = (yt2 + yb2) / 2
+            g += (f'<g class="ip-track__live" data-live-rec="transfer"><line class="link" x1="{xt}" y1="{yt2}" x2="{xt}" y2="{yb2}"/>'
+                  f'<circle class="linkdot" cx="{xt}" cy="{ym2}" r="3"/><text class="xferlbl" x="{round(xt - 8, 1)}" y="{ly["telita"] + 17}" text-anchor="end">'
+                  f'Transfer azi · Telița H2 → {xs} · {n(xq)} găini</text></g>')
         if mode == 'viewer':
             desc = f'Seria 2026, doar fermele la care ai acces. Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, sapt. {WK}.'
         else:
             desc = (f'Seria 2026, 2 ferme. Telița: creștere {ddate(cT["start_date"])}–{ddate(cT["end_date"])}, {TEL_SPAN.replace("SAPT", "sapt.")}, închis, început prin populare. '
                     f'Transfer Telița → Hîrbovăț {XSPAN}: găini {n(ARR["F"])}, cocoși {n(ARR["M"])}. '
                     f'Hîrbovăț: ouat din {ddate(cH["start_date"])}, deschis, azi {ddate(TODAY)}, sapt. {WK}.')
+            if mode == 'xfer':
+                desc += f' Transfer azi: Telița H2 → {", ".join(a["section"] for a in XIN_LIVE)}, găini {n(sum(a["qty"] for a in XIN_LIVE))} (exemplu).'
     tk = ''
     for d, lbl in months(d0, d1):
         x = tx(d.isoformat()); anc = 'start' if x - LX < 8 else 'middle'
@@ -524,11 +534,11 @@ def panel_loading():
 # ---------- page (D174: header → CycleTrack → tabs → table + notes → Readouts → Ferme) ----------
 def page(mode='default'):
     series = '2025' if mode == 'closed' else '2026'
-    hmode = 'default' if mode in ('all', '8') else mode
+    hmode = 'default' if mode in ('all', '8', 'xfer') else mode
     if mode == 'loading':
         top, pn, farms = track_loading(), panel_loading(), summaries_loading()
     else:
-        top, pn, farms = track(hmode), panel(mode), summaries(hmode)
+        top, pn, farms = track('xfer' if mode == 'xfer' else hmode), panel(mode), summaries(hmode)
     main = f'''<main class="ip-shell__main s4-main">
 {header(hmode)}
 {top}
@@ -614,6 +624,7 @@ BOARDS = [
  (B + '--fara-acces', 'S3 · Seria 2026 · fără acces (Observator, doar Hîrbovăț)', 'viewer'),
  (B + '--8-saptamani', 'S3 · Seria 2026 · 8 săptămâni (după „Încarcă încă 4 săptămâni”)', '8'),
  (B + '--inceputul-seriei', 'S3 · Seria 2026 · începutul seriei (încărcat până la SAPT 1, derulat la SAPT 22–19, transfer)', 'all'),
+ (B + '--transfer-azi', 'S3 · Seria 2026 · transfer azi (live, D197) · exemplu de stare (D39): transferul Telița H2 → H7.1, H7.2 din 28.02.2026 (7 001 găini) arătat ca sosit azi', 'xfer'),   # MO03
 ]
 PHONE = (B + '--telefon', 'S3 · Seria 2026 · telefon')
 if __name__ == '__main__':

@@ -428,6 +428,7 @@ The full specs are in `components.md`. Live previews are in the Impex Line Panel
 - 120ms for key presses (scale 0.97), menus, toggles and table rows; 200ms for dialogs, the side panel, toasts and banners; 280ms for phone sheets and page-level changes.
 - Things enter from where they come (sheets and toasts from the foot, the panel from the right, menus from their field) and leave the same way.
 - Lamps don't blink. Charts, numbers, table cells and navigation don't animate. Reduced motion keeps the fades, drops the movement.
+- Live updates (D197, §76) are the one place data moves: a new row rolls in 8 px from above + opacity (200ms) and its record tint fades once over 1.6s (linear, `--ip-dur-tint`), "Nou" until seen; a changed value crossfades 4 px (never counts) and tints its cell and totals; a new transfer mark grows 0.96 → 1 at the azi line; a reader scrolled away gets "N înregistrări noi · Arată" instead.
 
 **Icons:** line icons, 1.75 stroke, at 14/16/18/22px. Record icons are fixed per type and reserved.
 

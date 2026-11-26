@@ -13,6 +13,8 @@ Hîrbovăț · Seria 2026, period "Ciclul curent" (D191; the tables open on its 
   touch size and "% cumulat" with the cull note (D171); Readouts without their GuideChart (as S14 phone).
 - Păsări · telefon · filtre (390×844): the FilterBar BottomSheet open: Perioadă and Pas at touch size, the record-type tags
   as a radiogroup of touch chips (one on), Exportă (the whole period, D191).
+- MO03 (D197): Rezumat · rând nou (desktop): the 13:16 sale arriving live (the list row rolls in with "Nou", the figures it
+  moves tinted, "Actualizat 13:16"), frozen at the tint's start.
 - SYS18 (D190): Rezumat · 8 săptămâni (desktop) and Păsări · telefon · 8 săptămâni: the table after one press of "Încarcă încă
   4 săptămâni": SAPT 59–52 open with their days, the foot "Total SAPT 52–59", the key focused, the live region's sentence.
 Reuses by import: s4t_build (→ s4s_build: shell, header, FilterBar parts, Rezumat page and PeriodTable wrapper; Păsări groups,
@@ -83,6 +85,44 @@ def board_8():     # D192: after one press with "4 săpt.": the filter reads "8 
     t = s4.tb_rezumat(weeks=W8, added=W8[4:], period='8 săpt.')
     assert t.count('aria-expanded="true"') == 8 and 'Total SAPT <span class="ip-num">52–59</span>' in t and '8</span> din <span class="ip-num">40' in t
     return rz_page(s4.filterbar_weeks(8), t)
+
+# ================================================================= MO03 (D197): the 13:16 sale arrives live (desktop)
+# Frozen right after the arrival, the tint at its start (data-live-tint="on", no data-state: nothing moves on the board): the
+# 18.11 Vânzare record rolls into "Ultimele înregistrări" with its "Nou" mark; the figures it moves take the sale tint: the
+# 18.11 day row's În viață and Vânzare cells, the SAPT 59 week row's and the foot's, the page head's ♀ · ♂; the head meta
+# reads "Actualizat 13:16". (The 18.11 day row itself exists since the 08:15 Zilnic, so in the table it is a value change.)
+LIVE_EV = R.EVENTS[0]
+assert (LIVE_EV['at'], LIVE_EV['record']) == ('2026-11-18T13:16', 'sale')
+LIVE_AT = LIVE_EV['at'][11:16]
+LV = ' data-live="changed" data-live-rec="sale" data-live-tint="on"'
+def live_cells(row):   # the În viață (untyped group) and Vânzare cells of one table row
+    def one(m):
+        c = m.group(1)
+        hit = 'ip-ptable__g--sale' in c or ('ip-ptable__g' in c.split() and 'ip-ptable__g--' not in c)
+        return f'<td class="{c}"{LV if hit else ""}>'
+    out, k = re.subn(r'<td class="([^"]*)">', one, row)
+    assert out.count(LV) == 4, row
+    return out
+def board_live():
+    t = s4.tb_rezumat()
+    day = re.search(r'<tr class="ip-ptable__day" id="rz-1118">.*?</tr>', t, re.S).group(0)
+    wk = re.search(r'<tr class="is-total ip-ptable__wk">(?:(?!</tr>).)*?SAPT <span class="ip-num">59</span>.*?</tr>', t, re.S).group(0)
+    ft = re.search(r'<tfoot>.*?</tfoot>', t, re.S).group(0)
+    for part in (day, wk, ft):
+        assert t.count(part) == 1; t = t.replace(part, live_cells(part))
+    ev0 = s4.events[0]; assert ev0 == s4.event_row(LIVE_EV) and ev0.startswith('<li><a class="ip-ev"') and ev0.endswith('</a></li>')
+    ev0 = ('<li data-live="new" data-live-rec="sale" data-live-tint="on">' + ev0[len('<li>'):-len('</a></li>')]
+           + '<span class="ip-tag ip-tag--info ip-live__mark">Nou</span></a></li>')
+    pg = rz_page(FB, t, [ev0] + s4.events[1:])
+    h0 = pg.index('<header class="ip-pagehead">'); h1 = pg.index('</header>', h0); head = pg[h0:h1]
+    pair = '<span class="ip-pair">'; meta = f'<span class="ip-note ip-num">SAPT {WK} · ciclu din'
+    assert head.count(pair) == 1 and head.count(meta) == 1
+    head = head.replace(pair, f'<span class="ip-pair"{LV}>', 1)
+    head = head.replace(meta, f'<span class="ip-note ip-live__at">Actualizat <span class="ip-num">{LIVE_AT}</span></span>{meta}', 1)
+    pg = pg[:h0] + head + pg[h1:]
+    sr = f'<span class="ip-sr" role="status" aria-live="polite">O înregistrare nouă: Vânzare, {R.sale_codes(LIVE_EV)}, {R.ddt(LIVE_EV["at"])}, {LIVE_EV["user"]}.</span>'
+    k = '<h1>Hîrbovăț</h1>'; assert pg.count(k) == 1
+    return pg.replace(k, k + sr, 1)
 
 def board_week():
     t = s4.ptable('rz', 'Rezumat', [('Total fermă', '', RZ)], bar=False, open_weeks=(), after=s4.ptnote(NOTE_WEEK, s4.RZ_NOTE))
@@ -279,7 +319,8 @@ RZB, PAB = 'S4-ferma-rezumat--', 'S4-ferma--pasari--'
 DESK = [(RZB + 'etichete', 'S4 · Fermă · Rezumat · etichete Mortalitate + Vânzare', board_tags),
         (RZB + 'pas-saptamana', 'S4 · Fermă · Rezumat · pas Săpt. (ales în filtre)', board_week),
         (RZB + '4-saptamani', 'S4 · Fermă · Rezumat · perioada 4 săpt. (rândul „Încarcă încă 4 săptămâni”)', board_4),
-        (RZB + '8-saptamani', 'S4 · Fermă · Rezumat · 8 săpt. (după o apăsare pe „Încarcă încă 4 săptămâni”)', board_8)]
+        (RZB + '8-saptamani', 'S4 · Fermă · Rezumat · 8 săpt. (după o apăsare pe „Încarcă încă 4 săptămâni”)', board_8),
+        (RZB + 'rand-nou', 'S4 · Fermă · Rezumat · rând nou (live, D197): vânzarea de la 13:16 sosește, nuanța la început, „Nou”', board_live)]
 PHONE = [(RZB + 'telefon', 'S4 · Fermă · Rezumat · telefon', phone_rezumat, False),
          (PAB + 'telefon', 'S4 · Fermă · Păsări · telefon', phone_pasari, False),
          (PAB + 'telefon-filtre', 'S4 · Fermă · Păsări · telefon · filtre', phone_sheet, True),

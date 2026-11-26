@@ -21,6 +21,7 @@
  "S3-seria-2026--8-saptamani": 1680,
  "S3-seria-2026--fara-acces": 1680,
  "S3-seria-2026--inceputul-seriei": 1688,
+ "S3-seria-2026--transfer-azi": 1680,
  "S4-ferma--greutate": 1568,
  "S4-ferma--hrana": 1568,
  "S4-ferma--pasari": 1608,
@@ -33,5 +34,6 @@
  "S4-ferma-rezumat--ciclu-nou": 1616,
  "S4-ferma-rezumat--fara-ghid": 1560,
  "S4-ferma-rezumat--pas-saptamana": 1616,
+ "S4-ferma-rezumat--rand-nou": 1616,
  "S9-transfer--desktop": 2056
 }

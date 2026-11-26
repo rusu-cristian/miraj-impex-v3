@@ -28,6 +28,13 @@
   --ip-off:100%;             /* sheets, the docked panel and toasts travel their own size, in from their edge */
   --ip-shift:var(--space-2); /* a Banner or a loaded week arriving: 8 px */
   --ip-stagger:40ms;         /* between the weeks one load-more press appends */
+  /* MO03 (D197): live updates (section 76). */
+  --ip-dur-tint:1600ms;      /* the arrival tint fading out once: colour only, never movement. Longer than any move because the
+                                reader did not cause it: the eye lands on the arrival ~200–400 ms after it moves, and the tint
+                                must still say "this changed" when it does (D197 "~1.6 s"); a transition, so a new arrival retargets it */
+  --ip-live-mix:10%;         /* record colour in that tint, over the surface's own fill (raised, a D177 group tint, a week row's
+                                -total): one even step on every surface (1.14–1.18:1 against its own fill), so it shows inside a
+                                tinted column too; every text on it stays >=4.5:1 (worst: ink-muted 4.55, ♀ 4.61 on mortality-total) */
   --ip-focus-w:2px;     /* the system focus ring (bundle.css .ip-focus), named so additions use no literal */
   --ip-focus-offset:2px;
   --ip-readout-size:20px; /* the readout type style (tokens.css .ip-t-readout 20/24), named for rules that must beat bundle.css */
@@ -160,7 +167,8 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
 
 /* Reduced motion (D196, supersedes "instant everything"): fewer and gentler, not zero. Every section 75 motion keeps its
  * opacity fade at the same timing, but nothing moves or scales: the distances above go to rest. .ip-motion--reduce on any
- * element does the same for what it holds (the Motion preview's switch, a user setting). Colour changes stay. */
+ * element does the same for what it holds (the Motion preview's switch, a user setting). Colour changes stay, and so do the
+ * section 76 live tints at --ip-dur-tint (MO03): a live row or value only fades, a transfer mark does not grow. */
 @media (prefers-reduced-motion: reduce){
   :root,.ip-root{--ip-press-scale:1;--ip-pop-scale:1;--ip-modal-scale:1;--ip-off:0%;--ip-shift:0px;--ip-stagger:0ms}
   .ip-root *{scroll-behavior:auto !important}
@@ -2510,3 +2518,102 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
  * geometry, FIN11G) with data-state="loaded", fades in at key speed; the skeleton goes at once. Figures fade, never count. */
 .ip-root [data-state="loaded"]{transition:opacity var(--ip-dur-key) var(--ip-ease)}
 @starting-style{.ip-root [data-state="loaded"]{opacity:0}}
+
+/* ---------- 76. Live updates: a row rolls in, a value swaps, a transfer mark, the new-records bar (MO03, D197) ---------- */
+/* Gate (D196/D197): data never moves, except here: a record someone else saved arrives while the page is open (occasional,
+ * never fired by the reader). Purpose: preventing a jarring change (rows and figures would otherwise teleport) + state
+ * indication (what is new, what changed). One easing, the panel duration for every move, the distances at the top of this
+ * file (8 px a row, 4 px a value: half of --ip-shift, scale 0.96 a mark: --ip-modal-scale, the same step as a Dialog), and
+ * one tint duration (--ip-dur-tint). Transform and opacity only; the tint is a background-color transition. No keyframes: a
+ * second arrival while one is still playing retargets every transition from where it is. The tint fades linear, the one
+ * exception to --ip-ease: it is a timer of how recent the change is, not a movement, and --ip-ease would spend ~80% of it
+ * in the first 0.6 s, before the reader's eye has arrived (measured, MO03). Reduced motion: the distances go
+ * to rest (top of file), so rows and values only fade; the tint keeps its timing.
+ * Hooks, all set by the live script (static boards carry the frozen state: data-live, data-live-rec, data-live-tint="on",
+ * no data-state, so nothing moves on a board):
+ * - data-live-rec="<type>" (mortality, cull, sexerr, transfer, placement, sale, feed, weighing, eggs) on the arriving row,
+ *   cell or mark: its record colour (rec-*, the filter tag colour of D177).
+ * - data-live-tint="on" → "fade" → removed: "on" paints the record tint at once (the script sets it on arrival), "fade"
+ *   (set on the next frame) lets it go back to the element's own background over --ip-dur-tint, then the script removes it
+ *   on its transitionend (background-color), never on a timer, so the fade is never cut. On a tr the tint paints its cells; on any other element its own
+ *   background. The tint is the record colour mixed over the surface's own fill (--ip-live-base: raised by default, the
+ *   D177 group tint, a week or foot row's panel / -total, the page's ground), so it is one even step everywhere.
+ * - data-live="new" on a row (tr in a PeriodTable/DataTable, li in an EventRow/ChangeRow list): the rows below take its
+ *   room at once (layout never animates, as the Banner); with data-state="open" (the script's insert) it rolls in, 8 px from
+ *   above + opacity, 200 ms. Its "Nou" mark: span.ip-tag.ip-tag--info.ip-live__mark (in the row's status slot; in a table
+ *   row after the Data cell's date), kept until the reader has seen it (scrolled into view and left), then removed with
+ *   data-live.
+ * - data-live="changed" on a cell or value: span.ip-live__swap > span.ip-live__old[aria-hidden] (the old figure, inserted by
+ *   the script, rises 4 px and fades out at key speed, 120; removed on its transitionend) + span.ip-live__new[data-state="open"] (60 ms later, rises
+ *   4 px into place and fades in). Both sit in one grid cell, so the cell never changes width mid-swap; figures swap whole,
+ *   they never count. A total the change moves takes the same tint. A corrected record keeps the existing marks (EventRow
+ *   .ip-ev__mod "corectat" + "modificat de …", ChangeRow).
+ * - CycleTrack: a new transfer mark g.ip-track__live[data-live-rec="transfer"][data-state="open"] (link + dot at the azi
+ *   line + text.xferlbl "Transfer azi · …") fades in and grows from 0.96 at its anchor (the destination block's edge); the
+ *   script inserts it with data-state="closed", flushes style (getComputedStyle), then sets "open".
+ * - div.ip-livedock > button.ip-livebar[data-state]: "N înregistrări noi · Arată" (closes itself, rows going in, when the
+ *   reader scrolls back to the list top). When the reader is scrolled away from
+ *   the insertion point or is typing, rows are not inserted under them: the bar rolls in (as a Banner, 8 px + fade) at the
+ *   top of the list, floating (the dock is sticky and 0 high, so nothing under it moves); pressing it inserts the rows
+ *   (rolling in, tinted, "Nou"), scrolls the list's top into view (smooth; auto under reduced motion) and closes the bar.
+ * - p.ip-pagehead__meta / the context line: span.ip-live__at "Actualizat hh:mm" (the last applied arrival; text only).
+ * - One polite live region per page (span.ip-sr[role=status]): one sentence per batch ("2 înregistrări noi: Ouă 08:27,
+ *   Hrană zilnică 08:44."), never one per row or per value. */
+[data-live-rec="mortality"]{--ip-live-c:var(--rec-mortality)}
+[data-live-rec="cull"]{--ip-live-c:var(--rec-cull)}
+[data-live-rec="sexerr"]{--ip-live-c:var(--ink-secondary)} /* Eroare sexare has no record colour: its neutral split chip */
+[data-live-rec="transfer"]{--ip-live-c:var(--rec-transfer)}
+[data-live-rec="placement"]{--ip-live-c:var(--rec-placement)}
+[data-live-rec="sale"]{--ip-live-c:var(--rec-sale)}
+[data-live-rec="feed"]{--ip-live-c:var(--rec-feed)}
+[data-live-rec="weighing"]{--ip-live-c:var(--rec-weighing)}
+[data-live-rec="eggs"]{--ip-live-c:var(--rec-eggs)}
+/* the tint: "on" at once, "fade" back to the element's own fill (the doubled attribute and .ip-table outrank the PeriodTable
+ * group, week-row and sticky-column fills, sections 36 and 71) */
+:not(tr)[data-live-tint="on"],
+.ip-table tr[data-live-tint="on"][data-live-tint] > :is(th,td),
+.ip-table tr > [data-live-tint="on"][data-live-tint]{background-color:color-mix(in srgb,var(--ip-live-c,var(--ink-secondary)) var(--ip-live-mix),var(--ip-live-base,var(--raised)))}
+.ip-table tr.is-total > *,.ip-table tfoot > tr > *{--ip-live-base:var(--panel)}
+.ip-ptable :is(tbody,tfoot) td[class*="ip-ptable__g--"]{--ip-live-base:var(--ip-g)}
+.ip-ptable tr.is-total > td[class*="ip-ptable__g--"]{--ip-live-base:var(--ip-g-total)}
+.ip-pagehead [data-live-tint]{--ip-live-base:var(--ground)}
+:not(tr)[data-live-tint="fade"],
+.ip-table tr[data-live-tint="fade"][data-live-tint] > :is(th,td),
+.ip-table tr > [data-live-tint="fade"][data-live-tint]{transition-property:background-color;transition-duration:var(--ip-dur-tint);transition-timing-function:linear}
+/* a row rolls in (the script's insert): 8 px from above + opacity; its tint fades on the same element */
+[data-live="new"][data-state="open"]{transition-property:opacity,transform;transition-duration:var(--ip-dur-panel);transition-timing-function:var(--ip-ease)}
+[data-live="new"][data-state="open"][data-live-tint="fade"]:not(tr){transition-property:opacity,transform,background-color;transition-duration:var(--ip-dur-panel),var(--ip-dur-panel),var(--ip-dur-tint);transition-timing-function:var(--ip-ease),var(--ip-ease),linear}
+@starting-style{[data-live="new"][data-state="open"]{opacity:0;transform:translateY(calc(-1 * var(--ip-shift)))}}
+/* the "Nou" mark */
+.ip-live__mark{flex:none}
+.ip-table :is(th,td) > .ip-live__mark{margin-left:var(--space-2);vertical-align:middle}
+.ip-ev > .ip-live__mark{align-self:center}
+/* a value swaps: the old figure out 4 px up, the new one in from 4 px below, in one grid cell */
+.ip-live__swap{display:inline-grid;justify-items:end}
+.ip-live__swap--start{justify-items:start}
+.ip-live__swap > *{grid-area:1 / 1}
+.ip-live__old{opacity:0;transform:translateY(calc(var(--ip-shift) / -2));transition-property:opacity,transform;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
+@starting-style{.ip-live__old{opacity:1;transform:translateY(0)}}
+.ip-live__new[data-state="open"]{transition-property:opacity,transform;transition-duration:var(--ip-dur-panel);transition-timing-function:var(--ip-ease);transition-delay:calc(var(--ip-dur-key) / 2)} /* the old figure is mostly gone before the new one lands (no two figures legible at once) */
+@starting-style{.ip-live__new[data-state="open"]{opacity:0;transform:translateY(calc(var(--ip-shift) / 2))}}
+/* CycleTrack: a new transfer mark at the azi line, from its anchor (the destination block's edge, the group's foot) */
+.ip-track .ip-track__live{transform-box:fill-box;transform-origin:50% 100%}
+/* SVG content gets no @starting-style entrance (Chrome), so the mark is a state change: the script puts it in closed (drawn,
+ * hidden, at 0.96) and opens it; a board draws it without data-state, still */
+.ip-track .ip-track__live[data-state]{transition-property:opacity,transform,visibility;transition-duration:var(--ip-dur-panel);transition-timing-function:var(--ip-ease)}
+.ip-track .ip-track__live[data-state="closed"]{opacity:0;transform:scale(var(--ip-modal-scale));visibility:hidden}
+.ip-track .xferlbl{fill:var(--rec-transfer);font:500 var(--ip-fs-caption) var(--font-sans)} /* 5.5:1 on the sunken lane */
+/* "N înregistrări noi · Arată": floats at the list's top (a 0-high sticky dock: nothing under it moves) */
+.ip-livedock{position:sticky;top:var(--space-2);z-index:3;height:0;display:flex;justify-content:center;overflow:visible}
+.ip-livebar{display:inline-flex;align-items:center;gap:var(--space-2);min-height:var(--control-h);margin:0;padding:0 var(--space-3);border:var(--ip-hair) solid var(--info);border-radius:var(--radius-md);background:var(--info-bg);box-shadow:var(--shadow-overlay);color:var(--ink);font:inherit;white-space:nowrap;cursor:pointer;transition-property:background-color;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
+.ip-livebar > .ip-icon{flex:none;color:var(--info)}
+.ip-livebar__key{color:var(--info);font-weight:500;text-decoration:underline;text-underline-offset:var(--ip-focus-offset)}
+.ip-livebar:hover,.ip-livebar.is-hover{background:color-mix(in srgb,var(--info) 8%,var(--info-bg))} /* one step deeper, as the destructive key's pressed (D34a) */
+.ip-livebar:focus-visible,.ip-livebar.ip-focus{outline:var(--ip-focus-w) solid var(--focus);outline-offset:var(--ip-focus-offset)}
+.ip-livebar[data-state]{transition-property:opacity,transform,display,background-color;transition-duration:var(--ip-dur-panel),var(--ip-dur-panel),var(--ip-dur-panel),var(--ip-dur-key);transition-timing-function:var(--ip-ease);transition-behavior:allow-discrete}
+.ip-livebar[data-state="closed"]{display:none;opacity:0;transform:translateY(calc(-1 * var(--ip-shift)))}
+@starting-style{.ip-livebar[data-state="open"]{opacity:0;transform:translateY(calc(-1 * var(--ip-shift)))}}
+@media (forced-colors: active){
+  :not(tr)[data-live-tint],.ip-table tr[data-live-tint][data-live-tint] > :is(th,td),.ip-table tr > [data-live-tint][data-live-tint]{background-color:Canvas} /* the "Nou" / "modificat" marks carry it */
+  .ip-livebar{border-color:CanvasText}
+}

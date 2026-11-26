@@ -4,6 +4,9 @@ design/canvas/project/M1-miscare.dc.html ("M1 · Mișcare", interactive: the sam
 One markup for both: bound attributes are `{{ key }}` holes on the board and initial values + data-b="attr:key;…" in the
 preview; one JS core (class MoCore: init / act / vals) computes every bound value for both. Figures: the PeriodTable comes
 from sys14_build (realdata, Hîrbovăț Seria 2026, SAPT 52–59); the Readout is the S4 Rezumat one (18.11.2026).
+MO03 (D197, additions.css §76): the last card, "Actualizări live", drives the live-update hooks (data-live, data-live-rec,
+data-live-tint on → fade → off, the value swap, the CycleTrack mark, the new-records bar) on real figures: 18.11.2026 08:15
+Zilnic, 08:27 Ouă + 08:44 Hrană as a batch, the 10:12 correction (17.11 H5.2 ♀ 1 → 3), and a replay (D39) of 28.02.2026 H2 → H7.1, H7.2.
 --canvas: adds or refreshes the board's canvas.json entry as its own row right under Main (y 800), then run
 `canvas_rows.py relayout <root> --canvas` and `main_build.py <root> --canvas`."""
 import sys, re, json, pathlib
@@ -13,8 +16,13 @@ CANVAS = '--canvas' in sys.argv
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(REPO / 'design/canvas/scripts'))
 import sys14_build as P   # PeriodTable builders (its module-level preview html is built, not written)
 import sexsign as SXS
+_argv = sys.argv; sys.argv = ['s4s_build.py', str(REPO)]
+import s4s_build as S4   # MO03: the Rezumat EventRow (event_row), ♀/♂ figures; writes nothing on import
+sys.argv = _argv
+R = P.R                  # realdata (the same module sys14_build and s4s_build read)
+import datetime as dt
 
-W, H = 1440, 3472   # board frame; H = the preview's height at 1440 (3462, fallback fonts) + slack
+W, H = 1440, 4144   # board frame; H = the preview's height at 1440 (4134 with the MO03 live card, fallback fonts) + slack
 STEM = 'M1-miscare'
 TITLE = 'M1 · Mișcare'
 
@@ -33,6 +41,7 @@ I = {
     'transfer': '<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>',
     'sale': '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
     'pencil': '<path d="M21.2 6.8a2.8 2.8 0 0 0-4-4L3.8 16.2 3 21l4.8-.8z"/><path d="m15 5 4 4"/>',
+    'arrowup': '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
     'trash': '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
 }
 OPEN_D, CLOSED_D = 'm6 9 6 6 6-6', 'm9 18 6-6-6-6'
@@ -93,6 +102,149 @@ def ptable(o):
     f8 = foot8.replace('<tfoot>', f'<tfoot{o.b([("hidden", "f8h", True)])}>')
     cap = f'<p class="ip-cap ip-ptable__cap" aria-hidden="true">Păsări · Hîrbovăț · Seria 2026 · SAPT {o.t("capSpan", "56–59")}</p>'
     return cap + P.region(head8 + body + m + f4 + f8 + '</table>', 'Păsări · Hîrbovăț · Seria 2026')
+
+
+# ---------- MO03 (D197): live updates, on the real day 18.11.2026 (before the 13:16 sale) and a replay of 28.02.2026 ----------
+D17, D18 = dt.date(2026, 11, 17), dt.date(2026, 11, 18)
+CORR = R.ILL['corrections'][0]                       # 18.11 10:12: 17.11 H5.2 ♀ 1 → 3 (the new value is the real one)
+assert CORR['row'] == {'date': '2026-11-17', 'sapt': 59, 'section': 'H5.2', 'sex': 'F'} and (CORR['old_values']['qty'], CORR['new_values']['qty']) == (1, 3)
+DQ = CORR['new_values']['qty'] - CORR['old_values']['qty']
+EVT = {e['at']: e for e in R.EVENTS}
+E815, E827, E844, E807 = (EVT[k] for k in ('2026-11-18T08:15', '2026-11-18T08:27', '2026-11-18T08:44', '2026-11-17T08:07'))
+M18 = R.deaths(D18, sx='F'); assert R.deaths(D18, sx='M') == 0
+LIVE = {   # every figure from realdata; "pre" = before the 10:12 correction (its old value), the day before the 13:16 sale
+    'a17': R.alive_farm('F', D17), 'a17pre': R.alive_farm('F', D17) + DQ, 'm17': R.deaths(D17, sx='F'), 'm17pre': R.deaths(D17, sx='F') - DQ,
+    'm18': M18, 'roo': R.alive_farm('M', D17),
+    'xb': R.alive_farm('F', dt.date(2026, 2, 27)), 'xa': R.alive_farm('F', dt.date(2026, 2, 28)),
+}
+XIN = [a for a in R.TR['arrivals'] if a['date'] == '2026-02-28']          # H2 → H7.1 ♀ 2 618, H7.2 ♀ 4 383 (7 001)
+XQ = sum(a['qty'] for a in XIN); assert XQ == LIVE['xa'] - LIVE['xb'] and [a['section'] for a in XIN] == ['H7.1', 'H7.2']
+MINUS = '−'
+
+
+def swap(o, k, init, start=False):
+    """a value that swaps by crossfade (§76): two old copies and two new spans, alternated per change, so each change
+    inserts fresh spans (their @starting-style plays) and a second change retargets cleanly"""
+    sw = 'ip-live__swap ip-live__swap--start' if start else 'ip-live__swap'
+    return (f'<span class="{sw}">'
+            f'<span class="ip-live__old" aria-hidden="true"{o.b([("hidden", k + "oA", True)])}>{o.t(k + "P", "")}</span>'
+            f'<span class="ip-live__old" aria-hidden="true"{o.b([("hidden", k + "oB", True)])}>{o.t(k + "P", "")}</span>'
+            f'<span class="ip-live__new"{o.b([("hidden", k + "nA", False), ("data-state", k + "S", None)])}>{o.t(k + "V", init)}</span>'
+            f'<span class="ip-live__new"{o.b([("hidden", k + "nB", True), ("data-state", k + "S", None)])}>{o.t(k + "V", init)}</span></span>')
+
+
+def lcell(o, k, init, cls, rec='mortality'):
+    return f'<td class="{cls}" data-live-rec="{rec}" data-lk="{k}"{o.b([("data-live", k + "L", None), ("data-live-tint", k + "T", None)])}>{swap(o, k, init)}</td>'
+
+
+NOU = '<span class="ip-tag ip-tag--info ip-live__mark">Nou</span>'
+G0 = 'ip-ptable__g ip-ptable__gs ip-ptable__sec'
+GM = 'ip-ptable__g ip-ptable__g--mortality'
+
+
+def live_table(o):
+    n = R.n; L = LIVE
+    head = ('<thead><tr><th scope="col" class="ip-ptable__data" rowspan="2">Data</th><th scope="col" class="num" rowspan="2">Vârstă (zile)</th>'
+            '<th scope="col" class="num" rowspan="2">SAPT</th>'
+            f'<th scope="colgroup" colspan="2" class="{G0}">În viață</th>'
+            f'<th scope="colgroup" colspan="2" class="{GM} ip-ptable__gs"><span class="ip-rec ip-rec--mortality ip-table__ico">{svg(I["mortality"], 14)}</span>Morți</th></tr>'
+            f'<tr><th scope="col" class="num {G0}"><span class="is-hen">♀</span><span class="ip-sr"> găini</span></th>'
+            '<th scope="col" class="num ip-ptable__g"><span class="is-rooster">♂</span><span class="ip-sr"> cocoși</span></th>'
+            f'<th scope="col" class="num {GM} ip-ptable__gs"><span class="is-hen">♀</span><span class="ip-sr"> găini</span></th>'
+            f'<th scope="col" class="num {GM}"><span class="is-rooster">♂</span><span class="ip-sr"> cocoși</span></th></tr></thead>')
+    roo = f'<td class="num is-rooster ip-ptable__g">{n(L["roo"])}</td>'
+    zero = f'<td class="num is-rooster {GM}">0</td>'
+    wk = (f'<tr class="is-total ip-ptable__wk"><th scope="rowgroup"><span class="mo-wkh">SAPT <span class="ip-num">59</span> '
+          f'<span class="ip-ptable__dates">· <span class="ip-num">{o.t("wkDates", "17.11")}</span> · {o.t("wkDays", "1 din 7 zile")}</span></span></th>'
+          f'<td class="num">{o.t("wkAge", "406")}</td><td class="num">59</td>'
+          + lcell(o, 'wa', n(L['a17pre']), f'num is-hen {G0}') + roo + lcell(o, 'wm', n(L['m17pre']), f'num is-hen {GM} ip-ptable__gs') + zero + '</tr>')
+    d18 = (f'<tr class="ip-ptable__day" data-live="new" data-live-rec="mortality" data-lk="r18"{o.b([("hidden", "r18H", True), ("data-state", "r18S", None), ("data-live-tint", "r18T", None)])}>'
+           f'<th scope="row"><span aria-hidden="true">Mi</span><span class="ip-sr">miercuri</span> <span class="ip-num">18.11</span>{NOU}</th>'
+           f'<td class="num">{R.age_days(D18)}</td><td class="num">59</td>'
+           + lcell(o, 'a18', n(L['a17pre'] - L['m18']), f'num is-hen {G0}') + roo + f'<td class="num is-hen {GM} ip-ptable__gs">{L["m18"]}</td>' + zero + '</tr>')
+    d17 = (f'<tr class="ip-ptable__day"><th scope="row"><span aria-hidden="true">Ma</span><span class="ip-sr">marți</span> <span class="ip-num">17.11</span></th>'
+           f'<td class="num">{R.age_days(D17)}</td><td class="num">59</td>'
+           + lcell(o, 'a17', n(L['a17pre']), f'num is-hen {G0}') + roo + lcell(o, 'm17', n(L['m17pre']), f'num is-hen {GM} ip-ptable__gs') + zero + '</tr>')
+    cap = 'Rezumat · Hîrbovăț · Seria 2026 · SAPT 59'
+    return (f'<div class="ip-tablescroll ip-tablescroll--framed" role="region" tabindex="0" aria-label="{cap}"><table class="ip-table ip-table--rowheads ip-ptable mo-ltable">'
+            f'<caption class="ip-sr">{cap}</caption>{head}<tbody class="ip-ptable__week">{wk}{d18}{d17}</tbody></table></div>')
+
+
+def lrow(o, e, k, new=True):
+    """a Rezumat EventRow (s4s_build.event_row, real figures) as a live row: inserted by the script, tinted, "Nou" """
+    r = S4.event_row(e)
+    assert r.startswith('<li><a class="ip-ev"') and r.endswith('</div></div></a></li>')
+    li = f'<li data-live="new" data-live-rec="{e["record"]}" data-lk="{k}"{o.b([("hidden", k + "H", True), ("data-state", k + "S", None), ("data-live-tint", k + "T", None)])}>'
+    return li + r[len('<li>'):-len('</a></li>')] + NOU + '</a></li>'
+
+
+def corr_row(o):
+    """17.11 08:07 Zilnic: the row the 10:12 correction changes (♀ −5 → −7 on the farm; H5.2 ♀ 1 → 3) + the EventRow mark"""
+    r = S4.event_row(E807); fig = f'<b>{MINUS}{LIVE["m17"]}</b>'
+    assert r.count(fig) == 1
+    r = r.replace(fig, f'<b>{swap(o, "c7", MINUS + str(LIVE["m17pre"]), start=True)}</b>')
+    meta = '<div class="ip-ev__meta ip-num">17.11.2026, 08:07 · SAPT 59 · Dr. Ceban</div>'; assert r.count(meta) == 1
+    mod = (f'<div class="ip-ev__mod"{o.b([("hidden", "c7M", True)])}><span class="ip-tag ip-tag--neutral">corectat</span>'
+           f'<span>modificat de {CORR["user"]} · <span class="ip-num">{R.ddt(CORR["at"])}</span> · H5.2 găini moarte 1 → 3</span></div>')
+    r = r.replace(meta, meta + mod)
+    return r.replace('<li>', f'<li data-live-rec="mortality" data-lk="c7"{o.b([("data-live", "c7L", None), ("data-live-tint", "c7T", None)])}>', 1)
+
+
+def live_feed(o):
+    rows = (lrow(o, E844, 'l844') + lrow(o, E827, 'l827') + lrow(o, E815, 'l815')
+            + ''.join(S4.event_row(e) for e in R.EVENTS[4:7]) + corr_row(o) + ''.join(S4.event_row(e) for e in R.EVENTS[8:14]))
+    bar = (f'<div class="ip-livedock"><button type="button" class="ip-livebar"{o.b([("data-state", "bar", "closed")])}{o.on("show")}>'
+           f'{svg(I["arrowup"], 16)}<span>2 înregistrări noi</span><span aria-hidden="true">·</span><span class="ip-livebar__key">Arată</span></button></div>')
+    return (f'<div class="mo-feed" id="mo-feed" tabindex="0" role="region" aria-label="Ultimele înregistrări · Hîrbovăț">{bar}'
+            f'<ul class="ip-list" aria-label="Ultimele înregistrări">{rows}</ul></div>')
+
+
+# the CycleTrack replay: Telița → Hîrbovăț, 28.02.2026 (D39: "azi" is that day), the day's transfer H2 → H7.1, H7.2 ♀ 7 001
+XW, XLX = 1000, 88
+XD0, XD1 = dt.date(2025, 12, 15), dt.date(2026, 4, 1)
+def xx(iso): return round(XLX + (R.D(iso) - XD0).days * (XW - XLX) / (XD1 - XD0).days, 1)
+def live_track(o):
+    lt, lh = 22, 70; xt = xx('2026-02-28'); xa = xx('2026-02-22'); x27 = xx('2026-02-27')
+    g = (f'<text class="lanelbl" x="0" y="{lt + 17}">TELIȚA</text><rect class="lane" x="{XLX}" y="{lt}" width="{XW - XLX}" height="26"/>'
+         f'<text class="lanelbl" x="0" y="{lh + 17}">HÎRBOVĂȚ</text><rect class="lane" x="{XLX}" y="{lh}" width="{XW - XLX}" height="26"/>'
+         f'<rect class="cyc" x="{XLX}" y="{lt + 3}" width="{round(xt - XLX, 1)}" height="20" rx="2"/><text class="cyctxt" x="{XLX + 8}" y="{lt + 17}">Seria 2026 · creștere · din {R.dd(R.CTEL["start_date"])}</text>'
+         f'<rect class="cyc open" x="{xa}" y="{lh + 3}" width="{round(xt - xa, 1)}" height="20" rx="2"/><text class="cyctxt open" x="{round(xa + 8, 1)}" y="{lh + 17}">ouat</text>')
+    yt, yb = lt + 23, lh + 3; ym = (yt + yb) / 2
+    g += (f'<g aria-hidden="true"><line class="link" x1="{xa}" y1="{yt}" x2="{xa}" y2="{yb}"/><line class="link" x1="{x27}" y1="{yt}" x2="{x27}" y2="{yb}"/>'
+          f'<line class="link" x1="{xa}" y1="{ym}" x2="{x27}" y2="{ym}"/><circle class="linkdot" cx="{xa}" cy="{ym}" r="3"/><circle class="linkdot" cx="{x27}" cy="{ym}" r="3"/></g>')
+    g += (f'<line class="today" x1="{xt}" x2="{xt}" y1="{lt - 8}" y2="{lh + 30}"/><text class="todaylbl" x="{xt}" y="{lt - 11}" text-anchor="middle">azi 28.02</text>'
+          f'<rect class="ro" x="{round(xt + 4, 1)}" y="{lh + 5}" width="56" height="16" rx="2"/><text class="rotxt" x="{round(xt + 32, 1)}" y="{lh + 17}" text-anchor="middle">SAPT {R.sapt("2026-02-28")}</text>')
+    lbl = f'Transfer azi · H2 → {", ".join(a["section"] for a in XIN)} · {R.n(XQ)} găini'   # words in SVG text (no ♀ icon there, §72)
+    g += (f'<g class="ip-track__live" data-live-rec="transfer"{o.b([("data-state", "xm", "closed")])}><line class="link" x1="{xt}" y1="{yt}" x2="{xt}" y2="{yb}"/>'
+          f'<circle class="linkdot" cx="{xt}" cy="{ym}" r="3"/><text class="xferlbl" x="{round(xt + 8, 1)}" y="{lt + 17}">{lbl}</text></g>')
+    H = lh + 26
+    for d, l in [(dt.date(2026, 1, 1), '01.26'), (dt.date(2026, 2, 1), '02.26'), (dt.date(2026, 3, 1), '03.26')]:
+        x = xx(d.isoformat()); g += f'<line class="tick" x1="{x}" x2="{x}" y1="{H}" y2="{H + 6}"/><text class="month" x="{x}" y="{H + 20}" text-anchor="middle">{l}</text>'
+    desc = (f'Reluare: 28.02.2026. Telița, Seria 2026, creștere, din {R.dd(R.CTEL["start_date"])}; Hîrbovăț, ouat, din 22.02.2026; '
+            f'transferuri Telița → Hîrbovăț 22.02–27.02.2026.')
+    svgt = f'<svg class="ip-track mo-xtrack" width="{XW}" height="{H + 24}" viewBox="0 0 {XW} {H + 24}" role="group" aria-label="Ciclurile seriei 2026 pe ferme (reluare 28.02.2026)"><desc>{desc}</desc>{g}</svg>'
+    cnt = (f'<p class="ip-note ip-m0 mo-xcount">În viață la Hîrbovăț: <span class="ip-num is-hen" data-live-rec="transfer" data-lk="xc"{o.b([("data-live", "xcL", None), ("data-live-tint", "xcT", None)])}>'
+           f'<span class="is-hen">♀</span> {swap(o, "xc", R.n(LIVE["xb"]), start=True)}</span></p>')
+    return svgt + cnt
+
+
+def live_card(o):
+    head = (f'<div class="mo-lhead"><p class="ip-cap ip-m0">REZUMAT · HÎRBOVĂȚ · SERIA 2026 · 18.11.2026</p>'
+            f'<p class="ip-note ip-m0"><span class="ip-live__at">Actualizat {o.t("at", "ieri, 11:42")}</span></p>'
+            f'<span class="ip-sr" role="status" aria-live="polite">{o.t("ann", "")}</span></div>')
+    keys = (btn(o, 'Sosește o înregistrare', 'arrive') + btn(o, 'Se modifică o valoare', 'correct') + btn(o, 'Are loc un transfer', 'xfer')
+            + btn(o, 'Sosesc 2 în timp ce derulezi', 'batch') + btn(o, 'Reia', 'liveReset', 'ghost'))
+    stage = (f'<div class="mo-stage mo-live">{head}<div class="mo-lgrid"><div class="mo-lcol"><p class="ip-cap ip-m0">PeriodTable · SAPT 59</p>{live_table(o)}</div>'
+             f'<div class="mo-lcol"><p class="ip-cap ip-m0">Ultimele înregistrări</p>{live_feed(o)}</div></div>'
+             f'<div class="mo-lcol"><p class="ip-cap ip-m0">CycleTrack · reluare (D39): ziua de 28.02.2026, transferul H2 → H7.1, H7.2</p>{live_track(o)}</div></div>')
+    return card(o, 11, 'Actualizări live · D197',
+                'Ce salvează altcineva apare fără să sară: un rând nou intră 8 px de sus + opacity (200 ms), apoi nuanța tipului lui se stinge o dată în 1,6 s '
+                '(tranziție de background-color, nu keyframes) și „Nou” rămâne până e văzut · o valoare schimbată: cea veche iese 4 px în sus, cea nouă intră de jos (200 ms), '
+                'cifrele nu numără, celula și totalurile se nuanțează · transfer: semnul apare la linia azi, opacity + scale 0,96 → 1 din ancoră · '
+                'dacă cititorul e mai jos în listă, rândurile nu intră sub el: bara „2 înregistrări noi · Arată” · un singur anunț (polite) pe lot · '
+                'mișcare redusă: fără deplasare și scale, nuanțele și estompările își păstrează timpul · a doua apăsare revine (doar în demonstrație). '
+                'Date reale: 18.11.2026 08:15 Zilnic ♀ 3, 08:27 Ouă, 08:44 Hrană, corecția de la 10:12 (17.11 H5.2 găini moarte 1 → 3).',
+                keys, stage, wide=True)
 
 
 # ---------- the demos ----------
@@ -208,6 +360,7 @@ def demos(o):
                     '„Încarcă încă 4 săptămâni”: fiecare săptămână nouă urcă 8 px și apare în 200 ms, la 40 ms una după alta; rândul păstrează focusul, nimic nu așteaptă animația · '
                     'a doua apăsare revine la 4 săptămâni (doar în demonstrație)',
                     '', f'<div class="mo-stage mo-stage--flat">{ptable(o)}</div>', wide=True))
+    out.append(live_card(o))   # MO03 (D197)
     return ''.join(out)
 
 
@@ -232,6 +385,15 @@ CSS = """
 .mo-i1{--ip-i:1}.mo-i2{--ip-i:2}.mo-i3{--ip-i:3}
 .ip-select__chk:not([data-chk]) > .ip-icon{visibility:hidden}
 .mo-stage > .ip-readout[hidden]{display:none} /* bundle.css .ip-readout sets display over the UA [hidden] */
+.mo-live{display:flex;flex-direction:column;gap:var(--space-4)}
+.mo-lhead{display:flex;align-items:baseline;gap:var(--space-3)}
+.mo-lgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.mo-lcol{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.mo-feed{position:relative;height:calc(var(--space-12) * 7);overflow:auto;border-radius:var(--radius-md)}
+.mo-feed > .ip-list{margin:0}
+.mo-xcount{display:flex;align-items:baseline;gap:var(--space-1)}
+.mo-xcount > [data-live-rec]{padding:0 var(--space-1);border-radius:var(--radius-xs)}
+.mo-live .ip-ev__mod[hidden]{display:none} /* §26 sets display:flex over the UA [hidden] */
 """
 
 # One JS core for both: the board's DCLogic and the preview's script. vals() returns every bound value by key.
@@ -239,9 +401,76 @@ CORE = r"""
   moInit() {
     return { reduce: false, dlg: 'closed', sheet: 'closed', panel: 'closed', toast: 'closed', menu: 'closed',
       banner: 'closed', loading: false, tab: 0, seg: 0, chips: [true, false, false], chk: false, sel: 1,
-      weeks: { 59: '', 58: '', 57: '', 56: '', 55: '', 54: '', 53: '', 52: '' }, more: 0 };
+      weeks: { 59: '', 58: '', 57: '', 56: '', 55: '', 54: '', 53: '', 52: '' }, more: 0, lv: this.lvInit() };
+  }
+  // MO03 (D197): live updates. lv = what has arrived (flags) + the per-value swap counters, the tints and their phases.
+  lvInit() { return { arrived: false, corrected: false, xfer: false, batch: 0, cells: {}, tint: {}, sw: {}, tid: 0, ann: '' }; }
+  moLive() { return LIVE_JSON; }
+  nf(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  lvVals(lv) {
+    const L = this.moLive();
+    const a17 = lv.corrected ? L.a17 : L.a17pre, m17 = lv.corrected ? L.m17 : L.m17pre, a18 = a17 - L.m18;
+    return { wa: lv.arrived ? a18 : a17, wm: m17 + (lv.arrived ? L.m18 : 0), a17: a17, m17: m17, a18: a18, c7: m17, xc: lv.xfer ? L.xa : L.xb };
+  }
+  lvChange(s, patch, rows, ann, scroll) {
+    const lv = Object.assign({}, s.lv, patch), before = this.lvVals(s.lv), after = this.lvVals(lv), id = s.lv.tid + 1;
+    const cells = Object.assign({}, s.lv.cells), tint = Object.assign({}, s.lv.tint), sw = Object.assign({}, s.lv.sw);
+    for (const k in after) if (after[k] !== before[k]) {
+      cells[k] = { seq: (cells[k] ? cells[k].seq : 0) + 1, prev: before[k] }; tint[k] = ['on', id]; sw[k] = id;
+    }
+    (rows || []).forEach(k => { tint[k] = ['on', id]; });
+    Object.assign(lv, { cells: cells, tint: tint, sw: sw, tid: id, ann: ann });
+    const out = { lv: lv, __after: [40, 'lf' + id] };   // the tint goes on at once, then fades from the next frame
+    if (scroll) out.__scroll = scroll;
+    return out;
+  }
+  lvStep(s, k) {   // lf<id>: the tint starts fading (next frame); lend:<key> / lold:<key>: sent by the page's transitionend listener
+    const lv = Object.assign({}, s.lv), tint = Object.assign({}, lv.tint), sw = Object.assign({}, lv.sw);
+    let m = /^lf(\d+)$/.exec(k);
+    if (m) { for (const t in tint) if (tint[t][1] === +m[1]) tint[t] = ['fade', +m[1]]; return { lv: Object.assign(lv, { tint: tint }) }; }
+    m = /^l(end|old):(\w+)$/.exec(k); if (!m) return null;
+    if (m[1] === 'end') { if (!tint[m[2]] || tint[m[2]][0] !== 'fade') return {}; delete tint[m[2]]; return { lv: Object.assign(lv, { tint: tint }) }; }   // the fade ended: never cut it
+    if (sw[m[2]] === undefined) return {}; delete sw[m[2]]; return { lv: Object.assign(lv, { sw: sw }) };   // the old figure has left
+  }
+  lvAct(s, k) {
+    const lv = s.lv, st = this.lvStep(s, k); if (st) return st;
+    switch (k) {
+      case 'arrive': return this.lvChange(s, { arrived: !lv.arrived }, lv.arrived ? [] : ['r18', 'l815'],
+        lv.arrived ? '' : 'O înregistrare nouă: Mortalitate, 18.11.2026, 08:15, Dr. Ceban. SAPT 59 actualizat.');
+      case 'correct': return this.lvChange(s, { corrected: !lv.corrected }, [],
+        lv.corrected ? '' : 'Valoare corectată de Ion Rusu: Mortalitate 17.11.2026, H5.2 găini moarte 1 → 3. Totalurile SAPT 59 actualizate.');
+      case 'xfer': return this.lvChange(s, { xfer: !lv.xfer }, [], lv.xfer ? '' : 'Transfer azi: H2 → H7.1, H7.2, 7 001 găini.');
+      case 'batch':
+        if (lv.batch === 0) return { lv: Object.assign({}, lv, { batch: 1, ann: '2 înregistrări noi. Apasă Arată ca să le vezi.' }), __scroll: ['mo-feed', 'end'] };
+        if (lv.batch === 1) return this.lvAct(s, 'show');
+        return { lv: Object.assign({}, lv, { batch: 0, ann: '' }) };
+      case 'show': return this.lvChange(s, { batch: 2 }, ['l827', 'l844'], '2 înregistrări noi: Ouă, 08:27; Hrană zilnică, 08:44.', ['mo-feed', 'top']);
+      case 'barTop': return lv.batch === 1 ? this.lvChange(s, { batch: 2 }, ['l827', 'l844'], '2 înregistrări noi: Ouă, 08:27; Hrană zilnică, 08:44.') : {};   // back at the list top: the bar closes itself, the rows go in
+      case 'liveReset': return { lv: this.lvInit() };
+    }
+    return null;
+  }
+  lvOut(s, v) {
+    const lv = s.lv, x = this.lvVals(lv), M = '−';
+    const f = (k, val) => k === 'c7' ? M + val : this.nf(val);
+    ['wa', 'wm', 'a17', 'm17', 'a18', 'c7', 'xc'].forEach(k => {
+      const c = lv.cells[k], seq = c ? c.seq : 0, par = seq % 2, swapping = !!c && lv.sw[k] !== undefined;
+      v[k + 'V'] = f(k, x[k]); v[k + 'P'] = c ? f(k, c.prev) : '';
+      v[k + 'nA'] = par === 1; v[k + 'nB'] = par === 0;                       // each change shows a fresh span (its entrance plays)
+      v[k + 'oA'] = !(swapping && par === 0); v[k + 'oB'] = !(swapping && par === 1);
+      v[k + 'S'] = seq ? 'open' : undefined; v[k + 'L'] = seq ? 'changed' : undefined;
+      v[k + 'T'] = lv.tint[k] ? lv.tint[k][0] : undefined;
+    });
+    const row = (k, shown) => { v[k + 'H'] = !shown; v[k + 'S'] = 'open'; v[k + 'T'] = lv.tint[k] ? lv.tint[k][0] : undefined; };
+    row('r18', lv.arrived); row('l815', lv.arrived); row('l827', lv.batch === 2); row('l844', lv.batch === 2);
+    v.c7M = !lv.corrected; v.bar = lv.batch === 1 ? 'open' : 'closed'; v.xm = lv.xfer ? 'open' : 'closed';
+    v.wkDates = lv.arrived ? '17.11–18.11' : '17.11'; v.wkDays = lv.arrived ? '2 din 7 zile' : '1 din 7 zile'; v.wkAge = lv.arrived ? '406–407' : '406';
+    const t = [lv.arrived && '08:15', lv.batch === 2 && '08:44', lv.corrected && '10:12'].filter(Boolean).sort();
+    v.at = t.length ? t[t.length - 1] : 'ieri, 11:42'; v.ann = lv.ann;
+    return v;
   }
   moAct(s, k) {
+    const lvp = this.lvAct(s, k); if (lvp) return lvp;
     const wk = /^wk(\d+)$/.exec(k);
     if (wk) { const w = Object.assign({}, s.weeks); w[wk[1]] = (w[wk[1]] === 'closed') ? 'open' : 'closed'; return { weeks: w }; }
     let m;
@@ -288,19 +517,20 @@ CORE = r"""
       v['w' + k + 's'] = st; v['w' + k + 'h'] = isNew && !s.more; v['w' + k + 'd'] = closed;
       v['w' + k + 'e'] = closed ? 'false' : 'true'; v['w' + k + 'v'] = closed ? '""" + CLOSED_D + r"""' : '""" + OPEN_D + r"""';
     }
-    return v;
+    return this.lvOut(s, v);
   }
 """
-ACTS = (['reduce', 'chk', 'dlgOpen', 'dlgClose', 'sheetOpen', 'sheetClose', 'panelOpen', 'panelClose', 'toastOpen', 'toastClose',
+CORE = CORE.replace('LIVE_JSON', json.dumps(LIVE))
+ACTS = (['arrive', 'correct', 'xfer', 'batch', 'show', 'barTop', 'liveReset', 'reduce', 'chk', 'dlgOpen', 'dlgClose', 'sheetOpen', 'sheetClose', 'panelOpen', 'panelClose', 'toastOpen', 'toastClose',
          'menuToggle', 'bannerOpen', 'bannerClose', 'reload', 'loaded', 'more'] + [f'tab{i}' for i in range(5)] + [f'seg{i}' for i in range(2)]
         + [f'chip{i}' for i in range(3)] + [f'opt{i}' for i in range(3)] + [f'wk{k}' for k in W8])
 
 
 def header(o):
-    return ('<div class="mo-head"><span class="ip-cap">SISTEM · MIȘCARE · D196</span><h1 class="ip-t-title ip-m0">Mișcare</h1>'
+    return ('<div class="mo-head"><span class="ip-cap">SISTEM · MIȘCARE · D196 · D197</span><h1 class="ip-t-title ip-m0">Mișcare</h1>'
             '<p class="ip-t-body ip-m0" style="color:var(--ink-secondary)">O singură curbă (cubic-bezier(0.2, 0, 0, 1)) și trei durate: 120 ms taste, liste și rânduri · '
             '200 ms dialog, panou, toast, banner · 280 ms foi pe telefon. Doar transform și opacity. Cifrele, graficele, lămpile, CycleTrack și '
-            'navigarea nu se mișcă. Apasă tastele fiecărui exemplu.</p>'
+            'navigarea nu se mișcă, în afară de actualizările live (D197, ultimul exemplu). Apasă tastele fiecărui exemplu.</p>'
             f'<label class="ip-check"><input type="checkbox" class="ip-sr" id="mo-rm"{o.b([("checked", "reduce", False)])}{o.on("reduce", "onChange")}/>'
             f'<span class="ip-check__box">{svg(I["check"], 14)}</span>Simulează mișcare redusă (prefers-reduced-motion): doar opacitate, aceeași durată, nimic nu se deplasează</label></div>')
 
@@ -329,15 +559,29 @@ function apply() {
   document.querySelectorAll('[data-t]').forEach(el => { el.textContent = v[el.dataset.t]; });
   document.getElementById('mo-root').className = 'ip-root ' + v.rootCls;
 }
+function moScroll(sc) {   // MO03: the list's top into view after "Arată" (smooth; at once under reduced motion); "end" = the reader scrolled away
+  const el = document.getElementById(sc[0]); if (!el) return;
+  const reduce = S.reduce || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.scrollTo({ top: sc[1] === 'top' ? 0 : el.scrollHeight, behavior: sc[1] === 'top' && !reduce ? 'smooth' : 'auto' });
+}
 function fire(k) {
-  const p = M.moAct(S, k); const after = p.__after; delete p.__after;
+  const p = M.moAct(S, k); const after = p.__after, sc = p.__scroll; delete p.__after; delete p.__scroll;
   S = Object.assign({}, S, p); apply();
+  if (sc) requestAnimationFrame(() => moScroll(sc));
   if (after) setTimeout(() => fire(after[1]), after[0]);
 }
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-mo]'); if (!t || t.tagName === 'INPUT') return; fire(t.dataset.mo);
 });
 document.addEventListener('change', e => { const t = e.target.closest('input[data-mo]'); if (t) fire(t.dataset.mo); });
+// MO03: the tint attribute and the old figure leave on their own transitionend (never on a timer, so a fade is never cut);
+// the "noi" bar closes itself when the reader scrolls the list back to its top
+document.addEventListener('transitionend', e => {
+  const el = e.target.closest && e.target.closest('[data-lk]'); if (!el) return;
+  if (e.propertyName === 'background-color' && el.getAttribute('data-live-tint') === 'fade') fire('lend:' + el.dataset.lk);
+  else if (e.propertyName === 'opacity' && e.target.classList.contains('ip-live__old')) fire('lold:' + el.dataset.lk);
+});
+document.addEventListener('scroll', e => { if (e.target.id === 'mo-feed' && e.target.scrollTop <= 8 && S.lv.batch === 1) fire('barTop'); }, true);
 window.moFire = fire;
 apply();
 """
@@ -370,8 +614,15 @@ def board():
     o = Out('dc')
     body = SXS.sexify(page(o))
     on = ', '.join(f'{k}: () => this.moFire(\'{k}\')' for k in ACTS)
-    js = ('class Component extends DCLogic {\nconstructor(props) {\nsuper(props);\nthis.state = this.moInit();\n}\n'
-          'moFire(k) {\nconst p = this.moAct(this.state, k);\nconst after = p.__after;\ndelete p.__after;\nthis.setState(p);\n'
+    js = ('class Component extends DCLogic {\nconstructor(props) {\nsuper(props);\nthis.state = this.moInit();\n'
+          'if (!window.__moLive) { window.__moLive = true;\n'   # MO03: tint / old figure leave on transitionend; the bar closes at the list top
+          'document.addEventListener(\'transitionend\', e => { const el = e.target.closest && e.target.closest(\'[data-lk]\'); if (!el) return;\n'
+          'if (e.propertyName === \'background-color\' && el.getAttribute(\'data-live-tint\') === \'fade\') this.moFire(\'lend:\' + el.dataset.lk);\n'
+          'else if (e.propertyName === \'opacity\' && e.target.classList.contains(\'ip-live__old\')) this.moFire(\'lold:\' + el.dataset.lk); });\n'
+          'document.addEventListener(\'scroll\', e => { if (e.target.id === \'mo-feed\' && e.target.scrollTop <= 8 && this.state.lv.batch === 1) this.moFire(\'barTop\'); }, true); }\n}\n'
+          'moFire(k) {\nconst p = this.moAct(this.state, k);\nconst after = p.__after, sc = p.__scroll;\ndelete p.__after;\ndelete p.__scroll;\nthis.setState(p);\n'
+          'if (sc) setTimeout(() => { const el = document.getElementById(sc[0]); if (!el) return; const r = this.state.reduce || matchMedia(\'(prefers-reduced-motion: reduce)\').matches; '
+          'el.scrollTo({ top: sc[1] === \'top\' ? 0 : el.scrollHeight, behavior: sc[1] === \'top\' && !r ? \'smooth\' : \'auto\' }); }, 30);\n'
           'if (after) setTimeout(() => this.moFire(after[1]), after[0]);\n}\n' + CORE +
           'renderVals() {\nconst v = this.moVals(this.state);\nv.on = { ' + on + ' };\nreturn v;\n}\n}\n')
     return f'''<!doctype html>
@@ -418,5 +669,7 @@ if __name__ == '__main__':
                 if v['y'] >= CR.ROW0: v['y'] += H + CR.GAP_Y
             B[f] = {'x': 0, 'y': CR.ROW0, 'w': W, 'h': H, 'expand': 'fill', 'title': TITLE, 'is_interactive': True}
             c['order'].append(f)
+        if CR.overlaps(c):   # MO03: the board grew taller: re-stack the rows below it first (as canvas_rows relayout)
+            for m in CR.relayout(c): print('relayout', *m)
         CR.sort_order(c); CR.save(REPO, c)
     print('ok', len(pv), len(bd))
