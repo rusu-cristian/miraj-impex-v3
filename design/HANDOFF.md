@@ -1,13 +1,14 @@
 # Handoff
 **Complete** (user, 20.11.2026: nothing more after S11L).
-Updated: 2026-11-20 · Last commit: 12d4718 · Round 3 complete (D182–D193), canvas v1795162838-7551 (S11L not yet published)
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
+Updated: 2026-11-26 · D194 done, canvas v1795652130-c58a
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795652130-c58a; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
 Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, weeks by bird age (D151), table-first PeriodTables with daily rows, group rules + tag-colour tints, ♀/♂ icons (D151–D181). 267 boards; literal_scan + sex_scan clean.
 Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- SYS19 (D194): hairline between every column (col-rule token, additions §73) + every column title centred, all tables; no size changes; published 1795652130-c58a
 - S11L S11 · se încarcă board 1592 like the loaded board (D193, user); Consum skeleton columns match the loaded table within 0.02 px; only that board + canvas.json changed (5 S11 boards to its right +152 x)
 - SYS18 load-more row in every PeriodTable (D190–D192, user approved): "Încarcă încă 4 săptămâni" last row, extends the period filter, Ciclul curent default, totals = weeks on screen; published 1795162838-7551
 - FINAL5 clean; published 1795132564-e1da (79 files). SYS17 one-line table heads (D189), head_scan.py, boards widened (S4 Rezumat 1616, Producție 1752, S11 1592…)

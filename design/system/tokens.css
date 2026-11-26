@@ -103,6 +103,7 @@
   --colgroup-eggs-total: #def1ef;
   --colgroup-eggs-head: #d6ecea;
   --colgroup-rule: var(--steel-300);
+  --col-rule: #13181c1a;
   --shadow-overlay: 0 1px 2px rgba(19,24,28,0.10), 0 6px 20px rgba(19,24,28,0.14);
   --shadow-key: inset 0 -1px 0 rgba(19,24,28,0.25);
 }

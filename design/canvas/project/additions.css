@@ -1279,8 +1279,8 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * th[scope=rowgroup]). Row headers read as body text (13/18 Sans 400, ink, raised, row-h), not as the uppercase caption
  * headers of thead; group rows (tr.is-group) and totals (tr.is-total) give their th what bundle.css gives their td
  * (sunken / 500; line-strong top edge on panel). th.ip-table__child indents a row under its group row. Two-row heads:
- * a first column spanning both rows (th[rowspan]) sits at the bottom, colgroup heads align right over their figures
- * on a rule, and inside .ip-tablescroll the second head row's first cell does not stick (it is not the first column).
+ * a first column spanning both rows (th[rowspan]) sits at the bottom, colgroup heads sit centred over their figures
+ * on a rule (SYS19, D194: every head centred, section 73), and inside .ip-tablescroll the second head row's first cell does not stick (it is not the first column).
  * FIN14: a totals row in tfoot names itself the same way (S12); the CostBlock table, the small-curve table (.ip-sparktable)
  * and the S3, S11 and S12 tables use these rules (their copies are gone).
  * FIN14B: one totals edge for every table; head icons (span.ip-table__ico); S3's framed table is the framed region below.
@@ -1297,7 +1297,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
 .ip-table :is(tr:has(+ tr.is-total),tbody:has(+ :is(tbody,tfoot) > tr.is-total:first-child) > tr:last-child) > :is(th,td){border-bottom:0}
 .ip-table--rowheads th.ip-table__child{padding-left:var(--space-6)}
 .ip-table--rowheads thead th[rowspan]{vertical-align:bottom}
-.ip-table--rowheads thead th[scope=colgroup]{text-align:right;border-bottom:var(--ip-hair) solid var(--rule)}
+.ip-table--rowheads thead th[scope=colgroup]{border-bottom:var(--ip-hair) solid var(--rule)} /* centred since SYS19 (D194, section 73) */
 .ip-tablescroll > .ip-table--rowheads thead tr + tr > th:first-child{position:static;border-right:0}
 .ip-table thead th{white-space:nowrap} /* SYS17 (D189): heads never wrap, whatever a screen sets */
 /* Head icon (FIN14B, replaces the S3, S4 Fermă tabs, S11/S12 screen copies): span.ip-table__ico before a caption head's
@@ -2219,7 +2219,7 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-ptable :is(thead th:not(.ip-ptable__data):not([style*="--ip-colw"]),tbody td,tfoot td){width:1%} /* a declared share (section 54) wins */
 /* column groups (SYS15, D175): full-height start edges, centred heads; tints = the filter tag colours (SYS16, D177) */
 .ip-ptable :is(th,td).ip-ptable__sec{border-left:var(--ip-hair) solid var(--colgroup-rule)}
-.ip-ptable :is(th,td).ip-ptable__gs:not(.ip-ptable__sec){box-shadow:inset var(--ip-hair) 0 0 var(--colgroup-rule)} /* an inset edge: no column widens (a section's first column keeps its border) */
+.ip-ptable :is(th,td).ip-ptable__gs:not(.ip-ptable__sec){--ip-cell-l:var(--colgroup-rule)} /* an inset edge (section 73's cell shadow): no column widens (a section's first column keeps its border) */
 .ip-ptable:has(> thead th.ip-ptable__sec:not(.ip-ptable__g)) :is(th,td).ip-ptable__sec{border-left-color:var(--line-strong)} /* Hale / Compartimente: halls stand apart from their groups */
 .ip-ptable thead th:is(.ip-ptable__g,.ip-ptable__sec){text-align:center}
 /* SYS16 (D177): each record type names its three tints; one rule per level paints them (a group with no type keeps the DataTable surfaces) */
@@ -2318,3 +2318,44 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 :is(td.ip-gimp__sex:not(:has(*)),td.ip-gimp__sex.is-hen,td.ip-gimp__sex.is-rooster){font-size:0}
 :is(td.ip-gimp__sex:not(:has(*)),td.ip-gimp__sex.is-hen,td.ip-gimp__sex.is-rooster)::before{content:"";display:inline-block;vertical-align:middle;--ip-sign-k:var(--ip-sign-lg);width:calc(var(--ip-sign-lg) * var(--ip-sign-f));height:var(--ip-sign-lg);background-color:currentColor;-webkit-mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;mask:var(--ip-sign-shape) center / var(--ip-sign-k, var(--ip-sign)) var(--ip-sign-k, var(--ip-sign)) no-repeat;forced-color-adjust:none}
 @media (forced-colors: active){:is(.ip-sex,.is-hen,.is-rooster,td.ip-gimp__sex)::before{background-color:CanvasText}}
+
+/* =====================================================================================================
+ * SYS19 · Every column delimited, every title centred (D194, user 26.11.2026), system-wide. Spec: components.md ›
+ * Additions › SYS19.
+ * ===================================================================================================== */
+
+/* ---------- 73. DataTable · column hairlines and centred heads (SYS19) ---------- */
+/* Every DataTable (PeriodTable, CostBlock, SectionTree, UserRow, GuideImportPreview, small-curve and screen tables) parts
+ * each column from the next with a slight vertical hairline, col-rule (steel-900 at 10 %: 1.22–1.24:1 on every surface it
+ * crosses: raised, panel, sunken, each colgroup tint), through the head rows and the body; the D175 group edges
+ * (colgroup-rule, section 71) and a hall's line-strong edge stay the stronger lines, the sticky first column keeps its
+ * rule border (section 36, CostBlock section 11, the PeriodTable foot).
+ * - Drawn as an inset shadow on the cell's end edge (no column widens, no row grows, in separate and collapsed tables):
+ *   every cell but its row's last; a cell before a group start (.ip-ptable__gs) or a section edge (.ip-ptable__sec) leaves
+ *   the edge to that line, and a sticky first cell to its border, so every column boundary shows exactly one line. The
+ *   start edge of a group (section 71) uses the same shadow (--ip-cell-l). A cell spanning the whole row (the load-more
+ *   row, a detail row, "fără cântărire …", a group row's single cell) is its row's last: no inner hairline.
+ * - Heads: every head cell (section, group, leaf and sub-heads, DataTable th, th.num) is centred over its column; body
+ *   cells keep theirs (figures right, text and row heads left).
+ * - Forced colours: the shadow is dropped, so the hairline is a 1px CanvasText border (as the group edges, section 71).
+ * Tokens only (col-rule, new). */
+@property --ip-cell-l{syntax:'<color>';inherits:false;initial-value:transparent}
+@property --ip-cell-r{syntax:'<color>';inherits:false;initial-value:transparent}
+.ip-table :is(th,td){box-shadow:inset var(--ip-hair) 0 0 var(--ip-cell-l),inset calc(-1 * var(--ip-hair)) 0 0 var(--ip-cell-r)}
+.ip-table :is(th,td):not(:last-child){--ip-cell-r:var(--col-rule)}
+.ip-table :is(th,td):has(+ :is(.ip-ptable__gs,.ip-ptable__sec)){--ip-cell-r:transparent} /* the group / hall edge is the line */
+.ip-tablescroll > .ip-table :is(thead th:first-child,tbody > tr > :first-child):not(:where([colspan])),
+.ip-tablescroll > .ip-ptable > tfoot > tr > :first-child,
+.ip-table.ip-cost__table :is(thead th:first-child,tbody th){--ip-cell-r:transparent} /* the sticky first column's rule border is the line */
+.ip-tablescroll > .ip-table--rowheads thead tr + tr > th:first-child:not(:last-child):not(:has(+ :is(.ip-ptable__gs,.ip-ptable__sec))){--ip-cell-r:var(--col-rule)} /* not the first column (section 32) */
+.ip-table thead th,.ip-table thead th.num{text-align:center}
+/* a phone PeriodTable's sticky first column is the whole spine, so its rule border is also the first group's start edge:
+ * it takes colgroup-rule and that group drops its own inset edge (one line there, as on desktop: was rule + colgroup-rule) */
+.ip-tablescroll > .ip-ptable--phone > * > tr > :first-child:not([colspan]):has(+ :is(.ip-ptable__gs,.ip-ptable__sec)){border-right-color:var(--colgroup-rule)}
+.ip-tablescroll > .ip-ptable--phone > * > tr > :first-child:not([colspan]) + :is(.ip-ptable__gs,.ip-ptable__sec),
+.ip-tablescroll > .ip-ptable--phone:has(> thead > tr:first-child > th[rowspan]:first-child + th:not([rowspan])) > thead > tr + tr > th.ip-ptable__gs:first-child{--ip-cell-l:transparent;border-left-color:transparent} /* a section's first column keeps its 1px border, unseen */
+@media (forced-colors: active){
+  .ip-table :is(th,td):not(:last-child):not(:has(+ :is(.ip-ptable__gs,.ip-ptable__sec))){border-right:var(--ip-hair) solid CanvasText}
+  .ip-tablescroll > .ip-ptable--phone > * > tr > :first-child:not([colspan]) + :is(.ip-ptable__gs,.ip-ptable__sec),
+  .ip-tablescroll > .ip-ptable--phone:has(> thead > tr:first-child > th[rowspan]:first-child + th:not([rowspan])) > thead > tr + tr > th.ip-ptable__gs:first-child{border-left:0} /* the sticky column's border is that edge */
+}
