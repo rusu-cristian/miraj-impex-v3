@@ -6,6 +6,7 @@ Tokens and specs live in DESIGN.md and components.md; this file is the rulebook.
 - Impex Line is an internal daily record of breeder-flock series across farm cycles, compared with each farm's guide. Character: alert, exact, mechanical.
 - The world is the hall's climate controller: light steel panels, engraved uppercase captions, graphite keys, status lamps with words, dark Readouts, IBM Plex Sans + Mono. Light theme only, mixed density (32px desktop, 48/56px phone).
 - Moments: one dark Readout per section, the GuideChart, the CycleTrack (signature). Everything else stays quiet steel.
+- Motion is mechanical: short, one curve, from where a thing comes; data never moves (D196).
 - **Template test:** swap in a generic farm-SaaS name. If the screen still fits, it fails. It must show farm lanes with cycles, lamp-plus-word status or the fixed record-type code.
 
 ## 2. Do's and Don'ts
@@ -38,7 +39,7 @@ Don't:
 - [ ] Radii only 2/3/4/6 per DESIGN.md › Shapes; round only for lamps and the phone centre key.
 - [ ] No filler copy, hype, slogans or unverified claims. Every line names a farm, section, figure, date or action.
 - [ ] Weights 400/500 only; uppercase only in captions (and the elements the specs name: wordmark, breadcrumbs, lane labels, Readout caption).
-- [ ] Motion: no loops, shimmer, pulse, bounce, `transition-all` or hover scale.
+- [ ] Motion: no loops, shimmer, pulse, bounce, `transition-all`, hover scale, `scale(0)`, `ease-in` or keyframes (D196).
 
 ## 5. Craft floor
 - **Hierarchy:** one title (24px), clear steps through heading 16, body 14, small 12, caption 11. Hierarchy from size and ink role, not colour.
@@ -51,7 +52,7 @@ Don't:
 - **States, all designed:** hover, focus, pressed, disabled (`sunken` + `ink-disabled`), loading (static `sunken` skeletons; spinner only inside a button, label kept), empty (EmptyState: unlit lamp, one sentence, next step), error (fault border + line naming the fix), warning (saveable) vs refusal (save disabled), no permission ("Nu ai acces la această fermă.").
 - **Numbers:** Plex Mono, `tabular-nums`, right-aligned in tables; one format per screen.
 - **Forms:** one column, label above, "(opțional)" for optional; validate on blur and save; focus the first error; keep typed values and the draft.
-- **Motion:** only `cubic-bezier(0.2, 0, 0, 1)` at 120ms (keys), 200ms (panels, sheets, toasts), 280ms (page). Charts and numbers don't animate. Under `prefers-reduced-motion`, drop transforms and keep instant state changes.
+- **Motion (D196, §75):** only `cubic-bezier(0.2, 0, 0, 1)` at 120ms (keys, menus, toggles, rows), 200ms (dialog, panel, toast, banner), 280ms (phone sheets, page); transform + opacity; occasional things move, tens-a-day controls change colour, data and navigation never move. Under `prefers-reduced-motion`, keep the fades, drop all movement.
 
 ## 6. Copy
 - Romanian with full diacritics, ș ț with the comma below (never ş ţ cedilla). Address the user as "tu".

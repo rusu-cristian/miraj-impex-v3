@@ -83,6 +83,9 @@ ALLOW = [  # (board stem prefix, pattern id, regex the hit's context must match)
     # SAPT 58 week key, Hrană ♀ 3 691,7 kg on 02.11.2026 and Hala 6 ♀ 8 475 on a SAPT 57 day)
     ('GuideImportPreview/', 'sample-figure', r'is-hen">2\u202f685<'),
     ('PeriodTable/', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    # MO01 (D196): the motion demos' PeriodTable is sys14's (same week-key hidden names: SAPT 58 ends on 16.11.2026)
+    ('M1-miscare', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
+    ('Motion/', 'today-16.11', r'SAPT 58, \d\d\.\d\d–16\.11\.2026'),
     ('PeriodTable/', 'sample-figure', r'is-hen(?: ip-ptable__[\w-]+)*">(?:3\u202f691,7|8\u202f475)<'),
 ]
 # README order. (id, board stem prefixes, generator scripts)

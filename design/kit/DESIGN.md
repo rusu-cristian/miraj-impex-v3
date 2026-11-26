@@ -423,10 +423,11 @@ The full specs are in `components.md`. Live previews are in the Impex Line Panel
 - **Containers:** Dialog, SidePanel, BottomSheet.
 - **App shell:** Sidebar, BottomTabBar, FormHeader, SaveBar, PageHeader, Tabs, FilterBar.
 
-**Motion:**
-- One easing: `cubic-bezier(0.2, 0, 0, 1)`.
-- 120ms for key presses, 200ms for panels, sheets and toasts, 280ms for page-level changes.
-- Lamps don't blink. Charts and numbers don't animate.
+**Motion (D196, additions.css §75):**
+- One easing: `cubic-bezier(0.2, 0, 0, 1)`. Transform and opacity only, as transitions (no keyframes).
+- 120ms for key presses (scale 0.97), menus, toggles and table rows; 200ms for dialogs, the side panel, toasts and banners; 280ms for phone sheets and page-level changes.
+- Things enter from where they come (sheets and toasts from the foot, the panel from the right, menus from their field) and leave the same way.
+- Lamps don't blink. Charts, numbers, table cells and navigation don't animate. Reduced motion keeps the fades, drops the movement.
 
 **Icons:** line icons, 1.75 stroke, at 14/16/18/22px. Record icons are fixed per type and reserved.
 

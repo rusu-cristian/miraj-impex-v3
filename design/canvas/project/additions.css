@@ -18,9 +18,16 @@
 /* Motion: the one easing and three durations (craft.md › Motion), and the focus-ring size. Not in tokens.json, so defined here. */
 :root{
   --ip-ease:cubic-bezier(0.2,0,0,1);
-  --ip-dur-key:120ms;   /* keys, chips, rows, fields */
-  --ip-dur-panel:200ms; /* panels, sheets, toasts */
-  --ip-dur-page:280ms;  /* page changes */
+  --ip-dur-key:120ms;   /* keys, chips, rows, fields, menus, a week opening, loaded content */
+  --ip-dur-panel:200ms; /* dialogs, the docked panel, toasts, banners, loaded weeks */
+  --ip-dur-page:280ms;  /* page changes; the BottomSheet and the phone full-screen sheet (they travel the screen's height) */
+  /* MO01 (D196): how far things move. Section 75 uses only these; reduced motion sets them to rest (below). */
+  --ip-press-scale:0.97;     /* a key under the finger */
+  --ip-pop-scale:0.95;       /* a menu out of its field or key (never 0: nothing appears from nothing) */
+  --ip-modal-scale:0.96;     /* a Dialog, centred (not anchored to a trigger) */
+  --ip-off:100%;             /* sheets, the docked panel and toasts travel their own size, in from their edge */
+  --ip-shift:var(--space-2); /* a Banner or a loaded week arriving: 8 px */
+  --ip-stagger:40ms;         /* between the weeks one load-more press appends */
   --ip-focus-w:2px;     /* the system focus ring (bundle.css .ip-focus), named so additions use no literal */
   --ip-focus-offset:2px;
   --ip-readout-size:20px; /* the readout type style (tokens.css .ip-t-readout 20/24), named for rules that must beat bundle.css */
@@ -33,7 +40,7 @@
 
 /* ---------- 1. Interaction states ---------- */
 
-/* Shared transition for interactive parts: colour and edge only, never transform or all. */
+/* Shared transition for interactive parts: colour and edge, never all (the key press adds transform in section 75). */
 .ip-btn,.ip-iconbtn,.ip-chip,.ip-tab,.ip-input,.ip-menu__item,.ip-stile,.ip-ev{
   transition-property:background-color,border-color,color,box-shadow;
   transition-duration:var(--ip-dur-key);
@@ -151,15 +158,14 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
 
 /* Focus stays the system ring on every element above (bundle.css: :where(.ip-root) :focus-visible). */
 
-/* Reduced motion: instant state changes, no transforms or animation. */
+/* Reduced motion (D196, supersedes "instant everything"): fewer and gentler, not zero. Every section 75 motion keeps its
+ * opacity fade at the same timing, but nothing moves or scales: the distances above go to rest. .ip-motion--reduce on any
+ * element does the same for what it holds (the Motion preview's switch, a user setting). Colour changes stay. */
 @media (prefers-reduced-motion: reduce){
-  .ip-root *,.ip-root *::before,.ip-root *::after{
-    transition-duration:0s !important;
-    animation-duration:0s !important;
-    animation-iteration-count:1 !important;
-    scroll-behavior:auto !important;
-  }
+  :root,.ip-root{--ip-press-scale:1;--ip-pop-scale:1;--ip-modal-scale:1;--ip-off:0%;--ip-shift:0px;--ip-stagger:0ms}
+  .ip-root *{scroll-behavior:auto !important}
 }
+.ip-motion--reduce{--ip-press-scale:1;--ip-pop-scale:1;--ip-modal-scale:1;--ip-off:0%;--ip-shift:0px;--ip-stagger:0ms}
 
 /* =====================================================================================================
  * SYS01 · components for screen S4 (farm page). Spec: components.md › Additions › SYS01.
@@ -2402,3 +2408,102 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 .ip-filterbar__chips{flex-basis:100%;display:flex;min-width:0}
 .ip-tabbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 .ip-tabbar > .ip-tabbar__item{white-space:nowrap;text-align:center}
+
+/* =====================================================================================================
+ * MO01 · System motion (D196, user 26.11.2026, /animate + /12-principles-of-animation), system-wide. Spec: components.md ›
+ * Additions › MO01, DESIGN.md › Motion, craft.md §1/§5. Preview: components/Motion/preview.html; canvas board M1 · Mișcare.
+ * ===================================================================================================== */
+
+/* ---------- 75. Motion: key press, overlays, banner, PeriodTable weeks, loaded content (MO01) ---------- */
+/* Gate (frequency × purpose, D196): data never moves (figures, Readouts, charts, the CycleTrack, lamps, table cells, the
+ * skeleton bars: no shimmer); the focus ring, navigation (Sidebar, BottomTabBar, Tabs) and keyboard-driven changes are
+ * instant or colour only; tens-a-day controls get a colour change (chips, SegmentedControl, Checkbox, Tabs: section 1 and
+ * below) and the key press; occasional containers and feedback get one short entrance and the same way out.
+ * One easing (--ip-ease), the three durations, the distances at the top of this file; transform and opacity only (the week
+ * rows' display is held for their fade, never their height); no keyframes anywhere (every motion is a transition, so a
+ * second press retargets it from where it is); hover changes colour only, so nothing here needs a (hover: hover) gate.
+ * Reduced motion: the distances go to rest (top of file), the fades stay.
+ * Hook (live product and the Motion previews only; static boards carry none, so they draw as before): the script that
+ * opens and closes the element sets data-state="open" | "closed" on it. "open" plays the entrance (@starting-style, also
+ * when it is first inserted); "closed" plays the same path back and ends display:none (transition-behavior allow-discrete),
+ * so a closed element leaves the layout and the accessibility tree as with `hidden` (use data-state instead of `hidden`
+ * on an element that moves). Without data-state an element is drawn open and still (boards, previews of a state). */
+
+/* Key press (feedback, tens a day): the key sinks under the finger; :active only (the is-pressed demo class stays still),
+ * never on a disabled or busy key. */
+.ip-btn,.ip-iconbtn,.ip-tabbar__key{transition-property:background-color,border-color,color,box-shadow,transform;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
+.ip-btn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-iconbtn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-tabbar__item:active:not([aria-disabled="true"]) > .ip-tabbar__key{transform:scale(var(--ip-press-scale))}
+
+/* Toggles (state indication, tens a day): colour only, as chips and tabs (section 1). */
+.ip-seg__item,.ip-check__box{transition-property:background-color,border-color,color;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
+
+/* Shared timing of every data-state element below. */
+.ip-scrim[data-state],.ip-sidepanel[data-state],.ip-toast[data-state],.ip-menu[data-state],.ip-banner[data-state]{
+  transition-property:opacity,transform,display;transition-duration:var(--ip-dur-panel);transition-timing-function:var(--ip-ease);transition-behavior:allow-discrete}
+:is(.ip-scrim,.ip-sidepanel,.ip-toast,.ip-menu,.ip-banner)[data-state="closed"]{display:none}
+
+/* Dialog (div.ip-scrim[data-state] > div.ip-dialog; spatial consistency, occasional): the scrim fades, the Dialog grows from
+ * 0.96 in place, centred (not anchored to its key); both 200, out the same way. */
+.ip-scrim[data-state="closed"]{opacity:0}
+@starting-style{.ip-scrim[data-state="open"]{opacity:0}}
+.ip-scrim[data-state] > .ip-dialog{transition:transform var(--ip-dur-panel) var(--ip-ease)}
+.ip-scrim[data-state="closed"] > .ip-dialog{transform:scale(var(--ip-modal-scale))}
+@starting-style{.ip-scrim[data-state="open"] > .ip-dialog{transform:scale(var(--ip-modal-scale))}}
+
+/* BottomSheet (div.ip-scrim.ip-scrim--sheet[data-state] > div.ip-sheet; occasional, phone): rises its own height from the
+ * screen's foot while the scrim fades, down the same way; page duration (it crosses the screen). */
+.ip-scrim--sheet[data-state]{transition-duration:var(--ip-dur-page)}
+.ip-scrim[data-state] > .ip-sheet{transition:transform var(--ip-dur-page) var(--ip-ease)}
+.ip-scrim[data-state="closed"] > .ip-sheet{transform:translateY(var(--ip-off))}
+@starting-style{.ip-scrim[data-state="open"] > .ip-sheet{transform:translateY(var(--ip-off))}}
+
+/* SidePanel docked (aside.ip-sidepanel--dock[data-state]; spatial consistency, occasional): slides in from the page's right
+ * edge (its frame clips it) and back; the page beside it keeps its panel-w margin (layout changes at once, never animated).
+ * Phone full-screen sheet (ip-sidepanel--sheet[data-state]): rises from the foot as the BottomSheet. */
+.ip-sidepanel[data-state="closed"]{opacity:0}
+.ip-sidepanel--dock[data-state="closed"]{transform:translateX(var(--ip-off))}
+@starting-style{
+  .ip-sidepanel[data-state="open"]{opacity:0}
+  .ip-sidepanel--dock[data-state="open"]{transform:translateX(var(--ip-off))}
+}
+.ip-sidepanel--sheet[data-state]{transition-duration:var(--ip-dur-page)}
+.ip-sidepanel--sheet[data-state="closed"]{transform:translateY(var(--ip-off))}
+@starting-style{.ip-sidepanel--sheet[data-state="open"]{transform:translateY(var(--ip-off))}}
+
+/* Toast (div.ip-toastwrap > div.ip-toast[data-state]; feedback, occasional): up its own height from the foot and fades in;
+ * leaves down through the foot. A transition, so a second save while one is leaving turns it round. */
+.ip-toast[data-state="closed"]{opacity:0;transform:translateY(var(--ip-off))}
+@starting-style{.ip-toast[data-state="open"]{opacity:0;transform:translateY(var(--ip-off))}}
+
+/* Menus and Select lists (.ip-menu[data-state]: the §53 listbox, row Acțiuni menus, the date popover; spatial consistency,
+ * tens a day): grow from 0.95 out of their field or key at key speed. The origin is the trigger: the top edge under a field;
+ * the top right corner for the right-aligned row menus. */
+.ip-menu[data-state]{transition-duration:var(--ip-dur-key);transform-origin:top}
+.ip-menu[data-state]:is(.ip-ev__menu,.ip-stree__menu){transform-origin:top right}
+.ip-menu[data-state="closed"]{opacity:0;transform:scale(var(--ip-pop-scale))}
+@starting-style{.ip-menu[data-state="open"]{opacity:0;transform:scale(var(--ip-pop-scale))}}
+
+/* Banner (.ip-banner[data-state]; preventing a jarring change, occasional): fades in from 8 px above its place; the content
+ * under it moves at once (layout is never animated). */
+.ip-banner[data-state="closed"]{opacity:0;transform:translateY(calc(-1 * var(--ip-shift)))}
+@starting-style{.ip-banner[data-state="open"]{opacity:0;transform:translateY(calc(-1 * var(--ip-shift)))}}
+
+/* PeriodTable week open / close (tbody.ip-ptable__week[data-state], set with the key's aria-expanded; state indication):
+ * the day rows take their place at once (no height animation: one row height, sticky cells, D150) and fade in at key speed;
+ * closing, they fade out, then leave (`hidden` on the rows as before; the fade holds their display). */
+.ip-ptable__week[data-state] > tr.ip-ptable__day{transition-property:opacity,display;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease);transition-behavior:allow-discrete}
+.ip-ptable__week[data-state="closed"] > tr.ip-ptable__day{opacity:0}
+@starting-style{.ip-ptable__week[data-state="open"] > tr.ip-ptable__day{opacity:0}}
+
+/* Load 4 more weeks (D190–D192; preventing a jarring change): each appended tbody.ip-ptable__week.is-new (style="--ip-i:0…3",
+ * its place among the added weeks) rises 8 px and fades in, 40 ms after the one before; the load row keeps focus and
+ * presses during the entrance work (nothing waits for it). The script drops is-new on the next press. */
+.ip-ptable__week.is-new{transition:opacity var(--ip-dur-panel) var(--ip-ease),transform var(--ip-dur-panel) var(--ip-ease);transition-delay:calc(var(--ip-i, 0) * var(--ip-stagger))}
+@starting-style{.ip-ptable__week.is-new{opacity:0;transform:translateY(var(--ip-shift))}}
+
+/* Skeleton → content (preventing a jarring change): the loaded block, inserted or shown in the skeleton's place (same
+ * geometry, FIN11G) with data-state="loaded", fades in at key speed; the skeleton goes at once. Figures fade, never count. */
+.ip-root [data-state="loaded"]{transition:opacity var(--ip-dur-key) var(--ip-ease)}
+@starting-style{.ip-root [data-state="loaded"]{opacity:0}}

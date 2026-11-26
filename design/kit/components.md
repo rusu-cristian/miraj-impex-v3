@@ -56,6 +56,7 @@ A labelled record type, used in legends and as filter chips in the FilterBar.
   - off: `raised` with `ink-muted` text, keeping the coloured icon
 - **Behaviour:** `role="checkbox"` with `aria-checked`.
 - **Chip groups, equal width (SYS20, D195, additions.css §74):** a row of chips is one `div.ip-chips` (`role=group`, or `role=radiogroup` of radio chips on a phone): every chip as wide as the widest, icon + word centred, `space-2` apart, one row; `.ip-chips--wrap` breaks it into `--ip-chips-cols` equal columns (default 2; S4's narrow page 4), `.ip-chips--fill` spans its container (phone FilterBar sheet: 2 × 175 in 358). Replaces the screens' `.s4-chips`.
+- **Motion (MO01, D196):** Toggle = colour only (fill, edge, text 120 ms); no slide, no scale (§1, §75).
 
 
 ## SexCount
@@ -100,11 +101,13 @@ Panel keys. `primary` (graphite `control`, one per view), `secondary`, `ghost` a
 - **Loading:** a spinner, the label stays. While busy (`aria-busy="true"`, usually with `aria-disabled="true"`) the key keeps its variant's colours, not the disabled grey (Additions › S14P, section 37).
 - **Height:** `control-h` on desktop, `control-h-touch` on phone. Radius `radius-sm`.
 - **Labels:** verbs: Salvează, Mută, Înregistrează vânzarea, Salvează prețurile.
+- **Motion (MO01, D196):** Pressed sinks to 0.97 (`:active` only, transform, `--ip-ease`, 120 ms); colour 120 ms; disabled or busy keys never move; `is-pressed` demo stays still (§75).
 
 
 ## IconButton
 
 An icon-only action with a required `aria-label`. `control-h` square (`control-h-touch` on phone), icon `ink-secondary`; hover `sunken`.
+- **Motion (MO01, D196):** As Button: pressed 0.97 in 120 ms, colour 120 ms (§75).
 
 
 ## TextField
@@ -136,6 +139,7 @@ Whole-number input for birds and eggs. The sex is marked by a 3px inner left bar
 One choice from a list: feed type, guide, farm, section. The menu is `raised` with `shadow-overlay`; the active option is `sunken`. Group headings are captions. Options can lead with a RecordTile or a SexCount.
 
 - **Which widget (FIN10, D130):** when the options carry state (a Lamp + word, a ♀ · ♂ count, a reason an option is disabled, a dates line, a mark such as "ghidul fermei"), the Select is the APG select-only combobox `.ip-select` (additions.css §53, Additions › FIN10); a plain list of names stays a native `<select>` inside `.ip-input`. Closed, the two look the same (value 400, 17/24 on touch, `ink-secondary` chevron). One field is one widget on every board.
+- **Motion (MO01, D196):** The list (`ul.ip-menu.ip-select__menu[data-state]`, and every `.ip-menu` popup: row Acțiuni menus, the date popover) grows from 0.95 + opacity out of its trigger (origin: the field's top edge; right-aligned row menus top right), 120 ms, closes the same way; `data-state="closed"` replaces `hidden` (§75).
 
 
 ## SectionSelect
@@ -146,6 +150,7 @@ Choose a farm › section, with birds alive shown as ♀ · ♂. Grouped by farm
 ## Checkbox
 
 Binary choice: "Fără pierderi azi", "Toate", farm access. An 18px box; checked = a `control` fill with a white check. 44px hit area.
+- **Motion (MO01, D196):** Box fill and edge change colour in 120 ms; the check appears at once (§75).
 
 
 ## SegmentedControl
@@ -156,6 +161,7 @@ Binary choice: "Fără pierderi azi", "Toate", farm access. An 18px box; checked
 - **Selected segment:** `raised` with 1px `line-strong`.
 - **Sex segments** carry their ♀ / ♂ colour.
 - **Equal segments (SYS20, D195, additions.css §74):** every segment is as wide as the widest (Ciclul curent · 4 săpt. · 13 săpt. · Interval = 4 × 110; Zi · Săpt. = 2 × 60), label centred on one line; `.ip-seg--fill` spans its field and shares it equally. A label that would not fit shows its short word, the full word in `ip-sr` (phone sheet: "Ciclu" for Ciclul curent, "Tot" for Tot istoricul; phone Detaliu: "Compart." for Compartimente).
+- **Motion (MO01, D196):** Colour only: the chosen segment's fill, edge and text change in 120 ms; no sliding thumb (tens a day, arrow keys) (§75).
 
 
 ## DateField
@@ -273,6 +279,7 @@ The signature: the series' cycles over calendar time, one lane per farm.
   - `full`: series page
   - `compact`: Acasă for the owner, the farm header
 - **Accessibility:** the SVG carries a text summary. Blocks are focusable links.
+- **Motion (MO01, D196):** None: the signature is data (blocks, marks, the azi line); hover colours a block only (§2, §75).
 
 
 ## EntryCard
@@ -315,6 +322,7 @@ An inline message (info, warn, fault, ok): the status tint with a 1px status bor
 **With action (FIN03, additions.css §49):** every Banner that carries a key (Reîncearcă, a Button link, an `ip-link` such as Alege ghidul) is `div.ip-banner.ip-banner--act` > 16px icon, `div.ip-banner__body` (the sentences; `p`s space-2 apart), then the key with `.ip-banner__key`. The icon stays on the first text line (§47); the body wraps; the key sits at the end, centred on the Banner's height. When the body would get narrower than space-12 × 6 (288) beside it (phone, SidePanel), the key wraps under the text, at the text's start, space-3 below. Text that stays one line beside a Button key adds `ip-banner--1l` (text, icon and key on one centre line). A load error says what failed and the fix in two paragraphs: "<what> nu s-au încărcat." / "Verifică conexiunea la internet, apoi apasă Reîncearcă." (+ what still works, "Poți … și acum."), `role="alert"`.
 
 **Failure copy (FX04, D143):** the object leads. Save error: "<Obiect> nu s-a salvat: <what was typed>, <day>." (the action's own verb where it is not a save: "nu s-a creat", "nu s-a resetat"); load error: "<Obiecte> nu s-au încărcat."; then one retry line on every failure Banner, "Verifică conexiunea la internet, apoi apasă Reîncearcă.", which names the Banner's own key (so every failure Banner carries Reîncearcă), and what is kept ("Ce ai scris rămâne …"). **Paragraphs (FY04, D147):** every failure Banner has two `p`s in `.ip-banner__body`: the lead alone, then the retry line followed by the kept-input or still-works sentence ("Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai scris rămâne …"); with nothing kept, the retry line alone. A keyless failure Banner (S22 reset Dialog, its key in the Dialog) stacks the same two `p`s in `.ip-banner__body` beside the icon. **Placement (D141):** a save-error Banner is the last part of the form, above the SaveBar or panel keys, the phone view scrolled to its end (`ip-screen__view--end`); after the failed save Reîncearcă takes the focus (S16P). Load errors stay where the content would be.
+- **Motion (MO01, D196):** Appearing (`.ip-banner[data-state]`): opacity + 8 px from above in 200 ms, leaves the same way; the content under it moves at once (§75).
 
 
 ## Toast
@@ -322,6 +330,7 @@ An inline message (info, warn, fault, ok): the status tint with a 1px status bor
 A save confirmation in `control` (graphite), with an optional undo. Not used for errors. **Copy (FX04, D143):** object first, then the verb, then the figures: "Zilnic salvat · …", "Transfer salvat · …", "Livrare adăugată · …", "Mortalitate ștearsă · …" (never "Salvat · …", "Șters · …").
 
 **Placement (FIN02, additions.css §48):** phone: `div.ip-toastwrap` inset `space-4` at the foot of the screen's view, above the SaveBar or BottomTabBar (in the phone full-screen sheet: above its foot); desktop: `ip-toastwrap--page`, bottom right of the page, `space-8` from both edges, at most `panel-w` wide. A save Toast carries Anulează: `span.ip-toast__txt` + `button.ip-link.ip-toast__undo`.
+- **Motion (MO01, D196):** `.ip-toast[data-state]`: up its own height + opacity in 200 ms, leaves down through the foot; a transition, never keyframes (a second save turns it round) (§75).
 
 
 ## EmptyState
@@ -335,6 +344,7 @@ Static `sunken` bars, no shimmer. Every `ip-skel` bar is a block (FX05, §42); b
 
 - **System skeletons (Additions):** EventRow rows `ip-ev--skel` (section 23), DataTable rows `tr.ip-table__skel` (section 42), Readout `div.ip-readout.ip-readout--skel`, CycleTrack `div.ip-trackskel` (`--compact`), field `div.ip-field.ip-field--skel` and text line `span.ip-skel-line` (section 54). Bar widths: `ip-skel--w1|w2|w3` (192/144/72), `--ch1…4` (as wide as 1–4 figures, in `ch` of the cell's Mono), `--key` (an IconButton, `control-h`), `--end` (at the cell's right edge). Screens draw these, not screen copies (FIN11); generators take the markup from `design/canvas/scripts/skel.py`.
 - **The skeleton is the loaded geometry (craft S6P, FIN11G):** a skeleton uses the loaded block's own boxes, so nothing moves when data arrives. Readout: the Readout's own line elements, one bar each (StockReadout: cap, value, 3 kv rows, sub; with a GuideChart: its empty svg at the loaded viewBox); Stat `ip-stat--skel`: its own lines, guide lines as wide as the loaded ones. CycleTrack: the drawn track's height (full 120, `--compact` 90) and its legend line. Field: the field's own label line, box (sunken, no edge) and hint lines. Table: the loaded and the loading table share one head that declares the column shares (`th[style="--ip-colw:n%;--ip-colmin:…"]`, one text column takes the rest, the loaded min-content as a strut); skeleton bars never widen a column.
+- **Motion (MO01, D196):** Bars never move (no shimmer); the loaded block replaces them at once and fades in, `[data-state="loaded"]`, opacity 120 ms; figures never count (§75).
 
 
 ## Dialog
@@ -346,16 +356,19 @@ Confirms destructive and cycle-changing actions.
 - **Fields:** a reason where required.
 - **Focus:** starts on Anulează.
 - **Placement (FIN04, additions.css §35/§50):** one scrim per frame, the Dialog centred both ways in it: desktop `div.ip-scrim.ip-scrim--page` fills the page (Sidebar, page and any open SidePanel, above the Toast), space-6 round the Dialog; phone `ip-scrim--phone` fills the phone screen, space-4 round it. The page and panel under it are `inert`; `role="alertdialog"` `aria-modal="true"`; body line `p.ip-dialog__note`, keys `div.ip-dialog__keys` (phone `--stack`), Anulează first.
+- **Motion (MO01, D196):** `div.ip-scrim[data-state] > .ip-dialog`: scrim opacity, Dialog scale 0.96 → 1, centred, 200 ms, out the same way (§75).
 
 
 ## SidePanel
 
 Details and corrections beside the page on desktop: `panel`, `panel-w`, `shadow-overlay`, a sticky footer. A full-screen sheet on phone.
+- **Motion (MO01, D196):** Docked `.ip-sidepanel--dock[data-state]`: in from the right edge (translateX 100% + opacity) 200 ms, the page's panel-w margin changes at once; phone sheet `--sheet[data-state]`: up from the foot, 280 ms (§75).
 
 
 ## BottomSheet
 
 Phone choice lists, such as the Înregistrează menu. Each entry is a RecordTile, then a label and a hint.
+- **Motion (MO01, D196):** `div.ip-scrim--sheet[data-state] > .ip-sheet`: rises its own height while the scrim fades, 280 ms, down the same way (§75).
 
 
 ## Sidebar
@@ -366,12 +379,14 @@ Desktop navigation on `panel`.
 - **Series selector**, then the nav items.
 - **Current item:** `raised` with a 1px `line` and a green `ok-lamp` on the right, like an active channel.
 - **Înregistrează** expands into entry items, each with its record icon in its colour.
+- **Motion (MO01, D196):** None: navigation is instant (tens a day); the current mark moves with the page (§75).
 
 
 ## BottomTabBar
 
 Phone navigation on `panel`. The centre Înregistrează key is a 48px graphite circle with `shadow-key`. Vets see 3 items; the other roles see 5.
 - **Equal items (SYS20, D195, additions.css §74):** one equal column per item across the bar (5 items = 78 px, 3 items = 130 px at 390), icon and label centred; the centre key stays a 48px circle centred in its column.
+- **Motion (MO01, D196):** Centre key sinks to 0.97 on press (120 ms); the current item changes at once with the page (§75).
 
 
 ## FormHeader
@@ -384,6 +399,7 @@ Phone form header: back, the title with its RecordTile, and a context line in mo
 ## SaveBar
 
 The sticky save area of a phone form: a summary with record icons and ♀/♂ figures, then the primary key. Disabled until there's something to save. A page holding `ip-screen__savebar` keeps a bottom scroll-padding of the bar's height + the field's border and focus ring (78 at 390, 106 under 390), so a focused field scrolls clear of it (WCAG 2.4.11; FX05, §63).
+- **Motion (MO01, D196):** None: it is always there (disabled until there is something to save), so it has no entrance; its key presses as Button; the summary figures never animate (§75).
 
 
 ## PageHeader
@@ -397,6 +413,7 @@ Breadcrumbs as uppercase captions, then the title (24px), type and guide tags, a
 
 View tabs. The selected tab is `ink` with a 2px `ink` underline and a small `ok-lamp` dot. Others are `ink-secondary`.
 - **Equal tabs (SYS20, D195, additions.css §74):** the tab list is n × the widest tab (each tab padded `space-4` each side, label centred; S4: 5 × 95), its line under the tabs; the selected dot hangs left of its label so no tab's width depends on the selection. On a phone (`.ip-screen`) the list spans the page and the tabs share it (5 × 71.6 in 358; replaces FV02's gap and the phone sideways scroll).
+- **Motion (MO01, D196):** Colour only (120 ms); the underline and dot move with the page at once, no sliding indicator (§1, §75).
 
 
 ## FilterBar
@@ -968,7 +985,7 @@ Spec only (KIT02); no CSS yet. A DataTable (§32 row heads and totals edge, §36
   - **Spine** (first three columns; S3 adds a fourth, "Fermă", text, after SAPT: "Telița", "Hîrbovăț", "Telița · Hîrbovăț" in the transfer weeks SAPT 20–21; never sticky): Data (`th[scope=row]`, sticky) · Vârstă (zile) (the bird age, D151/D159: 407 on 18.11.2026, not the workbook's Zile) · SAPT; age and SAPT are Mono figures, right-aligned.
   - **Week block:** one `tbody.ip-ptable__week` per age week. Its first row is the **week row**, drawn as the §32 totals row (`tr.is-total`: weight 500, `line-strong` top edge, the row above drops its rule), so every week opens on a hard edge. Its row header holds the **expand key** and "SAPT 58" + the dates "10.11–16.11" in `ink-secondary` on one line (D150; a partial week adds "· 2 din 7 zile"); Vârstă (zile) shows the age span "399–405", SAPT "58". Figures: sums, end values, week rates (lay % on start-of-day hen-days, D159: SAPT 59 40,4%, between its days 39,7% and 41,1%).
   - **Daily rows:** the week's days under its week row (`tr.ip-ptable__day`, `hidden` while the week is closed): Data "Ma 17.11" (weekday + dd.mm; the caption carries the year, D129), Vârstă (zile) "406", SAPT "59". Body text weight 400 on `raised`. A day the section had no birds is `–` with the reason in its group head; a missing entry is `–` + Lamp "lipsă" (§70 one line).
-  - **Expand key:** a ghost IconButton-sized key at the start of the week row header, Lucide chevron-right (closed) / chevron-down (open), 16px `ink-secondary`, ≥24px target on desktop; the key's name is the row header text. No animation beyond the instant row show/hide (craft motion).
+  - **Expand key:** a ghost IconButton-sized key at the start of the week row header, Lucide chevron-right (closed) / chevron-down (open), 16px `ink-secondary`, ≥24px target on desktop; the key's name is the row header text. Motion (MO01, D196, §75): the day rows take their place at once (no height animation) and fade in or out in 120 ms (`tbody.ip-ptable__week[data-state]`).
   - **Load-more row (SYS18, D190–D192):** the table's last body row, right after the last loaded week and before the foot total: `tbody.ip-ptable__morebody > tr.ip-ptable__more > td[colspan=all] > button.ip-ptable__load[aria-controls=table]`, one cell spanning every column, D150 row height (row-h; phone 48), faded fill (`ground`) and muted text (`ink-muted`, plus 16): "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40" (hidden "săptămâni pe ecran"); the whole row is the button (hover `sunken`, pressed `rule`, both `ink-secondary`; focus ring inside the row edge), its label sticky at the row start when the region scrolls; a press appends the next 4 older weeks (open with their days, D166) and keeps focus; a polite live region in the cell says "Au fost adăugate SAPT 52–55." (+ "Perioada: 8 săpt." when a period filter was widened). It shows with any period: "Ciclul curent" just loads more; a period filter (4 săpt., 13 săpt., Interval) widens 4 weeks back with each press and the FilterBar follows ("4 săpt." → "8 săpt." in the same item; Interval start −4 weeks) (D192). The count's "din" is the cycle's (or series', register's) weeks: Hîrbovăț Seria 2026 SAPT 20–59 = 40, Serie SAPT 1–59 = 59, Seria 2025 register SAPT 23–65 = 43. When fewer than 4 remain the label says how many ("Încarcă încă 3 săptămâni"). At the first week the row becomes the muted note "Începutul ciclului · SAPT 20" (`tr.ip-ptable__more--start`, tabindex −1: the press that reached it moves focus there and the live region adds the note). Loading: the row with one `ip-skel--more` bar. Exportă .xlsx exports the whole chosen period, not only the loaded weeks (D191). Replaces `allWeeks` / "Arată toate săptămânile" (D160/D174) and the S11 "Vezi toate săptămânile" link.
   - **Totals foot:** `tfoot` row "Total SAPT 56–59" (D191: the weeks on screen, labelled by their span; it grows as weeks load, "Total SAPT 52–59"; phone "Total" + the span on a second small line; §32 totals edge): sums, end values at the end of the last loaded day, rates over the loaded weeks.
   - **One row height (D150, §70):** week rows, daily rows and the foot are all `row-h` (32) on desktop; nothing wraps (the Data column takes the slack); messages go in a §69 detail row, never inside a cell.
@@ -982,7 +999,7 @@ Spec only (KIT02); no CSS yet. A DataTable (§32 row heads and totals edge, §36
   - `density`: default (DataTable cell padding) | `dense` (figure padding one spacing step smaller, as S3 at 1280, FIN14B; same row height).
   - **Heads on one line (SYS17, D189):** section, group and leaf heads and their notes never wrap; every column but Data is as wide as its one-line head or its widest figure; a table wider than its page scrolls under the sticky Data column (supersedes D165's "Fermă tables fit at 1440"); on the canvas the board grows wider (D167 4). No `ip-table--wraphead`.
   - `weighings` (Greutate): a week row shows that week's weighing; an open week lists only its days with a weighing (no empty day rows); a week without one keeps its expand key and opens, like every week, to one muted row `tr.ip-ptable__day.ip-ptable__none > td[colspan=all] > span` "fără cântărire în această săptămână" (`ink-muted`, at the day labels' start, sticky there when the region scrolls; its figure cells on the week row `–` + hidden "fără cântărire") (D167: no week looks collapsed).
-  - `more` (SYS18, D190–D192): the load-more row on every PeriodTable (Fermă tabs, Serie, Secțiune, Rapoarte), see Anatomy; builder `sys14_build.ptable(more=more(first, word, added, focus, period))`. `allWeeks` is retired.
+  - `more` (SYS18, D190–D192): the load-more row on every PeriodTable (Fermă tabs, Serie, Secțiune, Rapoarte), see Anatomy; builder `sys14_build.ptable(more=more(first, word, added, focus, period))`. `allWeeks` is retired. Motion (MO01, D196, §75): each appended `tbody.ip-ptable__week.is-new` (`--ip-i` 0–3) rises 8 px and fades in, 200 ms, 40 ms apart; the row keeps focus and never waits for it; the load row itself changes colour only.
   - `rowGroups` (reports S11 Consum, S14): after a week's daily rows, the section week rows as `th.ip-table__child` (§32); days are farm-level only.
 - **States:** loaded; loading = the same table with `ip-skel` bars in week and day cells at the loaded column shares (D132, §42; week-row bars in `rule`); no data in the period = EmptyState in place of the region (D48); no guide / partial guide (above); partial current week (row header "2 din 7 zile", open by default); missing day (`–` + "lipsă"); emptied section (`–` after its last day, group head note "goală din 14.11", D158); emptying weeks show Vânzare beside real deaths (D155); load error = the §49 failure Banner with Reîncearcă in place of the region (D143/D147).
 - **A11y:** the Detaliu SegmentedControl is a named radiogroup before the region in the focus order; real table semantics; one `tbody` per week (the row group), the week row's header `th[scope=rowgroup]`, day rows' Data `th[scope=row]`; the expand key is a `button` with `aria-expanded` and `aria-controls` = the ids of its day rows, named by the week ("SAPT 58, 10.11–16.11.2026, 7 zile"); closed day rows are `hidden` (out of the reading order); the `caption` names tab, scope, series and SAPT span, so the region's aria-label = caption; ♀/♂ heads carry hidden words; `–` cells carry their reason as hidden text; focus order: region → expand keys in row order; Enter/Space toggles. Grain Zi / Săpt. announces through the FilterBar's own state, not a live region.
@@ -1012,3 +1029,11 @@ CSS in additions.css §74 (+ §1 phone tab gap and §38 fill rule moved there; b
 - **BottomTabBar** `ip-tabbar`: equal columns (5 × 78, 3 × 130).
 - **Previews:** SegmentedControl (+ phone fill with short word), Tabs (+ phone list), RecordChip (chip groups), FilterBar (chips on their own line, Exportă `ip-filterbar__end`), FilterInterval (chips grouped; the bar wraps at 1180 with equal segments), BottomTabBar, PeriodTable (phone short word). dsCard heights re-measured.
 - **Check:** `design/canvas/scripts/eq_scan.py` (0 mismatches over every board and preview).
+
+### MO01 · System motion, 26.11.2026
+Decided by: user (D196, /animate + /12-principles-of-animation); the gate per component, hooks and values by Claude, to review. additions.css §75 (both copies identical) + the motion block at its top; preview `components/Motion/preview.html`; canvas board M1 · Mișcare (interactive).
+- **Tokens (extended, no parallel system):** `--ip-ease` and the three durations stay the only curve and times; new distances beside them: `--ip-press-scale` 0.97, `--ip-pop-scale` 0.95, `--ip-modal-scale` 0.96, `--ip-off` 100%, `--ip-shift` space-2, `--ip-stagger` 40 ms. No second curve: the drawer-like sheet uses `--ip-ease` (already a strong ease-out) at the page duration.
+- **Hook:** the script that opens or closes an element sets `data-state="open|closed"` on it (Dialog scrim, BottomSheet scrim, SidePanel dock/sheet, Toast, `.ip-menu`, Banner, PeriodTable week tbody); "open" enters through `@starting-style`, "closed" leaves the same way and ends `display:none` (allow-discrete), so it replaces `hidden` on an element that moves. New weeks: `tbody.ip-ptable__week.is-new` + `--ip-i`. Loaded content: `[data-state="loaded"]`. Static boards carry no hook and draw as before.
+- **Accepted:** key press (Button, IconButton, BottomTabBar key) scale 0.97 120; Dialog scrim opacity + scale 0.96 200; BottomSheet translateY 100% 280; SidePanel dock translateX 100% + opacity 200, phone sheet translateY 280; Toast translateY 100% + opacity 200; menus/Select scale 0.95 + opacity from the trigger 120; Banner opacity + 8 px 200; week open/close opacity 120 (rows' display held, no height); loaded weeks 8 px + opacity 200, 40 ms stagger; loaded block opacity 120; toggles (chips, SegmentedControl, Checkbox, Tabs) colour 120.
+- **Rejected:** sliding Tabs indicator and SegmentedControl thumb (tens a day, arrow keys; colour is enough), week height accordion (layout per frame in a wide sticky table), SaveBar entrance (always present), skeleton shimmer, any motion on figures, Readouts, charts, the CycleTrack, lamps, table cells, the focus ring and navigation.
+- **Reduced motion:** the distances go to rest (scale 1, 0 px, 0 %, no stagger); every fade keeps its timing. `.ip-motion--reduce` forces it on a subtree.
