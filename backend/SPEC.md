@@ -164,7 +164,7 @@ app_user ─< user_farm >─ farm ─< section (hall ─< compartment)
 series ─< cycle >─ farm      cycle.guide_id → guide
 entry (one save) ─< bird_event · egg_production · feed_allocation · weighing · feed_delivery · feed_stock_adjustment · legacy_mortality
 feed_type ─< feed_delivery, feed_allocation
-audit_log (one row per save action) · live_event (SSE outbox) · voice_usage · app_setting · user_session · login_attempt
+audit_log (one row per save action) · live_event (SSE outbox) · request_replay (idempotent replies) · voice_usage · app_setting · user_session · login_attempt
 ```
 IDs are UUID v4 (`gen_random_uuid()`), so the client can create an idempotency key before saving.
 
@@ -259,6 +259,7 @@ Rules: every write is logged, creates included (needed for "who entered what" an
 - `live_event(id bigserial, at, farm_ids[], type, payload)`: written in the same transaction as the change together with `select pg_notify('live_event', id::text)` (PostgreSQL delivers a notification only when the transaction commits, and drops it on rollback); the SSE handler replays from `Last-Event-ID` (24 h retention). §9.
 - `voice_usage(user_id, day, commands, audio_seconds, llm_tokens_in/out)`: cost tracking without text (§8.9).
 - `app_setting`: D19 thresholds and limits (seeded in `schema.sql`); code reads them once per request.
+- `request_replay(client_request_id pk, user_id, route, status, body bytea, created_at)`: the exact response bytes of every create that carried a `clientRequestId`, written in the save's transaction; a repeat returns them unchanged (§7.0, §12.5). `bytea`, not `jsonb`, so key order and spacing never drift. Purged after 7 days by the maintenance role.
 
 ### 4.12 Views in `schema.sql`
 | View | Columns (main) | Used for |
@@ -668,10 +669,10 @@ The deactivated check runs only after a correct password (no account probing). L
                   "message": "H2: 4 500 depășește cele 4 383 găini în viață la Telița pe 28.02.2026. Introdu cel mult 4 383." } ],
   "warnings": [] } }
 ```
-  Codes: `VALIDATION` 400 (shape: malformed JSON, unknown field, wrong type, missing required field; the problems in `issues[]`, §7.0b), `UNAUTHENTICATED` 401, `FORBIDDEN` / `FARM_FORBIDDEN` / `PAST_DAY_VET` / `PRICE_FORBIDDEN` / `ACCOUNT_DISABLED` 403, `NOT_FOUND` 404, `ALREADY_ENTERED` / `CONFIRM_REQUIRED` / `SERIES_CLOSED` / `STALE` 409, `REFUSED` 422 (business rules §6), `RATE_LIMITED` 429 (+ `retryAfterSeconds`), `VOICE_UNAVAILABLE` 503.
+  Codes: `VALIDATION` 400 (shape: malformed JSON, unknown field, wrong type, missing required field; the problems in `issues[]`, §7.0b), `UNAUTHENTICATED` 401, `FORBIDDEN` / `FARM_FORBIDDEN` / `PAST_DAY_VET` / `PRICE_FORBIDDEN` / `ACCOUNT_DISABLED` 403, `NOT_FOUND` 404, `ALREADY_ENTERED` / `CONFIRM_REQUIRED` / `SERIES_CLOSED` / `STALE` 409, `PAYLOAD_TOO_LARGE` 413 (body over the route's limit: 64 KiB JSON, 2 MB guide file, 1 MB audio; *(proposed)* "Datele trimise sunt prea mari."), `REFUSED` 422 (business rules §6), `RATE_LIMITED` 429 (+ `retryAfterSeconds`), `VOICE_UNAVAILABLE` 503.
 - **Warnings** never block: successful responses carry `warnings: [{ code, sectionCode?, sex?, message }]`.
-- **Dry run**: every write that shows an effect preview accepts `"dryRun": true` and returns `{ effects, warnings, refusals }` without writing (transfer, sale, correction, delete, new cycle, series create, series age change, guide save). The client calls it on change (debounced 300 ms).
-- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same `entry` and `toast`, rebuilt from the stored save; §12.5 notes), so "Reîncearcă" never saves twice.
+- **Dry run**: every write that shows an effect preview accepts `"dryRun": true` and returns `{ effects, warnings, refusals }` without writing (transfer, sale, correction, delete, new cycle, series create, series age change, guide save; the entry creates accept it too). A dry run answers **200** with the refusals **in the body** (never 422): the server runs the real writes and checks in a transaction (child rows, §6.1 counts, `ReconcileCycles`) and then rolls it back, so the preview is exactly what a save would do. No audit, live event or replay row survives it. The client calls it on change (debounced 300 ms).
+- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same body, byte for byte: the original response is stored with the key in `request_replay`, §4.11, §12.5), so "Reîncearcă" never saves twice.
 - **Optimistic concurrency**: entry reads return `version` (= `updated_at ?? created_at`); edits send `ifVersion`; mismatch → `409 STALE` *(proposed)* "Înregistrarea s-a schimbat între timp. Reîncarcă și încearcă din nou."
 - **Every successful write** returns `toast` (the exact Toast text), the affected entity, `asOf`, and emits live events (§9).
 - **Pagination**: cursor-based (`cursor` opaque, `nextCursor` null at the end) except the PeriodTable, whose cursor is the oldest loaded SAPT (§7.4).
@@ -681,7 +682,7 @@ Every request and response body is a named Go struct in the module's `dto.go` (�
 | Topic | Rule (Go) |
 |---|---|
 | Names | camelCase tags exactly as the JSON in this spec (`json:"clientRequestId"`, `json:"F"`, `json:"M"`); no reliance on Go field names. Maps only where the keys are data: PeriodTable `cells`/`status`/`reasons` (keys `"{leaf}"`, `"{leaf}@{sectionCode}"`), `voice` `args`, `form.values`. |
-| Decoding | One helper `httpx.Decode[T](w, r, maxBytes)`: `http.MaxBytesReader` (64 KiB for JSON bodies; 2 MB guide upload §7.17; 1 MB audio §8.2), `Content-Type` must be `application/json`, `dec.DisallowUnknownFields()` (a misspelt field is a 400, not silently ignored), exactly one JSON value (a second `Decode` must return `io.EOF`). Decode errors become `400 VALIDATION` with one issue naming the JSON path. |
+| Decoding | One helper `httpx.Decode[T](w, r, maxBytes)`: `http.MaxBytesReader` (64 KiB for JSON bodies; 2 MB guide upload §7.17; 1 MB audio §8.2), `Content-Type` must be `application/json`, `dec.DisallowUnknownFields()` (a misspelt field is a 400, not silently ignored), exactly one JSON value (a second `Decode` must return `io.EOF`). Decode errors become `400 VALIDATION` with one issue naming the JSON path; a body over the limit (`*http.MaxBytesError`) becomes `413 PAYLOAD_TOO_LARGE`. |
 | Encoding | One helper `httpx.JSON(w, status, v)`: `Content-Type: application/json; charset=utf-8`, `enc.SetEscapeHTML(false)` (keeps `›`, `<`, `&` readable in toasts), `Cache-Control: no-store` on every `/api` response. |
 | Integers | Counts, eggs, SAPT, age days: `int` (fits `int32` in the DB). In **requests**, user-typed counts decode into `*num.Num` (below) so that `2.5` reaches `Validate()` and gets the Romanian sentence naming the section (Z2) instead of a generic decode error; `Validate()` converts to `int32`. |
 | Decimals | Type `num.Num` (wraps `shopspring/decimal.Decimal`, §11.2): `MarshalJSON` writes a **JSON number** (never quoted) rounded half away from zero to ≤ 4 decimals, trailing zeros dropped (`40.4024…` → `40.4024`, `2303.2`); `UnmarshalJSON` accepts a JSON number only (a string is a 400). No `float64` for kg, lei, grams or percentages anywhere on the server; charts too use `num.Num`. |
@@ -744,7 +745,7 @@ type WriteMeta struct { // embedded in every create body (fields are promoted in
 type EntryRef struct {
 	ID      uuid.UUID `json:"id"`
 	Kind    string    `json:"kind"`
-	Version string    `json:"version"` // RFC 3339 of updated_at ?? created_at (opaque to the client)
+	Version string    `json:"version"` // coalesce(updated_at, created_at) as RFC 3339 with microseconds (opaque to the client)
 }
 ```
 `httpx.WriteError(w, err)` is the only way errors leave a handler: it maps typed Go errors (`*httpx.Error`, `*entries.RefusedError`, `pgconn.PgError` codes `23505` → `ALREADY_ENTERED`/name clash by constraint name, `23P01` → cycle overlap refusal, `context.DeadlineExceeded` → 503) to the envelope; anything unexpected → `500 INTERNAL` "A apărut o eroare. Încearcă din nou." *(proposed)*, logged with the request id, no details to the client.
@@ -1227,7 +1228,7 @@ The handler loads the entry, decodes `Values` with `DisallowUnknownFields` into 
 | `DELETE /api/guides/:id` | unused only (§6.12 G15); Dialog "Ghidul și cele 94 de rânduri ale lui se șterg. Niciun ciclu nu îl folosește, deci nicio comparație nu se schimbă. …" |
 
 ### 7.18 Tipuri de hrană (S21; D116, D117)
-`GET /api/feed-types` (owner: all with `usedAt` farms, stock per farm; others: active only through bootstrap) · `POST /api/feed-types { name, forSex }` · `PATCH /api/feed-types/:id { name?, forSex?, active? }` (§6.13) · `DELETE /api/feed-types/:id` (unused only).
+Package `feedtypes` (§12.3). `GET /api/feed-types` (owner: all with `usedAt` farms, stock per farm; others: active only through bootstrap) · `POST /api/feed-types { name, forSex }` · `PATCH /api/feed-types/:id { name?, forSex?, active? }` (§6.13) · `DELETE /api/feed-types/:id` (unused only).
 
 ### 7.19 Utilizatori (A2, S22; D78, D118–D120)
 | Route | Body / result |
@@ -1674,8 +1675,8 @@ func (h *Handler) Stream(w http.ResponseWriter, r *http.Request) {
 	hd.Set("X-Accel-Buffering", "no")
 	w.WriteHeader(http.StatusOK)
 
-	sub := h.hub.Subscribe(p) // subscribe BEFORE replay so nothing falls between the two
-	defer h.hub.Unsubscribe(sub)
+	sub := h.hub.Subscribe(p)    // subscribe BEFORE replay so nothing falls between the two
+	defer h.hub.Unsubscribe(sub) // remove under the write lock; closes sub.done exactly once
 	fmt.Fprint(w, "retry: 3000\n\n")
 	last := parseLastEventID(r) // header Last-Event-ID (int64), 0 when absent
 	if last > 0 {
@@ -1695,12 +1696,13 @@ func (h *Handler) Stream(w http.ResponseWriter, r *http.Request) {
 	flushTimer.Stop()
 	for {
 		select {
-		case <-r.Context().Done(): // client gone, or server shutdown (hub closes sub.C)
+		case <-r.Context().Done(): // client gone
 			return
-		case ev, ok := <-sub.C:
-			if !ok {
-				return
-			}
+		case <-sub.Done(): // removed by the hub (shutdown); closed once via sync.Once
+			return
+		case <-sub.Kick(): // lagging: return, the deferred Unsubscribe removes and closes it
+			return
+		case ev := <-sub.C: // never closed
 			if ev.ID <= last || !visible(p, ev) {
 				continue
 			} // dedupe against the replay; farm + price filter
@@ -1725,11 +1727,11 @@ func (h *Handler) Stream(w http.ResponseWriter, r *http.Request) {
 ```
 Each event is written as `id: <live_event.id>\nevent: <type>\ndata: <one-line JSON>\n\n`; the payload is filtered per caller before writing (price fields only for owner/manager, D200).
 
-**Hub (per-farm fan-out)**: `live.Hub` holds `map[uuid.UUID]map[*Sub]struct{}` (farm id → subscribers), one set for owners (they get every farm), and `map[uuid.UUID]*Sub` by user id for `user.changed`. `Publish(ev)` takes a read lock, looks up the subscribers of `ev.farm_ids` (empty = global: owners, plus the user concerned for `user.changed`) and does a **non-blocking** send on each `Sub.C` (buffer 64). A full buffer marks the subscriber as lagging: the hub closes its channel, the handler returns, the browser reconnects with `Last-Event-ID` and replays from the table — a slow client never blocks the hub or the listener. When a user's role or farms change, their sessions are revoked (§4.3) and the open stream ends at its next auth check (the handler re-reads the session every 5 min and on `user.changed`).
+**Hub (per-farm fan-out)**: `live.Hub` holds `map[uuid.UUID]map[*Sub]struct{}` (farm id → subscribers), one set for owners (they get every farm), and `map[uuid.UUID]map[*Sub]struct{}` by user id for `user.changed`, all behind one `sync.RWMutex`. These maps change **only under the write lock** (`Subscribe`, `remove`). `Publish(ev)` takes the read lock, looks up the subscribers of `ev.farm_ids` (empty = global: owners, plus the user concerned for `user.changed`) and does a **non-blocking** send on each `Sub.C` (buffer 64); when the buffer is full it only marks the subscriber lagging (`sub.lagging.Store(true)`) and signals it (`sub.kick()`, a non-blocking send on a 1-slot channel) — it never closes anything under the read lock. Closing happens in one place: `remove(sub)` takes the write lock, deletes the subscriber from every map, and closes `sub.done` through `sub.closeOnce.Do(…)`, so a subscriber is closed exactly once whatever path gets there first (handler return, lagging kick, shutdown). The handler selects on `sub.C`, `sub.kick` and `sub.done`: on a kick it returns, its deferred `Unsubscribe` calls `remove`, the browser reconnects with `Last-Event-ID` and replays from the table — a slow client never blocks the hub or the listener. `Sub.C` itself is never closed (receivers stop on `done`), so a racing `Publish` can't send on a closed channel. When a user's role or farms change, their sessions are revoked (§4.3) and the open stream ends at its next auth check (the handler re-reads the session every 5 min and on `user.changed`).
 
 **Postgres LISTEN/NOTIFY with pgx (multi-instance)**: each instance runs one goroutine `live.Listener` holding a dedicated `*pgx.Conn` (acquired outside the pool, or `pool.Acquire` + `Hijack`; verify at implementation) that runs `LISTEN live_event` and loops on `conn.WaitForNotification(ctx)`. A notification's payload is the event id; the listener reads that row (`select … from live_event where id = $1`) and publishes it. On a connection error it reconnects with back-off, re-runs `LISTEN`, and catches up with `where id > $lastSeen and at > now() − interval '24 hours' order by id`; ids already published are skipped. With one instance the same path runs (no in-process shortcut), so single- and multi-instance behave the same. Ids come from a sequence, so two transactions on different farms can commit out of id order: live delivery is unaffected (the listener fetches each notified id), while a replay after a disconnect (`id > Last-Event-ID`) can miss an event that committed during the disconnect with a lower id; the client therefore refetches the visible page queries after every reconnect (cheap, and it already shows the last values meanwhile).
 
-**Purge**: a ticker in one instance (guarded by `pg_try_advisory_lock` on a fixed key) deletes `live_event` rows older than 24 h every hour, as the maintenance role (§11.4: the app role has no DELETE).
+**Purge**: every instance runs an hourly ticker on the maintenance pool (`MAINT_DATABASE_URL`, role `il_maint`, §11.9–§11.10); the app role has no DELETE (§11.4). Each tick: `conn := maintPool.Acquire(ctx)`; `select pg_try_advisory_lock(<fixed key>)` on that connection; if it returns false another instance is purging, release and stop; else, on the same connection, delete `live_event` older than 24 h, `login_attempt` older than 30 days and `request_replay` older than 7 days, then `select pg_advisory_unlock(<fixed key>)` and `conn.Release()` (session-level lock: lock, work and unlock must use the same connection, which is why it is acquired explicitly and not taken from `pool.Exec`).
 
 **`http.Server` timeouts caveat**: `WriteTimeout` is a deadline for the whole response, so a server-wide `WriteTimeout: 60s` would cut every SSE stream (and the voice WebSocket) after 60 s. Keep `ReadHeaderTimeout` (10 s), `ReadTimeout` (30 s), `WriteTimeout` (60 s) and `IdleTimeout` (120 s) for ordinary requests, and in the two long-lived handlers clear the deadline per response with `http.NewResponseController(w).SetWriteDeadline(time.Time{})` (and the read deadline for the WebSocket). Also: no compression middleware and no request-timeout middleware on `/api/live` (both buffer or cancel the stream); the reverse proxy needs buffering off and a read timeout above the 25 s heartbeat (nginx: `proxy_buffering off; proxy_read_timeout 1h;`). On shutdown, `srv.RegisterOnShutdown(hub.Close)` ends every stream so `srv.Shutdown` doesn't wait for them; clients reconnect to another instance and replay.
 
@@ -1783,7 +1785,7 @@ A developer command in Go, **`cmd/migrate-history`** (`cd backend && go run ./cm
 - A day starts at 00:00 local. "Until 23:59" = while `app_today()` equals the local date of `created_at`. "Missing from 12:00" = local noon. "Azi/Ieri" in forms are local.
 - DST days have 23/25 hours; nothing is computed per hour, so no special case.
 - **Go**: `timex.Chisinau, err = time.LoadLocation("Europe/Chisinau")` once at start-up (fail fast); `cmd/api` and the other commands `import _ "time/tzdata"` so the zone database is embedded in the binary (the distroless image has no `/usr/share/zoneinfo` guarantee). All "now" comes from an injected `timex.Clock` (`Now() time.Time`); `timex.Today(clock)` = the civil `Day` of `clock.Now().In(Chisinau)`. Handlers never call `time.Now()` directly (a lint rule or review check), so tests freeze time at 2026-11-18T12:00 local.
-- **Go ↔ SQL day**: Go computes `today` and passes it as a query parameter wherever a query needs it; the only SQL that reads `app_today()` are the views (`v_section_sex_day` dense range, `v_cycle`). Production leaves `app.today` unset (both clocks are the real one); tests set it on every pooled connection (`pgxpool.Config.AfterConnect` runs `select set_config('app.today', '2026-11-18', false)`) together with the frozen `Clock`, so Go and SQL agree. The pool sets `timezone = 'UTC'` in `ConnConfig.RuntimeParams`.
+- **Go ↔ SQL day**: Go computes `today` and passes it as a query parameter wherever a query needs it; the only SQL that reads `app_today()` are the views (`v_section_sex_day` dense range, `v_cycle`). Production leaves `app.today` unset (both clocks are the real one); tests set it on every pooled connection (`pgxpool.Config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error { _, err := conn.Exec(ctx, "select set_config('app.today', $1, false)", "2026-11-18"); return err }`) together with the frozen `Clock`, so Go and SQL agree. The pool sets `timezone = 'UTC'` in `ConnConfig.RuntimeParams`.
 
 ### 11.2 Types
 | Quantity | SQL type | API |
@@ -1883,13 +1885,13 @@ Fixture: the dev seed (§11.9) loaded from the extracts, clock frozen at **2026-
 - **Rules**: never-below-0 with retroactive edits (raise a death count on 17.11 H5.2 until refused: bound 4 284; the inflow bound 4 383), cycle reconcile (a transfer that empties Telița closes it; a correction that raises it reopens it; a manual cycle; the C2 other-series refusal and its D201 pass), idempotent retries (same `clientRequestId` twice → one entry, second answer 200), soft delete + restore, `STALE` on a wrong `ifVersion`, audit rows per action (`changes` keys as §4.10).
 - **Concurrency (transaction + advisory lock)**: (1) two goroutines each save a Vânzare of ♂ 4 from Hîrbovăț H6.2 on 18.11, where 5 cocoși are alive after the day's saved movements — they start together (a barrier channel) on separate pool connections; exactly one gets 201, the other 422 with the §6.1 Vânzare message ("cel mult 1"), and `alive_end ≥ 0` holds everywhere; (2) after a first transfer puts birds into Telița, two transfers in opposite directions (Hîrbovăț → Telița and Telița → Hîrbovăț) start at the same instant and both finish (ascending farm-id lock order: no deadlock; a 5 s `context.WithTimeout` fails the test on a hang); (3) the same two saves with the lock call removed (a test-only `ledger.LockFarms` stub) must be able to break the invariant, proving the test detects a missing lock — run under `-race`, repeated `-count=20` in CI's nightly job.
 - **Permissions**: the §3.3 matrix as one table-driven test over every route registered in `cmd/api` (method, path, role → expected status), against an `httptest.Server` running the real handler chain; a route missing from the table fails the test.
-- **HTTP contract**: decoder tests (unknown field → 400 with `issues[0].path`, a string where a number is expected, body over the limit → 413 mapped to `VALIDATION`), CSRF/Origin middleware, cookie flags on login, CORS headers only for `APP_ORIGIN` when cross-origin mode is configured.
+- **HTTP contract**: decoder tests (unknown field → 400 with `issues[0].path`, a string where a number is expected, body over the limit → `413 PAYLOAD_TOO_LARGE`), CSRF/Origin middleware, cookie flags on login, CORS headers only for `APP_ORIGIN` when cross-origin mode is configured.
 - **Voice**: an eval set of ≥ 150 transcripts (every catalogue example + misheard/ambiguous variants) → expected `action`; run against the chosen providers before release (open question 16) with `go test ./internal/voice -run TestEval -tags eval`; CI runs the server pipeline with `providers/fake`. WebSocket tests use `httptest.Server` + `coder/websocket.Dial`: wrong `Origin` refused, size and time limits close the stream.
 - **Live**: SSE replay after disconnect (`Last-Event-ID`), farm filter, price events not delivered to viewers, a lagging subscriber dropped without blocking others, and two API instances in one test process sharing one database (event saved through instance A arrives on a stream of instance B via LISTEN/NOTIFY).
 
 ### 11.9 Migrations and seeding
-- Migrations: **goose** (`github.com/pressly/goose/v3`), SQL files in `backend/db/migrations/`, embedded with `//go:embed` and applied by `api migrate up` (a subcommand of the `cmd/api` binary) as a release step **before** the new version starts — not on every instance start. `0001_baseline.sql` = `backend/schema.sql`, byte for byte (the file already carries the `-- +goose` annotations; at M0 move it with `git mv backend/schema.sql backend/db/migrations/0001_baseline.sql` and from then on that file is what this spec calls `schema.sql`). Later changes are new numbered files (`0002_roles.sql`, …); views change with `create or replace view` (or `drop view … ; create view …` when columns change) in a new migration, never by editing `0001`. Verify at implementation how the goose version in use serialises concurrent runs.
-- Roles: the database owner role runs migrations; the API connects as `il_app`, which gets `select, insert, update, delete` on the tables except `audit_log` and `live_event` (`select, insert` only, §4.10) and `usage` on sequences; a maintenance role `il_maint` purges `live_event` and `login_attempt`. Roles are created by infrastructure; their grants are migration `0002_roles.sql`.
+- Migrations: **goose** (`github.com/pressly/goose/v3`), SQL files in `backend/db/migrations/`, embedded with `//go:embed` and applied by `api migrate up` (a subcommand of the `cmd/api` binary, connecting with `MIGRATE_DATABASE_URL`, the owner role; §11.10) as a release step **before** the new version starts — not on every instance start. `0001_baseline.sql` = `backend/schema.sql`, byte for byte (the file already carries the goose annotations; at M0 move it with `git mv backend/schema.sql backend/db/migrations/0001_baseline.sql` and from then on that file is what this spec calls `schema.sql`). Later changes are new numbered files (`0002_roles.sql`, …); views change with `create or replace view` (or `drop view … ; create view …` when columns change) in a new migration, never by editing `0001`. Verify at implementation how the goose version in use serialises concurrent runs.
+- Roles: the database owner role runs migrations; the API connects as `il_app`, which gets `select, insert, update, delete` on the tables except `audit_log` and `live_event` (`select, insert` only, §4.10) and `usage` on sequences; `request_replay` gets `select, insert`; a maintenance role `il_maint` (`select, delete` on `live_event`, `login_attempt`, `request_replay`) runs the purge of §9.1 through `MAINT_DATABASE_URL`. Three DSNs, three roles: `MIGRATE_DATABASE_URL` (owner: `api migrate`), `DATABASE_URL` (`il_app`: `api serve`), `MAINT_DATABASE_URL` (`il_maint`: the purge loop inside `api serve`). Roles are created by infrastructure; their grants are migration `0002_roles.sql`.
 - `go run ./cmd/migrate-history --seed-dev …`: runs the history migration (§10.3) on the extracts + creates illustrative users (Proprietar, Ion Rusu manager on both farms, Dr. Ceban vet on Hîrbovăț, an Observator) with dev passwords, and loads `illustrative-events-hirbovat.json` (culls, a sexing error, two weighings, the shared correction) for UI states — dev only: the command refuses `--seed-dev` when `APP_ENV=production`.
 - `go run ./cmd/create-owner --name "…" --login …`: creates the first owner and prints a generated password once (§6.10 rules; refuses when an active owner exists unless `--force`).
 
@@ -1898,7 +1900,9 @@ Read once at start-up by `internal/platform/config` with `os.LookupEnv`; a missi
 | Variable | Example | Notes |
 |---|---|---|
 | `APP_ENV` | `production` · `staging` · `dev` | dev enables the seed command and text logs |
-| `DATABASE_URL` | `postgres://il_app:…@db:5432/impex?sslmode=require` | required; pgxpool DSN |
+| `DATABASE_URL` | `postgres://il_app:…@db:5432/impex?sslmode=require` | required for `serve`; the app pool (role `il_app`) |
+| `MAINT_DATABASE_URL` | `postgres://il_maint:…@db:5432/impex?sslmode=require` | required for `serve`; a 1-connection pool for the purge (§9.1) |
+| `MIGRATE_DATABASE_URL` | `postgres://il_owner:…@db:5432/impex?sslmode=require` | required for `migrate` only; never given to `serve` |
 | `DB_MAX_CONNS` | `10` | pool size per instance (+ 1 dedicated LISTEN connection) |
 | `LISTEN_ADDR` | `:8080` | |
 | `APP_ORIGIN` | `https://app.example` | required; Origin/CSRF/WebSocket checks and CORS (§1, §11.4) |
@@ -1979,10 +1983,10 @@ backend/
   db/
     migrations/         0001_baseline.sql (= schema.sql, goose), 0002_roles.sql, …
     queries/            sqlc input, one file per module: auth.sql users.sql farms.sql sections.sql series.sql cycles.sql
-                        entries.sql ledger.sql calc.sql reports.sql prices.sql guides.sql audit.sql live.sql voice.sql settings.sql
+                        entries.sql ledger.sql calc.sql reports.sql prices.sql feedtypes.sql guides.sql audit.sql live.sql replay.sql voice.sql settings.sql
     embed.go            //go:embed migrations/*.sql  → var Migrations embed.FS
   internal/
-    db/                 pool.go (pgxpool + AfterConnect: decimal codec, timezone UTC, app.today in tests), tx.go (InTx, Tx),
+    db/                 pool.go (app pool + 1-conn maintenance pool; AfterConnect: decimal codec, timezone UTC, app.today in tests), tx.go (InTx, Tx),
                         errors.go (pgconn codes → typed errors); dbq/ = sqlc output (generated, never edited)
     platform/
       config/           env → Config (§11.10)
@@ -2005,6 +2009,7 @@ backend/
     periodtable/        §7.4 /api/table and §7.4b /api/charts builder (dynamic SQL, §12.4), groups, rows, totals, load-more
     reports/            §7.11 production, §7.12 feed (stock, deliveries, cost), §7.7 home (Acasă blocks per role)
     prices/             §7.13 Prețuri, price undo
+    feedtypes/          §7.18 /api/feed-types (list with usedAt and stock per farm, create, edit, retire/reactivate, delete; §6.13 FT1–FT5)
     guides/             §7.17 + parser/validator (§6.12, §10.2)
     audit/              audit row builder (changes, record types, summary), §7.10 Istoric, §7.19b setup undo
     live/               Hub, Listener (LISTEN/NOTIFY), SSE handler, Emit (insert live_event + pg_notify), purge (§9)
@@ -2057,7 +2062,7 @@ sql:
 | Construct | Where | How |
 |---|---|---|
 | Dynamic column sets and filters | PeriodTable, charts, export (`tab` × `detail` × `types` × grain) | hand-written in `periodtable/sql.go`: a fixed per-tab SQL with every column of that tab, filters as parameters, the only variable fragments chosen from a whitelist (never request text); executed with `tx.Query(ctx, sql, args…)` and scanned with `pgx.CollectRows(rows, pgx.RowToStructByName[deltaRow])` into structs with `db:"…"` tags |
-| `set app.today` | tests | `SET` takes no parameters: use `select set_config('app.today', $1, false)` with `pool.Exec` in `AfterConnect` |
+| `set app.today` | tests | `SET` takes no parameters: use `conn.Exec(ctx, "select set_config('app.today', $1, false)", day)` inside `AfterConnect(ctx, conn *pgx.Conn)` |
 | `generate_series` over parameter dates | dense day lists for a page | cast the output: `select g::date as date from generate_series(sqlc.arg(from_date)::date, sqlc.arg(to_date)::date, interval '1 day') g` (sqlc then sees `date`) |
 | Arrays of ids, overlap filters | farm scope, audit filter | `farm_id = any(sqlc.arg(farm_ids)::uuid[])`, `farm_ids && sqlc.arg(farm_ids)::uuid[]` (explicit casts so sqlc picks `[]uuid.UUID`) |
 | Optional filters | journal, audit | `(sqlc.narg(section_id)::uuid is null or section_id = sqlc.narg(section_id))` |
@@ -2071,13 +2076,13 @@ sql:
 | Constraint errors | every write | `var pgErr *pgconn.PgError; errors.As(err, &pgErr)` → `pgErr.Code` (`23505`, `23P01`, `23514`, `23503`) + `pgErr.ConstraintName` → the typed error of §7.0a (`bird_event_daily_uq`/`egg_production_uq`/`feed_allocation_uq`/`weighing_uq` → `ALREADY_ENTERED` with the owning entry id looked up by key) |
 
 ### 12.5 Worked example: the Zilnic save, end to end
-`POST /api/entries/daily` (§7.8, rules §6.1–§6.2). Decode → validate → transaction → lock → insert → §6.1 check → `ReconcileCycles` → audit → `live_event` + NOTIFY → response. Code is a sketch for structure; names of helpers are this spec's, signatures may differ.
+`POST /api/entries/daily` (§7.8, rules §6.1–§6.2). Decode → validate → transaction → lock → insert → §6.1 check → `ReconcileCycles` → audit → `live_event` + NOTIFY → replay row → response. A dry run runs the same writes and checks and then rolls back (§7.0). Code is a sketch for structure; helper names are this spec's, signatures may differ.
 
 ```go
 // internal/entries/handler.go
 func (h *Handler) CreateDaily(w http.ResponseWriter, r *http.Request) {
 	p := auth.PrincipalFrom(r.Context())                       // set by the auth middleware (401 before this)
-	req, err := httpx.Decode[DailyCreateRequest](w, r, 64<<10) // 1. decode: size limit, unknown fields → 400
+	req, err := httpx.Decode[DailyCreateRequest](w, r, 64<<10) // 1. decode: 413 over the limit, unknown field → 400
 	if err != nil {
 		httpx.WriteError(w, err)
 		return
@@ -2086,20 +2091,23 @@ func (h *Handler) CreateDaily(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, httpx.Invalid(issues))
 		return
 	}
-	res, err := h.svc.CreateDaily(r.Context(), p, req) // 3–11
+	res, err := h.svc.CreateDaily(r.Context(), p, req) // 3–12
 	if err != nil {
 		httpx.WriteError(w, err) // 403/409/422 envelope, or 500
 		return
 	}
-	status := http.StatusCreated
-	if res.Replayed || req.DryRun {
-		status = http.StatusOK
-	}
-	httpx.JSON(w, status, res.Body)
+	httpx.WriteRaw(w, res.Status, res.Body) // the exact bytes request_replay stores
 }
 ```
 ```go
 // internal/entries/daily.go
+
+// Result is an encoded response: 201 for a save, 200 for a dry run or a replay.
+type Result struct {
+	Status int
+	Body   []byte
+}
+
 func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCreateRequest) (Result, error) {
 	today := timex.Today(s.clock)
 	// 3. authorization and the checks that need no farm state
@@ -2113,7 +2121,7 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 	case p.Role == auth.Vet && req.Date != today:
 		return Result{}, httpx.PastDayVet() // Z1 "Pentru zilele trecute cere managerului."
 	}
-	if req.ClientRequestID != nil { // idempotent retry: answer from the stored save
+	if req.ClientRequestID != nil && !req.DryRun { // idempotent retry: the stored bytes, unchanged
 		if prev, ok, err := s.replay(ctx, p, *req.ClientRequestID); err != nil || ok {
 			return prev, err
 		}
@@ -2126,22 +2134,22 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 		if err := ledger.LockFarms(ctx, q, req.FarmID); err != nil { // 5. pg_advisory_xact_lock, ascending ids
 			return err
 		}
-		st, err := s.loadDailyState(ctx, q, req.FarmID, req.Date) // under the lock: sections with alive_start + inflows
-		if err != nil {                                           // saved that day, egg units, live value keys, mean7,
-			return err // cycle + series status, guide lay %
+		st, err := s.loadDailyState(ctx, q, req.FarmID, req.Date) // under the lock: alive_start + inflows saved that day,
+		if err != nil {                                           // egg units, live value keys, mean7, cycle + series status
+			return err
 		}
 		if st.SeriesClosed {
 			return httpx.SeriesClosed(st.SeriesName) // 409 SERIES_CLOSED
 		}
-		plan := planDaily(st, req)  // 6. level-2 rules: Z3 Z4 Z5 Z7 Z9 refusals, Z6 warnings,
-		if len(plan.Refusals) > 0 { //    rows to insert, the toast and audit summary
-			return plan.RefusedError() // 422 REFUSED (or 409 ALREADY_ENTERED for Z9)
+		plan := planDaily(st, req)  // 6. level-2 rules: Z3 Z4 Z5 Z7 Z9 refusals, Z6 warnings, rows, toast, summary
+		preview := plan.Preview()   // DryRunResponse{Effects, Warnings, Refusals}, slices never nil
+		if len(plan.Refusals) > 0 { // refused rows are never inserted
+			if req.DryRun {
+				return answerDryRun(&out, preview) // 200 with the refusals in the body
+			}
+			return plan.RefusedError() // 422 REFUSED (409 ALREADY_ENTERED for Z9)
 		}
-		if req.DryRun {
-			out = Result{Body: plan.Preview()}
-			return db.ErrRollback // InTx rolls back and returns nil for this sentinel
-		}
-		entryID, err := q.InsertEntry(ctx, dbq.InsertEntryParams{ // 7. insert the save and its child rows
+		ins, err := q.InsertEntry(ctx, dbq.InsertEntryParams{ // 7. the save and its child rows
 			Kind: dbq.EntryKindDaily, FarmID: req.FarmID, Date: req.Date,
 			Source: src, ClientRequestID: req.ClientRequestID, CreatedBy: &p.UserID,
 		})
@@ -2149,12 +2157,12 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 			return s.mapInsertErr(ctx, err, req) // 23505 entry_client_request_uq → errReplay
 		}
 		for _, ev := range plan.BirdEvents { // mortality, cull + reason, sexing_error per section × sex
-			if err := q.InsertBirdEvent(ctx, ev.Params(entryID)); err != nil {
+			if err := q.InsertBirdEvent(ctx, ev.Params(ins.ID)); err != nil {
 				return s.mapInsertErr(ctx, err, req) // 23505 bird_event_daily_uq → 409 ALREADY_ENTERED + entryId
 			}
 		}
 		for _, eg := range plan.Eggs { // one egg_production per hall (total_eggs is generated)
-			if err := q.InsertEggProduction(ctx, eg.Params(entryID)); err != nil {
+			if err := q.InsertEggProduction(ctx, eg.Params(ins.ID)); err != nil {
 				return s.mapInsertErr(ctx, err, req)
 			}
 		}
@@ -2163,48 +2171,94 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 			return err
 		}
 		if len(bad) > 0 {
-			return refusedFromBounds(bad, plan) // field + banner messages with max/min bounds
+			refusals := refusalsFromBounds(bad, plan) // field + banner messages with max/min bounds
+			if req.DryRun {
+				preview.Refusals = append(preview.Refusals, refusals...)
+				return answerDryRun(&out, preview)
+			}
+			return httpx.RefusedWith(refusals, plan.Warnings)
 		}
-		cyc, err := ledger.ReconcileCycles(ctx, q, req.FarmID, req.Date, today) // 9. §6.4 (a Zilnic save can empty a farm)
+		cyc, err := ledger.ReconcileCycles(ctx, q, req.FarmID, req.Date, today) // 9. §6.4 (a save can empty a farm)
 		if err != nil {
 			return err
 		}
+		if req.DryRun { // every write above is undone by the rollback
+			preview.Effects = append(preview.Effects, cycleEffects(cyc)...)
+			return answerDryRun(&out, preview)
+		}
 		if err := audit.Write(ctx, q, audit.Row{ // 10. one audit row per save action (§4.10)
-			UserID: &p.UserID, Action: dbq.AuditActionCreate, Entity: "entry", EntityID: entryID,
-			EntryID: &entryID, EntryKind: dbq.EntryKindDaily, RecordTypes: plan.RecordTypes,
+			UserID: &p.UserID, Action: dbq.AuditActionCreate, Entity: "entry", EntityID: ins.ID,
+			EntryID: &ins.ID, EntryKind: dbq.EntryKindDaily, RecordTypes: plan.RecordTypes,
 			FarmIDs: []uuid.UUID{req.FarmID}, RecordDate: &req.Date, Summary: plan.Summary,
 			NewValues: plan.Snapshot(), Source: src, VoiceTranscript: transcript,
 		}); err != nil {
 			return err
 		}
-		if err := audit.WriteCycleChanges(ctx, q, cyc); err != nil { // cycle_auto_close / cycle_reopen rows, user_id null
+		if err := audit.WriteCycleChanges(ctx, q, cyc); err != nil { // cycle_auto_close / cycle_reopen, user_id null
 			return err
 		}
 		alive, err := q.FarmAliveEnd(ctx, dbq.FarmAliveEndParams{FarmID: req.FarmID, Date: today})
 		if err != nil {
 			return err
 		}
-		if err := live.Emit(ctx, q, // 11. live_event rows + pg_notify (delivered at commit)
-			live.EntryCreated(entryID, dbq.EntryKindDaily, plan, p),
-			live.CountsChanged(req.FarmID, req.Date, plan.SectionCodes, alive),
-			live.CycleEvents(cyc)...,
-		); err != nil {
+		evs := append([]live.Event{ // 11. live_event rows + pg_notify (delivered at commit)
+			live.EntryCreated(ins.ID, dbq.EntryKindDaily, plan.Live(), p),
+			live.CountsChanged(req.FarmID, req.Date, plan.SectionCodes, alive.F, alive.M),
+		}, live.CycleEvents(cyc)...)
+		if err := live.Emit(ctx, q, evs...); err != nil {
 			return err
 		}
-		out = Result{Body: EntryWriteResponse{
-			Entry:    httpx.EntryRef{ID: entryID, Kind: "daily", Version: version(s.clock.Now())},
+		body, err := httpx.Marshal(EntryWriteResponse{ // 12. encode once; the same bytes go to the client and the replay row
+			Entry:    httpx.EntryRef{ID: ins.ID, Kind: "daily", Version: timex.Version(ins.VersionAt)},
 			Warnings: plan.Warnings, // Z6 MORTALITY_SPIKE etc., never nil
 			Toast:    plan.Toast(),  // "Zilnic salvat · 4 secțiuni · ♀ −3 · ♂ 0"
 			Alive:    &httpx.SexPair[int]{F: int(alive.F), M: int(alive.M)},
 			AsOf:     timex.LocalTime(s.clock.Now()),
-		}}
+		})
+		if err != nil {
+			return err
+		}
+		if req.ClientRequestID != nil {
+			if err := q.InsertReplay(ctx, dbq.InsertReplayParams{
+				ClientRequestID: *req.ClientRequestID, UserID: p.UserID,
+				Route: "POST /api/entries/daily", Status: http.StatusCreated, Body: body,
+			}); err != nil {
+				return s.mapInsertErr(ctx, err, req) // 23505 request_replay_pkey → errReplay
+			}
+		}
+		out = Result{Status: http.StatusCreated, Body: body}
 		return nil
 	})
-	if errors.Is(err, errReplay) { // a concurrent duplicate won the unique index
+	if errors.Is(err, errReplay) { // a concurrent duplicate committed first
 		prev, _, rerr := s.replay(ctx, p, *req.ClientRequestID)
 		return prev, rerr
 	}
 	return out, err
+}
+
+// answerDryRun encodes the preview as a 200 and asks InTx to roll back.
+func answerDryRun(out *Result, preview DryRunResponse) error {
+	body, err := httpx.Marshal(preview)
+	if err != nil {
+		return err
+	}
+	*out = Result{Status: http.StatusOK, Body: body}
+	return db.ErrRollback
+}
+
+// replay returns the stored response of an earlier save with the same key (200, same bytes).
+func (s *Service) replay(ctx context.Context, p auth.Principal, key uuid.UUID) (Result, bool, error) {
+	row, err := s.q.GetReplay(ctx, key)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Result{}, false, nil
+	}
+	if err != nil {
+		return Result{}, false, err
+	}
+	if row.UserID != p.UserID {
+		return Result{}, false, httpx.Stale() // a key is never shared between users
+	}
+	return Result{Status: http.StatusOK, Body: row.Body}, true, nil
 }
 ```
 ```go
@@ -2215,7 +2269,7 @@ func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
 	err := pgx.BeginTxFunc(ctx, s.pool, pgx.TxOptions{IsoLevel: pgx.ReadCommitted}, func(t pgx.Tx) error {
 		return fn(Tx{Tx: t, Q: dbq.New(t)})
 	})
-	if errors.Is(err, ErrRollback) {
+	if errors.Is(err, ErrRollback) { // fn's error rolled the transaction back; for a dry run that is success
 		return nil
 	}
 	return err
@@ -2232,6 +2286,11 @@ func LockFarms(ctx context.Context, q *dbq.Queries, ids ...uuid.UUID) error {
 	}
 	return nil
 }
+
+// internal/platform/timex/version.go
+// Version formats an entry's coalesce(updated_at, created_at) as RFC 3339 with microseconds (PostgreSQL's precision),
+// fixed width so equal instants give equal strings; ifVersion is parsed back and compared in SQL.
+func Version(t time.Time) string { return t.UTC().Format("2006-01-02T15:04:05.000000Z07:00") }
 ```
 ```sql
 -- db/queries/ledger.sql (sqlc)
@@ -2241,8 +2300,8 @@ select pg_advisory_xact_lock(hashtextextended(sqlc.arg(farm_id)::uuid::text, 0))
 -- name: NegativeCounts :many
 -- §6.1 step 2: the (section, sex) pairs that would go below 0 on or after the earliest changed day.
 select section_id, sex,
-       min(date)::date        as first_negative_date,
-       max(date)::date        as last_negative_date,
+       min(date)::date         as first_negative_date,
+       max(date)::date         as last_negative_date,
        min(alive_end)::integer as min_alive_end
 from v_section_sex_day
 where section_id = any(sqlc.arg(section_ids)::uuid[])
@@ -2261,11 +2320,26 @@ where farm_id = sqlc.arg(farm_id) and date = sqlc.arg(date)::date;
 insert into entry (kind, farm_id, peer_farm_id, date, series_id, buyer, note, source, client_request_id, created_by)
 values (sqlc.arg(kind), sqlc.arg(farm_id), sqlc.narg(peer_farm_id), sqlc.arg(date), sqlc.narg(series_id),
         sqlc.narg(buyer), sqlc.narg(note), sqlc.arg(source), sqlc.narg(client_request_id), sqlc.narg(created_by))
-returning id;
+returning id, coalesce(updated_at, created_at)::timestamptz as version_at;
+
+-- name: UpdateEntry :one
+-- Edit / correction header; zero rows = the version changed since the client read it → 409 STALE.
+update entry
+set updated_by = sqlc.arg(updated_by), updated_at = now(), corrected = corrected or sqlc.arg(is_correction)::boolean
+where id = sqlc.arg(id) and deleted_at is null
+  and coalesce(updated_at, created_at) = sqlc.arg(if_version)::timestamptz
+returning id, updated_at::timestamptz as version_at;
 
 -- name: InsertBirdEvent :exec
 insert into bird_event (entry_id, farm_id, section_id, date, sex, type, qty, cull_reason, peer_section_id, note)
 values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+
+-- db/queries/replay.sql
+-- name: InsertReplay :exec
+insert into request_replay (client_request_id, user_id, route, status, body) values ($1, $2, $3, $4, $5);
+
+-- name: GetReplay :one
+select user_id, status, body from request_replay where client_request_id = $1;
 
 -- db/queries/live.sql
 -- name: InsertLiveEvent :one
@@ -2276,9 +2350,11 @@ select pg_notify('live_event', sqlc.arg(id)::bigint::text);
 ```
 Notes on the example:
 - **Order matters**: the lock is taken before any count is read, so `loadDailyState`, the per-day bound (Z5), `CheckCounts` and `ReconcileCycles` all see a stable farm; a second save of the same farm waits at `LockFarm` until this one commits, then sees its rows (READ COMMITTED reads the newest committed data per statement).
-- **Idempotency** (§7.0): `replay` finds the entry by `client_request_id` and the same `created_by` and rebuilds `EntryWriteResponse` from the stored rows (same `entry` and `toast`; `alive`/`asOf` as of now; `warnings: []`); the same id from a different user (random UUIDs: practically impossible) gets `409 STALE` The unique index `entry_client_request_uq` settles the race between two identical concurrent requests.
+- **Dry run** (§7.0): the same path up to `ReconcileCycles`, so the preview includes the §6.1 bounds over later days and the cycle effects; `answerDryRun` encodes `{effects, warnings, refusals}` as 200 and returns `db.ErrRollback`, which `InTx` turns into a rollback without an error. No audit, live event or replay row is written; a pending `pg_notify` would be dropped by the rollback anyway.
+- **Idempotency** (§7.0): the response is encoded once (`httpx.Marshal`, the same encoder settings as `httpx.JSON`) and those bytes are both sent and stored in `request_replay` inside the save's transaction; a repeat with the same key gets them back unchanged with status 200. `entry_client_request_uq` and the `request_replay` primary key settle the race between two identical concurrent requests (the loser maps the 23505 to `errReplay`, rolls back and answers from the winner's row).
+- **Version** (§7.0 optimistic concurrency): `InsertEntry`/`UpdateEntry` return `version_at` from the database, never the Go clock; `ifVersion` is compared in the `UPDATE … where coalesce(updated_at, created_at) = $if_version`, under the farm lock.
 - **Errors inside `InTx`** roll the transaction back; nothing is half-saved, and no notification is sent (it would only be delivered at commit).
-- **Edits and corrections** (`PUT /api/entries/{id}`) use the same steps with the stored entry's farm (both farms for a transfer, ascending ids), soft-delete/update/insert of child rows by key, `action = update`, the diff as `changes`, and `ifVersion` compared under the lock.
+- **Edits and corrections** (`PUT /api/entries/{id}`) use the same steps with the stored entry's farm (both farms for a transfer, ascending ids), `UpdateEntry` for the header, soft-delete/update/insert of child rows by key, `action = update`, the diff as `changes`.
 - The same skeleton serves every write: only `loadXState`, `planX` and the child inserts change per kind.
 
 ### 12.6 Build order (milestones follow the screens' build order, screens.md)
@@ -2294,7 +2370,7 @@ Notes on the example:
 | M7 | Transfer (S9), Vânzare (S10), `ledger.ReconcileCycles`, manual cycle (D201), guide change | cycle tests; opposite-direction transfer test |
 | M8 | Acasă per role (S2), alerts, Lipsesc date | goldens 14, 34 |
 | M9 | Producție report (S14), Cântărire (S8), Introdus azi (S15), Corectează (S16), Istoric (S17), `export` (.xlsx with excelize) | golden 32; export of a whole cycle ≤ 3 s |
-| M10 | Setări: Serii (S18), Ferme (S19), Ghiduri + import (S20), Tipuri (S21), Utilizatori (S22), setup undo tokens | G1–G15, U1–U9; full §3.3 matrix |
+| M10 | Setări: Serii (S18), Ferme (S19), Ghiduri + import (S20), Tipuri de hrană (S21, `internal/feedtypes`), Utilizatori (S22), setup undo tokens | G1–G15, FT1–FT5, U1–U9; full §3.3 matrix |
 | M11 | `live`: Hub, Listener (LISTEN/NOTIFY), SSE handler, purge | replay, filter, lagging-subscriber and two-instance tests |
 | M12 | `voice`: providers (STT, Anthropic intent, fake), `/stt`, WebSocket `/stream`, catalogue + `BuildTools`, pipeline, answers, fast path, tokens, eval set | eval ≥ 95 % intent accuracy on the set *(target, to agree)*; WebSocket limit tests |
 

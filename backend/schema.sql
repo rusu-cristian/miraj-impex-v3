@@ -4,7 +4,7 @@
 -- Companion of backend/SPEC.md §4 (tables) and §5 (derived calculations). Decision ids (Dnn) refer to
 -- design/kit/decisions-current.md; later decisions win over older spec text.
 -- The backend is a Go service (SPEC §12, D202): this file is copied verbatim to db/migrations/0001_baseline.sql (goose)
--- and is the schema sqlc reads (sqlc.yaml `schema: db/migrations`). The `-- +goose` lines are plain comments to psql.
+-- and is the schema sqlc reads (sqlc.yaml `schema: db/migrations`). The goose annotations are plain comments to psql.
 --
 -- Principles
 --   * Bird counts are NEVER stored as truth (D01, PRODUCT "Counts come from events"): alive = running SUM(bird_event.qty)
@@ -20,7 +20,7 @@
 -- Loading and tooling
 --   * No psql meta-commands and no BEGIN/COMMIT: goose runs the file in one transaction; by hand use
 --     `psql -v ON_ERROR_STOP=1 --single-transaction -f backend/schema.sql`.
---   * Function bodies are dollar-quoted and wrapped in `-- +goose StatementBegin/StatementEnd` (they contain `;` or `$$`).
+--   * Function bodies are dollar-quoted and wrapped in goose StatementBegin/StatementEnd annotations (they contain `;`).
 --   * sqlc: every view column has an explicit type (casts below), so generated Go fields are int32 / pgtype.Numeric /
 --     pgtype.Date / bool instead of interface{}. Views list their columns (no `t.*`). What sqlc cannot type or
 --     generate is listed in SPEC §12.4 (dynamic PeriodTable SQL, generate_series over a parameter range, the
@@ -472,6 +472,20 @@ create index audit_log_entity_idx   on audit_log (entity, entity_id, at desc);
 create index audit_log_entry_idx    on audit_log (entry_id);
 create index audit_log_farms_idx    on audit_log using gin (farm_ids);
 comment on table audit_log is 'Append-only (no update/delete grants for the app role). One row per save action (D178).';
+
+-- ---------------------------------------------------------------------------------------------------------------------
+-- Idempotent replay (SPEC §7.0, §12.5): the response body of every create that carried a clientRequestId
+-- ---------------------------------------------------------------------------------------------------------------------
+create table request_replay (
+  client_request_id  uuid primary key,                                              -- the form draft's idempotency key
+  user_id            uuid not null references app_user(id),                         -- a replay must come from the same user
+  route              text not null,                                                 -- "POST /api/entries/daily"
+  status             smallint not null,                                             -- the original HTTP status (201)
+  body               bytea not null,                                                -- the exact response bytes (not jsonb: jsonb reorders keys)
+  created_at         timestamptz not null default now()
+);
+create index request_replay_created_idx on request_replay (created_at);
+comment on table request_replay is 'Written in the same transaction as the save it answers (never for dry runs). A repeat with the same key returns these bytes unchanged (status 200). Rows older than 7 days are purged by the maintenance role.';
 
 -- ---------------------------------------------------------------------------------------------------------------------
 -- Voice usage (spec §8 Privacy: "A usage count per user and day (no text) is kept for cost.")
