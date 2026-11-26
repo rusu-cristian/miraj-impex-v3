@@ -1,6 +1,6 @@
 # Handoff
 **Complete** (user, 20.11.2026: nothing more after S11L).
-Updated: 2026-11-26 · Voice (D199) done, canvas v1795725498-f022
+Updated: 2026-11-26 · BE01 backend spec done (backend/SPEC.md + schema.sql), D200–D201
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795725498-f022; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
@@ -28,7 +28,7 @@ Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/arti
 - FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- BE01 backend spec (backend/SPEC.md + backend/schema.sql incl. voice/AI endpoint + action catalogue).
+- All queued jobs done. Optional: review the "to review" decisions; S2/S6 key overlap fix; backend build happens in the user's Claude Code setup from backend/SPEC.md.
 
 ## Waiting on the user
 - To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181, D188 (tag name).

@@ -51,8 +51,10 @@ create type audit_action     as enum ('create', 'update', 'delete', 'undo', 'res
 -- Helpers
 -- ---------------------------------------------------------------------------------------------------------------------
 -- The business day (SPEC §11.1). All "today", "same day until 23:59" and "missing from 12:00" rules use this clock.
+-- Tests freeze the day with `set app.today = '2026-11-18'` (SPEC §11.7); production leaves it unset.
 create or replace function app_today() returns date
-  language sql stable as $$ select (now() at time zone 'Europe/Chisinau')::date $$;
+  language sql stable as $$
+    select coalesce(nullif(current_setting('app.today', true), '')::date, (now() at time zone 'Europe/Chisinau')::date) $$;
 
 create or replace function app_now_local() returns timestamp
   language sql stable as $$ select now() at time zone 'Europe/Chisinau' $$;
@@ -198,9 +200,9 @@ comment on column series.age_at_placement_days is 'age_days(date) = age_at_place
 
 create table cycle (
   id             uuid primary key default gen_random_uuid(),
-  series_id      uuid not null references series(id),
+  series_id      uuid not null references series(id),                               -- manual cycles may pick another active series (D201)
   farm_id        uuid not null references farm(id),
-  guide_id       uuid references guide(id),                                         -- snapshot of farm.guide_id at open; "Schimbă ghidul ciclului" (B4)
+  guide_id       uuid references guide(id),                                         -- snapshot of farm.guide_id at open; "Schimbă ghidul ciclului" (B4); type checked by trigger
   start_date     date not null,
   end_date       date,                                                              -- null = open; inclusive last day of the cycle
   started_by     cycle_start_kind not null,
@@ -215,6 +217,19 @@ create table cycle (
   constraint cycle_no_overlap exclude using gist (farm_id with =, daterange(start_date, coalesce(end_date, 'infinity'::date), '[]') with &&)
 );
 create unique index cycle_one_open_per_farm on cycle (farm_id) where end_date is null;   -- B4 "One open cycle per farm"
+
+-- cycle.guide_id must have the farm's type (B1, B4). A trigger, not a composite FK: a closed cycle keeps its guide even
+-- if the farm's type changes later (D110 allows a type change only while no cycle is open).
+create or replace function cycle_guide_type_check() returns trigger language plpgsql as $$
+begin
+  if new.guide_id is not null and
+     (select g.type from guide g where g.id = new.guide_id) is distinct from (select f.type from farm f where f.id = new.farm_id) then
+    raise exception 'cycle guide % does not match the type of farm %', new.guide_id, new.farm_id using errcode = '23514';
+  end if;
+  return new;
+end $$;
+create trigger cycle_guide_type_trg before insert or update of guide_id, farm_id on cycle
+  for each row execute function cycle_guide_type_check();
 create index cycle_series_idx on cycle (series_id);
 comment on table cycle is 'One stay of one series in one farm. Cycles of a farm never overlap; a dated record of the farm belongs to the cycle whose [start_date, end_date] contains its date. Auto open/close is recomputed by reconcileCycles (SPEC §6.4) after every write that moves birds.';
 
@@ -484,7 +499,8 @@ insert into app_setting (key, value, note) values
   ('login.max_failures',        '5',   'A1'),
   ('login.lock_minutes',        '5',   'A1'),
   ('voice.daily_cap_per_user',  '200', 'Assumption (open q. 14): commands per user per day'),
-  ('series.max_age_at_placement','140','B3');
+  ('series.max_age_at_placement','140','B3'),
+  ('undo.until_local_time',     '"23:59"', 'Same-day Anulează window for setup saves (D108, D122)');
 
 -- =====================================================================================================================
 -- Derived views (SPEC §5). Counts are computed, never stored. All views read live rows only.

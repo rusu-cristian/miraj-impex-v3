@@ -13,7 +13,7 @@ Companion file: `backend/schema.sql` (PostgreSQL 16 DDL, loads clean; its views 
 
 | File | What it decides |
 |---|---|
-| `design/kit/decisions-current.md` | Every decision `Dnn` cited here. **Later decisions win** over older ones and over spec text (e.g. D151 week rule replaces D02/D26; D172 whole-save corrections replace D101; D183 egg categories replace D164; D184 guide lay % replaces RealGhid). |
+| `design/kit/decisions-current.md` | Every decision `Dnn` cited here. **Later decisions win** over older ones and over spec text (e.g. D200 observer sees no prices; D201 manual cycle may pick the series; D151 week rule replaces D02/D26; D172 whole-save corrections replace D101; D183 egg categories replace D164; D184 guide lay % replaces RealGhid). |
 | `design/kit/PRODUCT.md` | Product, users, constraints (online only, Romanian, counts from events). |
 | `design/kit/data-model.md` | Logical tables, cycle rules, "calculated, not stored" formulas (round 2 text is current). |
 | `design/kit/spec.md` | Functional spec per feature (A1–A2, B1–B4, C1–C9, D1–D6, E1–E2, F1 voice §8 with the 81-intent catalogue). |
@@ -104,7 +104,7 @@ Companion file: `backend/schema.sql` (PostgreSQL 16 DDL, loads clean; its views 
 - **vet, viewer, manager** see and act only on farms in `user_farm` (D03). Every endpoint filters by it; a request naming another farm gets `403 FARM_FORBIDDEN` "Nu ai acces la această fermă." (VO-6, S4 fără acces). A user with no farm gets the S2 state "Nu ai acces la nicio fermă."
 - A **transfer** touches two farms: the manager needs both.
 - **Series pages** show only the cycles on the user's farms.
-- **Prices** (lei/kg, total lei, Cost, lei columns): owner read/write; manager read-only; **viewer none; vet none** (D06, D64, spec §1 table, the S11 Observator board, voice §8 — D91's sentence giving viewers prices is overruled by the later D199 text and the boards). The *count* "n livrări fără preț" is not a price and is shown to the owner (Acasă) and on S11 to manager and viewer.
+- **Prices** (lei/kg, total lei, Cost, lei columns, price endpoints): owner read/write; manager read-only; **viewer (Observator) none anywhere; vet none** (D200, user 26.11.2026, supersedes D91's observer-price part; D06, D64, spec §1 table, the S11 Observator board). The *count* "n livrări fără preț" is not a price and is shown to the owner (Acasă) and on S11 to manager and viewer.
 - **Closed series** are read-only for everyone ("nu mai primește înregistrări sau corecții", S18 Închide seria Dialog): writes dated inside a cycle of a closed series → `409 SERIES_CLOSED` *(proposed)* "Seria 2025 e închisă: nu mai primește înregistrări sau corecții."
 
 ### 3.2 Time windows (all on the Europe/Chisinau day, §11.1)
@@ -131,7 +131,7 @@ Companion file: `backend/schema.sql` (PostgreSQL 16 DDL, loads clean; its views 
 | Scope pages S3–S5, tabs, tables | – (D64: vets never reach them) | ✓ | ✓ | ✓ | vets read only through entry forms and Acasă |
 | Rapoarte Producție (S14) | – | ✓ | ✓ | ✓ | |
 | Rapoarte Hrană (S11): Stoc, Livrări (kg), Consum | – | ✓ | ✓ | ✓ | |
-| Rapoarte Hrană: lei, Cost block | – | – | ○ | ✓ | D64 |
+| Rapoarte Hrană: lei, Cost block, price endpoints | – | – | ○ | ✓ | D64, D200 |
 | Prețuri hrană (S12) | – | – | – | ✓ | C6 |
 | Export .xlsx | – | ✓ (no lei columns) | ✓ | ✓ | where Exportă exists |
 | Istoric modificări (S17) | – "Nu ai acces la Istoric modificări." | – same | ✓ rows touching own farms | ✓ all | D104 |
@@ -172,7 +172,7 @@ IDs are UUID v4 (`gen_random_uuid()`), so the client can create an idempotency k
 |---|---|---|
 | `app_user` | `login` unique `[a-z0-9.]{3,40}`; `name` ≤ 60; `role`; `active`; `password_hash` argon2id; `password_generated_at/by`; `last_login_at` | A2, D78, D118. Users are never deleted (entries point to them). Login is read-only after creation (D118). |
 | `user_farm` | (user_id, farm_id) | D03. Owners have no rows. |
-| `user_session` | `token_hash` (sha256 of a 32-byte random cookie), `expires_at` (sliding 30 days), `revoked_at` | A1 "session lasts 30 days on that device". Revoked on logout, password reset, deactivation, role change to a role that loses access *(proposed: role change keeps the session but the next request re-reads the role)*. |
+| `user_session` | `token_hash` (sha256 of a 32-byte random cookie), `expires_at` (sliding 30 days), `revoked_at` | A1 "session lasts 30 days on that device". Revoked on logout, password reset, deactivation, and **any change of the user's role or farms (all of that user's sessions are revoked; the user signs in again)**. |
 | `login_attempt` | login, ip, at, success | A1: 5 failures → 5 min wait. |
 
 **One-time passwords** (D78, D118, D119) need no table: the server generates the password, stores only its argon2id hash, returns the plain text once in the create/reset response, and never again. There is no forced change at first sign-in (A1 has none).
@@ -285,7 +285,7 @@ week_last_day(k)    = week_first_day(k) + 6
 - The week of a page/scope = the week of the series of the cycle shown. On the series page every row uses the series' week. A record's SAPT never depends on the farm or the cycle (transfers keep age; a new cycle doesn't restart it).
 - Weekday labels in day rows: `Lu Ma Mi Jo Vi Sâ Du` ("Ma 17.11 · 406 · 59").
 - **Partial week**: a week row covers only the days that are inside the period **and** the cycle **and** ≤ today; it carries `daysInRow` and the label "2 din 7 zile" (SAPT 59 on 18.11.2026; Hîrbovăț's first week SAPT 20 holds 22.02–23.02 = 2 din 7). Sums cover those days; rates use those days only.
-- **Age change** (B3, owner): changing `age_at_placement_days` from a to b shifts every SAPT of the series by `floor((age+b−a)/7)` rules above (Seria 2026, 0 → 7: today SAPT 59 → 60) and re-compares with the guides; nothing is stored per week, so nothing else changes.
+- **Age change** (B3, owner): changing `age_at_placement_days` from a to b gives `age_days'(d) = age_days(d) + (b − a)` and `SAPT'(d) = floor(age_days'(d) / 7) + 1` for every day of the series (Seria 2026, 0 → 7: today age 407 → 414, SAPT 59 → 60); every comparison is re-read from the guides by the new SAPT. Nothing is stored per week, so nothing else changes.
 
 ### 5.2 Periods (FilterBar, D191, D192, D45)
 | Period | Weeks/days covered |
@@ -411,7 +411,7 @@ has_birds(s, x, d)  = alive_start(s, x, d) > 0 and alive_end(s, x, d) > 0       
 zilnic missing      = ∃ x with has_birds and no live mortality row for (s, x, d)      -- one row per section × day
 hrana  missing      = has_birds(s, x, d) and no live allocation for (s, x, d)         -- one row per section × sex × day
 ```
-One row per section × kind × day, newest first; each row opens its form at that day (manager) or shows Tag "blocat" + "o completează managerul" for a vet on a past day (D65). Example: H7.1 / H7.2 ♀ Hrană zilnică 13.11.2026 (g in the register, no kg).
+An allocation is keyed by section × sex × day and carries exactly **one** feed type (unique index `feed_allocation_uq`; one ration per row, so a section × sex can't split a day over two types — assumption A15). Hence a Hrană missing row is section × sex × day (its feed type, if shown, is the row's last-used type), and stock per feed type sums the allocations of that type. One row per section × kind (× sex for Hrană) × day, newest first; each row opens its form at that day (manager) or shows Tag "blocat" + "o completează managerul" for a vet on a past day (D65). Example: H7.1 / H7.2 ♀ Hrană zilnică 13.11.2026 (g in the register, no kg).
 
 ### 5.12 Alerts · De verificat (D19, D169, D181, realdata.alerts)
 One alert set per farm and day, computed once; S2 shows all the user's farms, S4 Rezumat the farm's subset. Display order:
@@ -458,9 +458,10 @@ Conventions: **refuse** = HTTP 422 with `refusals[]`, nothing saved; **warn** = 
 ### 6.1 Counts never below 0 (PRODUCT; spec §1, C3, E1; D53)
 Applies to **every** write that changes `bird_event` rows: create, edit, correction, delete, undo, restore, series age is not affected.
 Algorithm (inside the write transaction, after applying the change, before commit):
+0. **Lock first**: `select pg_advisory_xact_lock(hashtextextended(farm_id::text, 0))` for every farm the write touches, **in ascending farm-id order** (a transfer locks both farms in that order; no deadlock), before reading counts. The check, `reconcileCycles` and the write then see a stable farm; two saves on the same farm serialize, saves on different farms run in parallel. The lock is released at commit/rollback.
 1. `affected` = every (section, sex) whose rows changed; `from` = the earliest changed date.
 2. `bad` = rows of `v_section_sex_day` for `affected` with `date ≥ from and alive_end < 0`.
-3. If `bad` is empty → commit. Else roll back and return 422 with, per (section, sex): `firstNegativeDate`, `lastNegativeDate`, `minAliveEnd`, and the bound for the edited field: `max = typed − min(alive_end over date ≥ from)` for a removal, `min = typed + min(…)` for an inflow being lowered.
+3. If `bad` is empty → commit. Else roll back and return 422 with, per (section, sex): `firstNegativeDate`, `lastNegativeDate`, `minAliveEnd`, and the bound for the edited field: `max = typed + min(alive_end over date ≥ from)` for a removal (min is negative: 4 292 + (−8) = 4 284), `min = typed − min(…)` for an inflow being lowered (4 381 − (−2) = 4 383).
 
 Messages:
 | Form | Field message | Banner |
@@ -512,9 +513,9 @@ Refusals and rules:
 | # | Rule | Message |
 |---|---|---|
 | C1 | One open cycle per farm; a series has at most one open cycle per farm | (DB) |
-| C2 | Inflow of birds of **another series** into a farm that holds birds | *(proposed)* "{farm} are încă {n} păsări din {series}. Mută-le sau vinde-le înainte." |
+| C2 | Inflow (transfer in) of birds of **another series** than the farm's open cycle into a farm that holds birds. Passes when the open cycle's series = the arriving birds' series — e.g. after a manual new cycle that picked that series (D201) | *(proposed)* "{farm} are încă {n} păsări din {series}. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual." |
 | C3 | Începe ciclu nou (manager, owner): date ≤ today, ≥ the farm's last event of the previous cycle, Motiv required; guide of the farm's type | "A cycle can't start before the farm's last event of the previous cycle" → *(proposed)* "Ciclul nou poate începe cel mai devreme pe {date}, după ultima înregistrare a ciclului curent." |
-| C4 | Manual start on date X: old cycle `end_date = X − 1`, `ended_by = manual`; new cycle `start_date = X`, same series (the birds stay), `started_by = manual` | dialog note: "Ciclul curent (sapt. 59) se închide pe 18.11.2026. Săptămâna rămâne cea de vârstă a păsărilor." (the close is effective from X) |
+| C4 | Manual start on date X: old cycle `end_date = X − 1`, `ended_by = manual`; new cycle `start_date = X`, `started_by = manual`, `series_id` = the series the user picks (default: the open cycle's series; any **active** series, D201). From X every record of the farm — including the birds that remain from the old series — is counted in the new cycle and dated by the new series' age (SAPT) | dialog note: "Ciclul curent (sapt. 59) se închide pe 18.11.2026. Săptămâna rămâne cea de vârstă a păsărilor." (the close is effective from X) |
 | C5 | Schimbă ghidul ciclului: guide of the farm's type or none; applies from the cycle start (all comparisons recomputed) | "Ghidul „Ross 308 ouat” este pentru ouat. Ferma Telița este de creștere. Alege un ghid de creștere sau schimbă tipul." |
 | C6 | Empty farm state | "Ferma e goală din 28.02.2026. Ultimul ciclu: Seria 2026, SAPT 1–21." / no cycle ever: "Ferma e goală. Ciclul pornește la prima populare sau transfer." |
 
@@ -621,7 +622,7 @@ Toasts: "Breeder 3 adăugat · pentru găini, apare în Livrare hrană și Hran�
 | S4 | date ≤ today | "19.11.2026 e în viitor. Alege Azi, …" (S18 board) |
 | S5 | age at placement required, whole, 0–140 | "Scrie vârsta la populare în zile, 0 pentru pui de o zi." / "Vârsta la populare e 160 de zile. Scrie o valoare între 0 și 140." / "Scrie un număr întreg de zile, de exemplu 0." |
 | S6 | ≥ 1 placement row with a count; each section once | "Niciun rând completat. Scrie câte găini sau cocoși intră în cel puțin o secțiune a Teliței." / "H1 e deja în listă. Alege altă secțiune sau elimină rândul." |
-| S7 | farm holds birds | "Telița are încă 29 907 păsări din Seria 2026. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual." |
+| S7 | farm holds birds | "Telița are încă 29 907 păsări din Seria 2026. Mută-le sau vinde-le înainte, sau începe un ciclu nou manual." (text kept, D201). The third option: the request may carry `manualCycle: { reason }`; then the creation closes the farm's open cycle on `date − 1` and opens a **manual** cycle for the new series from `date` in the same transaction (D201 applied at creation; Claude detail, to review) |
 | S8 | Închide seria while a cycle of it is open | "Seria 2026 se poate închide după ce se încheie ciclul de la Telița (deschis, sapt. 59)." |
 | S9 | age change: owner, Motiv | preview "Toate săptămânile Seriei 2026 se renumerotează (0 → 7 zile: azi SAPT 59 → SAPT 60) și se recompară cu ghidurile." |
 Live line: "La populare: vârstă 0 zile · SAPT 1." (21 → "vârstă 21 de zile · SAPT 4"). Toast: "Seria 2026 creată · ciclu nou la Telița · sapt. 1 de la 07.10.2025 · ghid Ross 308 creștere".
@@ -711,13 +712,15 @@ Example (`GET /api/farms/hirbovat/page`, 18.11.2026):
 | `view` | `farm` · `section` · `series` · `report-production` · `report-feed` | – |
 | `farmId` / `sectionId` / `seriesId` | ids per view (`report-*` take `farmId`) | – |
 | `cycleId` | a farm cycle | the open cycle, else the latest |
-| `tab` | `rezumat` · `pasari` · `hrana` · `greutate` · `productie` | `rezumat` |
+| `tab` | `rezumat` · `pasari` · `hrana` · `greutate` · `productie` | per screen: farm and section views `rezumat`; series view (S3 has no Rezumat) `pasari`, its first tab; `report-*` ignore it |
 | `period` | `cycle` · `weeks:4` · `weeks:8` · `weeks:13` · `interval:2026-11-01,2026-11-15` | `cycle` (series view: whole series, no param) |
 | `detail` | `farm` · `halls` · `sections` (not on `rezumat`, not on section/series views) | `farm` |
 | `types` | comma list of chips: `mortalitate,sacrificare,eroare_sexare,transfer,populare,vanzare,hrana,cantarire,oua` (phone sends one) | every type of the period |
 | `grain` | `day` · `week` (week = no `days[]`) | `day` (D166) |
 | `before` | cursor: the oldest SAPT already loaded (exclusive); absent = the newest 4 weeks | – |
 | `count` | weeks per page | 4 |
+| `sapt` | one week only: returns that week with its `days[]` (grain Săpt. opening one week, D166; voice F09) | – |
+| `fromSapt` | load every week from `fromSapt` up to the newest not yet loaded (with `before`) — voice F08 "până la începutul ciclului" and F10 "arată ziua de 14 noiembrie" (the client sends the SAPT of that day) | – |
 
 Response:
 ```json
@@ -769,6 +772,17 @@ Rules:
 - **States**: no data in the period → `weeks: []`, `chips: []`, `empty: { "next": "Alege ciclul curent" }`; no guide → guide leaves omitted and `noGuide: true` (header Tag "fără ghid"); partial guide → null + `no_guide`.
 - **Performance**: one SQL pass per page (deltas grouped by day for the page's weeks + one running-count seed at the page start), §11.6.
 
+### 7.4b Tab charts and Stats (D154 "charts after the table", D191 Stats follow the period)
+`GET /api/charts?<view, ids, cycleId, tab, period, detail>` — same scope params as `/api/table`, whole period (not paged) →
+| Tab | `charts[]` (series per point: `{ sapt | date, value, guide? }`) | `stats[]` (follow the period; cycle by default) |
+|---|---|---|
+| rezumat | see §7.6 (readout + guide chart) | §7.6 stats |
+| pasari | alive ♀ · ♂ per day; deaths per week ♀ · ♂; cumulative mortality % per week vs guide ♀ | "Morți · ciclu" ♀ · ♂, mortality cum. % vs guide, culls by reason, sexing errors, sold ♀ · ♂, transfers |
+| hrana | g/pasăre per week ♀ · ♂ vs guide (±10 % band); kg/zi ♀ · ♂ per day (two lines, caption lamp vs guide g × birds, D58); stock per feed type per day + days left (farm) | "Consum · ciclu" kg ♀ · ♂, "Livrări · ciclu" kg (lei: owner, manager), g vs guide like-for-like (D46), days left |
+| greutate | weight per weighing ♀ · ♂ vs guide SAPT − 1 (±5 % band); CV %, uniformitate % | "Cântăriri · ciclu" count, latest weight vs guide, CV, uniformity |
+| productie | lay % per week vs guide (±3 pts band); egg weight per week; % incubabile per week | eggs in the period, lay % (hen-days), vs guide, peak (SAPT 30 90,3 %), egg weight (egg-weighted), % incub., % Cat. 1–3 |
+Each chart also returns `table` rows for the screen-reader data table and `noGuide`/`partialGuide` flags (guide lines dropped or `null` points).
+
 ### 7.5 Event log · Jurnal (S4 Păsări, Rezumat latest records; D81, D82, D168, D178)
 `GET /api/farms/:id/journal?sectionId=&types=&cursor=&limit=15`
 - Page 1 = the last 7 days; `nextCursor` = "Mai vechi". Rows = one per **entry** (one save), newest first: `{ entryId, kind, at, date, sapt, author, summary: "Mortalitate · 4 secțiuni", figures: { F: -5, M: 0 }, sections: ["H5.1","H5.2","H6.1","H6.2"], corrected: { by: "Ion Rusu", at: "2026-11-18T10:12:00+02:00" } | null, actions: { edit: false, correct: true, delete: true } }`.
@@ -814,10 +828,10 @@ Missing rows appear for today only from 12:00 (`app_setting missing.from_hour`).
 | `GET /api/forms/sale?farmId&date` | sections with current alive, farm total ("ouat · 6 secțiuni · 4 cu păsări · în viață ♀ 12 561 · ♂ 794") |
 | `GET /api/forms/delivery?farmId` | active feed types, stock per type now |
 
-**Creates** (all accept `clientRequestId`, `source: "manual" | "voice"`, `voiceTranscript?` (only when `source = voice`), `dryRun?`):
+**Creates** (all accept `clientRequestId`, `source: "manual" | "voice"`, `voiceTranscript?` + `voiceToken?`, `dryRun?`). `voiceTranscript` is stored only with a valid `voiceToken` (§8.9: HMAC over runId + userId + form + sha256(transcript), 10 min); otherwise it is ignored and the save is recorded as `manual`:
 ```http
 POST /api/entries/daily
-{ "farmId": "…", "date": "2026-11-18", "clientRequestId": "6f1c…", "source": "voice", "voiceTranscript": "pune 3 găini moarte la ha cinci punct unu",
+{ "farmId": "…", "date": "2026-11-18", "clientRequestId": "6f1c…", "source": "voice", "voiceTranscript": "pune 3 găini moarte la ha cinci punct unu", "voiceToken": "<from the prefill action>",
   "sections": [ { "sectionId": "…H5.1", "F": { "mortality": 1, "cull": null, "cullReason": null, "sexingError": null }, "M": { "mortality": 0 } },
                 { "sectionId": "…H6.2", "noLosses": true } ],
   "eggs": [ { "sectionId": "…H5", "floor": 98, "cat1": 13, "cat2": 417, "cat3": 27, "hatching": 3415, "avgWeightG": 67.04 } ] }
@@ -880,7 +894,7 @@ Saved correction Toast: "Corecție salvată · H5.2 ♀ 1 → 3 · în viață �
 ### 7.9 Cycles (B4)
 | Route | Body | Result |
 |---|---|---|
-| `POST /api/farms/:id/cycles` (manager, owner) | `{ date, guideId, reason, dryRun? }` | closes the open cycle at `date − 1`, opens a manual one (§6.4 C3–C4); preview note "Ciclul curent (sapt. 59) se închide pe 18.11.2026. Săptămâna rămâne cea de vârstă a păsărilor." + "SAPT 59 · ciclu nou din 18.11.2026" |
+| `POST /api/farms/:id/cycles` (manager, owner) | `{ date, guideId, seriesId?, reason, dryRun? }` — `seriesId` (D201): an active series, default the open cycle's; a closed series → 409 `SERIES_CLOSED`; a series that already has an open cycle at this farm → 422 *(proposed)* "Seria 2027 are deja un ciclu deschis la Telița." | closes the open cycle at `date − 1`, opens a manual one (§6.4 C3–C4); the dry-run names the series: "Ciclu nou la Telița · Seria 2027 · sapt. {n} de la {date}"; preview note "Ciclul curent (sapt. 59) se închide pe 18.11.2026. Săptămâna rămâne cea de vârstă a păsărilor." + "SAPT 59 · ciclu nou din 18.11.2026" |
 | `PATCH /api/cycles/:id/guide` (manager, owner) | `{ guideId \| null }` | recomparison from the cycle start; audit `cycle_guide_change` |
 
 ### 7.10 Istoric modificări (E2, S17; D104–D106, D178)
@@ -898,8 +912,8 @@ Saved correction Toast: "Corecție salvată · H5.2 ♀ 1 → 3 · în viață �
 ### 7.12 Rapoarte · Hrană (D4, S11; D49, D64, D163)
 `GET /api/reports/feed?farmId=all|…&period` →
 ```json
-{ "stock": [ { "farm": "Hîrbovăț", "type": "Breeder 2", "forSex": "F", "kg": 31664.9, "daysLeft": 13.2, "avgDaily": 2392.1, "window": ["2026-11-16", "2026-11-18"], "runOut": "2026-12-01", "lamp": "in_norma" },
-             { "farm": "Hîrbovăț", "type": "Cocoși", "forSex": "M", "kg": 1781.0, "daysLeft": 10.4, "avgDaily": 171.0, "runOut": "2026-11-28", "lamp": "in_norma" },
+{ "stock": [ { "farm": "Hîrbovăț", "type": "Breeder 2", "forSex": "F", "kg": 31664.9, "daysLeft": 13.2, "avgDaily": 2392.2, "window": ["2026-11-16", "2026-11-18"], "runOut": "2026-12-01", "lamp": "in_norma" },
+             { "farm": "Hîrbovăț", "type": "Cocoși", "forSex": "M", "kg": 1781.0, "daysLeft": 10.4, "avgDaily": 170.9, "runOut": "2026-11-28", "lamp": "in_norma" },
              { "farm": "Telița", "lamp": "oprit", "reason": "fără ciclu deschis", "sub": "ultimul ciclu: Seria 2026, închis pe 28.02.2026" } ],
   "deliveries": { "total": 82, "unpriced": { "count": 4, "kg": 18160, "dates": ["2026-02-17", "2026-03-14", "2026-11-12"] },
                   "rows": [ { "id": "…", "date": "2026-11-13", "farm": "Hîrbovăț", "type": "Breeder 2", "forSex": "F", "kg": 25640, "pricePerKg": 7.7613, "totalLei": 199000, "pricedBy": "din registru", "actions": { "changePrice": true } },
@@ -911,7 +925,7 @@ Saved correction Toast: "Corecție salvată · H5.2 ♀ 1 → 3 · în viață �
         "unpriced": { "count": 4, "kg": 18160, "span": "17.02–12.11.2026" } } ],
     "total": { "label": "Total Seria 2026", "kg": 1438220, "lei": 11594205, "leiPerBird": 367.02, "leiPerEgg": 2.29, "excludedKg": 18160 } } }
 ```
-- Viewer: `pricePerKg`, `totalLei`, `cost` omitted entirely (not nulls) — never sent (D64). Vet: 403.
+- Viewer: `pricePerKg`, `totalLei`, `cost` omitted entirely (not nulls) — never sent (D64, D200). Vet: 403.
 - Consum = `GET /api/table?view=report-feed&farmId&period` (§7.4). Its foot note: "g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre (♀ după găini, ♂ după cocoși). Toleranță ±10%."
 
 ### 7.13 Prețuri hrană (C6, S12)
@@ -929,7 +943,7 @@ Saved correction Toast: "Corecție salvată · H5.2 ♀ 1 → 3 · în viață �
 | Route | Body / result |
 |---|---|
 | `GET /api/series` (owner) | series rows `{ name, year, status, ageAtPlacementDays, saptSpan: [1, 59], ageToday: 407, cycles: [ { farm, span: "07.10.2025–28.02.2026", saptSpan: [1, 21], open: false }, { farm: "Hîrbovăț", span: "din 22.02.2026", saptSpan: [20, 59], open: true } ], canClose, closeReason }` + the track |
-| `POST /api/series` | `{ name, year, farmId, date, ageAtPlacementDays, rows: [ { sectionId, F, M } ], dryRun? }` → creates series + placement entry + auto cycle; dry-run returns the live line "La populare: vârstă 0 zile · SAPT 1." and "Ciclu nou la Telița, sapt. 1" / "ghid Ross 308 creștere" |
+| `POST /api/series` | `{ name, year, farmId, date, ageAtPlacementDays, rows: [ { sectionId, F, M } ], manualCycle?: { reason }, dryRun? }` → creates series + placement entry + auto cycle; dry-run returns the live line "La populare: vârstă 0 zile · SAPT 1." and "Ciclu nou la Telița, sapt. 1" / "ghid Ross 308 creștere" |
 | `PATCH /api/series/:id/age` | `{ ageAtPlacementDays, reason, dryRun? }` → preview "Toate săptămânile Seriei 2026 se renumerotează (0 → 7 zile: azi SAPT 59 → SAPT 60) și se recompară cu ghidurile." |
 | `POST /api/series/:id/close` | `{}` → only when no open cycle (§6.14 S8); afterwards read-only |
 
@@ -966,6 +980,19 @@ Saved correction Toast: "Corecție salvată · H5.2 ♀ 1 → 3 · în viață �
 | `POST /api/users/:id/deactivate` · `/reactivate` | sessions revoked on deactivate; reactivate keeps the old password |
 `Cache-Control: no-store` on every response that carries `oneTimePassword`; the value is never logged.
 
+### 7.19b Same-day Anulează for setup saves (D108, D111, D116, D118, D122)
+Every Toast of a setup save returns `undoToken` (HMAC-signed: audit row id + user id, valid until 23:59 of the save day). `POST /api/undo { undoToken }` (same user; owner or the manager who saved) reverts that one action and writes an audit row `undo`:
+| Save | Undo does | Refused when *(proposed copy "Nu se mai poate anula: {obiect} are deja înregistrări.")* |
+|---|---|---|
+| farm create / edit | delete the new farm / restore name, type, guide | the farm has sections with records |
+| section add / rename / reorder / retire | delete / old code / old order / un-retire (the one same-day exception to D75) | the new section has records |
+| feed type add / edit / retire / reactivate | delete / old values / reactivate / retire again | the new type has deliveries or allocations; retiring again with stock > 0 |
+| user add / edit / deactivate / reactivate | add → hard delete if the user never signed in and has no records, else deactivate; edit → old role/farms (sessions revoked again); deactivate ↔ reactivate | – |
+| series create (D108) | delete series, its placement entry and auto cycle | any other record is dated in that cycle |
+| manual new cycle | delete the manual cycle and reopen the previous one (`end_date = null`) | – (records follow by date) |
+| prices (S12, D122) | §7.13 `prices/undo` | – |
+| entries | §7.8 `undo` / `restore` | – |
+
 ### 7.20 Voice and live
 - Voice: `POST /api/voice/stt` (audio), `GET /api/voice/stream` (WebSocket, optional live partials), `POST /api/voice/command` (transcript → action) — §8.
 - Live: `GET /api/live` (SSE) — §9.
@@ -991,7 +1018,7 @@ browser (VoicePanel)                         server (Nitro)                     
 | Route | Request | Response |
 |---|---|---|
 | `POST /api/voice/stt` | `Content-Type: audio/webm;codecs=opus` (or `audio/mp4`, `audio/ogg`, `audio/wav`), body ≤ 1 MB, ≤ 20 s; header `X-Voice-Run: <uuid>` | `{ "transcript": "pune 3 găini moarte la H5.1", "durationSec": 3.8 }`; `503 VOICE_UNAVAILABLE` on provider failure |
-| `GET /api/voice/stream` (WebSocket, optional) | binary audio chunks (250 ms), then `{"type":"end"}` | `{"type":"partial","text":"pune trei găini"}` … `{"type":"final","text":"…"}` (the live transcript of the "Ascult…" state) |
+| `GET /api/voice/stream` (WebSocket, optional; the upgrade is refused with 403 unless `Origin` equals the app origin and the session cookie is valid; one stream per user) | binary audio chunks (250 ms), then `{"type":"end"}` | `{"type":"partial","text":"pune trei găini"}` … `{"type":"final","text":"…"}` (the live transcript of the "Ascult…" state) |
 | `POST /api/voice/command` | `{ runId, transcript, edited: bool, context }` or `{ runId, pending, choice }` (a clarification chip) | `{ runId, transcript, normalized, action }` (§8.5) |
 Audio lives only in request memory (never on disk, never in logs) and is discarded after the STT call; the client keeps it in memory only to retry a failed transcription (spec §8 "Reîncearcă").
 
@@ -1109,7 +1136,7 @@ Mode: **I** imediat (navigate/filter + Toast with Anulează; export without) · 
 | P12 livrare | farm?, date?, feedType?, sex?, kg?: Num, note? | prefill S13 (never a price) | P · manager, owner |
 | P13 pret_livrare | delivery: Delivery, pricePerKg?: Num, totalLei?: Num | prefill the S12 row | P · owner |
 | P14 modifica_pret | delivery: Delivery, pricePerKg?, totalLei?, motiv?: Motiv | prefill the S11 Modifică row | P · owner |
-| P15 corecteaza | record: {type: Record, date, section?, farm?}, changes: [{section?, sex?, field: string, value: Num, previous?: Num}], motiv? | prefill S16 for the whole save (marked "modificat" + VoiceMark) | P · manager, owner |
+| P15 corecteaza | record: {type: Record, date, section?, farm?}, changes: [{section?, sex?, field: CorrField, value: Num, previous?: Num}], motiv?; `CorrField` enum: `mortalitate`, `sacrificare`, `motiv_sacrificare`, `eroare_sexare`, `jos`, `cat1`, `cat2`, `cat3`, `incubabile`, `masa_medie_ou`, `g_pasare`, `tip_hrana`, `masa_medie`, `cv`, `uniformitate`, `proba`, `transfer_gaini`, `transfer_cocosi`, `vanzare_gaini`, `vanzare_cocosi`, `livrare_kg` (the server refuses a field that the record's kind doesn't have) | prefill S16 for the whole save (marked "modificat" + VoiceMark) | P · manager, owner |
 | P16 editeaza_azi | form: Form, + the matching P01–P09 parameters | prefill the form in Editează (own save from today only; else → P15) | P · vet (own, until 23:59), manager (own), owner (own) |
 | P17 ciclu_nou | farm?, date?, guide?: string, motiv? | open the B4 form Dialog prefilled | P · manager, owner |
 | P18 schimba_ghid | farm?, guide? | open its form Dialog prefilled | P · manager, owner |
@@ -1149,7 +1176,7 @@ Mode: **I** imediat (navigate/filter + Toast with Anulează; export without) · 
 { "type": "not_understood", "message": "Nu am înțeles „pune trei la hala”.", "examples": [ "pune 3 găini moarte la H5.1", "ce lipsește azi?" ] }
 { "type": "client", "command": "load_more", "times": 1, "toast": "Am încărcat sapt. 52–55" }
 ```
-`prefill.mode`: `new`; `edit` (the caller's own save from today, D07); `correct` (a past save or someone else's today, manager/owner, D70 B; Motiv filled only if spoken); a vet on someone else's save → `refuse` (D71). A field that already held a typed value different from the spoken one is replaced and carries `previous` ("din voce · înainte 2"). `pending` is an HMAC-signed token (60 s) with the resolved intent so a chip choice resumes without another LLM call; "Alta…" (`other.selector`: `section`, `farm`, `feedType`) opens the screen's own selector.
+`prefill` also carries `voiceToken` = HMAC-SHA256(server secret, runId ‖ userId ‖ form ‖ sha256(transcript) ‖ exp), `exp` = now + 10 min. `prefill.mode`: `new`; `edit` (the caller's own save from today, D07); `correct` (a past save or someone else's today, manager/owner, D70 B; Motiv filled only if spoken); a vet on someone else's save → `refuse` (D71). A field that already held a typed value different from the spoken one is replaced and carries `previous` ("din voce · înainte 2"). `pending` is an HMAC-signed token (60 s) with the resolved intent so a chip choice resumes without another LLM call; "Alta…" (`other.selector`: `section`, `farm`, `feedType`) opens the screen's own selector.
 
 ### 8.6 Server validation pipeline (in this order)
 1. **Defaults** from context: no farm → the scope's farm, else the user's only farm, else `clarify` "La ce fermă?" (Telița · Hîrbovăț); no date → today; "săptămâna asta" → the scope's current SAPT.
@@ -1196,7 +1223,7 @@ The model converts; the server re-checks with a deterministic `parseRoNumber()` 
 | "alaltăieri", "pe 13 noiembrie", "de pe 1 până pe 15 noiembrie" | 16.11.2026; 13.11.2026; interval 01.11–15.11.2026 |
 
 ### 8.9 Privacy, limits, cost
-- Audio: memory only, discarded after STT; provider contract must guarantee no retention and no training (open question 13). Transcripts: not stored for navigate/filter/answer; for a save, the client sends `source: "voice"` + `voiceTranscript` only when ≥ 1 "din voce" mark is still on the form; the server stores it in `audit_log` (`source = voice`) and nowhere else. Server logs carry `runId`, intent id, timings — never transcript or audio. First-use notice (client): "Ce spui nu se păstrează. Dacă salvezi un formular completat din voce, textul comenzii rămâne în Istoric modificări."
+- Audio: memory only, discarded after STT; provider contract must guarantee no retention and no training (open question 13). Transcripts: not stored for navigate/filter/answer; for a save, the client sends `source: "voice"` + `voiceTranscript` + `voiceToken` only when ≥ 1 "din voce" mark is still on the form; the server verifies the token (signature, not expired, same user, same form, transcript hash) and only then stores the transcript in `audit_log` (`source = voice`) and nowhere else; an invalid or missing token → the transcript is dropped and the save is `manual` (no error). Server logs carry `runId`, intent id, timings — never transcript or audio. First-use notice (client): "Ce spui nu se păstrează. Dacă salvezi un formular completat din voce, textul comenzii rămâne în Istoric modificări."
 - Limits (`app_setting`): ≤ 20 s audio, ≤ 1 MB, ≤ 500 characters per transcript, ≤ 10 commands per minute and ≤ 200 per day per user → `429` *(proposed)* "Ai folosit comenzile vocale de azi. Poți scrie sau apăsa în continuare." (open question 14).
 - Cost: `voice_usage` per user/day (commands, audio seconds, tokens). Estimate at implementation from current provider prices: per command ≈ (STT price × ~5 s) + (LLM input ≈ 8–15 k cached tool tokens + 1 k context, output ≈ 150 tokens); prompt caching of the static tool list is required to keep it low.
 - Timeouts: STT 6 s, LLM 8 s, whole run 10 s → the client shows the error state (spec §8 step 6).
@@ -1265,6 +1292,7 @@ A developer CLI (`pnpm migrate:history --extracts design/data/extracts`), idempo
 | `feed_type` | `feed-types.json` | Starter, Grower, Pre-ouat (for both sexes), Breeder 2 ♀, Cocoși ♂ (names illustrative, D30) |
 | `series` | `cycles.json` | Seria 2026 (07.10.2025, age 0, active); Seria 2025 (01.11.2024 inferred, closed) |
 | `cycle` | `cycles.json` | Telița 07.10.2025–28.02.2026 (auto, emptied); Hîrbovăț Seria 2026 from 22.02.2026 (open); Hîrbovăț Seria 2025 07.03.2025–28.01.2026 (`start_inferred`, migration) |
+| Transfer pairs (definition) | `transfers-seria2026.json` `links_inferred_by_date` | One **pair per destination compartment and sex**: out row at the source section (−q), in row at the destination (+q), one `transfer` entry per link. The pair takes the **arrival date** (both rows dated the day the birds arrive); the departure date is kept on the entry (`note` = `"plecare {out_date}"`, e.g. Telița H2 out 27.02.2026 → in H7.1/H7.2 on 28.02.2026). A source that feeds 2–6 compartments (♂ H5-1 + H5-2 → H5.1…H7.2; ♀ H1 → H6.1, H6.2, H7.1) is split into one pair per destination with the destination's arrived quantity; the source's out total is the sum of its pairs. With two sources for one link (♂ H5-1 + H5-2 → six compartments) the destinations are filled from the sources in code order until each source's out quantity is used. The link difference (arrived − out: ♀ +2 at H2's link, ♂ +30) is an `adjustment` at the destination, note "diferență registru". On the source day before arrival (27.02 out, 28.02 in) the source keeps the birds one more day: accepted (D25/D63 reconciliation) |
 | Telița birds | `placement-seria2026.json`, `mortality-telita-daily.json` (mortality, sexing_error signed, correction), `transfers-seria2026.json` (`internal_moves_telita`, `transfers_out`, `links_inferred_by_date`, `other_corrections_telita`) | placement rows; mortality per section-day (0 rows kept: "entered"); internal moves as transfer pairs; outs paired with Hîrbovăț arrivals by `links_inferred_by_date` as transfer pairs (the +2 ♀ H2 and +30 ♂ link differences = `adjustment` at the destination, note "diferență registru"); `other_corrections_telita` = adjustments; Telița's residual counts on 28.02.2026 (23/16/−9/0/454/244) = adjustments to 0, placed on the day a section would otherwise go below 0 and on 28.02.2026 for the rest (D25/D63, shown as "Diferență registru", never as Corecție), so the cycle closes on 28.02.2026 |
 | Hîrbovăț birds | `hirbovat-daily.json` `section_day` | `mort` → mortality (incl. 0), `sold` → sale entries grouped per day × hall (DATA04: 7 sale records), `mv` → the 22.10.2026 H7.2 → H7.1 ♂ 19 transfer pair; arrivals come from the Telița links above |
 | Feed | `feed-daily-telita.json` (section kg, g where present), `hirbovat-daily.json` (`g`, `kg`) | `feed_allocation` with `g_per_bird` (null allowed early at Telița) and `kg_recorded` = the typed kg; rows with g but no kg (H7 ♀ 13–14.11.2026) are **not** imported (they stay "– fără hrană în registru" / lipsă); Telița feed type by date: Starter to 13.11.2025, Grower 14.11.2025–19.01.2026, Pre-ouat from 20.01.2026 *(assumption from the delivery notes)*; Hîrbovăț ♀ → Breeder 2, ♂ → Cocoși |
@@ -1311,6 +1339,7 @@ Never use JS floats for money sums server-side: sum in SQL `numeric` or with `de
 - CSRF: SameSite=Lax + every non-GET must be `application/json` (or multipart for uploads/audio) and carry a matching `Origin`.
 - Login throttling (A1): 5 failed attempts for a login within 15 min → locked 5 min (429 with the A1 sentence); 20 failures per IP within 15 min → 429; constant-time compare; same message for unknown login and wrong password.
 - Authorization in one place (`requireRole`, `requireFarm`, `canEditEntry`) and tested by the §3.3 matrix. Prices are removed from DTOs for vet/viewer (not just hidden).
+- WebSocket `/api/voice/stream`: `Origin` must equal the app origin (cross-site WebSocket hijacking; SameSite cookies don't cover it), session checked on upgrade, idle timeout 25 s.
 - Headers: HSTS, CSP (self + the STT WebSocket origin), `X-Content-Type-Options`, `Referrer-Policy: same-origin`, `Permissions-Policy: microphone=(self)`.
 - SQL only through the query builder / parameterized SQL. `audit_log` and `live_event`: no UPDATE/DELETE grant for the app role (a purge job runs as a separate role).
 - Uploads: guide files ≤ 2 MB, parsed in memory, never stored; audio ≤ 1 MB, never stored.
@@ -1331,7 +1360,7 @@ Online only (D08). Forms keep drafts client-side; the API is idempotent on `clie
 | voice: STT ≤ 2 s after stop; command ≤ 3 s typical, 10 s hard cap | |
 
 ### 11.7 Golden values (tests must reproduce them)
-Fixture: the dev seed (§11.9) loaded from the extracts, clock frozen at **2026-11-18T12:00 Europe/Chisinau**. Each value was verified by running Python against `design/data/extracts` (and rows 1–12, 19, 26–27 also by SQL against `schema.sql` views on the loaded Hîrbovăț data).
+Fixture: the dev seed (§11.9) loaded from the extracts, clock frozen at **2026-11-18T12:00 Europe/Chisinau**: the test DB session sets `set app.today = '2026-11-18'` (read by `app_today()`, schema.sql) and the app clock is injected with the same instant. Each value was verified by running Python against `design/data/extracts` (and rows 1–12, 19, 26–27 also by SQL against `schema.sql` views on the loaded Hîrbovăț data).
 | # | Value | Query / service that must produce it |
 |---|---|---|
 | 1 | age 407, SAPT 59 on 18.11.2026 | `age_days(seria2026,'2026-11-18')`, `sapt(...)` |
@@ -1391,7 +1420,7 @@ Fixture: the dev seed (§11.9) loaded from the extracts, clock frozen at **2026-
 
 ### 12.1 Stack-agnostic shape
 - **Domain services** own every rule of §5–§6: `counts` (running counts, bounds), `cycles` (reconcile), `entries` (create/edit/correct/delete/undo with audit), `feed` (consumption, stock, cost), `production`, `guides` (parse, validate), `alerts`, `table` (PeriodTable builder), `voice`. Routes are thin: parse (zod) → authorize → call a service → map to DTO.
-- **One transaction per save**: write rows → §6.1 check → reconcileCycles → audit_log → live_event → commit → NOTIFY.
+- **One transaction per save** (READ COMMITTED): `pg_advisory_xact_lock` on every touched farm in ascending id order (§6.1 step 0) → write rows → §6.1 check → reconcileCycles → audit_log → live_event → commit → NOTIFY. Setup writes (farm, section, feed type, series, cycle) take the same farm lock when they touch a farm.
 - Heavy reads in SQL (views §4.12 + window functions); presentation shaping (groups, labels, reasons) in TypeScript.
 
 ### 12.2 Concrete stack
@@ -1456,7 +1485,7 @@ server/
 ## 13. Open questions and assumptions
 
 **From `design/kit/open-questions.md`** (status for the backend):
-1. One series per farm — the backend refuses birds of another series into a farm that holds birds (§6.4 C2); a manual new cycle keeps the farm's series. Confirm.
+1. One series per farm — decided (D201): a manual new cycle may pick another active series; birds of that series may then arrive although the farm still holds the old ones (§6.4 C2, C4; §6.14 S7). Remaining old birds are counted in the new cycle from its start.
 2. History import — done by the CLI from the extracts (§10.3); from which date the app is the source of truth is the owner's call (go-live date).
 3. Real guides — the extracts' guides are imported with illustrative names; replace them through Ghiduri when the real files arrive.
 4. Egg total excludes Jos — implemented (D18).
@@ -1477,7 +1506,7 @@ server/
 21. iPhone microphone permission per session — client only; server unaffected.
 
 **Assumptions made in this spec (to review with the user)**
-- A1. Viewers never see prices (D64 + spec §1 + boards + §8 override D91's sentence).
+- A1. (decided, D200) Observator sees no prices anywhere: no lei, no Cost, no price endpoints (`403` on `/api/deliveries*` price routes).
 - A2. Managers (and the owner) may create records for past days without a Motiv (filling missing days, D65); only changes to existing records need one.
 - A3. Cumulative mortality counts deaths + culls (the register counts culls as deaths, D165); the base is the birds that entered the scope during the cycle.
 - A4. A manual new cycle on date X ends the old one on X − 1 (records of X belong to the new cycle); the dialog copy "se închide pe {X}" means "from X".
@@ -1490,6 +1519,8 @@ server/
 - A11. Migration: Telița feed type by date windows; Telița residuals, link differences and any day the register would take a section below 0 (H3 −9) become `adjustment` rows "diferență registru" on that day.
 - A12. Proposed copy (marked *(proposed)* in §6–§8) has no board yet.
 - A13. Weighing weight range 1–10 000 g, egg weight 20–120 g, sample size ≥ 1.
-- A14. Sessions slide (30 days after last use); a password reset or deactivation signs the user out everywhere.
+- A14. Sessions slide (30 days after last use); a password reset, deactivation, or any role/farm change signs the user out everywhere.
+- A15. One feed type per section × sex × day.
+- (decided, D201) A manual new cycle may pick the series; Serie nouă into a farm with birds can open that manual cycle in the same request (`manualCycle`).
 
 **Illustrative data** (never treat as real): guide names, feed type names, "Seria 2025" name and its placement date, users (Dr. Ceban, Ion Rusu, Petrea, Observator exemplu) and every author/time, the culls, the sexing error, the Hîrbovăț weighings (10.11.2026) and the shared correction in `illustrative-events-hirbovat.json`, D39 state examples on the boards.
