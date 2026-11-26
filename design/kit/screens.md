@@ -31,6 +31,7 @@ Autentificare
       ├─ Tipuri de hrană            (owner)
       ├─ Utilizatori                (owner)
       └─ Istoric modificări         (manager+)
+   + Comandă vocală                 (every signed-in screen; phone floating key, desktop PageHeader key; spec §8)
 ```
 \* Producție appears only for laying cycles.
 
@@ -107,6 +108,7 @@ Wordmark, Login, Parolă, Intră. States are in spec A1.
 - **Other tabs** (round 2): 1. the Detaliu switch (Fermă · Hale · Compartimente, default Fermă, D159) and the table (PeriodTable: Total fermă, + hall or compartment groups; chips choose column groups; newest week first, the last 4 weeks of the period with the load-more row before the foot total, D190–D192); 2. the tab's charts; the tab Stats follow the period (cycle figures by default, D191); 3. Păsări only: the event log with the type chips. Contents as in spec D1. Producție (D183): the Ouat group adds % Cat. 1 · % Cat. 2 · % Cat. 3 (of the eggs) after "stare", on week and day rows, Total fermă and each hall; ghid = Productivitate col I (D184).
 
 ### S5 · Scope page · section level
+- **Hall page (VO00 review):** a hall (e.g. Hîrbovăț › H5) opens S5 at hall level: its compartments summed as one ♀ · ♂ group, no Detaliu switch, Producție = that hall's own eggs (no "pe hală" note), breadcrumb "Hîrbovăț › H5".
 Same template. Rezumat shows the section's stats, the latest records and the guide charts. There are no child tiles.
 Round 2 (D154): every tab opens on its table (PeriodTable, one group = this section ♀ · ♂); Rezumat order = table · Stats · guide charts · latest records; other tabs = table · charts (· event log on Păsări).
 
@@ -189,6 +191,40 @@ List (name, for sex, active). Add or edit.
 
 ### S22 · Utilizatori
 See spec appendix A2, with the roles vet / viewer / manager / owner.
+
+## Voice (round 3, D199, spec §8 F1)
+The voice key is part of every signed-in shell, not of a screen: no screen adds or moves it. Components: VoiceButton, VoicePanel, VoiceMark (components › Additions › VO00).
+
+**Where the key sits, per shell**
+| Shell | Screens | Key | Panel |
+|---|---|---|---|
+| Phone, BottomTabBar | S2, S3, S4, S5, S11, S12, S14, S15, S17–S22 phones | floating VoiceButton 56 px, bottom right, `space-4` from the edge, `space-4` above the tab bar | BottomSheet; the key docks in its foot |
+| Phone, form with SaveBar | S6–S10, S13 | floating, `space-4` above the SaveBar (never over it) | BottomSheet |
+| Phone, full-screen sheet | S16 Corectează, S9P SectionSelect sheet | floating, `space-4` above the sheet foot | BottomSheet over the sheet |
+| Phone, BottomSheet open | Înregistrează menu, FilterBar sheet, SectionSelect | floating above the sheet's top edge, on the scrim | replaces the open sheet (it comes back on close) |
+| Phone, Dialog open | any | under the scrim, inert (form Dialogs can be opened prefilled by voice before; confirm Dialogs never) | – |
+| Desktop page | S2–S22 | IconButton, last key on the right of the PageHeader actions | popover under the key, right edges aligned, `panel-w` wide |
+| Desktop, SidePanel open | S9, S10, S16, S18–S22 panels | stays in the PageHeader | popover as above (commands act on the open panel first) |
+| Desktop, Dialog open | any | under the page scrim, inert | – |
+| Signed out | S1 | none | – |
+
+- Every phone view sets `scroll-padding-bottom` and bottom padding 88 px (key 56 + `space-4` × 2, on top of a SaveBar's own) so a focused field and the last row clear the key; a phone Toast stacks above the key; while the soft keyboard is open the floating key is hidden.
+- Shortcut on every desktop and keyboard-equipped phone: Ctrl + Shift + Space.
+
+**VO02 boards (to draw over real screens, 18.11.2026 data, Hîrbovăț Seria 2026 SAPT 59)**
+1. **VO-1 · phone vet · S2 Acasă · idle:** Dr. Ceban, VoiceButton at rest above the 3-item tab bar; the bottom scroll-padding shown on Introdus azi.
+2. **VO-2 · phone vet · S2 · ascultă:** VoicePanel sheet, Lamp "Ascult…", meter lit, "0:04", live transcript „pune trei găini moarte la ha cinci punct unu”, key latched in the sheet foot, "Scrie comanda" field.
+3. **VO-3 · phone vet · S6 Zilnic · formular precompletat (18.11.2026, 08:20, before the day's saves, so the form opens new, not Editează):** H5.1 card in view, ♀ Mortalitate 3 and ♂ Mortalitate 1 with VoiceMark "din voce" (spoken figures labelled sample), info Banner "Am completat din ce ai spus. Verifică și salvează." + Anulează completarea, SaveBar summary, key above the SaveBar.
+4. **VO-4 · phone vet · S6 · clarificare:** „pune 2 găini moarte la hala 5” → "La care secțiune din H5?" chips H5.1 · H5.2 + Spune din nou.
+5. **VO-5 · phone vet · S7 Hrană zilnică · precompletat (08:20, before the 18.11 feed save):** „dă 160 de grame la toate găinile” → the 4 ♀ rows 160 g (real 18.11.2026, ghid 157 g), kg live ♀ 2 303,2 kg, marks on each ♀ row, ♂ rows untouched as suggestions.
+6. **VO-6 · phone vet · nepermis:** „pune mortalitatea de ieri la H6.1” → info Banner "Pentru zilele trecute cere managerului." in the panel, chip Deschide Introdus azi.
+7. **VO-7 · desktop manager · S5 Hîrbovăț › H5 Păsări · executat:** „arată-mi mortalitatea la H5 pe ultimele 8 săptămâni” → the H5 section page, Păsări, chip Mortalitate, period "8 săpt." (SAPT 52–59), header key at rest, Toast "Am deschis Hîrbovăț › H5 · Păsări: Mortalitate, 8 săpt." + Anulează.
+8. **VO-8 · desktop owner · S14 Producție · răspuns:** popover with „care e procentul de ouat săptămâna asta față de ghid?” and "Sapt. 59 (2 din 7 zile): ouat 40,4%, ghid 57,6%, sub ghid cu 17,2 puncte." + Lamp "abatere", "Am deschis Rapoarte · Producție" + Anulează; the table behind it on SAPT 56–59.
+9. **VO-9 · desktop manager · S13 Livrare hrană · se gândește + transcript editat:** „am primit 25 640 de kilograme pentru găini pe 13 noiembrie” tapped into the TextField with Execută, Lamp "Mă gândesc…" stopped; key with spinner (state pair on one board: before/after the tap).
+10. **VO-10 · desktop manager · S13 · formular precompletat:** farm Hîrbovăț, 13.11.2026, ♀ feed, 25 640 kg marked, stock-after line, Banner, focus on kg.
+11. **VO-11 · phone · fără microfon + neînțeles:** two phones side by side: warn Banner "Microfonul e blocat pentru Impex Line." with the phone Chrome steps and the focused text field; "Nu am înțeles „…”." with two S2 examples.
+12. **VO-12 · phone · fără conexiune:** failure Banner "Comanda nu s-a trimis: „pune 3 găini moarte la H5.1”." + Reîncearcă focused, transcript kept in the field; and the VoiceButton states strip (idle, listening, thinking, disabled "Fără conexiune") at 1:1.
+13. **VO-13 · phone manager · S4 Hîrbovăț · Toast above the key:** „deschide Hîrbovăț la Producție” → the Producție tab (table SAPT 56–59), Toast "Am deschis Hîrbovăț · Producție" + Anulează stacked `space-2` above the floating key, the key `space-4` above the 5-item tab bar, the table's last row scrolled clear of both.
 
 ## Build order
 1. **S4** farm level, Rezumat (desktop): section overview, readout, stats, filter chips, cycle selector.

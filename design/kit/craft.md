@@ -30,13 +30,13 @@ Don't:
 - Readout series beyond actual: `readout-2…4`, each with its own dash. Guide is dashed `readout-guide` with `readout-band`.
 
 ## 4. Unslop checks
-- [ ] No gradient, glow, coloured shadow, neon border, blur or glass anywhere. Shadows only `shadow-key` (button lower edge) and `shadow-overlay` (menus, dialogs, toasts, side panel).
+- [ ] No gradient, glow, coloured shadow, neon border, blur or glass anywhere. Shadows only `shadow-key` (button lower edge) and `shadow-overlay` (menus, dialogs, toasts, side panel, the floating phone voice key, D199).
 - [ ] No emoji, no sparkle, no illustration, no generated image, no logo mark (wordmark only).
 - [ ] No row of equal KPI cards with big icons. Stats are a caption, a Mono value, the guide line and a status; the one key figure goes in a Readout.
 - [ ] No generic SaaS tells: welcome banner, avatar-heavy header, "Overview" hero, donut charts for decoration, sparklines in stat cards, pill-shaped everything, centred hero layouts. Layout follows DESIGN.md › Layout.
 - [ ] Every icon carries meaning: record icons only for their type, Lucide-style line icons at 1.75 stroke, 14/16/18/22px. Remove decorative icons.
 - [ ] Spacing on the 4px grid, no one-off values; equal things equal (rows, card padding, gaps); tighter inside groups than between them.
-- [ ] Radii only 2/3/4/6 per DESIGN.md › Shapes; round only for lamps and the phone centre key.
+- [ ] Radii only 2/3/4/6 per DESIGN.md › Shapes; round only for lamps, the phone centre key and the floating phone voice key (D199).
 - [ ] No filler copy, hype, slogans or unverified claims. Every line names a farm, section, figure, date or action.
 - [ ] Weights 400/500 only; uppercase only in captions (and the elements the specs name: wordmark, breadcrumbs, lane labels, Readout caption).
 - [ ] Motion: no loops, shimmer, pulse, bounce, `transition-all`, hover scale, `scale(0)`, `ease-in` or keyframes (D196).

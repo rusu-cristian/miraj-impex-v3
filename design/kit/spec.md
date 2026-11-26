@@ -1,6 +1,6 @@
 # Impex Line: functional spec v2 (shared by both designs)
 
-Status: 16.11.2026, round 2 updates 19.11.2026 (today on the boards = 18.11.2026, D152). This replaces spec v1.
+Status: 16.11.2026, round 2 updates 19.11.2026 (today on the boards = 18.11.2026, D152); round 3 adds §8 Voice (26.11.2026, D199). This replaces spec v1.
 - **Data model:** `data-model.md`.
 - **Interface:** Romanian with full diacritics.
 - **Sample values:** from the Seria 2026 workbook, marked *sample*. Names of people and later-dated figures are illustrative.
@@ -330,6 +330,228 @@ All forms work at 360px width. Each one shows the farm, the date and the birds' 
 - offline entry
 - notifications
 - importing the Seria 2026 history (a one-time developer migration)
+- voice (round 3, §8): a wake word or always-on listening, speech in any language but Romanian, voice before sign-in
+
+## 8. Voice (round 3, 26.11.2026, D199)
+
+### F1 · Comenzi vocale — MVP (round 3)
+- **Job:** When my hands are busy in the hall, or I don't know where something lives, I want to say what I want to see or enter, so the app opens it, or fills the form for me to check and save.
+- **Who:** every signed-in role, only within its role, its farms and its time windows (§1). Voice is a second way to press what the screen already offers; it never adds a power the screen doesn't give that user.
+- **Decided by:** user (D199): show/filter/navigate runs at once; anything that changes data opens the right form prefilled and waits for Salvează; phone floating mic above the BottomTabBar, desktop mic key in the page header + shortcut; tap to start, stops by itself after a pause or on a second tap. Everything else here: Claude, to review (see "Decision points" at the end).
+
+**Where**
+- **Every signed-in screen and state:** S2–S22, their tabs, loading, empty, error and saved states, open SidePanels, the phone full-screen sheet (S16), BottomSheets (Înregistrează menu, FilterBar sheet, SectionSelect) and open menus (pressing the key closes the menu first).
+- **Not before sign-in:** S1 has no voice key and the shortcut does nothing (no user, no role; a password is never spoken). *To review.*
+- **Dialogs (D199 note):** voice is off inside an open Dialog: the key sits under its scrim (`inert`, hidden from the reader) and the shortcut does nothing. Voice can still *open* two kinds differently:
+  - **form Dialogs** (Începe ciclu nou, Schimbă ghidul ciclului, the series' Vârstă la populare change): opened by voice, prefilled like any form (VoiceMarks, Motiv only if spoken), focus on the first filled field; the user presses its key.
+  - **confirm Dialogs** (the Vânzare that empties the farm, Șterge, Dezactivează, Reactivează, Închide seria, Retrage, Resetează parola): never opened by voice; voice opens the record or form with the key that opens the Dialog focused, and the user presses it. *To review.*
+- **Phone:** a round floating key (VoiceButton, 56 px) at the bottom right, `space-4` from the screen edge and `space-4` above the lowest bar on screen: the BottomTabBar, or the SaveBar on a form, or the foot of the full-screen sheet; it never covers them. Over a BottomSheet it sits above the sheet's top edge on the scrim. Every scrolling phone view sets `scroll-padding-bottom` and an equal bottom padding of 88 px (56 + `space-4` × 2) on top of its bar's own (SaveBar FX05), so a focused field, the last row or the load-more row scrolls clear of the key (WCAG 2.4.11). While the soft keyboard is open (a field focused, read from the visual viewport) the floating key is hidden (`hidden`, out of the reading order) and comes back when the keyboard closes; the shortcut still works from a hardware keyboard; the VoicePanel's own field is the exception (the key stays docked in its foot). A phone Toast stacks above the key. *To review.*
+- **Desktop:** a mic IconButton, the last key on the right of the PageHeader actions on every page (alone where a page has no actions), the same place on every screen; with a SidePanel open it stays in the PageHeader. Shortcut **Ctrl + Shift + Space** (all platforms, ⌃⇧Space on a Mac keyboard).
+
+**Flow**
+1. **Start:** tap the key (or the shortcut). The VoicePanel opens (phone: a BottomSheet; desktop: a popover under the header key) and the key latches (`aria-pressed="true"`).
+2. **Microphone permission** (first use on the device): the panel says why before the browser asks.
+3. **Ascultă:** Lamp `ok` + "Ascult…", a live level meter, the elapsed time in Mono ("0:04"), and the live transcript (`ink-secondary` while it can still change, `ink` once final).
+4. **Stop:** by itself after ~1,5 s of silence once speech has started; after 20 s at most ("Am oprit după 20 de secunde."); on a second tap of the key (stops and runs what was said); if nothing is heard for 5 s, it stops with the neînțeles state ("Nu am auzit nimic.").
+5. **Transcriere → se gândește:** the final transcript stays on screen, Lamp `info` + "Mă gândesc…", the key shows the Button spinner (`aria-busy`). Tapping the transcript text now stops the run and turns it into an editable field (see Transcript).
+6. **Result**, one of: executat · formular precompletat · răspuns · clarificare · neînțeles · nepermis · fără microfon · fără conexiune/eroare (below). A run with no result after 10 s becomes the error state.
+7. **Cancel at any step:** Esc, Închide (the panel's IconButton) or the panel's Anulează; tapping outside the popover (desktop) or on the scrim (phone). Nothing runs, the key unlatches, focus returns to where it was before the start (the key, or the field the shortcut was pressed in), the app-level status region says "Comanda a fost anulată.". Esc cancels voice first: while the panel is open Esc closes only it; a SidePanel, the S16 sheet or a menu under it stays open until the next Esc. A second tap of the key while listening is *stop*, not cancel (step 4); a tap on it while "Mă gândesc…" cancels.
+
+**Transcript (shown live, editable before it runs)**
+- The transcript is plain text in Plex Sans in „…”, digits as heard ("pune 3 găini moarte la H5.1"); below it, once understood, the normalised command in the app's own format (Mono figures, ♀/♂ signs, section codes): "Zilnic · Hîrbovăț · 18.11.2026 · H5.1 · ♀ Mortalitate 3".
+- **Fix it:** tap (or Enter on) the transcript → it becomes a TextField holding the text, the run stops, keys **Execută** (primary) and Anulează. Execută runs the edited text exactly as a spoken one.
+- **Show/filter/navigate commands don't wait for Execută** (D199): they run as soon as they are understood; the fix window is the "Mă gândesc…" time, and Anulează on the result Toast undoes them.
+- **Scrie comanda:** the panel's foot always holds a TextField "Scrie comanda" + Execută (Enter runs it), so every command works without a microphone, with a screen reader, or in a loud hall. A typed command skips steps 2–4.
+
+**States and copy**
+- **Idle:** no panel; the key at rest. Its tooltip (desktop) and description: "Comandă vocală · Ctrl+Shift+Space".
+- **Cerere permisiune microfon:** Lamp `info` "aștept permisiunea"; "Impex Line are nevoie de microfon ca să-ți audă comanda. Apasă Permite în fereastra browserului."; the text field is already usable.
+- **Ascultă:** Lamp `ok` "Ascult…" · level meter · "0:04" · live transcript · hint "Se oprește singur după o pauză. Apasă din nou ca să termini." · examples for this screen ("Poți spune: „arată mortalitatea pe ultimele 8 săptămâni”") until the first word arrives.
+- **Auto-stop:** silence ~1,5 s after speech; 20 s cap; 5 s with no speech. The meter stops, the key shows the spinner.
+- **Transcriere / se gândește:** Lamp `info` "Mă gândesc…"; transcript final and tappable.
+- **Executat (show, filter, navigate, export):** the panel closes and the app shows the result exactly as if the user had pressed the keys (URL, FilterBar, chips, tabs, focus on the page h1 as after any navigation, FX02). Toast (no record icon, no figures beyond the scope; it is also the announcement, as the panel has closed): "Am deschis Rapoarte · Producție, ultimele 8 săptămâni" / "Am deschis Hîrbovăț › H5 · Păsări: Mortalitate, 8 săpt." / "Am încărcat sapt. 52–55" + **Anulează**, which returns to the previous screen with its filters, loaded weeks and scroll (a form's draft is kept, §1 Connectivity). Several steps in one command (open a page, then filter it) are one Anulează. **Export** is the exception: its Toast has no Anulează (a download can't be taken back): "Export .xlsx descărcat · Hîrbovăț · Păsări · sapt. 20–59".
+- **Răspuns (questions):** the view that shows the figure opens behind the panel and the panel stays open with a short written answer in the panel's result area: figures in Mono, ♀/♂ signs, the week and date, the status as Lamp + word. "La Hîrbovăț sunt azi ♀ 12 561 găini și ♂ 794 cocoși (18.11.2026, sapt. 59)." / "Sapt. 59 (2 din 7 zile): ouat 40,4%, ghid 57,6%, sub ghid cu 17,2 puncte." + Lamp `warn` "abatere". Under it "Am deschis Rapoarte · Producție" + Anulează (link). The answer is never spoken by the app (no speech synthesis); a screen reader reads it from the live region. *To review.* An answer only uses figures the user may see on that screen (prices never for vet/viewer, D06/D64).
+- **Formular precompletat (data changes):** the panel closes; the right form opens for the right farm, date and section (scrolled to the first filled card or row), filled with what was understood; nothing is saved.
+  - Each filled field carries the VoiceMark "din voce" until the user edits it by hand, presses Anulează completarea, or saves.
+  - An info Banner with action (FIN03) as the form's first block under the FormHeader / PageHeader: "Am completat din ce ai spus. Verifică și salvează." then a second line listing what was filled ("3 câmpuri: H5.1 · ♀ Mortalitate 3 · ♂ Mortalitate 1"), key **Anulează completarea** (restores the form as it was before the command).
+  - Focus goes to the first filled field. The SaveBar works as usual: its summary counts the filled values; warnings and refusals run as if typed (a count above birds alive blocks Salvează with the form's own copy).
+  - A field the command did not name keeps its value (or stays empty: empty is null, never 0). A field that already held a typed value different from the spoken one is replaced, and its mark says what it held: "din voce · înainte 2". *To review.*
+  - A required field the command didn't give (Motiv of a Sacrificare, the Motiv of a correction) stays empty with the form's own refusal; if the choices are few it is asked first as a clarification (below).
+  - Yesterday's-grams suggestions (D13): a row the command filled counts as confirmed (the user said it), and carries the mark. *To review.*
+  - The day is already saved: **Editează** only for the user's own save from today (D07; a vet until 23:59); **Corectează** (S16, Motiv required, filled only if spoken) for a past save, and for a manager or owner changing someone else's save from today (D70 B); a vet on someone else's save gets the nepermis state (D71).
+  - A form Dialog (Începe ciclu nou, Schimbă ghidul ciclului, Vârstă la populare) opens prefilled as a form; a confirm Dialog the form leads to (the Vânzare that empties the farm) opens only from the user's own press of the form's key (Where › Dialogs).
+- **Clarificare (ambiguous):** a question and up to 3 RecordChip-styled choice chips (touch size on phone) + "Spune din nou". "La care secțiune din H5?" → H5.1 · H5.2; "La ce fermă?" → Telița · Hîrbovăț; "Ce motiv are sacrificarea?" → Boală · Șchiopătare · Altul. More than 3 candidates: the 3 most likely + "Alta…", which opens the screen's own selector (SectionSelect, Select). Choosing a chip runs the command; Esc cancels. Chips are a `role=radiogroup` named by the question.
+- **Neînțeles:** "Nu am înțeles „…”." / "Încearcă așa: „deschide raportul de producție” sau „pune 3 găini moarte la H5.1”." (two examples chosen for this screen and role) + keys Spune din nou (primary) · Scrie comanda (focuses the field with the text kept).
+- **Nepermis (role, farm, time window):** nothing opens; the panel shows the same refusal the screen would give, in the same Banner type: "Pentru zilele trecute cere managerului." (vet, past day, info, D77) · "Nu ai acces la această fermă." · "Nu ai acces la Istoric modificări." (D104) · the vet's own entry after 23:59: the reason the S15 key carries (D99) · a voice-only refusal for the never list (below): "Vocea nu salvează. Verifică formularul și apasă Salvează.", "Vocea nu șterge. Deschide înregistrarea și apasă Șterge.", "Parolele nu se spun cu voce." Where the screen would let the user go somewhere useful, the panel offers it as a chip ("Deschide Introdus azi").
+- **Fără microfon (permission denied, no microphone, browser without capture):** warn Banner "Microfonul e blocat pentru Impex Line." + how to allow it, for the device in use: phone Chrome "Apasă lacătul de lângă adresă › Permisiuni › Microfon › Permite."; iPhone "Setări › Safari › Microfon › Permite." (home-screen app: "Setări › Impex Line › Microfon" when listed); desktop "Apasă pictograma microfonului din bara de adrese › Permite." + "Poți scrie comanda mai jos." The text field takes the focus. No microphone / unsupported: "Dispozitivul nu are microfon disponibil. Scrie comanda mai jos."
+- **Fără conexiune / eroare (transcription or AI failed, timeout):** the §49 failure Banner (FX04/FY04), `role=alert`: "Comanda nu s-a trimis: „pune 3 găini moarte la H5.1”." / "Verifică conexiunea la internet, apoi apasă Reîncearcă. Ce ai spus rămâne scris mai jos." Key **Reîncearcă** (takes the focus) resends the transcript (or, if transcription itself failed, the audio still held in memory); the transcript is in the text field to fix. Offline before starting: the key is `aria-disabled` with the reason "Fără conexiune" and a press shows that Banner.
+- **Anulare:** see Flow 7.
+
+**How a command is understood**
+- **Context sent with every command:** the screen (S-number, tab, open panel or sheet), its scope (series, farm, cycle, section), FilterBar state, the open form and its fields, the user's role and farms, today's date and SAPT. Defaults come from it: "aici" / no farm named = the current scope, else the user's only farm, else a clarification; no date = azi; "săptămâna asta" = the current age week (SAPT 59 on 18.11.2026), "săptămâna trecută" = SAPT 58 (§1: weeks are age weeks).
+- **Allowed actions only:** the AI returns one action from the catalogue below with its parameters; the app checks role, farm and time window before it acts, exactly as the screen does, and then performs it through the same screen logic. A phrase that maps to no catalogue action is neînțeles; the AI never writes data and never invents a figure (questions are answered from the app's own figures). The backend spec for the endpoint and the catalogue follows this design (D199).
+- **One command, one screen:** a phrase that names two forms ("pune mortalitatea și hrana") fills the first; the second is offered as a chip on the Banner ("Continuă cu Hrană zilnică"). Several fields of one form in one phrase are fine. *To review.*
+- **Romanian, spoken farm vocabulary:**
+  - numbers as words or digits: "trei", "două sute cincizeci", "o mie opt sute treizeci și unu", "doi virgulă patruzeci și unu" (2,41), "o sută șaizeci de grame", "nouă lei douăzeci și doi" (9,22 lei); "zero"/"niciuna" = 0, never empty
+  - sections: "ha cinci punct unu", "hala cinci compartimentul unu", "H cinci unu" → H5.1 (Hîrbovăț); "ha cinci liniuță unu" → H5-1 (Telița); "hala cinci" / "H5" → the hall (a clarification where a compartment is needed)
+  - farms: "Hîrbovăț" (also heard "Hirbovat"), "Telița"; sex: găini / găină / femele → ♀, cocoși / cocoș / masculi → ♂; "păsări" = both
+  - weeks and dates: "SAPT 58", "săptămâna cincizeci și opt", "azi", "ieri", "alaltăieri", "pe 13 noiembrie", "de pe 1 până pe 15 noiembrie"
+  - record words: moarte / mortalitate / au murit; sacrificate / sacrificare; eroare de sexare; transfer / mută; vânzare / am vândut; hrană / grame / porție; livrare / am primit; cântărire / greutate / CV / uniformitate / probă; ouă / categoria unu / incubabile / jos / masa medie; preț / lei pe kilogram
+  - diacritics are restored in the transcript ("Telita" → "Telița")
+- **Numbers are never trusted blind:** every figure goes into a form for the user to check (that is why data changes always prefill); in the normalised line and the Banner the figure is written in Mono next to its section and sex so a misheard number is seen before Salvează.
+
+**Rules: what voice never does**
+- Press Salvează or any save key (Mută, Înregistrează vânzarea, Adaugă, Creează seria, Salvează corecția, Salvează prețurile).
+- Delete, deactivate, reactivate, retire, close a series, reset a password or undo a saved record; open or confirm a confirm Dialog (Where › Dialogs). Voice opens the record with that key focused.
+- Set, reset, reveal or speak a password; sign in or sign out without the panel's one-tap confirmation.
+- Anything outside the user's role, farms or time window (§1); prices for a vet or viewer, a price with a manager's delivery ("Prețul îl adaugă proprietarul în Prețuri hrană.").
+- Act on another user's entry for a vet (D71); bulk actions the screens don't have.
+
+**Accessibility**
+- The key is a toggle `button` named "Comandă vocală" (`aria-label`; desktop tooltip adds the shortcut): `aria-pressed="true"` while listening (and while the panel is open on a result), `aria-busy="true"` while thinking, `aria-keyshortcuts="Control+Shift+Space"`; no `aria-expanded`/`aria-controls` (one state, pressed; the panel is a labelled region "Comandă vocală" announced through the live regions).
+- **Shortcut Ctrl + Shift + Space:** starts listening from anywhere, even in a field (it types nothing) and **doesn't move focus**; pressed again while listening it stops; Esc cancels (before it closes a SidePanel, the S16 sheet or a menu, Flow 7). Chosen because: a modifier chord types nothing in fields; no default in Chrome, Edge, Firefox or Safari; not a screen-reader key (NVDA/JAWS use Insert/CapsLock, VoiceOver Ctrl+Option); "/" types in fields, is Firefox's quick find and is eaten by screen readers in browse mode; Ctrl/⌘ + Space switch input sources on Windows and macOS. *To review* (check on PCs where Ctrl+Shift switches keyboard layout, and ChromeOS, where Ctrl+Shift+Space switches input method: open question 20).
+- **Live regions:** while the panel is open its polite region announces each state once: "Ascult." · "Mă gândesc." · an answer · a clarification question. Results that close the panel are announced outside it: executat by its Toast (the Toast's own status role: "Am deschis Rapoarte, Producție, ultimele 8 săptămâni."); formular precompletat and cancel by one app-level polite status region in the shell ("Am completat 3 câmpuri din ce ai spus. Verifică și salvează." / "Comanda a fost anulată."), as focus lands. Errors and refusals are `role=alert` in the panel. The meter is `aria-hidden` (the word carries the state).
+- **Screen readers:** "Ascult." is announced before the microphone opens, and the panel says once "Cu cititorul de ecran pornit, folosește căștile sau scrie comanda." (its speech would be recorded); the text field gives the same results with no audio.
+- **Focus:** a start by the key leaves focus on the key (so Space/Enter stops); a start by the shortcut leaves focus where it was; the panel is not a modal trap (desktop popover, phone sheet with scrim: focus moves into it only when a clarification, error or answer needs a choice); after navigation focus goes to the page h1; after prefill to the first filled field; on cancel back to where it was.
+- Touch target 56 px phone, desktop key `control-h` (≥24 px); chips touch size on phone (§40).
+- **Reduced motion:** the panel fades instead of rising/growing, in its container's own time (sheet 280 ms, popover 120 ms); the key's latch is colour only; the meter keeps lighting segments (a colour change, no movement).
+
+**Motion (D196)**
+- Phone panel = BottomSheet motion (rises its height, 280 ms); desktop popover = menu motion (scale 0.95 + opacity from the key's bottom-right corner, 120 ms); key press 0.97; latch and unlatch colour 120 ms; Banner and Toast as their components. The level meter is a live readout of the microphone, not an animation: segments light and go dark at the audio's pace (≤ 15 updates a second), no easing, no pulse; nothing else loops. The spinner is the Button's.
+
+**Privacy**
+- Audio is streamed for transcription and never stored: not on the device after the panel closes, not on the server, not by the provider (a contract condition, open question 13).
+- Transcripts are not stored for show/filter/navigate commands or questions. When a save still carries at least one "din voce" mark, its `AUDIT_LOG` entry records `sursa: voce` and the transcript next to the saved values (so "who entered what" includes "said what"); a form whose marks were all edited away saves as typed (D199 note). On first use the panel shows one line: "Ce spui nu se păstrează. Dacă salvezi un formular completat din voce, textul comenzii rămâne în Istoric modificări." *To review* (open question 18).
+- A usage count per user and day (no text) is kept for cost.
+
+**Action catalogue (81 intents)**
+
+Mode: **imediat** = runs at once, Toast + Anulează (export: no Anulează) · **răspuns** = written answer + the view that shows it · **precompletează** = the form opens filled, nothing saved until Salvează · **confirmă** = one tap in the panel. Roles: `vet` · `viewer` (Observator) · `manager` · `owner`; "viewer+" = viewer, manager, owner. Every intent also accepts the context defaults above. Example figures are the 18.11.2026 sample where real, else illustrative.
+
+*Navigare*
+
+| # | Intent | Examples | Parameters | Opens | Mode | Roles |
+|---|---|---|---|---|---|---|
+| N01 | Acasă | „du-mă acasă”, „deschide Acasă” | – | S2 | imediat | all |
+| N02 | Înregistrează | „ce pot înregistra?”, „deschide Înregistrează” | – | phone: Înregistrează BottomSheet; desktop: Sidebar group open, focus on its first item | imediat | vet, manager, owner |
+| N03 | Open an entry form, blank | „deschide Zilnic”, „vreau să dau hrana” | form, farm, date | S6–S10, S13 empty | imediat | per form (§1) |
+| N04 | Seria | „deschide Seria 2026”, „seria la Producție” | series, tab | S3 (tab) | imediat | viewer+ |
+| N05 | Fermă | „deschide Hîrbovăț”, „Telița ciclul trecut” | farm, cycle, tab | S4 (tab) | imediat | viewer+ |
+| N06 | Secțiune | „deschide ha cinci punct unu”, „H6.2 la Păsări” | farm, section, tab | S5 (tab) | imediat | viewer+ |
+| N07 | Tab | „treci la Hrană”, „arată Greutatea” | tab (Rezumat · Păsări · Hrană · Greutate · Producție) | the current scope page | imediat | viewer+ |
+| N08 | Rapoarte · Producție | „deschide raportul de producție” | farm, period | S14 | imediat | viewer+ |
+| N09 | Rapoarte · Hrană | „arată stocul de hrană”, „deschide livrările”, „consumul pe săptămâni”, „costul hranei” | part (Stoc · Livrări · Consum · Cost) | S11 at that part | imediat | viewer+ (Cost and lei: manager, owner, D64) |
+| N10 | Prețuri hrană | „deschide prețurile” | – | S12 | imediat | owner |
+| N11 | Introdus azi | „ce am introdus azi?”, „deschide Introdus azi” | – | S15 | imediat | vet, manager, owner |
+| N12 | Lipsesc date | „arată ce lipsește” | farm, day | S2 Lipsesc date (focus on its heading); owner/viewer: De verificat | imediat | all |
+| N13 | Istoric modificări | „deschide istoricul modificărilor” | – | S17 | imediat | manager, owner |
+| N14 | Setări page | „deschide utilizatorii”, „ghidurile”, „tipurile de hrană”, „fermele”, „seriile” | page | S18–S22 | imediat | owner |
+| N15 | Setări item | „deschide ghidul Ross 308 ouat”, „utilizatorul Ion Rusu”, „ferma Telița în setări” | item | S19 panel · S20 detail · S21 panel · S22 panel · S18 series | imediat | owner |
+| N16 | Înapoi / închide | „înapoi”, „închide panoul” | – | the previous screen; closes a SidePanel or sheet (a form keeps its draft) | imediat | all |
+| N17 | Cont / Mai mult | „deschide contul”, „mai mult” | – | phone: the tab bar's Cont (vet) or Mai mult (other roles); desktop: the Sidebar account | imediat | all |
+
+*Filtre și tabel*
+
+| # | Intent | Examples | Parameters | Opens | Mode | Roles |
+|---|---|---|---|---|---|---|
+| F01 | Perioadă | „ultimele 8 săptămâni”, „tot ciclul”, „13 săptămâni”, „de pe 1 până pe 15 noiembrie” | Ciclul curent · 4 · 13 săpt. · n săpt. · Interval | FilterBar (S4, S5, S14, S11 Consum); "8 săpt." = 4 săpt. widened once (D192); on S3 (no FilterBar, D63) a clarification Telița · Hîrbovăț opens that farm with the period | imediat | viewer+ |
+| F02 | Pas | „pe zile”, „doar săptămânile” | Zi · Săpt. | FilterBar grain | imediat | viewer+ |
+| F03 | Detaliu | „pe hale”, „pe compartimente”, „toată ferma” | Fermă · Hale · Compartimente (+ phone section) | the Detaliu switch (farm tabs except Rezumat) | imediat | viewer+ |
+| F04 | Tipuri | „doar mortalitatea”, „arată și sacrificările”, „ascunde vânzările” | record types on/off (phone: one) | RecordChips | imediat | viewer+ |
+| F05 | Ciclu | „ciclul trecut”, „ciclul din 2025 de la Hîrbovăț” | farm, cycle | CycleSelector (rescopes S4) | imediat | viewer+ |
+| F06 | Serie | „treci pe Seria 2025” | series | series selector | imediat | viewer+ |
+| F07 | Fermă în rapoarte | „producția de la Hîrbovăț” | farm | S14 / S11 farm filter | imediat | viewer+ |
+| F08 | Încarcă săptămâni | „încă patru săptămâni”, „mai multe săptămâni”, „până la începutul ciclului” | ×4 or up to the first week | the load-more row pressed n times (D190); live "Au fost adăugate SAPT 52–55." | imediat | viewer+ |
+| F09 | Deschide / închide săptămâna | „deschide SAPT 58”, „închide săptămâna 57” | week | its expand key | imediat | viewer+ |
+| F10 | Mergi la o zi | „arată ziua de 14 noiembrie”, „ce s-a întâmplat ieri la H6.1” | date, section, tab | the scope page with that day's row loaded, open and focused | imediat | viewer+ |
+| F11 | Deschide o înregistrare | „deschide vânzarea de azi”, „livrarea din 13 noiembrie” | type, date, section | its row in the Păsări log or S11 Livrări, focused (current row) | imediat | viewer+ |
+| F12 | Filtre istoric | „modificările lui Ion Rusu din noiembrie” | user, farm, type, period | S17 filtered | imediat | manager, owner |
+| F13 | Fără preț | „livrările fără preț” | – | S11 Livrări "fără preț" rows (owner: S12) | imediat | manager, owner |
+| F14 | Resetează filtrele | „resetează filtrele”, „înapoi la ciclul curent” | – | Ciclul curent · Zi · Fermă · every chip | imediat | viewer+ |
+| F15 | Mai vechi | „arată înregistrările mai vechi”, „mai vechi” | – | the Păsări log's Mai vechi (D81), the next page focused | imediat | viewer+ |
+
+*Întrebări*
+
+| # | Intent | Examples | Parameters | Opens | Mode | Roles |
+|---|---|---|---|---|---|---|
+| Q01 | Păsări în viață | „câte găini avem la Hîrbovăț?”, „câți cocoși sunt în H6.2?” | scope, sex, date | S4/S5 Rezumat ("♀ 12 561 · ♂ 794 · SAPT 59") | răspuns | viewer+; vet: its sections today, opens Zilnic |
+| Q02 | Ouat față de ghid | „care e procentul de ouat săptămâna asta față de ghid?”, „cât a fost ouatul ieri?” | farm, hall, week/day | S14 ("Sapt. 59 (2 din 7 zile): ouat 40,4%, ghid 57,6% …") | răspuns | viewer+ |
+| Q03 | Mortalitate | „câte găini au murit săptămâna asta?”, „mortalitatea cumulată față de ghid” | scope, period, sex | S4 Păsări, chip Mortalitate | răspuns | viewer+ |
+| Q04 | Hrană dată | „câte grame dăm la găini azi?”, „cât s-a consumat ieri?” | scope, date, sex | S4 Hrană ("♀ 160 g · ghid 157 g") | răspuns | viewer+; vet: opens S7 |
+| Q05 | Stoc | „cât stoc avem la Hîrbovăț?”, „pe câte zile mai ajunge hrana?” | farm, feed type | S11 Stoc | răspuns | viewer+ |
+| Q06 | Greutate | „cât cântăresc găinile din H1 față de ghid?” | section, sex | S5 Greutate | răspuns | viewer+ |
+| Q07 | Ouă și categorii | „câte ouă incubabile am avut ieri?”, „ce procent de categoria a doua?” | farm, hall, date, category | S4 Producție, Detaliu Hale | răspuns | viewer+ |
+| Q08 | Cost | „cât ne-a costat hrana pe ciclul ăsta?”, „cât costă un ou?” | farm, cycle | S11 Cost | răspuns | manager, owner |
+| Q09 | Săptămâna și vârsta | „în ce săptămână suntem?”, „câte zile au păsările?” | scope | no change ("SAPT 59 · vârstă 407 zile · 18.11.2026") | răspuns | all |
+| Q10 | Ce lipsește | „ce lipsește azi?”, „unde n-am completat?” | farm, day | S2 Lipsesc date / De verificat | răspuns | all |
+| Q11 | De verificat | „ce e de verificat?” | farm | S2 / S4 Rezumat De verificat | răspuns | viewer+ |
+| Q12 | Livrări fără preț | „câte livrări n-au preț?” | – | S12 (manager: S11 Livrări) | răspuns | manager, owner |
+| Q13 | Ce am salvat | „am salvat hrana azi?” | form, date | S15 | răspuns | vet, manager, owner |
+| Q14 | Cine a modificat | „cine a modificat mortalitatea de pe 14 noiembrie?” | record | S17 filtered | răspuns | manager, owner |
+| Q15 | Ciclu și ghid | „ce ghid are Hîrbovăț?”, „când a început ciclul?” | farm | S4 header and CycleSelector | răspuns | viewer+ |
+| Q16 | Sacrificări, vânzări, transferuri | „câte găini am sacrificat luna asta?”, „câte păsări am vândut săptămâna trecută?”, „ce transferuri au fost în noiembrie?” | scope, type, period, sex | S4/S5 Păsări with that chip and period ("Sapt. 58: vândute ♀ 10 546 · ♂ 749.") | răspuns | viewer+ |
+| Q17 | Livrări în perioadă | „câtă hrană am primit în noiembrie?”, „ce livrări au fost săptămâna asta?” | farm, feed type, period | S11 Livrări (lei for manager, owner) ("13.11.2026: 25 640 kg.") | răspuns | viewer+ |
+
+*Formulare precompletate (nothing saved without Salvează)*
+
+| # | Intent | Examples | Parameters | Opens | Mode | Roles |
+|---|---|---|---|---|---|---|
+| P01 | Mortalitate | „pune 3 găini moarte la ha cinci punct unu”, „la H6.2 au murit două găini și un cocoș” | farm, date, section, sex, count | S6, that EntryCard | precompletează | vet (today), manager, owner |
+| P02 | Sacrificare + Motiv | „am sacrificat 2 găini la H5.2 pentru șchiopătare” | + Motiv (boală · șchiopătare · altul) | S6 Sacrificare + Motiv (missing: clarification) | precompletează | vet (today), manager, owner |
+| P03 | Eroare sexare | „la H6.1 erau 4 cocoși printre găini” | section, sex, signed count | S6, Mai mult open | precompletează | vet (today), manager, owner |
+| P04 | Ouă | „la hala 5: categoria unu 13, categoria doi 417, categoria trei 27, incubabile 3 415” | hall, Jos, Cat. 1–3, Incubabile, Masa medie | S6 hall card Ouă group (Total ouă live: 3 872) | precompletează | vet (today), manager, owner |
+| P05 | Fără pierderi | „fără pierderi azi la H6.1”, „azi n-a murit nimic” | sections or all | S6 "Fără pierderi azi" ticked | precompletează | vet (today), manager, owner |
+| P06 | Grame pe pasăre | „dă 160 de grame la toate găinile”, „la H5.1 cocoși 150 de grame” | farm, date, rows (section × sex or a whole sex), g 1–300 | S7 rows filled, kg live | precompletează | vet (today), manager, owner |
+| P07 | Copiază ieri | „la fel ca ieri”, „copiază ieri” | – | S7 Copiază ieri pressed | precompletează | vet (today), manager, owner |
+| P08 | Tip de hrană | „la cocoși pune hrana Cocoși” | rows, feed type | S7 Select | precompletează | vet (today), manager, owner |
+| P09 | Cântărire | „cântărire H1 găini 2 553 de grame, CV 8, uniformitate 85, probă 100” | section, sex, date, g, CV %, uniformitate %, probă | S8 + live guide comparison | precompletează | vet (today), manager, owner |
+| P10 | Transfer | „mută 7 001 găini din H2 în H7.1” | date, din, în, ♀, ♂, Toate | S9 + effect preview | precompletează | manager, owner |
+| P11 | Vânzare | „vânzare azi la Hîrbovăț, toate păsările din H6” | farm, date, rows, Toate, buyer, note | S10 + effect preview; a total not split by section is listed on the Banner ("Ai spus ♀ 1 831 · ♂ 289 în total; scrie-le pe secțiuni.") | precompletează | manager, owner |
+| P12 | Livrare hrană | „am primit 25 640 de kilograme pentru găini la Hîrbovăț pe 13 noiembrie” | farm, date, feed type, kg, note | S13 + stock after | precompletează | manager, owner |
+| P13 | Preț livrare | „livrarea din 13 noiembrie: 9 lei 22 pe kilogram” | delivery, lei/kg or total | S12 row filled, the other value calculated | precompletează | owner |
+| P14 | Modifică preț | „schimbă prețul livrării din 24 octombrie la 9,24 lei, motiv factură corectată” | delivery, price, Motiv | S11 Livrări row in Modifică (D69) | precompletează | owner |
+| P15 | Corectează | „corectează mortalitatea de pe 14 noiembrie la H6.1, găini 5 în loc de 3, motiv numărate greșit” | record, field, new value, Motiv | S16 whole save, figure marked "modificat" + VoiceMark; also someone else's save from today (D70 B) | precompletează | manager, owner |
+| P16 | Editează azi | „schimbă mortalitatea de azi la H5.1 în 4” | as P01–P09 | the form in Editează, only for the user's own save from today; someone else's save → P15 (D70 B) | precompletează | vet (own, until 23:59), manager (own), owner (own) |
+| P17 | Începe ciclu nou | „începe un ciclu nou la Hîrbovăț de azi” | farm, date, guide, Motiv | B4 form Dialog opened prefilled; confirmed by hand | precompletează | manager, owner |
+| P18 | Schimbă ghidul ciclului | „schimbă ghidul ciclului la Hîrbovăț” | farm, guide | its form Dialog opened prefilled | precompletează | manager, owner |
+| P19 | Serie nouă | „serie nouă Seria 2027, la Telița pe 6 octombrie 2027, vârstă zero zile, H1 găini 14 080, H2 găini 14 000, H5-1 cocoși 3 510” | name, year, farm, date, Vârstă la populare 0–140, rows | S18 form + live SAPT line | precompletează | owner |
+| P20 | Vârstă la populare | „schimbă vârsta la populare a Seriei 2026 la 7 zile” | series, days, Motiv | S18, its form Dialog opened prefilled (age + Motiv), confirmed by hand | precompletează | owner |
+| P21 | Utilizator nou | „adaugă utilizatorul Petrea, login petrea, rol vet la Hîrbovăț” | name, login, role, farms (no password, D78) | S22 add panel | precompletează | owner |
+| P22 | Rol și ferme | „dă-i lui Ion Rusu și ferma Telița”, „fă-l pe Petrea observator” | user, role, farms | S22 user panel | precompletează | owner |
+| P23 | Fermă și secțiuni | „adaugă compartimentul H7.3 în hala H7”, „fermă nouă de creștere” | farm, type, guide, section code, parent | S19 panel / SectionTree | precompletează | owner |
+| P24 | Ghid nou | „importă un ghid de ouat numit Ross 308 ouat 2027” | name, type | S20 Importă ghid (file or paste by hand) | precompletează | owner |
+| P25 | Tip de hrană nou | „adaugă hrana Breeder 3 pentru găini” | name, sex | S21 panel | precompletează | owner |
+| P26 | Închide seria | „închide Seria 2025” | series | S18 with Închide seria focused (confirm Dialog never by voice) | precompletează | owner |
+| P27 | Editează tip de hrană | „tipul Cocoși e pentru cocoși”, „redenumește Breeder 3 în Breeder 3 plus” | feed type, name, for sex (retiring a type goes through its confirm step: never by voice) | S21 panel filled | precompletează | owner |
+| P28 | Înlocuiește ghidul | „înlocuiește ghidul Ross 308 ouat” | guide | S20 › the guide › Înlocuiește (type fixed; file or paste by hand) | precompletează | owner |
+
+*Altele*
+
+| # | Intent | Examples | Parameters | Opens | Mode | Roles |
+|---|---|---|---|---|---|---|
+| X01 | Exportă | „exportă tabelul”, „descarcă în Excel” | – (the screen's filters) | Exportă .xlsx of the whole chosen period (D191); Toast without Anulează | imediat | viewer+ where Exportă exists |
+| X02 | Ieși din cont | „ieși din cont”, „deconectează-mă” | – | the panel asks "Ieși din cont?" with chips Ieși · Rămâi → S1 | confirmă | all |
+| X03 | Anulează ultima comandă | „anulează”, „nu asta” | – | the last voice result's Anulează / Anulează completarea | imediat | all |
+| X04 | Ajutor | „ce pot să spun?”, „ajutor” | – | the panel lists 4 examples for this screen and role | răspuns | all |
+
+*Never (refused in the panel, Rules above):* Salvează and every save key · Șterge, Dezactivează, Reactivează, Retrage, Închide seria, the Vânzare that empties a farm (no confirm Dialog is opened or confirmed by voice; the record opens with its key focused) · undo of a saved record · passwords (set, reset, show, say) · sign-in · prices for vet/viewer, price on a manager's delivery · another user's entry for a vet · anything outside role, farm or time window.
+
+**Decision points (taken, to review)**
+1. Sign-in screen has no voice; voice starts after sign-in.
+2. Dialogs: no voice inside; form Dialogs may open prefilled, confirm Dialogs never open by voice (the record opens with the key focused).
+3. Shortcut Ctrl + Shift + Space on every platform.
+4. Second tap while listening = stop and run; cancel = Esc, Închide, Anulează, a tap while thinking.
+5. Show commands run with no Execută step; the fix window is "Mă gândesc…" + Anulează on the Toast.
+6. Answers are written only (no speech synthesis).
+7. Log out by voice needs one tap in the panel; export runs at once.
+8. A voice-filled suggestion row in Hrană zilnică counts as confirmed; a typed value replaced by voice shows "înainte n".
+9. One form per command; a second form is offered as a chip.
+10. More than 3 candidates: 3 chips + "Alta…" (the screen's selector).
+11. Transcript kept in `AUDIT_LOG` only when a save still carries a "din voce" mark; one-line notice on first use.
+12. Look: phone key round (an exception to "round = lamps and the centre key"), 56 px, `raised` + `line-strong` + `shadow-overlay` at rest, graphite `control` latched while listening; phone Toast stacks above it; desktop key an IconButton at the end of the PageHeader actions (components › Additions › VO00).
+13. Level meter: 12 steel segments, live at the audio's pace, kept under reduced motion.
+14. The key is a toggle (`aria-pressed`), no `aria-expanded`; the shortcut doesn't move focus; Esc cancels voice before it closes a SidePanel or S16.
+15. Phone: the floating key hides while the soft keyboard is open; 88 px `scroll-padding-bottom` on every phone view.
 
 
 ## Appendix: unchanged features from spec v1

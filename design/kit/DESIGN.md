@@ -396,14 +396,14 @@ components:
 - **Surfaces are flat,** separated by 1px edges.
 - **Shadows:**
   - `shadow-key`: the lower edge of buttons only
-  - `shadow-overlay`: menus, dialogs, toasts, side panel only
+  - `shadow-overlay`: menus, dialogs, toasts, side panel, and the floating phone voice key (D199) only
 - **Readouts** sit flush in panels as dark windows.
 - **Focus:** a 2px `focus` ring (green) with a 2px offset.
 
 ## Shapes
 
 - **Radii:** `xs` 2 (tags, cycle blocks), `sm` 3 (controls, record tiles), `md` 4 (panels, readouts), `lg` 6 (dialogs, sheets).
-- **Round shapes:** status lamps and the phone centre key only.
+- **Round shapes:** status lamps, the phone centre key and the floating phone voice key (56 px, D199) only.
 - **Nesting:** the inner radius is the outer radius minus the padding.
 
 ## Components

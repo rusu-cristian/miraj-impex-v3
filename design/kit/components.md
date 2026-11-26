@@ -1046,3 +1046,40 @@ Decided by: user (D198); mechanics by Claude, to review. additions.css §77 (Tab
 - **Week key:** full cell (above, PeriodTable › Expand key); no markup change (CSS only), so no board geometry moved.
 - **Reveal:** `div.ip-reveal` > skeleton `[data-state=closed]` + block `[data-state=loaded]`, `--ip-i` 0–3 (above, Skeleton).
 - **Rejected:** clip-path duplicate tab list (two copies of every label; the equal widths make one moving mark enough), `left`/`width` anchor positioning (layout per frame), sliding on arrow keys, rise under reduced motion.
+
+### VO00 · VoiceButton, VoicePanel, VoiceMark (spec), 26.11.2026
+Spec only; no CSS yet (VO02 draws, then the system gets its section). For spec §8 F1 Comenzi vocale (D199). Decided by: user (D199: placement, tap-to-talk, run vs prefill); sizes, looks and states Claude, to review. Existing tokens and components only; no new token.
+
+**VoiceButton**
+- **Purpose:** starts and stops a voice command; the same key on every signed-in screen (spec §8 › Where).
+- **Phone (floating):** a round `button` 56 × 56 (`count-input-h`; an exception to Shapes' "round = lamps and the centre key", D199 asked for a round key), Lucide "mic" 22 px; `position: fixed`, right `space-4`, bottom = `space-4` above the lowest bar on screen (BottomTabBar `tabbar-h` + safe-area inset; SaveBar; the S16 sheet foot); never over a SaveBar or its key; over a BottomSheet it sits above the sheet's top edge. Every phone view under it sets `scroll-padding-bottom` and bottom padding 88 px (on top of a SaveBar's own, FX05 §63), so a focused field scrolls clear of it (WCAG 2.4.11). Hidden (`hidden`) while the soft keyboard is open (a focused field, read from the visual viewport), back when it closes; the VoicePanel's own field keeps the docked key. Stacking: above content, the BottomTabBar and sheets; below the Toast (a phone Toast stacks above the key: Toast bottom = key top + `space-2`, amends FIN02 for screens with the key) and below every Dialog scrim (inert under it).
+- **Desktop (header key):** the IconButton (`control-h` square, secondary look: `raised`, 1px `line-strong`, `shadow-key`), icon 16 px, the last key of the PageHeader actions; tooltip "Comandă vocală · Ctrl+Shift+Space".
+- **States:**
+  - **idle:** phone `raised`, 1px `line-strong`, `shadow-overlay` (it floats over content, as a Toast; an exception to `shadow-overlay`'s list), icon `ink`; desktop as IconButton. Hover `sunken`, pressed 0.97 (MO01).
+  - **listening:** latched: `control` fill, `on-control` icon, no shadow on desktop (as a pressed key), phone keeps `shadow-overlay`; `aria-pressed="true"`. No pulse, no ring animation; the state word is in the VoicePanel.
+  - **thinking:** latched look + the Button spinner in place of the icon (`aria-busy="true"`, the name stays).
+  - **disabled:** `sunken` + `ink-disabled` + 1px `line` (offline, or while the screen saves): `aria-disabled="true"`, still focusable, description gives the reason ("Fără conexiune"); a press opens the panel on that reason.
+  - **focus:** the 2px `focus` ring, 2px offset (round on phone).
+- **A11y:** a toggle: name "Comandă vocală", `aria-pressed` (true while listening and while the panel is open), `aria-keyshortcuts="Control+Shift+Space"`; no `aria-expanded`/`aria-controls`; ≥44 px target (56 phone). The shortcut never moves focus; Esc cancels voice before it closes a SidePanel, the S16 sheet or a menu.
+- **Motion:** press 0.97 120 ms; latch/unlatch colour 120 ms; when the bar under the phone key changes (a SaveBar, a sheet foot), the key takes its new place at once, with no animation.
+
+**VoicePanel**
+- **Purpose:** shows what is heard and what the app did, and takes a typed command.
+- **Phone:** the BottomSheet (`panel`, radius `lg` top, system scrim, sheet motion 280 ms), up to 60% of the screen, content scrolls inside it. The floating key docks into the sheet's foot (same element, same right edge), beside the "Scrie comanda" field.
+- **Desktop:** a non-modal popover under the header key, right edges aligned, `space-2` below it, width `panel-w` (440), `panel`, 1px `line`, radius `md`, `shadow-overlay`; menu motion (scale 0.95 + opacity from its top-right corner, 120 ms). Closes on Esc, Închide, a click outside, or after a run that navigates.
+- **Anatomy (top to bottom):**
+  1. **Head:** title "Comandă vocală" (`heading` 16) · state as Lamp + word ("Ascult…" `ok`, "Mă gândesc…" `info`, "aștept permisiunea" `info`) · elapsed time in Mono `small` ("0:04") while listening · Închide IconButton.
+  2. **Level meter** (listening only): 12 segments, each `space-1` wide × `space-4` tall, `space-1` apart, in a `sunken` track of radius `xs`; lit segments `ink-secondary`, dark ones `rule`; driven by the microphone level ≤ 15 times a second, no easing; `aria-hidden`. Not a Readout (no dark panel).
+  3. **Transcript:** `body` 14/20 in „…”, `ink-secondary` while partial, `ink` once final; a `button` while thinking or after a result ("Apasă pe text ca să-l corectezi" as its description) that turns into the TextField + Execută / Anulează. Under it the normalised command in Mono `small` with ♀/♂ signs (§72) and section codes.
+  4. **Result** (one at a time): an answer (`body` + Mono figures + Lamp and word, then "Am deschis …" + Anulează link); clarification chips (up to 3 + "Alta…", RecordChip shape in steel: `raised`, 1px `line-strong`, no record colour, `ip-chips` equal widths, touch size on phone, `role=radiogroup` named by the question) + Spune din nou; a Banner (info refusal, warn fără microfon, the §49 failure Banner with Reîncearcă).
+  5. **Examples** (idle before speech, neînțeles, Ajutor): "Poți spune:" + 2–4 phrases for the screen and role, `small` `ink-secondary`, each a ghost key that fills the text field.
+  6. **Foot:** TextField "Scrie comanda" (`control-h-touch` on phone) + Button Execută (secondary; primary only when the field holds edited text); on phone the docked VoiceButton at the right.
+- **Live region:** one polite `role=status` in the head carries the states while the panel is open (Ascult, Mă gândesc, an answer, a clarification); results that close the panel are announced by the Toast (executat) or the shell's app-level `role=status` (precompletat, anulat), spec §8 › Accessibility; error Banners `role=alert`. The panel is a region labelled "Comandă vocală".
+- **Reduced motion:** sheet and popover fade only, each in its own time (sheet 280 ms, popover 120 ms); the meter keeps changing colour.
+
+**VoiceMark**
+- **Purpose:** marks a form field filled by voice until the user edits it by hand, presses Anulează completarea, or saves.
+- **Look:** in the field's label line, after the label: Lucide "mic" 14 px + "din voce" in `small` 12/16, `info` text (lowercase, as the system's marks "ieri", "salvat"); with a replaced typed value "din voce · înainte 2" (Mono figure). The field's own border, sex bar and states are unchanged (a warning or refusal stays the field's own).
+- **Where it goes:** CountInput and TextField labels (S6, S8–S10, S13, S16, S18–S22 forms); AllocationRow (phone: the g/pasăre label line; desktop: the row's §69 detail row, FW03); DataTable inline edit cells (S11/S12 prices): the row's detail row; SegmentedControl / Select / Checkbox: their label line.
+- **A11y:** the mark's text is part of the field's description (`aria-describedby`: "completat din voce"); removing it changes nothing in focus.
+- **Form summary:** the info Banner with action (FIN03) "Am completat din ce ai spus. Verifică și salvează." + the filled list + Anulează completarea, first block of the form.
