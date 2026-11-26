@@ -301,7 +301,7 @@ chip_sexerr = f'<button type="button" class="ip-chip ip-rec ip-chip--split" role
 for _k in ('culls', 'sexing_errors', 'weighings', 'sales'):
     assert R.ILL[_k] and all(C26_START <= e['date'] <= TODAY for e in R.ILL[_k]), _k
 assert R.TR['internal_moves_hirbovat'] and R.sales()
-CHIPS = f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("cull", "Sacrificare")}{chip_sexerr}{chip("transfer", "Transfer")}{chip("sale", "Vânzare")}{chip("feed", "Hrană")}{chip("weighing", "Cântărire")}{chip("eggs", "Ouă")}</div>'
+CHIPS = f'<div class="ip-filterbar__chips"><div class="ip-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("cull", "Sacrificare")}{chip_sexerr}{chip("transfer", "Transfer")}{chip("sale", "Vânzare")}{chip("feed", "Hrană")}{chip("weighing", "Cântărire")}{chip("eggs", "Ouă")}</div></div>'
 EXPORT = f'<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end">{icon("download", 16)}Exportă .xlsx</button>'
 PERIODS = ['Ciclul curent', '4 săpt.', '13 săpt.', 'Interval']
 def datef(i, label, val):
@@ -312,7 +312,7 @@ def filterbar(mode='default'):
         exp = f'<button type="button" class="ip-btn ip-btn--ghost ip-filterbar__end is-disabled" disabled="disabled">{icon("download", 16)}Exportă .xlsx</button>'
         return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 3)}{itv}{seg("Pas", ["Zi", "Săpt."], 0)}{exp}</div>'  # D166: grain Zi by default
     if mode == 'past':  # closed cycle: whole-cycle period; only the record types the previous flock has (eggs, mortality)
-        chips = f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("eggs", "Ouă")}</div>'
+        chips = f'<div class="ip-filterbar__chips"><div class="ip-chips" role="group" aria-label="Tipuri de înregistrări">{chip("mortality", "Mortalitate")}{chip("eggs", "Ouă")}</div></div>'
         return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", ["Tot ciclul"] + PERIODS[1:], 0)}{seg("Pas", ["Zi", "Săpt."], 0)}{EXPORT}{chips}</div>'  # D166/D170: grain Zi
     return f'<div class="ip-filterbar s4-filterbar" role="group" aria-label="Filtre">{seg("Perioadă", PERIODS, 0)}{seg("Pas", ["Zi", "Săpt."], 1)}{EXPORT}{CHIPS}</div>'
 TABS = [('rezumat', 'Rezumat'), ('pasari', 'Păsări'), ('hrana', 'Hrană'), ('greutate', 'Greutate'), ('productie', 'Producție')]
@@ -594,7 +594,7 @@ def chips4(on, types=None):
                     f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>Eroare sexare</button>')
         else:
             out += chip(k, CHIPW[k], k in on)
-    return f'<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">{out}</div>'
+    return f'<div class="ip-filterbar__chips"><div class="ip-chips" role="group" aria-label="Tipuri de înregistrări">{out}</div></div>'
 def filterbar4():
     """D191 (SYS18): period "Ciclul curent" (the table opens on its last 4 weeks, SAPT 56–59, and loads 4 more per press, D190;
     supersedes D159's "4 săpt." default); grain Zi (D166: every week open, each key can close its week; Săpt. = week rows
@@ -976,10 +976,10 @@ CSS = '''body{margin:0}
 .s4-nowrap{flex-wrap:wrap}
 .s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
 .s4-filterbar{row-gap:var(--space-2)}
-.s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
 .s4s-rel > .ip-shell{min-height:inherit}
 @container s4main (max-width: 999.98px){ /* FIN16: the narrow page (720 / 560 beside a SidePanel): one column; the track takes the page width (its 720 / 560 drawings), the field keeps its width */
+.s4-filterbar .ip-chips{grid-auto-flow:row;grid-template-columns:repeat(4,1fr)} /* SYS20 (D195): the equal chips in 4 columns (8 types = two rows of 4) */
 .s4-cycle,.s4-top,.s4-halls,.s4-split{grid-template-columns:minmax(0,1fr)}
 .s4-cycle > .ip-field{max-width:calc(var(--space-12) * 8 + var(--space-8))}
 .s4-cycle > .s4-tight{padding-top:0}

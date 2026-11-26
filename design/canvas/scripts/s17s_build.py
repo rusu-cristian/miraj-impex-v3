@@ -19,7 +19,7 @@ corrected by the manager today (D172).
   vet sees the same: not drawn. The vet's "Nu ai acces la Istoric modificări." = the S17 observator-fara-acces picture.
 - telefon-filtre (manager Ion Rusu, 390×844): the S17 phone with the system BottomSheet open (S14P pattern): Perioadă
   (touch SegmentedControl, focus on the chosen period), Fermă, Utilizator (touch Selects), the record-type chips at
-  touch height (.ip-chip--touch, additions.css section 40) in the screen's chip group (.s4-chips, space-2 apart);
+  touch height (.ip-chip--touch, additions.css section 40) in the system chip group (.ip-chips--wrap--fill, SYS20: 2 equal columns, space-2 apart);
   choices apply at once, Închide / Esc closes.
 S17P polish (17.11.2026): Banner one line + "Arată toate modificările", "Manager (tu)", corecție wording, no .s17-fchips.
 python3 -I s17s_build.py <repo_root> [--canvas]
@@ -139,8 +139,10 @@ def page_observer():
 def p_sheet():
     seg = s4.seg('Perioadă', Y.PER, 0)
     a = '<span class="ip-seg" role="radiogroup" aria-label="Perioadă">'; assert seg.startswith(a)
-    seg = ('<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):]).replace(
+    seg = ('<span class="ip-seg ip-seg--touch ip-seg--fill" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):]).replace(
         '<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1)   # focus starts on the chosen period
+    assert seg.count('>Tot istoricul<') == 1   # SYS20 (D195): 4 equal segments in 358, the short word (full word in ip-sr)
+    seg = seg.replace('>Tot istoricul<', '><span aria-hidden="true">Tot</span><span class="ip-sr">Tot istoricul</span><')
     def sel(i, label, opts):
         o = ''.join(f'<option{" selected=\"selected\"" if j == 0 else ""}>{t}</option>' for j, t in enumerate(opts))
         return (f'<div class="ip-field"><label class="ip-label" for="{i}">{label}</label><span class="ip-input ip-input--touch s11-select"><select id="{i}">{o}</select>'
@@ -148,7 +150,7 @@ def p_sheet():
     chips = ''.join((s4.chip_sexerr if k == 'sexerr' else s4.chip(k, w)).replace('class="ip-chip ', 'class="ip-chip ip-chip--touch ', 1) for k, w in Y.TYPES)
     assert chips.count('ip-chip--touch') == len(Y.TYPES)
     typ = (f'<div class="ip-field"><span class="ip-label" id="pf-typ">Tipuri de înregistrări</span>'
-           f'<div class="s4-chips" role="group" aria-labelledby="pf-typ">{chips}</div></div>')   # .s4-chips: wrapping, space-2 apart
+           f'<div class="ip-chips ip-chips--wrap ip-chips--fill" role="group" aria-labelledby="pf-typ">{chips}</div></div>')   # SYS20: 2 equal columns, space-2 apart
     return ('<div class="ip-scrim ip-scrim--sheet">'
             '<div class="ip-sheet s14-fsheet" role="dialog" aria-modal="true" id="pf-sheet" aria-labelledby="pf-t" aria-describedby="pf-d">'
             '<div class="ip-sheet__handle" aria-hidden="true"></div>'

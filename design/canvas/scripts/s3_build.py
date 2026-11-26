@@ -575,7 +575,7 @@ def radio_tags(on='mortality'):
         return f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if k == on else " ip-chip--off"}" {a}>{icon(k, 16)}{w}</button>'
     out = ''.join(one(k, w) for k, w in PTAGS)
     return (f'<div class="ip-field s3-ptags" role="group" aria-labelledby="pt-tags"><span class="ip-label" id="pt-tags">Tipuri de înregistrări</span>'
-            f'<div class="s4-chips" role="radiogroup" aria-labelledby="pt-tags" aria-describedby="pt-tags-h">{out}</div>'
+            f'<div class="ip-chips ip-chips--wrap ip-chips--fill" role="radiogroup" aria-labelledby="pt-tags" aria-describedby="pt-tags-h">{out}</div>'   # SYS20: 2 equal columns
             f'<span class="ip-hint" id="pt-tags-h">Pe telefon tabelul arată un tip odată; În viață rămâne.</span></div>')
 def ferma_phone(kind, key):   # only where the farm changes the reading: the transfer days hold both farms
     f = ferma(kind, key); return f if ' · ' in f else None
@@ -598,7 +598,6 @@ def phone_page():
     return body
 CSS_PHONE = A.CSS_P + '\n' + CSS + """
 .s4ns-phone .ip-sechead{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
-.s4ns-phone .ip-tabs{overflow-x:auto}
 .s4ns-phone .ip-tab{height:var(--control-h-touch)} /* touch: 48px tabs */
 .s4ns-phead{flex-wrap:wrap;gap:var(--space-3)}
 .s4ns-phead .ip-pagehead__meta{margin-top:var(--space-2);flex-wrap:wrap}

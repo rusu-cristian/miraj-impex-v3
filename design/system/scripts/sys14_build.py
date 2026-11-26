@@ -492,8 +492,11 @@ def region(table_html, caption, hidden=False):
 
 def detaliu(uid, sel='Fermă', touch=False):
     t = ' ip-seg--touch' if touch else ''
+    # SYS20 (D195): equal segments; on a phone (touch) "Compartimente" shows its short word, the full word in ip-sr, so the
+    # three equal segments and the caption fit 358
+    lbl = lambda o: '<span aria-hidden="true">Compart.</span><span class="ip-sr">Compartimente</span>' if touch and o == 'Compartimente' else o
     items = ''.join(f'<span class="ip-seg__item{" is-selected" if o == sel else ""}" role="radio" aria-checked="{"true" if o == sel else "false"}" '
-                    f'tabindex="{"0" if o == sel else "-1"}">{o}</span>' for o in ('Fermă', 'Hale', 'Compartimente'))
+                    f'tabindex="{"0" if o == sel else "-1"}">{lbl(o)}</span>' for o in ('Fermă', 'Hale', 'Compartimente'))
     return (f'<div class="ip-ptable__bar"><span class="ip-cap" id="{uid}-det">Detaliu</span>'
             f'<span class="ip-seg{t}" role="radiogroup" aria-labelledby="{uid}-det">{items}</span></div>')
 

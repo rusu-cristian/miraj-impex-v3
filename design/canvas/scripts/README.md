@@ -74,6 +74,7 @@ the S9 ones through `s9_build.py --canvas` (RF05).
 - s1, s19, s20, s22 also exec the top of design/system/scripts/sys13/sys10/sys11/sys12_build.py. The sys10 and sys12 tops import
   realdata (RF11, RF13: SYS12's last sign-in dates come from the illustrative event log), so a realdata/extract change re-runs
   `sys12_build.py` (UserRow/OneTimePassword previews) and the S22 row.
+- SYS20 (D195): FilterBar chips = `div.ip-filterbar__chips > div.ip-chips` from s4s_build (`CHIPS`, `filterbar`, `chips4`) and s17_build (`chips`); phone sheet tags `ip-chips--wrap ip-chips--fill` (s4ns, s3, s14s, s17s); phone sheet segs `ip-seg--fill` with the short words (s4ns `touch_seg`, s14s, s17s); phone Detaliu short word in sys14 `detaliu(touch=True)`.
 - sstate_css.py ← s2s, s6s, s7s, s8, s9, s10, s13, s14s, s15s, s16, s18 (s15 and later get it through these too).
 - canvas_rows.py: args/row_y/place/save for every build above.
 - sexsign.py (SX01, additions.css §72): the ♀/♂ sign markup (`sign`, `figure`, `sexify`) ← s4t (Readouts, legends: S4, S3, S14, S16, S17 through it), s3, s6, s6s, s8, s9, s10, s11, s15s, s16s and the system previews sys04/05/08/09/11/14 (at write). A change re-runs those rows and previews.
@@ -106,5 +107,6 @@ the S9 ones through `s9_build.py --canvas` (RF05).
   RF job adds its row to PORTED. SYS rows also scan their previews/READMEs as markup (RF14; SYS14 = PeriodTable).
 - `sex_scan.py $R [FILE …]` (SX01): lists every ♀/♂ on the boards and system previews not drawn as the §72 icon (outside the `ip-sex` hook, or a standalone hook holding other text); exit 1 if any.
 - `head_scan.py $R [--w 1280] [FILE|STEM …]` (SYS17, D189): renders every board with a table (canvas w × h; `--w 1280` for the desktops) and every system preview with one (1440) in headless Chrome and lists each `th` whose text runs over more than one line (a designed note / sub-line box counts as its own line; the phone CostBlock row heads, §11, excluded); exit 1 if any.
+- `eq_scan.py $R [FILE|STEM …]` (SYS20, D195): renders every board (canvas w × h) and system preview (1440) and lists every control group (SegmentedControl, Tabs, BottomTabBar, RecordChip group) whose items differ in width by more than 1 px, or whose label / group overflows; exit 1 if any.
 - `canvas_rows.py relayout $R [--canvas]`: see Rules. `s4s_render.py [--heights] [--w 1280] [stem …]`: re-measures the S4
   Rezumat boards (shots S4.png, S4S-n.png); `--heights` updates s4s_heights.json and prints the s4_build int (2962).

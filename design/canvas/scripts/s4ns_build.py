@@ -206,7 +206,8 @@ def phone_pasari(open_=False, weeks=None, added=None):
 X_ICON = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
 def touch_seg(seg, lid, focus=False):
     a = seg[:seg.index('>') + 1]; assert a.startswith('<span class="ip-seg" role="radiogroup"')
-    out = f'<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="{lid}">' + seg[len(a):]
+    out = f'<span class="ip-seg ip-seg--touch ip-seg--fill" role="radiogroup" aria-labelledby="{lid}">' + seg[len(a):].replace(
+        '>Ciclul curent<', '><span aria-hidden="true">Ciclu</span><span class="ip-sr">Ciclul curent</span><')   # SYS20 (D195): equal segments in 358, short word
     return out.replace('<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1) if focus else out
 PA_TYPES = [k for k in PTYPES if k in T.BIRD]      # the Păsări tab's types of the period (D45, D191: the cycle): no Hrană / Cântărire / Ouă
 assert PA_TYPES == ['mortality', 'cull', 'sexerr', 'transfer', 'sale']
@@ -220,7 +221,7 @@ def radio_chips():
                     f'<span class="ip-tile ip-tile--split" aria-hidden="true">{icon("sexerr", 16)}</span>{CHIPW[k]}</button>')
             continue
         out += (f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if on else " ip-chip--off"}" {a}>{icon(k, 16)}{CHIPW[k]}</button>')
-    return f'<div class="s4-chips" role="radiogroup" aria-labelledby="pf-tags" aria-describedby="pf-tags-h">{out}</div>'
+    return f'<div class="ip-chips ip-chips--wrap ip-chips--fill" role="radiogroup" aria-labelledby="pf-tags" aria-describedby="pf-tags-h">{out}</div>'   # SYS20: 2 equal columns
 def p_sheet():
     per = touch_seg(s4.seg('Perioadă', s4.PERIODS, 0), 'pf-per', focus=True)   # D191: Ciclul curent
     pas = touch_seg(SEG_ZI, 'pf-pas')
@@ -254,7 +255,6 @@ CSS_PHONE = A.CSS_P + '\n' + T.CSS + '''
 .s4ns-phone .ip-sechead{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s4ns-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s4ns-phone .s4t-lk,.s4ns-phone .ip-sechead > .ip-link{min-height:var(--control-h-touch);display:inline-flex;align-items:center} /* touch: 48px target */
-.s4ns-phone .ip-tabs{overflow-x:auto}
 .s4ns-phead{flex-wrap:wrap;gap:var(--space-3)}
 .s4ns-phead .ip-pagehead__meta{margin-top:var(--space-2)}
 .s4ns-phead > .ip-row{flex-wrap:wrap}
@@ -270,8 +270,6 @@ CSS_PWIDE = '''
 CSS_SHEET = CSS_PHONE + '''
 .s4ns-fsheet{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0} /* phone FilterBar sheet, as S14 phone */
 .s4ns-fsheet__body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
-.s4ns-fsheet .ip-seg{display:flex}
-.s4ns-fsheet .ip-seg__item{flex:1 1 auto;justify-content:center}
 .s4ns-fsheet__exp{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s4ns-fsheet__exp > .ip-btn{width:100%}
 .s4ns-fsheet__exp > .ip-hint{margin:0}'''

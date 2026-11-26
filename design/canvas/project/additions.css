@@ -88,7 +88,7 @@ a.ip-tab,button.ip-tab{text-decoration:none;cursor:pointer;background:transparen
 .ip-tab:active:not(.is-selected):not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
 .ip-tab.is-pressed{color:var(--ink);border-bottom-color:var(--ink-secondary)}
 .ip-tab:disabled,.ip-tab.is-disabled,.ip-tab[aria-disabled="true"]{color:var(--ink-disabled);border-bottom-color:transparent;cursor:not-allowed}
-.ip-screen .ip-tabs{gap:var(--space-4)} /* FV02 (D181): on the phone the tabs sit space-4 apart so a row fits 358 (S4's five tabs were 367 at space-6) */
+/* FV02 (D181) phone tab gap: replaced by section 74 (SYS20, D195): on the phone the tabs share the row equally, no gap */
 
 /* TextField / Select / SectionSelect / CycleSelector / CountInput (.ip-input wrapper or native element). */
 .ip-input > input,.ip-input > select,.ip-input > textarea{flex:1;min-width:0;height:100%;border:0;padding:0;margin:0;background:transparent;color:inherit;font:inherit;outline:none;appearance:none}
@@ -1421,9 +1421,7 @@ a.ip-nav{text-decoration:none} /* nav items as real links (bundle.css draws them
  * comparison is announced once (lamp word + sub-line; the value and the caption's section · sex · SAPT are aria-hidden).
  * It lays out as the Readout's own column (same gap and alignment), so the Readout looks as without it. One per page. */
 .ip-readout__live{display:flex;flex-direction:column;gap:inherit;align-items:inherit}
-/* SegmentedControl · fill: the track spans its field, segments share it equally, label centred (phone ♀/♂ choice). */
-.ip-seg--fill{display:flex}
-.ip-seg--fill > .ip-seg__item{flex:1;justify-content:center}
+/* SegmentedControl · fill (the track spans its field, segments share it equally, label centred): section 74 (SYS20). */
 /* Field message that may wrap (ip-err / ip-warnline under a field, p.ip-fieldmsg): no paragraph margin, icon kept at its
  * size on the first line (as section 12's .ip-entry__msg). */
 .ip-fieldmsg{margin:0;align-items:flex-start}
@@ -2359,3 +2357,48 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
   .ip-tablescroll > .ip-ptable--phone > * > tr > :first-child:not([colspan]) + :is(.ip-ptable__gs,.ip-ptable__sec),
   .ip-tablescroll > .ip-ptable--phone:has(> thead > tr:first-child > th[rowspan]:first-child + th:not([rowspan])) > thead > tr + tr > th.ip-ptable__gs:first-child{border-left:0} /* the sticky column's border is that edge */
 }
+
+/* =====================================================================================================
+ * SYS20 · Equal-width items in every control group (D195, user 26.11.2026), system-wide. Spec: components.md ›
+ * Additions › SYS20.
+ * ===================================================================================================== */
+
+/* ---------- 74. SegmentedControl, Tabs, RecordChip groups, BottomTabBar: equal-width items (SYS20) ---------- */
+/* Every group of peer items sizes all its items to the widest one (a grid of 1fr columns laid out at its content width:
+ * the fr of an unsized grid is its widest item), or shares its row equally where the group spans its container; labels
+ * centred on one line (D189). A label that would not fit shows the system short word with the full word in ip-sr
+ * (aria-hidden short span + .ip-sr, as SYS17's phone heads), never wraps. Heights, touch sizes (>=44px), focus rings,
+ * hover/pressed/selected/disabled looks, icons in chips (record icons, split tile) and the section 72 sex signs unchanged.
+ * - SegmentedControl: span.ip-seg = an inline grid, one 1fr column per segment (width = n × the widest segment + the
+ *   track's 2px gaps); .ip-seg--fill spans its field and shares it (phone FilterBar sheet, S8 ♀/♂; replaces section 38's
+ *   flex rule and the S4/S14/S17 sheet rules .s4ns-fsheet / .s14-fsheet .ip-seg). Stretched by a flex column it still
+ *   keeps n × its widest (max-width: max-content).
+ * - Tabs: div.ip-tabs[role=tablist] = a grid as wide as n × the widest tab (its line under the group), each tab padded
+ *   space-4 each side, label centred; the selected tab's ok-lamp dot hangs left of its label (a negative margin of its own
+ *   width + gap), so a tab's width never depends on which tab is selected (no shift when switching). On a phone screen
+ *   (.ip-screen) the tab list spans the page and the tabs share it equally (5 tabs = 71.6 each in 358; replaces FV02's
+ *   space-4 gap and the S3/S4 phone overflow-x scroll), the dot in the label line.
+ * - RecordChip groups: div.ip-chips (role=group of checkbox chips, or role=radiogroup of radio chips on a phone) = an
+ *   inline grid of equal chips, space-2 apart, one row; .ip-chips--wrap breaks it into --ip-chips-cols equal columns
+ *   (default 2; a narrow page sets 4); .ip-chips--fill spans its container (phone FilterBar sheet: 2 × 175 in 358). In a
+ *   FilterBar the chips take a line of their own: div.ip-filterbar__chips > div.ip-chips (D47; replaces the screens'
+ *   .s4-chips). A chip's icon/tile and word stay together, centred.
+ * - BottomTabBar: nav.ip-tabbar = one equal column per item across the bar (5 items = 78, 3 items = 130 at 390); the
+ *   centre key stays a 48px circle centred in its column.
+ * Tokens only (space-*); no new values. */
+.ip-seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;max-width:max-content} /* stretched in a flex column it keeps n × the widest */
+.ip-seg--fill{display:grid;max-width:none}
+.ip-seg > .ip-seg__item{justify-content:center;white-space:nowrap}
+.ip-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;width:max-content;max-width:100%}
+.ip-tabs > .ip-tab{justify-content:center;padding-inline:var(--space-4);white-space:nowrap}
+.ip-tabs > .ip-tab.is-selected::before{flex:none;margin-left:calc(-1 * var(--space-3))} /* dot 6 + gap 6 = space-3: the dot hangs, the label stays centred */
+.ip-screen .ip-tabs{width:auto;grid-auto-columns:minmax(0,1fr)}
+.ip-screen .ip-tabs > .ip-tab{padding-inline:0}
+.ip-screen .ip-tabs > .ip-tab.is-selected::before{margin-left:0}
+.ip-chips{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:var(--space-2);max-width:max-content;vertical-align:middle}
+.ip-chips--wrap{grid-auto-flow:row;grid-template-columns:repeat(var(--ip-chips-cols,2),1fr)}
+.ip-chips--fill{display:grid;max-width:none}
+.ip-chips > .ip-chip{justify-content:center}
+.ip-filterbar__chips{flex-basis:100%;display:flex;min-width:0}
+.ip-tabbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.ip-tabbar > .ip-tabbar__item{white-space:nowrap;text-align:center}

@@ -155,8 +155,8 @@ def select(i, label, opts, sel):
             f'{icon("chev", 16)}</span></span>')
 USER_OPTS = ['Toți utilizatorii'] + [f'{u} · {r}' for u, r in USERS] + ['Proprietar (tu)']   # FIN08: the owner boards' own entry, as "Manager (tu)" on the manager board
 def chips():
-    return ('<div class="s4-chips" role="group" aria-label="Tipuri de înregistrări">'
-            + ''.join(s4.chip_sexerr if k == 'sexerr' else s4.chip(k, w) for k, w in TYPES) + '</div>')
+    return ('<div class="ip-filterbar__chips"><div class="ip-chips" role="group" aria-label="Tipuri de înregistrări">'
+            + ''.join(s4.chip_sexerr if k == 'sexerr' else s4.chip(k, w) for k, w in TYPES) + '</div></div>')   # SYS20: equal chips on their own line
 def filterbar(user=None):
     u = 'Toți utilizatorii' if user is None else f'{user} · {dict(USERS)[user]}'
     return (f'<div class="ip-filterbar s11-filterbar s4-filterbar" role="group" aria-label="Filtre">{s4.seg("Perioadă", PER, 0)}'

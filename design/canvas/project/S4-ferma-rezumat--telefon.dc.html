@@ -41,10 +41,10 @@ body{margin:0}
 .s4-nowrap{flex-wrap:wrap}
 .s4-nowrap > *{white-space:nowrap} /* S4P: guide + lamp stay one line at 1440, the lamp drops under it when the cell is narrower (no overlap at 1280) */
 .s4-filterbar{row-gap:var(--space-2)}
-.s4-chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
 .s4s-rel{position:relative}
 .s4s-rel > .ip-shell{min-height:inherit}
 @container s4main (max-width: 999.98px){ /* FIN16: the narrow page (720 / 560 beside a SidePanel): one column; the track takes the page width (its 720 / 560 drawings), the field keeps its width */
+.s4-filterbar .ip-chips{grid-auto-flow:row;grid-template-columns:repeat(4,1fr)} /* SYS20 (D195): the equal chips in 4 columns (8 types = two rows of 4) */
 .s4-cycle,.s4-top,.s4-halls,.s4-split{grid-template-columns:minmax(0,1fr)}
 .s4-cycle > .ip-field{max-width:calc(var(--space-12) * 8 + var(--space-8))}
 .s4-cycle > .s4-tight{padding-top:0}
@@ -66,7 +66,6 @@ body{margin:0}
 .s4ns-phone .ip-sechead{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
 .s4ns-phone .s4t-foot{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
 .s4ns-phone .s4t-lk,.s4ns-phone .ip-sechead > .ip-link{min-height:var(--control-h-touch);display:inline-flex;align-items:center} /* touch: 48px target */
-.s4ns-phone .ip-tabs{overflow-x:auto}
 .s4ns-phead{flex-wrap:wrap;gap:var(--space-3)}
 .s4ns-phead .ip-pagehead__meta{margin-top:var(--space-2)}
 .s4ns-phead > .ip-row{flex-wrap:wrap}

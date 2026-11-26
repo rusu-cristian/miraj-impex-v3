@@ -86,7 +86,7 @@ def radio_chips():
         on = w == X.PHONE_TAG
         out += (f'<button type="button" class="ip-chip ip-chip--touch ip-rec ip-rec--{s4.REC[k]}{"" if on else " ip-chip--off"}" role="radio" '
                 f'aria-checked="{"true" if on else "false"}" tabindex="{"0" if on else "-1"}">{icon(k, 16)}{w.replace(" · g/pasăre", "")}</button>')
-    return f'<div class="s4-chips" role="radiogroup" aria-labelledby="pf-tags" aria-describedby="pf-tags-h">{out}</div>'
+    return f'<div class="ip-chips ip-chips--wrap ip-chips--fill" role="radiogroup" aria-labelledby="pf-tags" aria-describedby="pf-tags-h">{out}</div>'   # SYS20: 2 equal columns
 def p_filter():  # FilterBar on phone: one key opening a BottomSheet (period, grain, farm, export); closed here
     return ('<div class="ip-filterbar s14-pfilter" role="group" aria-label="Filtre">'
             '<button type="button" class="ip-btn ip-btn--secondary ip-btn--touch" aria-haspopup="dialog" aria-expanded="false" aria-describedby="pf-sum">'
@@ -123,10 +123,11 @@ X_ICON = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'  # Lucide x (as the S9P 
 def p_sheet():
     seg = s4.seg('Perioadă', s4.PERIODS, 0)   # D191: Ciclul curent
     a = '<span class="ip-seg" role="radiogroup" aria-label="Perioadă">'; assert seg.startswith(a)
-    seg = ('<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):]).replace(
+    seg = ('<span class="ip-seg ip-seg--touch ip-seg--fill" role="radiogroup" aria-labelledby="pf-per">' + seg[len(a):].replace(
+        '>Ciclul curent<', '><span aria-hidden="true">Ciclu</span><span class="ip-sr">Ciclul curent</span><')).replace(   # SYS20 (D195): 4 equal segments in 358, short word
         '<span class="ip-seg__item is-selected"', '<span class="ip-seg__item is-selected ip-focus"', 1)  # focus starts on the chosen period
     pas = X.PAS(); a = '<span class="ip-seg" role="radiogroup" aria-label="Pas">'; assert pas.startswith(a)
-    pas = '<span class="ip-seg ip-seg--touch" role="radiogroup" aria-labelledby="pf-pas">' + pas[len(a):]   # D166: Zi
+    pas = '<span class="ip-seg ip-seg--touch ip-seg--fill" role="radiogroup" aria-labelledby="pf-pas">' + pas[len(a):]   # D166: Zi
     # FIN12 (D130): the section 53 Select on touch: opens its own BottomSheet (Telița listed disabled, X.TEL_WHY), no list in the page
     farm = ('<div class="ip-field"><span class="ip-label" id="pf-farm-l">Fermă</span><div class="ip-select">'
             '<div class="ip-input ip-select__btn ip-input--touch" id="pf-farm" role="combobox" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="pf-farm-l">'
@@ -169,8 +170,6 @@ CSS_PWIDE = '''
 CSS_SHEET = CSS_PHONE + SS.VIEW + SS.MODAL + '''
 .s14-fsheet{display:flex;flex-direction:column;min-height:0;max-height:100%;padding-bottom:0} /* S14P: phone FilterBar sheet, as the section 33 sheet */
 .s14-fsheet__body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-4);border-top:var(--ip-hair) solid var(--rule)} /* fields space-4 apart, as every sheet and panel form (section 62), FX03 */
-.s14-fsheet .ip-seg{display:flex}
-.s14-fsheet .ip-seg__item{flex:1 1 auto;justify-content:center}
 .s14-fsheet .s11-select{width:100%}
 .s14-fsheet__exp{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-4);border-top:var(--ip-hair) solid var(--rule)}
 .s14-fsheet__exp > .ip-btn{width:100%}

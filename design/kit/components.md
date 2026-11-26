@@ -55,6 +55,7 @@ A labelled record type, used in legends and as filter chips in the FilterBar.
   - on: the full chip
   - off: `raised` with `ink-muted` text, keeping the coloured icon
 - **Behaviour:** `role="checkbox"` with `aria-checked`.
+- **Chip groups, equal width (SYS20, D195, additions.css §74):** a row of chips is one `div.ip-chips` (`role=group`, or `role=radiogroup` of radio chips on a phone): every chip as wide as the widest, icon + word centred, `space-2` apart, one row; `.ip-chips--wrap` breaks it into `--ip-chips-cols` equal columns (default 2; S4's narrow page 4), `.ip-chips--fill` spans its container (phone FilterBar sheet: 2 × 175 in 358). Replaces the screens' `.s4-chips`.
 
 
 ## SexCount
@@ -154,6 +155,7 @@ Binary choice: "Fără pierderi azi", "Toate", farm access. An 18px box; checked
 - **Track:** `sunken`.
 - **Selected segment:** `raised` with 1px `line-strong`.
 - **Sex segments** carry their ♀ / ♂ colour.
+- **Equal segments (SYS20, D195, additions.css §74):** every segment is as wide as the widest (Ciclul curent · 4 săpt. · 13 săpt. · Interval = 4 × 110; Zi · Săpt. = 2 × 60), label centred on one line; `.ip-seg--fill` spans its field and shares it equally. A label that would not fit shows its short word, the full word in `ip-sr` (phone sheet: "Ciclu" for Ciclul curent, "Tot" for Tot istoricul; phone Detaliu: "Compart." for Compartimente).
 
 
 ## DateField
@@ -369,6 +371,7 @@ Desktop navigation on `panel`.
 ## BottomTabBar
 
 Phone navigation on `panel`. The centre Înregistrează key is a 48px graphite circle with `shadow-key`. Vets see 3 items; the other roles see 5.
+- **Equal items (SYS20, D195, additions.css §74):** one equal column per item across the bar (5 items = 78 px, 3 items = 130 px at 390), icon and label centred; the centre key stays a 48px circle centred in its column.
 
 
 ## FormHeader
@@ -393,11 +396,13 @@ Breadcrumbs as uppercase captions, then the title (24px), type and guide tags, a
 ## Tabs
 
 View tabs. The selected tab is `ink` with a 2px `ink` underline and a small `ok-lamp` dot. Others are `ink-secondary`.
+- **Equal tabs (SYS20, D195, additions.css §74):** the tab list is n × the widest tab (each tab padded `space-4` each side, label centred; S4: 5 × 95), its line under the tabs; the selected dot hangs left of its label so no tab's width depends on the selection. On a phone (`.ip-screen`) the list spans the page and the tabs share it (5 × 71.6 in 358; replaces FV02's gap and the phone sideways scroll).
 
 
 ## FilterBar
 
 Period, grain, record-type chips and export. On phone it collapses into one button that opens a BottomSheet.
+- **Equal controls (SYS20, D195):** the period and grain SegmentedControls and the chip group follow §74 (equal items). The chips take a line of their own (D47): `div.ip-filterbar__chips > div.ip-chips[role=group]`; on a page narrower than 1000 (beside a SidePanel) S4 sets 4 equal columns. The phone sheet: period and grain `ip-seg--fill` (equal shares), record tags `ip-chips--wrap ip-chips--fill` (2 columns).
 
 
 ## Patterns
@@ -651,7 +656,7 @@ CSS in additions.css sections 36–37 (both copies, identical). Used by S14 Rapo
 CSS in additions.css section 38 (both copies, identical), moved out of the S8 screen CSS (`s8-live`, `s8-seg`, `s8-msg`). Used by S8 Cântărire; to copy into the system's Readout, SegmentedControl and TextField READMEs with HANDOFF (D32). Decided by default (user, 17.11.2026: "go with recommended options"), to review.
 
 - **Readout · live comparison** (`div.ip-readout__live[aria-live=polite][aria-atomic=true]` inside `.ip-readout`, around caption, value and sub-line; lays out as the Readout's own column): one live region per page. The value and the caption's section · sex · SAPT are `aria-hidden`, so it announces the lamp word + sub-line once ("ÎN NORMĂ ghid SAPT 21: 2 525 g · 2 553 g (+1,1%)", "FĂRĂ DATE ÎN GHID SAPT 40"). The lamp has an id (`ro-lamp`) and the field that feeds it is described by "ro-lamp ro-sub"; on a warning by "ro-lamp" + its own warn line ("ABATERE" + the warn line, no doubled comparison). The `dl.ip-readout__kv` stays outside the live region.
-- **SegmentedControl · fill** (`.ip-seg--fill`): the track spans its field and the segments share it equally, label centred (phone ♀/♂ choice). Touch height unchanged (`ip-seg--touch`).
+- **SegmentedControl · fill** (`.ip-seg--fill`): the track spans its field and the segments share it equally, label centred (phone ♀/♂ choice). Touch height unchanged (`ip-seg--touch`). SYS20: now a grid rule in §74 (section 38's flex rule removed).
 - **Field message that may wrap** (`p.ip-err.ip-fieldmsg` / `p.ip-warnline.ip-fieldmsg` under a field): no paragraph margin, icon keeps its size on the first line (as section 12's `.ip-entry__msg`).
 - **Tokens:** existing only (`space-*`, `--ip-hair`); no new values. No other board uses these classes, so nothing else re-renders.
 
@@ -669,7 +674,7 @@ CSS in additions.css section 39 (both copies, identical). Used by S16 Corecteaz�
 ### S17S · RecordChip touch, 17.11.2026
 CSS in additions.css section 40 (both copies, identical). Used by the S17 phone filter BottomSheet (`S17-istoric-modificari--telefon-filtre`); to copy into the system's RecordChip README with HANDOFF (D32). Decided by default (user, 17.11.2026: "go on with what you recommend"), to review.
 
-- **Rule:** on a touch screen a filter chip is a phone control, so it gets the touch height: `button.ip-chip.ip-rec.ip-chip--touch[role=checkbox]` = `control-h-touch` (48) tall, side padding `space-3` / `space-4`, icon gap `space-2`; the split chip (`ip-chip--split`) keeps a `space-2` left edge for its 20px tile. Colours, on/off, hover/pressed/disabled/focus and the 13/16 label are the chip's own (sections 1, 15). Chips in a group sit `space-2` apart, wrapping: the screen sets that gap on its chip group (`.s4-chips`, the same group as the desktop FilterBar chips), not §40, which sizes only the chip (S17P; there is no system chip-group class). Rejected: the 28px chip with an invisible 48px hit area (needs 20px row gaps, and the face no longer shows the target); 28px as on desktop (under the 44px touch floor, craft §5).
+- **Rule:** on a touch screen a filter chip is a phone control, so it gets the touch height: `button.ip-chip.ip-rec.ip-chip--touch[role=checkbox]` = `control-h-touch` (48) tall, side padding `space-3` / `space-4`, icon gap `space-2`; the split chip (`ip-chip--split`) keeps a `space-2` left edge for its 20px tile. Colours, on/off, hover/pressed/disabled/focus and the 13/16 label are the chip's own (sections 1, 15). Chips in a group sit `space-2` apart, wrapping: the screen sets that gap on its chip group (`.s4-chips`, the same group as the desktop FilterBar chips), not §40, which sizes only the chip (S17P; there is no system chip-group class). SYS20: the system chip group `div.ip-chips` (§74, equal chips) replaces `.s4-chips`. Rejected: the 28px chip with an invisible 48px hit area (needs 20px row gaps, and the face no longer shows the target); 28px as on desktop (under the 44px touch floor, craft §5).
 - **Where:** inside the phone FilterBar BottomSheet, under a visible label "Tipuri de înregistrări" (`role=group` + `aria-labelledby`). Desktop FilterBars keep the 28px chip.
 - **Tokens:** existing only (`control-h-touch`, `space-*`); no new values. No other board uses the class.
 
@@ -997,3 +1002,13 @@ CSS in additions.css §73 (+ §32 colgroup heads, §71 group edge as a variable;
 - **Hairlines:** every DataTable and PeriodTable (desktop and phone, all screens and previews: CostBlock, SectionTree, UserRow, GuideImportPreview, small-curve and screen tables) parts each column from the next with `col-rule` = steel-900 at 10 % (`#13181c1a`), so it reads the same on every surface it crosses: 1.22–1.24:1 on raised, panel, sunken and each colgroup tint (row `rule` is 1.42:1 on raised; the D175 `colgroup-rule` 1.34–1.66:1 on raised and tints; the hall edge `line-strong` stays). Drawn as an inset shadow on each cell's end edge (registered `--ip-cell-l` / `--ip-cell-r`, the group start edge uses the same shadow), so no column widens and no row grows (every board and preview: cell boxes identical before/after). One line per column boundary: a row's last cell draws none (a cell spanning the row, as the D192 load-more row, a §69 detail row, a group or message row, has no inner line); a cell before a group start or section edge leaves it to that edge; the sticky first column keeps its `rule` border (§36, CostBlock §11, PeriodTable foot). Phone PeriodTable: the sticky spine's border takes `colgroup-rule` and is the first group's start edge (was rule + group edge, 2px).
 - **Heads centred:** every `thead th` (section, group, leaf, sub-head, spine, DataTable `th`, `th.num`) is centred over its column (§32's right-aligned colgroup heads go). Body alignment unchanged: figures right, text and row heads left. No screen set head alignment (boards and generators checked), so no screen CSS changed.
 - **Forced colours:** the shadow is dropped there; the hairline is a 1px CanvasText border (as the group edges, §71).
+
+### SYS20 · Equal-width items in every control group, 26.11.2026
+CSS in additions.css §74 (+ §1 phone tab gap and §38 fill rule moved there; both copies identical). Decided by: user (D195); details Claude, to review.
+- **Technique:** each group is a grid of `1fr` columns laid out at its content width, so every item takes the widest item's width (`max-width: max-content` keeps that when a flex column would stretch it); a group that spans its container (`--fill`, phone tabs, BottomTabBar) shares it equally. Labels centred, `nowrap` (D189); heights, touch sizes, focus rings, states, record icons and the §72 signs unchanged.
+- **SegmentedControl** `ip-seg` (FilterBar Perioadă 4 × 110, Pas Zi · Săpt. 2 × 60, Detaliu Fermă · Hale · Compartimente 3 × 128, S8 ♀/♂, S19/S21 Tip and Pentru, DateField Azi · Ieri, GuideImportPreview Toate · Refuzate); `ip-seg--fill` in the phone FilterBar sheets (S4, S14, S17: replaces `.s4ns-fsheet`/`.s14-fsheet .ip-seg` rules). Short words where 4 equal shares of 358 or the Detaliu bar would not fit: "Ciclu" (Ciclul curent), "Tot" (Tot istoricul), "Compart." (Compartimente), full word in `ip-sr` (aria-hidden short span).
+- **Tabs** `ip-tabs`: desktop n × the widest tab + `space-4` padding (S4 5 × 95.4, S3 4 tabs), the list's line under the tabs only; the selected dot hangs (negative margin = dot + gap) so switching tabs never shifts them. Phone (`.ip-screen`): full width, equal shares (S4 5 × 71.6, S3 4 × 89.5), dot in the label line; FV02's gap and S3/S4 `.s4ns-phone .ip-tabs{overflow-x:auto}` removed.
+- **RecordChip groups** `div.ip-chips` (new system class; `--wrap` + `--ip-chips-cols`, `--fill`), FilterBar line `div.ip-filterbar__chips` (new). Desktop S4/S9/S10/S16/S17 rows one equal width per row (8 × 127 at 1160; 2 rows of 4 on the 720 page beside a panel, where Exportă now takes the first line's second row: those backdrops are clipped at 1024); phone sheets 2 equal columns (S17 phone 9 types: 5 rows, was 4).
+- **BottomTabBar** `ip-tabbar`: equal columns (5 × 78, 3 × 130).
+- **Previews:** SegmentedControl (+ phone fill with short word), Tabs (+ phone list), RecordChip (chip groups), FilterBar (chips on their own line, Exportă `ip-filterbar__end`), FilterInterval (chips grouped; the bar wraps at 1180 with equal segments), BottomTabBar, PeriodTable (phone short word). dsCard heights re-measured.
+- **Check:** `design/canvas/scripts/eq_scan.py` (0 mismatches over every board and preview).
