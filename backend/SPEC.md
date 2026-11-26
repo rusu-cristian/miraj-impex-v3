@@ -259,7 +259,7 @@ Rules: every write is logged, creates included (needed for "who entered what" an
 - `live_event(id bigserial, at, farm_ids[], type, payload)`: written in the same transaction as the change together with `select pg_notify('live_event', id::text)` (PostgreSQL delivers a notification only when the transaction commits, and drops it on rollback); the SSE handler replays from `Last-Event-ID` (24 h retention). §9.
 - `voice_usage(user_id, day, commands, audio_seconds, llm_tokens_in/out)`: cost tracking without text (§8.9).
 - `app_setting`: D19 thresholds and limits (seeded in `schema.sql`); code reads them once per request.
-- `request_replay(client_request_id pk, user_id, route, status, body bytea, created_at)`: the exact response bytes of every create that carried a `clientRequestId`, written in the save's transaction; a repeat returns them unchanged (§7.0, §12.5). `bytea`, not `jsonb`, so key order and spacing never drift. Purged after 7 days by the maintenance role.
+- `request_replay(client_request_id pk, user_id, route, status, body bytea, created_at)`: the exact response bytes of every create that carried a `clientRequestId`, written in the save's transaction; a repeat returns them unchanged (§7.0, §12.5). `bytea`, not `jsonb`, so key order and spacing never drift. Purged after 7 days by the maintenance role; `entry.client_request_id` keeps the key, so a repeat after the purge gets `409 ALREADY_ENTERED` with that `entryId` instead of a new save.
 
 ### 4.12 Views in `schema.sql`
 | View | Columns (main) | Used for |
@@ -671,8 +671,8 @@ The deactivated check runs only after a correct password (no account probing). L
 ```
   Codes: `VALIDATION` 400 (shape: malformed JSON, unknown field, wrong type, missing required field; the problems in `issues[]`, §7.0b), `UNAUTHENTICATED` 401, `FORBIDDEN` / `FARM_FORBIDDEN` / `PAST_DAY_VET` / `PRICE_FORBIDDEN` / `ACCOUNT_DISABLED` 403, `NOT_FOUND` 404, `ALREADY_ENTERED` / `CONFIRM_REQUIRED` / `SERIES_CLOSED` / `STALE` 409, `PAYLOAD_TOO_LARGE` 413 (body over the route's limit: 64 KiB JSON, 2 MB guide file, 1 MB audio; *(proposed)* "Datele trimise sunt prea mari."), `REFUSED` 422 (business rules §6), `RATE_LIMITED` 429 (+ `retryAfterSeconds`), `VOICE_UNAVAILABLE` 503.
 - **Warnings** never block: successful responses carry `warnings: [{ code, sectionCode?, sex?, message }]`.
-- **Dry run**: every write that shows an effect preview accepts `"dryRun": true` and returns `{ effects, warnings, refusals }` without writing (transfer, sale, correction, delete, new cycle, series create, series age change, guide save; the entry creates accept it too). A dry run answers **200** with the refusals **in the body** (never 422): the server runs the real writes and checks in a transaction (child rows, §6.1 counts, `ReconcileCycles`) and then rolls it back, so the preview is exactly what a save would do. No audit, live event or replay row survives it. The client calls it on change (debounced 300 ms).
-- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same body, byte for byte: the original response is stored with the key in `request_replay`, §4.11, §12.5), so "Reîncearcă" never saves twice.
+- **Dry run**: every write that shows an effect preview accepts `"dryRun": true` and returns `{ effects, warnings, refusals }` without writing (transfer, sale, correction, delete, new cycle, series create, series age change, guide save; the entry creates accept it too). A dry run answers **200** with the refusals **in the body** (never 422): the server runs the real writes and checks in a transaction (child rows, §6.1 counts, `ReconcileCycles`) and then rolls it back, so the preview is exactly what a save would do. The preview inserts its entry **without** the `clientRequestId` (null key), so it never collides with, or waits on, the real save of the same draft. No audit, live event or replay row survives it. The client calls it on change (debounced 300 ms).
+- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same body, byte for byte: the original response is stored with the key in `request_replay`, §4.11, §12.5), so "Reîncearcă" never saves twice. The same key from another user or on another route → `409 STALE`; a key whose stored reply was purged (> 7 days) → `409 ALREADY_ENTERED` with the `entryId` that holds it.
 - **Optimistic concurrency**: entry reads return `version` (= `updated_at ?? created_at`); edits send `ifVersion`; mismatch → `409 STALE` *(proposed)* "Înregistrarea s-a schimbat între timp. Reîncarcă și încearcă din nou."
 - **Every successful write** returns `toast` (the exact Toast text), the affected entity, `asOf`, and emits live events (§9).
 - **Pagination**: cursor-based (`cursor` opaque, `nextCursor` null at the end) except the PeriodTable, whose cursor is the oldest loaded SAPT (§7.4).
@@ -1731,7 +1731,34 @@ Each event is written as `id: <live_event.id>\nevent: <type>\ndata: <one-line JS
 
 **Postgres LISTEN/NOTIFY with pgx (multi-instance)**: each instance runs one goroutine `live.Listener` holding a dedicated `*pgx.Conn` (acquired outside the pool, or `pool.Acquire` + `Hijack`; verify at implementation) that runs `LISTEN live_event` and loops on `conn.WaitForNotification(ctx)`. A notification's payload is the event id; the listener reads that row (`select … from live_event where id = $1`) and publishes it. On a connection error it reconnects with back-off, re-runs `LISTEN`, and catches up with `where id > $lastSeen and at > now() − interval '24 hours' order by id`; ids already published are skipped. With one instance the same path runs (no in-process shortcut), so single- and multi-instance behave the same. Ids come from a sequence, so two transactions on different farms can commit out of id order: live delivery is unaffected (the listener fetches each notified id), while a replay after a disconnect (`id > Last-Event-ID`) can miss an event that committed during the disconnect with a lower id; the client therefore refetches the visible page queries after every reconnect (cheap, and it already shows the last values meanwhile).
 
-**Purge**: every instance runs an hourly ticker on the maintenance pool (`MAINT_DATABASE_URL`, role `il_maint`, §11.9–§11.10); the app role has no DELETE (§11.4). Each tick: `conn := maintPool.Acquire(ctx)`; `select pg_try_advisory_lock(<fixed key>)` on that connection; if it returns false another instance is purging, release and stop; else, on the same connection, delete `live_event` older than 24 h, `login_attempt` older than 30 days and `request_replay` older than 7 days, then `select pg_advisory_unlock(<fixed key>)` and `conn.Release()` (session-level lock: lock, work and unlock must use the same connection, which is why it is acquired explicitly and not taken from `pool.Exec`).
+**Purge**: every instance runs an hourly ticker on the maintenance pool (`MAINT_DATABASE_URL`, role `il_maint`, §11.9–§11.10); the app role has no DELETE (§11.4). The advisory lock is session-level, so lock, work and unlock must run on the **same** connection, acquired explicitly (not `pool.Exec`, which may pick a different connection each call); the unlock is deferred so an error path still releases it before the connection goes back to the pool:
+```go
+func (p *Purger) Tick(ctx context.Context) error {
+	conn, err := p.maint.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release() // runs last
+	var got bool
+	if err := conn.QueryRow(ctx, "select pg_try_advisory_lock($1)", purgeLockKey).Scan(&got); err != nil || !got {
+		return err // another instance is purging (got = false) or the query failed
+	}
+	defer func() { // runs before Release, on the same conn, also on the error paths below
+		_, _ = conn.Exec(context.WithoutCancel(ctx), "select pg_advisory_unlock($1)", purgeLockKey)
+	}()
+	for _, q := range []string{
+		"delete from live_event where at < now() - interval '24 hours'",
+		"delete from login_attempt where at < now() - interval '30 days'",
+		"delete from request_replay where created_at < now() - interval '7 days'",
+	} {
+		if _, err := conn.Exec(ctx, q); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+```
+(`context.WithoutCancel` keeps the unlock running when the tick's context was cancelled; if the unlock itself fails, the lock ends with the session — verify pgxpool's handling of a connection released mid-error at implementation, and `conn.Hijack()` + close instead of `Release` if needed.)
 
 **`http.Server` timeouts caveat**: `WriteTimeout` is a deadline for the whole response, so a server-wide `WriteTimeout: 60s` would cut every SSE stream (and the voice WebSocket) after 60 s. Keep `ReadHeaderTimeout` (10 s), `ReadTimeout` (30 s), `WriteTimeout` (60 s) and `IdleTimeout` (120 s) for ordinary requests, and in the two long-lived handlers clear the deadline per response with `http.NewResponseController(w).SetWriteDeadline(time.Time{})` (and the read deadline for the WebSocket). Also: no compression middleware and no request-timeout middleware on `/api/live` (both buffer or cancel the stream); the reverse proxy needs buffering off and a read timeout above the 25 s heartbeat (nginx: `proxy_buffering off; proxy_read_timeout 1h;`). On shutdown, `srv.RegisterOnShutdown(hub.Close)` ends every stream so `srv.Shutdown` doesn't wait for them; clients reconnect to another instance and replay.
 
@@ -2122,8 +2149,9 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 		return Result{}, httpx.PastDayVet() // Z1 "Pentru zilele trecute cere managerului."
 	}
 	if req.ClientRequestID != nil && !req.DryRun { // idempotent retry: the stored bytes, unchanged
-		if prev, ok, err := s.replay(ctx, p, *req.ClientRequestID); err != nil || ok {
-			return prev, err
+		prev, err := s.replay(ctx, p, *req.ClientRequestID, routeDaily)
+		if !errors.Is(err, errReplayNotFound) {
+			return prev, err // a stored reply, or 409 STALE / a database error
 		}
 	}
 	src, transcript := s.tokens.VoiceSource(p, "zilnic", req.WriteMeta) // §8.9: manual unless the voiceToken verifies
@@ -2149,9 +2177,13 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 			}
 			return plan.RefusedError() // 422 REFUSED (409 ALREADY_ENTERED for Z9)
 		}
+		crid := req.ClientRequestID
+		if req.DryRun {
+			crid = nil // a preview never takes the key: no collision with, and no wait on, the real save
+		}
 		ins, err := q.InsertEntry(ctx, dbq.InsertEntryParams{ // 7. the save and its child rows
 			Kind: dbq.EntryKindDaily, FarmID: req.FarmID, Date: req.Date,
-			Source: src, ClientRequestID: req.ClientRequestID, CreatedBy: &p.UserID,
+			Source: src, ClientRequestID: crid, CreatedBy: &p.UserID,
 		})
 		if err != nil {
 			return s.mapInsertErr(ctx, err, req) // 23505 entry_client_request_uq → errReplay
@@ -2221,7 +2253,7 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 		if req.ClientRequestID != nil {
 			if err := q.InsertReplay(ctx, dbq.InsertReplayParams{
 				ClientRequestID: *req.ClientRequestID, UserID: p.UserID,
-				Route: "POST /api/entries/daily", Status: http.StatusCreated, Body: body,
+				Route: routeDaily, Status: http.StatusCreated, Body: body,
 			}); err != nil {
 				return s.mapInsertErr(ctx, err, req) // 23505 request_replay_pkey → errReplay
 			}
@@ -2229,8 +2261,11 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 		out = Result{Status: http.StatusCreated, Body: body}
 		return nil
 	})
-	if errors.Is(err, errReplay) { // a concurrent duplicate committed first
-		prev, _, rerr := s.replay(ctx, p, *req.ClientRequestID)
+	if errors.Is(err, errReplay) { // the key is already used: a concurrent duplicate, or an older save
+		prev, rerr := s.replay(ctx, p, *req.ClientRequestID, routeDaily)
+		if errors.Is(rerr, errReplayNotFound) { // its stored reply was purged (7 days) while entry keeps the key
+			return Result{}, s.alreadyEntered(ctx, *req.ClientRequestID) // 409 ALREADY_ENTERED + that entryId
+		}
 		return prev, rerr
 	}
 	return out, err
@@ -2246,19 +2281,34 @@ func answerDryRun(out *Result, preview DryRunResponse) error {
 	return db.ErrRollback
 }
 
-// replay returns the stored response of an earlier save with the same key (200, same bytes).
-func (s *Service) replay(ctx context.Context, p auth.Principal, key uuid.UUID) (Result, bool, error) {
+const routeDaily = "POST /api/entries/daily"
+
+// errReplayNotFound: no stored reply for the key (never used, or purged after 7 days).
+var errReplayNotFound = errors.New("entries: no stored reply")
+
+// replay returns the stored response of an earlier save with the same key (200, same bytes). It never returns a
+// zero Result with a nil error: no row → errReplayNotFound; another user or another route → 409 STALE.
+func (s *Service) replay(ctx context.Context, p auth.Principal, key uuid.UUID, route string) (Result, error) {
 	row, err := s.q.GetReplay(ctx, key)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return Result{}, false, nil
+		return Result{}, errReplayNotFound
 	}
 	if err != nil {
-		return Result{}, false, err
+		return Result{}, err
 	}
-	if row.UserID != p.UserID {
-		return Result{}, false, httpx.Stale() // a key is never shared between users
+	if row.UserID != p.UserID || row.Route != route {
+		return Result{}, httpx.Stale() // a key is never shared between users or routes
 	}
-	return Result{Status: http.StatusOK, Body: row.Body}, true, nil
+	return Result{Status: http.StatusOK, Body: row.Body}, nil
+}
+
+// alreadyEntered answers a reused key whose reply is gone with the entry that holds it.
+func (s *Service) alreadyEntered(ctx context.Context, key uuid.UUID) error {
+	id, err := s.q.EntryIDByClientRequest(ctx, &key)
+	if err != nil {
+		return err
+	}
+	return httpx.AlreadyEntered(id) // 409 ALREADY_ENTERED, "entryId": id
 }
 ```
 ```go
@@ -2273,6 +2323,19 @@ func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
 		return nil
 	}
 	return err
+}
+
+// internal/platform/httpx/raw.go
+// WriteRaw sends pre-encoded JSON. A zero status or nil body is a programming error: answer 500, never a bare 200.
+func WriteRaw(w http.ResponseWriter, status int, body []byte) {
+	if status == 0 || body == nil {
+		WriteError(w, errors.New("httpx: WriteRaw without status or body"))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(status)
+	_, _ = w.Write(body)
 }
 
 // internal/ledger/lock.go
@@ -2339,7 +2402,10 @@ values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 insert into request_replay (client_request_id, user_id, route, status, body) values ($1, $2, $3, $4, $5);
 
 -- name: GetReplay :one
-select user_id, status, body from request_replay where client_request_id = $1;
+select user_id, route, status, body from request_replay where client_request_id = $1;
+
+-- name: EntryIDByClientRequest :one
+select id from entry where client_request_id = sqlc.narg(client_request_id)::uuid;
 
 -- db/queries/live.sql
 -- name: InsertLiveEvent :one
@@ -2350,8 +2416,8 @@ select pg_notify('live_event', sqlc.arg(id)::bigint::text);
 ```
 Notes on the example:
 - **Order matters**: the lock is taken before any count is read, so `loadDailyState`, the per-day bound (Z5), `CheckCounts` and `ReconcileCycles` all see a stable farm; a second save of the same farm waits at `LockFarm` until this one commits, then sees its rows (READ COMMITTED reads the newest committed data per statement).
-- **Dry run** (§7.0): the same path up to `ReconcileCycles`, so the preview includes the §6.1 bounds over later days and the cycle effects; `answerDryRun` encodes `{effects, warnings, refusals}` as 200 and returns `db.ErrRollback`, which `InTx` turns into a rollback without an error. No audit, live event or replay row is written; a pending `pg_notify` would be dropped by the rollback anyway.
-- **Idempotency** (§7.0): the response is encoded once (`httpx.Marshal`, the same encoder settings as `httpx.JSON`) and those bytes are both sent and stored in `request_replay` inside the save's transaction; a repeat with the same key gets them back unchanged with status 200. `entry_client_request_uq` and the `request_replay` primary key settle the race between two identical concurrent requests (the loser maps the 23505 to `errReplay`, rolls back and answers from the winner's row).
+- **Dry run** (§7.0): `InsertEntry` gets a nil `ClientRequestID`, so the preview never touches `entry_client_request_uq`; the same path up to `ReconcileCycles`, so the preview includes the §6.1 bounds over later days and the cycle effects; `answerDryRun` encodes `{effects, warnings, refusals}` as 200 and returns `db.ErrRollback`, which `InTx` turns into a rollback without an error. No audit, live event or replay row is written; a pending `pg_notify` would be dropped by the rollback anyway.
+- **Idempotency** (§7.0): the response is encoded once (`httpx.Marshal`, the same encoder settings as `httpx.JSON`) and those bytes are both sent and stored in `request_replay` inside the save's transaction; a repeat with the same key gets them back unchanged with status 200. `entry_client_request_uq` and the `request_replay` primary key settle the race between two identical concurrent requests (the loser maps the 23505 to `errReplay`, rolls back and answers from the winner's row). `replay` never returns an empty result with a nil error: no row → `errReplayNotFound` (before the transaction: go on and save; after `errReplay`: the reply was purged, so `409 ALREADY_ENTERED` with the entry that holds the key); another user or route → `409 STALE`. `WriteRaw` answers 500 rather than send a zero status or an empty body.
 - **Version** (§7.0 optimistic concurrency): `InsertEntry`/`UpdateEntry` return `version_at` from the database, never the Go clock; `ifVersion` is compared in the `UPDATE … where coalesce(updated_at, created_at) = $if_version`, under the farm lock.
 - **Errors inside `InTx`** roll the transaction back; nothing is half-saved, and no notification is sent (it would only be delivered at commit).
 - **Edits and corrections** (`PUT /api/entries/{id}`) use the same steps with the stored entry's farm (both farms for a transfer, ascending ids), `UpdateEntry` for the header, soft-delete/update/insert of child rows by key, `action = update`, the diff as `changes`.

@@ -1,6 +1,6 @@
 # Handoff
 **Complete** (user, 20.11.2026: nothing more after S11L).
-Updated: 2026-11-26 · BE01 backend spec done (backend/SPEC.md + schema.sql), D200–D201
+Updated: 2026-11-27 · Backend spec retargeted to Go + PostgreSQL (D202), reviewed
 Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795725498-f022; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
