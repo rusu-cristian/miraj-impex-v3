@@ -1,13 +1,14 @@
 # Handoff
 **Complete** (user, 20.11.2026: nothing more after S11L).
-Updated: 2026-11-26 · D198 done, canvas v1795703555-313e
-Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795703555-313e; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
+Updated: 2026-11-26 · Voice (D199) done, canvas v1795725498-f022
+Repo: rusu-cristian/miraj-impex-v3 · Branch: main · Target: Design canvas "Impex Line Panel · Ecrane · runda 2" (https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre, slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795725498-f022; older canvases e5d5275e… and e44dd7fb… are stale) built from the Impex Line Panel design system · Setup: full, canvas mode
 
 ## Progress
 Round 2 COMPLETE (19.11.2026). New workbook Raport_NOU_2026.xlsx, real data to 18.11.2026, weeks by bird age (D151), table-first PeriodTables with daily rows, group rules + tag-colour tints, ♀/♂ icons (D151–D181). 267 boards; literal_scan + sex_scan clean.
 Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/artifact/RaaG1ADkqBNH9w7DtfZcre (slug c70b5e5e-ac76-40a2-ac41-f308b82af36b, version 1795162838-7551), created by this session. Old canvas e5d5275e… is stale.
 
 ## Just finished
+- VO00–VO03 (D199 + notes 1–4): voice commands — spec §8 F1 (81 intents), VoiceButton/VoicePanel/VoiceMark (§78), V1 · Voce board, key on every signed-in board (vkey.py, vo02_check.py), row VO · Comenzi vocale (13 boards); published 1795725498-f022
 - MO04 (D198): sliding tab underline + segment thumb (§77), full-cell week key, skeleton→content reveal; published 1795703555-313e (DESIGN/craft motion lines updated by the coordinator)
 - MO03 (D197): live updates — row roll-in + one-time record tint (linear 1.6 s), value crossfade, CycleTrack transfer landing, "N înregistrări noi" bar, "Actualizat hh:mm"; boards S4 --rand-nou, S2 --inregistrari-noi, S3 --transfer-azi; audit passed; published 1795702064-4234
 - MO01/MO02 (D196): system motion on the existing tokens (additions §75), gentler reduced motion, Motion preview + interactive board M1 · Mișcare; 12-principles audit passed, 4 fixes; published 1795699746-d349
@@ -27,7 +28,7 @@ Canvas (round 2): "Impex Line Panel · Ecrane · runda 2" https://claude.ai/arti
 - FV01/FV02 (D181), FINAL4 review, SX01 icons, RF13 full rebuild, S20N, S18N, RF09–RF12, SYS15/SYS16 (D175, D177), S14N, S3N, S4N…S4NS (user-approved Fermă), DATA03–DATA05, KIT02
 
 ## Next up
-- Nothing queued. Project complete.
+- BE01 backend spec (backend/SPEC.md + backend/schema.sql incl. voice/AI endpoint + action catalogue).
 
 ## Waiting on the user
 - To review (non-blocking, Claude calls): D154, D158, D161–D163, D165, D168–D174, D176, D178–D181, D188 (tag name).
