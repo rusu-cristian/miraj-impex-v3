@@ -52,7 +52,7 @@ Don't:
 - **States, all designed:** hover, focus, pressed, disabled (`sunken` + `ink-disabled`), loading (static `sunken` skeletons; spinner only inside a button, label kept), empty (EmptyState: unlit lamp, one sentence, next step), error (fault border + line naming the fix), warning (saveable) vs refusal (save disabled), no permission ("Nu ai acces la această fermă.").
 - **Numbers:** Plex Mono, `tabular-nums`, right-aligned in tables; one format per screen.
 - **Forms:** one column, label above, "(opțional)" for optional; validate on blur and save; focus the first error; keep typed values and the draft.
-- **Motion (D196, §75):** only `cubic-bezier(0.2, 0, 0, 1)` at 120ms (keys, menus, toggles, rows), 200ms (dialog, panel, toast, banner), 280ms (phone sheets, page); transform + opacity; occasional things move, tens-a-day controls change colour, data and navigation never move. Under `prefers-reduced-motion`, keep the fades, drop all movement.
+- **Motion (D196, §75):** only `cubic-bezier(0.2, 0, 0, 1)` at 120ms (keys, menus, toggles, rows), 200ms (dialog, panel, toast, banner), 280ms (phone sheets, page); transform + opacity; occasional things move, tens-a-day controls change colour except the sliding tab/segment mark (D198), data and navigation never move; live updates and the skeleton reveal are the D197/D198 exceptions. Under `prefers-reduced-motion`, keep the fades, drop all movement.
 - **Live updates (D197, §76):** the one exception: data a reader did not change may move once (a new row rolls in 8 px + fade, a value crossfades 4 px, a transfer mark grows from 0.96), and the record tint fades **linear** over 1.6 s (a timer of recency, not a movement); never counting, never looping.
 
 ## 6. Copy

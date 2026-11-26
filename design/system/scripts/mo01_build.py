@@ -7,6 +7,9 @@ from sys14_build (realdata, Hîrbovăț Seria 2026, SAPT 52–59); the Readout i
 MO03 (D197, additions.css §76): the last card, "Actualizări live", drives the live-update hooks (data-live, data-live-rec,
 data-live-tint on → fade → off, the value swap, the CycleTrack mark, the new-records bar) on real figures: 18.11.2026 08:15
 Zilnic, 08:27 Ouă + 08:44 Hrană as a batch, the 10:12 correction (17.11 H5.2 ♀ 1 → 3), and a replay (D39) of 28.02.2026 H2 → H7.1, H7.2.
+MO04 (D198, additions.css §77, §71, §75): card 2 = Tabs and SegmentedControl with the sliding mark (desktop + a phone strip,
+one state; arrow keys move it at once), card 9 = "Reîncarcă": skeleton → content, 4 blocks (Readout, the SAPT 59
+PeriodTable, De verificat, Ultimele înregistrări) in div.ip-reveal, 40 ms apart; card 10's week keys fill their cells.
 --canvas: adds or refreshes the board's canvas.json entry as its own row right under Main (y 800), then run
 `canvas_rows.py relayout <root> --canvas` and `main_build.py <root> --canvas`."""
 import sys, re, json, pathlib
@@ -22,7 +25,7 @@ sys.argv = _argv
 R = P.R                  # realdata (the same module sys14_build and s4s_build read)
 import datetime as dt
 
-W, H = 1440, 4144   # board frame; H = the preview's height at 1440 (4134 with the MO03 live card, fallback fonts) + slack
+W, H = 1440, 4692   # board frame; H = the preview's height at 1440 (4682 with the MO04 reload card and phone strip, fallback fonts) + slack
 STEM = 'M1-miscare'
 TITLE = 'M1 · Mișcare'
 
@@ -247,6 +250,39 @@ def live_card(o):
                 keys, stage, wide=True)
 
 
+# ---------- MO04 (D198): Reîncarcă, skeleton → content, 4 blocks top to bottom ----------
+RO_SKEL = ('<div class="ip-readout ip-readout--skel" aria-hidden="true"><div class="ip-readout__cap"><span><span class="ip-skel ip-skel--w2"></span></span></div>'
+           '<div class="ip-readout__val"><span class="ip-skel ip-skel--w3"></span><small><span class="ip-skel"></span></small></div>'
+           '<div class="ip-readout__sub"><span class="ip-skel ip-skel--w1"></span></div></div>')
+RO = ('<div class="ip-readout"><div class="ip-readout__cap"><span>OUAT · HÎRBOVĂȚ · SAPT 59</span><span class="ip-rlamp ip-rlamp--warn">ABATERE</span></div>'
+      '<div class="ip-readout__val">40,4<small>%</small></div><div class="ip-readout__sub">ghid 57,6% · −17,2 pct · 17.11–18.11.2026</div></div>')
+RCAP = 'Păsări · Hîrbovăț · Seria 2026 · SAPT 59'
+_rt, _ = P.ptable('mor', RCAP, [('Total fermă', '', P.farm_pasari())], weeks=[59], colw=P.COLW, foot=False)
+_rs, _ = P.ptable('mrs', RCAP, [('Total fermă', '', P.farm_pasari())], weeks=[59], colw=P.COLW, foot=False, skel=[4, 4, 3, 2, 4, 4, 4, 3])
+RT_SKEL, RT = P.region(_rs, RCAP, hidden=True), P.region(_rt, RCAP)
+def _skrows(k):
+    return ('<div class="ip-list" aria-hidden="true">' + ('<div class="ip-ev ip-ev--skel"><span class="ip-skel ip-skel--tile"></span><span class="ip-ev__main">'
+            '<span class="ip-skel ip-skel--w1"></span><span class="ip-skel ip-skel--w2"></span></span><span class="ip-skel ip-skel--w3"></span></div>') * k + '</div>')
+ALERTS = S4.alert_rows('owner')[:2]
+EVROWS = [S4.event_row(e) for e in R.EVENTS[4:7]]
+
+
+def reload_stage(o):
+    """each block: div.ip-reveal (--ip-i on it) > skeleton [data-state closed when loaded] + loaded block [data-state=loaded, hidden while loading]"""
+    def rv(i, skel, loaded, tag='div', attrs=''):
+        sk = skel.replace('aria-hidden="true"', 'aria-hidden="true"' + o.b([("data-state", f"rs{i}", "closed")]), 1)
+        assert sk != skel
+        m = re.match(r'<(\w+)([^>]*)>', loaded); el = m.group(0)
+        ld = el[:-1] + o.b([("data-state", f"rl{i}", None), ("hidden", f"rh{i}", False)]) + '>' + loaded[len(el):]
+        return f'<div class="ip-reveal mo-i{i}">{sk}{ld}</div>' if i else f'<div class="ip-reveal">{sk}{ld}</div>'
+    lists = (f'<div class="mo-rlists"><section class="mo-lcol"><h3 class="ip-cap ip-m0">De verificat</h3>'
+             + rv(2, _skrows(2), '<ul class="ip-list" aria-label="De verificat">' + ''.join(ALERTS) + '</ul>') + '</section>'
+             f'<section class="mo-lcol"><h3 class="ip-cap ip-m0">Ultimele înregistrări</h3>'
+             + rv(3, _skrows(3), '<ul class="ip-list" aria-label="Ultimele înregistrări">' + ''.join(EVROWS) + '</ul>') + '</section></div>')
+    return (f'<div class="mo-stage mo-reload"{o.b([("aria-busy", "rlBusy", None)])}><span class="ip-sr" role="status">{o.t("rlMsg", "")}</span>'
+            + rv(0, RO_SKEL, RO) + rv(1, RT_SKEL, RT) + lists + '</div>')
+
+
 # ---------- the demos ----------
 def card(o, n, title, spec, keys, stage, wide=False):
     return (f'<section class="ip-panel mo-card{" mo-card--wide" if wide else ""}" aria-labelledby="mo-h{n}">'
@@ -280,11 +316,20 @@ def demos(o):
                     for i, (r, t) in enumerate([('mortality', 'Mortalitate'), ('sale', 'Vânzare'), ('transfer', 'Transfer')]))
     chk = (f'<label class="ip-check"><input type="checkbox" class="ip-sr" id="mo-chk"{o.b([("checked", "chk", False)])}{o.on("chk", "onChange")}/>'
            f'<span class="ip-check__box">{svg(I["check"], 14)}</span>Fără pierderi azi</label>')
-    out.append(card(o, 2, 'Comutatoare · doar culoare',
-                    'Starea aleasă, de zeci de ori pe zi (și din tastatură) · fără alunecare: fundal, margine și culoare în 120 ms · Tabs, SegmentedControl, RecordChip, Checkbox',
+    # MO04 (D198): the same tabs and Zi | Săpt. on a phone strip (tabs share 358, touch segments fill), bound to the same state
+    ptabs = ''.join(f'<button type="button" role="tab"{o.b([("class", f"tab{i}", "ip-tab is-selected" if i == 0 else "ip-tab"), ("aria-selected", f"tab{i}a", "true" if i == 0 else "false")])}{o.on(f"tab{i}")}>{t}</button>'
+                    for i, t in enumerate(['Rezumat', 'Păsări', 'Hrană', 'Greutate', 'Producție']))
+    pseg = ''.join(f'<span role="radio" tabindex="0"{o.b([("class", f"seg{i}", "ip-seg__item is-selected" if i == 0 else "ip-seg__item"), ("aria-checked", f"seg{i}a", "true" if i == 0 else "false")])}{o.on(f"seg{i}")}>{t}</span>'
+                   for i, t in enumerate(['Zi', 'Săpt.']))
+    phone = (f'<div class="ip-screen mo-phonebar"><p class="ip-cap ip-m0">Telefon · 358</p><div class="ip-tabs" role="tablist" aria-label="Fermă, telefon">{ptabs}</div>'
+             f'<span class="ip-seg ip-seg--touch ip-seg--fill" role="radiogroup" aria-label="Pas, telefon">{pseg}</span></div>')
+    out.append(card(o, 2, 'Tabs · SegmentedControl · semnul alunecă',
+                    'Starea aleasă, de zeci de ori pe zi · sublinierea filei și fundalul segmentului ales alunecă la noul element: un singur semn al grupului, '
+                    'transform translateX (lățimi egale, D195), --ip-ease · 200 ms, culoarea etichetelor în același timp · din tastatură (săgeți) și la mișcare redusă: imediat · '
+                    'RecordChip și Checkbox: doar culoare, 120 ms',
                     '', f'<div class="ip-stack mo-stage mo-stage--flat"><div class="ip-tabs" role="tablist" aria-label="Fermă">{tabs}</div>'
                         f'<div class="ip-row"><span class="ip-cap" id="mo-pas">Pas</span><span class="ip-seg" role="radiogroup" aria-labelledby="mo-pas">{seg}</span></div>'
-                        f'<div class="ip-chips" role="group" aria-label="Etichete">{chips}</div>{chk}</div>'))
+                        f'{phone}<div class="ip-chips" role="group" aria-label="Etichete">{chips}</div>{chk}</div>'))
     # 3 dialog
     dlg = (f'<div class="ip-scrim ip-scrim--page"{o.b([("data-state", "dlg", "closed")])}>'
            f'<div class="ip-dialog" role="alertdialog" aria-modal="true" aria-labelledby="mo-dt" aria-describedby="mo-dn">'
@@ -346,14 +391,11 @@ def demos(o):
                     'Evită o schimbare bruscă, ocazional · opacity + translateY −8 px → 0 · 200 ms · conținutul de sub el se mută imediat (layout-ul nu se animă)',
                     btn(o, 'Arată eroarea', 'bannerOpen'), f'<div class="ip-stack mo-stage mo-stage--flat">{ban}<p class="ip-t-body ip-m0">Tipuri de hrană · Breeder 1 · Breeder 2 · Cocoși ouat</p></div>'))
     # 9 skeleton -> content
-    skel = ('<div class="ip-readout ip-readout--skel" aria-hidden="true"' + o.b([("hidden", "skelH", True)]) + '><div class="ip-readout__cap"><span><span class="ip-skel ip-skel--w2"></span></span></div>'
-            '<div class="ip-readout__val"><span class="ip-skel ip-skel--w3"></span><small><span class="ip-skel"></span></small></div>'
-            '<div class="ip-readout__sub"><span class="ip-skel ip-skel--w1"></span></div></div>')
-    ro = ('<div class="ip-readout" data-state="loaded"' + o.b([("hidden", "roH", False)]) + '><div class="ip-readout__cap"><span>OUAT · HÎRBOVĂȚ · SAPT 59</span><span class="ip-rlamp ip-rlamp--warn">ABATERE</span></div>'
-          '<div class="ip-readout__val">40,4<small>%</small></div><div class="ip-readout__sub">ghid 57,6% · −17,2 pct · 17.11–18.11.2026</div></div>')
-    out.append(card(o, 9, 'Skeleton → conținut',
-                    'Evită o schimbare bruscă, la fiecare încărcare · scheletul (aceeași geometrie, fără shimmer) pleacă imediat, blocul încărcat apare cu opacity în 120 ms · cifrele nu numără',
-                    btn(o, 'Încarcă din nou', 'reload'), f'<div class="mo-stage mo-stage--flat">{skel}{ro}</div>'))
+    out.append(card(o, 9, 'Skeleton → conținut · Reîncarcă',
+                    'Evită o schimbare bruscă, la fiecare încărcare · fiecare bloc încărcat urcă 8 px și apare (opacity + transform, 200 ms, --ip-ease), '
+                    'de sus în jos la 40 ms unul după altul (--ip-i 0–3, cel mult 4 pași), scheletul (aceeași geometrie, fără shimmer) se stinge sub el în 120 ms · '
+                    'nimic nu așteaptă animația · cifrele nu numără · mișcare redusă: doar opacitate, toate odată',
+                    btn(o, 'Reîncarcă', 'reload'), reload_stage(o), wide=True))
     # 10 PeriodTable
     out.append(card(o, 10, 'PeriodTable · săptămâni',
                     'Închide / deschide o săptămână (tasta SAPT): rândurile zilelor își iau locul imediat și apar cu opacity în 120 ms, fără animație de înălțime · '
@@ -384,7 +426,13 @@ CSS = """
 .mo-sheetlist{border-radius:0;border-inline:0;border-bottom:0}
 .mo-i1{--ip-i:1}.mo-i2{--ip-i:2}.mo-i3{--ip-i:3}
 .ip-select__chk:not([data-chk]) > .ip-icon{visibility:hidden}
-.mo-stage > .ip-readout[hidden]{display:none} /* bundle.css .ip-readout sets display over the UA [hidden] */
+.mo-reload{display:flex;flex-direction:column;gap:var(--space-4)}
+.mo-reload .ip-reveal > [hidden]{display:none} /* bundle.css .ip-readout / .ip-list set display over the UA [hidden] */
+.mo-reload .ip-readout{max-width:calc(var(--space-12) * 8)}
+.mo-rlists{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.mo-rlists .ip-list{margin:0}
+.mo-phonebar{width:358px;min-height:0;gap:var(--space-2);background:transparent}
+.mo-phonebar .ip-tab{height:var(--control-h-touch)}
 .mo-live{display:flex;flex-direction:column;gap:var(--space-4)}
 .mo-lhead{display:flex;align-items:baseline;gap:var(--space-3)}
 .mo-lgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-6);align-items:start}
@@ -400,7 +448,7 @@ CSS = """
 CORE = r"""
   moInit() {
     return { reduce: false, dlg: 'closed', sheet: 'closed', panel: 'closed', toast: 'closed', menu: 'closed',
-      banner: 'closed', loading: false, tab: 0, seg: 0, chips: [true, false, false], chk: false, sel: 1,
+      banner: 'closed', loading: false, loads: 0, tab: 0, seg: 0, chips: [true, false, false], chk: false, sel: 1,
       weeks: { 59: '', 58: '', 57: '', 56: '', 55: '', 54: '', 53: '', 52: '' }, more: 0, lv: this.lvInit() };
   }
   // MO03 (D197): live updates. lv = what has arrived (flags) + the per-value swap counters, the tints and their phases.
@@ -492,7 +540,7 @@ CORE = r"""
       case 'menuToggle': return { menu: s.menu === 'open' ? 'closed' : 'open' };
       case 'bannerOpen': return { banner: s.banner === 'open' ? 'closed' : 'open' };
       case 'bannerClose': return { banner: 'closed' };
-      case 'reload': return { loading: true, __after: [900, 'loaded'] };
+      case 'reload': return { loading: true, loads: s.loads + 1, __after: [900, 'loaded'] };
       case 'loaded': return { loading: false };
       case 'more': return { more: s.more ? 0 : 1 };
     }
@@ -503,9 +551,10 @@ CORE = r"""
       dlg: s.dlg, sheet: s.sheet, panel: s.panel, toast: s.toast, menu: s.menu, banner: s.banner,
       menuE: s.menu === 'open' ? 'true' : 'false', chk: s.chk,
       selVal: ['Breeder 1', 'Breeder 2', 'Cocoși ouat'][s.sel],
-      skelH: !s.loading, roH: s.loading,
+      rlBusy: s.loading ? 'true' : undefined, rlMsg: s.loading ? 'Se încarcă rezumatul.' : (s.loads ? 'Rezumatul s-a încărcat.' : ''),
       moreSpan: s.more ? '52–59' : '56–59', moreN: s.more ? '8' : '4', capSpan: s.more ? '52–59' : '56–59',
       moreMsg: s.more ? 'Au fost adăugate SAPT 52–55.' : '', f4h: !!s.more, f8h: !s.more };
+    for (let i = 0; i < 4; i++) { v['rs' + i] = s.loading ? undefined : 'closed'; v['rl' + i] = s.loads ? 'loaded' : undefined; v['rh' + i] = s.loading; }   // MO04: skeleton out under, content in
     for (let i = 0; i < 5; i++) { v['tab' + i] = 'ip-tab' + (s.tab === i ? ' is-selected' : ''); v['tab' + i + 'a'] = s.tab === i ? 'true' : 'false'; }
     for (let i = 0; i < 2; i++) { v['seg' + i] = 'ip-seg__item' + (s.seg === i ? ' is-selected' : ''); v['seg' + i + 'a'] = s.seg === i ? 'true' : 'false'; }
     const rec = ['mortality', 'sale', 'transfer'];
@@ -541,6 +590,15 @@ def page(o):
 
 FONTS = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&amp;'
          'family=IBM+Plex+Mono:wght@400;500&amp;display=swap">')
+
+# MO04: arrow keys / Home / End move the choice in a tablist or radiogroup (roving, as the product), Space/Enter picks a radio;
+# the item takes focus first, so it has :focus-visible and the mark moves at once (section 77)
+KEYS_JS = ("document.addEventListener('keydown', e => { const it = e.target.closest && e.target.closest('.mo-root [role=tab], .mo-root [role=radio]'); if (!it) return; "
+           "const role = it.getAttribute('role'), items = [...it.parentElement.children].filter(x => x.getAttribute('role') === role); let i = items.indexOf(it), j; "
+           "if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % items.length; else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = (i + items.length - 1) % items.length; "
+           "else if (e.key === 'Home') j = 0; else if (e.key === 'End') j = items.length - 1; "
+           "else if ((e.key === ' ' || e.key === 'Enter') && it.tagName !== 'BUTTON') { e.preventDefault(); it.click(); return; } else return; "
+           "e.preventDefault(); items[j].focus(); items[j].click(); });")
 
 PREVIEW_JS = r"""
 class MoCore {""" + CORE + r"""}
@@ -583,6 +641,7 @@ document.addEventListener('transitionend', e => {
 });
 document.addEventListener('scroll', e => { if (e.target.id === 'mo-feed' && e.target.scrollTop <= 8 && S.lv.batch === 1) fire('barTop'); }, true);
 window.moFire = fire;
+""" + KEYS_JS + r"""
 apply();
 """
 
@@ -619,7 +678,7 @@ def board():
           'document.addEventListener(\'transitionend\', e => { const el = e.target.closest && e.target.closest(\'[data-lk]\'); if (!el) return;\n'
           'if (e.propertyName === \'background-color\' && el.getAttribute(\'data-live-tint\') === \'fade\') this.moFire(\'lend:\' + el.dataset.lk);\n'
           'else if (e.propertyName === \'opacity\' && e.target.classList.contains(\'ip-live__old\')) this.moFire(\'lold:\' + el.dataset.lk); });\n'
-          'document.addEventListener(\'scroll\', e => { if (e.target.id === \'mo-feed\' && e.target.scrollTop <= 8 && this.state.lv.batch === 1) this.moFire(\'barTop\'); }, true); }\n}\n'
+          'document.addEventListener(\'scroll\', e => { if (e.target.id === \'mo-feed\' && e.target.scrollTop <= 8 && this.state.lv.batch === 1) this.moFire(\'barTop\'); }, true);\n' + KEYS_JS + ' }\n}\n'
           'moFire(k) {\nconst p = this.moAct(this.state, k);\nconst after = p.__after, sc = p.__scroll;\ndelete p.__after;\ndelete p.__scroll;\nthis.setState(p);\n'
           'if (sc) setTimeout(() => { const el = document.getElementById(sc[0]); if (!el) return; const r = this.state.reduce || matchMedia(\'(prefers-reduced-motion: reduce)\').matches; '
           'el.scrollTo({ top: sc[1] === \'top\' ? 0 : el.scrollHeight, behavior: sc[1] === \'top\' && !r ? \'smooth\' : \'auto\' }); }, 30);\n'
