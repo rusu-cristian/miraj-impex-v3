@@ -120,7 +120,7 @@ def demos(o):
                     'Feedback, de zeci de ori pe zi · tranziție CSS · transform scale 1 → 0,97 la :active · --ip-ease · 120 ms · tasta dezactivată nu se mișcă',
                     '', f'<div class="ip-row mo-stage mo-stage--flat">{keys}</div>'))
     # 2 toggles: tabs, segment, chips, checkbox (colour only)
-    tabs = ''.join(f'<button type="button" role="tab" class="ip-tab"{o.b([("class", f"tab{i}", "ip-tab is-selected" if i == 0 else "ip-tab"), ("aria-selected", f"tab{i}a", "true" if i == 0 else "false")])}{o.on(f"tab{i}")}>{t}</button>'
+    tabs = ''.join(f'<button type="button" role="tab"{o.b([("class", f"tab{i}", "ip-tab is-selected" if i == 0 else "ip-tab"), ("aria-selected", f"tab{i}a", "true" if i == 0 else "false")])}{o.on(f"tab{i}")}>{t}</button>'
                    for i, t in enumerate(['Rezumat', 'Păsări', 'Hrană', 'Greutate', 'Producție']))
     seg = ''.join(f'<span role="radio" tabindex="0"{o.b([("class", f"seg{i}", "ip-seg__item is-selected" if i == 0 else "ip-seg__item"), ("aria-checked", f"seg{i}a", "true" if i == 0 else "false")])}{o.on(f"seg{i}")}>{t}</span>'
                   for i, t in enumerate(['Zi', 'Săpt.']))
@@ -166,7 +166,7 @@ def demos(o):
              f'<div class="ip-sidepanel__body"><label class="ip-field"><span class="ip-label">Motiv</span><span class="ip-input"><input type="text" placeholder="De ce corectezi"/></span></label></div>'
              f'<div class="ip-sidepanel__foot"><span></span><div class="ip-row ip-sidepanel__keys">{btn(o, "Anulează", "panelClose")}{btn(o, "Salvează corecția", "panelClose", "primary")}</div></div></aside>')
     out.append(card(o, 5, 'SidePanel · lângă pagină',
-                    'Continuitate spațială, ocazional · intră din marginea dreaptă (translateX 100% → 0, opacity) · 200 ms · pagina își păstrează marginea, fără animație de lățime',
+                    'Continuitate spațială, ocazional · intră din marginea dreaptă (translateX 100% → 0, fără estompare; la mișcare redusă doar estompare) · 200 ms · pagina își păstrează marginea, fără animație de lățime',
                     btn(o, 'Corectează', 'panelOpen'), f'<div class="mo-stage mo-frame mo-frame--panel">{page.replace("FERME ȘI SECȚIUNI · TELIȚA", "INTRODUS AZI · HÎRBOVĂȚ").replace("H5-1 · H5-2 · H6-1 · H6-2", "Mortalitate · 17.11.2026 · H5.1")}{panel}</div>'))
     # 6 toast
     toast = (f'<div class="ip-toastwrap ip-toastwrap--page"><div class="ip-toast" role="status"{o.b([("data-state", "toast", "closed")])}>{svg(I["check"], 16)}'
@@ -184,7 +184,7 @@ def demos(o):
            f'{o.b([("aria-expanded", "menuE", "false")])}{o.on("menuToggle")}><span class="ip-select__val">{o.t("selVal", "Breeder 2")}</span>{svg(I["chev"], 16)}</div>'
            f'<ul class="ip-menu ip-select__menu" role="listbox" id="mo-sm" aria-labelledby="mo-sl"{o.b([("data-state", "menu", "closed")])}>{opts}</ul></div></div>')
     out.append(card(o, 7, 'Select · listă',
-                    'Continuitate spațială, de zeci de ori pe zi · scale 0,95 → 1 + opacity, din marginea de sus a câmpului (transform-origin la declanșator) · 120 ms',
+                    'Continuitate spațială, de zeci de ori pe zi · scale 0,95 → 1 + opacity, din colțul de sus-stânga al câmpului (transform-origin la declanșator) · 120 ms',
                     '', f'<div class="mo-stage mo-stage--flat mo-stage--menu">{sel}</div>'))
     # 8 banner
     ban = (f'<div class="ip-banner ip-banner--fault ip-banner--act" role="alert"{o.b([("data-state", "banner", "closed")])}>{svg(I["fault"], 16)}'

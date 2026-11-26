@@ -164,8 +164,12 @@ a.ip-ev,button.ip-ev{color:inherit;text-decoration:none;cursor:pointer;width:100
 @media (prefers-reduced-motion: reduce){
   :root,.ip-root{--ip-press-scale:1;--ip-pop-scale:1;--ip-modal-scale:1;--ip-off:0%;--ip-shift:0px;--ip-stagger:0ms}
   .ip-root *{scroll-behavior:auto !important}
+  .ip-sidepanel[data-state="closed"]{opacity:0} /* the SidePanel slides without a fade (section 75); with no slide it fades */
+  @starting-style{.ip-sidepanel[data-state="open"]{opacity:0}}
 }
 .ip-motion--reduce{--ip-press-scale:1;--ip-pop-scale:1;--ip-modal-scale:1;--ip-off:0%;--ip-shift:0px;--ip-stagger:0ms}
+.ip-motion--reduce .ip-sidepanel[data-state="closed"]{opacity:0}
+@starting-style{.ip-motion--reduce .ip-sidepanel[data-state="open"]{opacity:0}}
 
 /* =====================================================================================================
  * SYS01 · components for screen S4 (farm page). Spec: components.md › Additions › SYS01.
@@ -2432,8 +2436,8 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 /* Key press (feedback, tens a day): the key sinks under the finger; :active only (the is-pressed demo class stays still),
  * never on a disabled or busy key. */
 .ip-btn,.ip-iconbtn,.ip-tabbar__key{transition-property:background-color,border-color,color,box-shadow,transform;transition-duration:var(--ip-dur-key);transition-timing-function:var(--ip-ease)}
-.ip-btn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
-.ip-iconbtn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]),
+.ip-btn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]):not([aria-busy="true"]),
+.ip-iconbtn:active:not(:disabled):not(.is-disabled):not([aria-disabled="true"]):not([aria-busy="true"]),
 .ip-tabbar__item:active:not([aria-disabled="true"]) > .ip-tabbar__key{transform:scale(var(--ip-press-scale))}
 
 /* Toggles (state indication, tens a day): colour only, as chips and tabs (section 1). */
@@ -2460,14 +2464,11 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 @starting-style{.ip-scrim[data-state="open"] > .ip-sheet{transform:translateY(var(--ip-off))}}
 
 /* SidePanel docked (aside.ip-sidepanel--dock[data-state]; spatial consistency, occasional): slides in from the page's right
- * edge (its frame clips it) and back; the page beside it keeps its panel-w margin (layout changes at once, never animated).
- * Phone full-screen sheet (ip-sidepanel--sheet[data-state]): rises from the foot as the BottomSheet. */
-.ip-sidepanel[data-state="closed"]{opacity:0}
+ * edge (its frame clips it) and back, translate only (as the BottomSheet); the page beside it keeps its panel-w margin
+ * (layout changes at once, never animated). Phone full-screen sheet (ip-sidepanel--sheet[data-state]): rises from the
+ * foot as the BottomSheet. Reduced motion: both fade instead (the reduced-motion block at the top). */
 .ip-sidepanel--dock[data-state="closed"]{transform:translateX(var(--ip-off))}
-@starting-style{
-  .ip-sidepanel[data-state="open"]{opacity:0}
-  .ip-sidepanel--dock[data-state="open"]{transform:translateX(var(--ip-off))}
-}
+@starting-style{.ip-sidepanel--dock[data-state="open"]{transform:translateX(var(--ip-off))}}
 .ip-sidepanel--sheet[data-state]{transition-duration:var(--ip-dur-page)}
 .ip-sidepanel--sheet[data-state="closed"]{transform:translateY(var(--ip-off))}
 @starting-style{.ip-sidepanel--sheet[data-state="open"]{transform:translateY(var(--ip-off))}}
@@ -2478,10 +2479,12 @@ html:has(.ip-screen__savebar){scroll-padding-bottom:calc(var(--control-h-touch) 
 @starting-style{.ip-toast[data-state="open"]{opacity:0;transform:translateY(var(--ip-off))}}
 
 /* Menus and Select lists (.ip-menu[data-state]: the §53 listbox, row Acțiuni menus, the date popover; spatial consistency,
- * tens a day): grow from 0.95 out of their field or key at key speed. The origin is the trigger: the top edge under a field;
- * the top right corner for the right-aligned row menus. */
+ * tens a day): grow from 0.95 out of their field or key at key speed. The origin is the trigger's corner the popup hangs
+ * from: top left for the left-anchored Select list and date popover; top right for the right-aligned row menus. */
 .ip-menu[data-state]{transition-duration:var(--ip-dur-key);transform-origin:top}
-.ip-menu[data-state]:is(.ip-ev__menu,.ip-stree__menu){transform-origin:top right}
+.ip-menu[data-state]:is(.ip-select__menu,.ip-cal){transform-origin:top left}
+.ip-menu[data-state]:is(.ip-ev__menu,.ip-stree__menu,.ip-users__menu){transform-origin:top right}
+.ip-menu[data-state].ip-users__menu--up{transform-origin:bottom right} /* the last rows' menu opens upward */
 .ip-menu[data-state="closed"]{opacity:0;transform:scale(var(--ip-pop-scale))}
 @starting-style{.ip-menu[data-state="open"]{opacity:0;transform:scale(var(--ip-pop-scale))}}
 

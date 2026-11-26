@@ -101,7 +101,7 @@ Panel keys. `primary` (graphite `control`, one per view), `secondary`, `ghost` a
 - **Loading:** a spinner, the label stays. While busy (`aria-busy="true"`, usually with `aria-disabled="true"`) the key keeps its variant's colours, not the disabled grey (Additions › S14P, section 37).
 - **Height:** `control-h` on desktop, `control-h-touch` on phone. Radius `radius-sm`.
 - **Labels:** verbs: Salvează, Mută, Înregistrează vânzarea, Salvează prețurile.
-- **Motion (MO01, D196):** Pressed sinks to 0.97 (`:active` only, transform, `--ip-ease`, 120 ms); colour 120 ms; disabled or busy keys never move; `is-pressed` demo stays still (§75).
+- **Motion (MO01, D196):** Pressed sinks to 0.97 (`:active` only, transform, `--ip-ease`, 120 ms); colour 120 ms; disabled or busy (`aria-busy`) keys never move; `is-pressed` demo stays still (§75).
 
 
 ## IconButton
@@ -139,7 +139,7 @@ Whole-number input for birds and eggs. The sex is marked by a 3px inner left bar
 One choice from a list: feed type, guide, farm, section. The menu is `raised` with `shadow-overlay`; the active option is `sunken`. Group headings are captions. Options can lead with a RecordTile or a SexCount.
 
 - **Which widget (FIN10, D130):** when the options carry state (a Lamp + word, a ♀ · ♂ count, a reason an option is disabled, a dates line, a mark such as "ghidul fermei"), the Select is the APG select-only combobox `.ip-select` (additions.css §53, Additions › FIN10); a plain list of names stays a native `<select>` inside `.ip-input`. Closed, the two look the same (value 400, 17/24 on touch, `ink-secondary` chevron). One field is one widget on every board.
-- **Motion (MO01, D196):** The list (`ul.ip-menu.ip-select__menu[data-state]`, and every `.ip-menu` popup: row Acțiuni menus, the date popover) grows from 0.95 + opacity out of its trigger (origin: the field's top edge; right-aligned row menus top right), 120 ms, closes the same way; `data-state="closed"` replaces `hidden` (§75).
+- **Motion (MO01, D196):** The list (`ul.ip-menu.ip-select__menu[data-state]`, and every `.ip-menu` popup: row Acțiuni menus, the date popover) grows from 0.95 + opacity out of its trigger (origin: top left under a field or date key; right-aligned row menus, `.ip-users__menu` included, top right, bottom right when opening upward), 120 ms, closes the same way; `data-state="closed"` replaces `hidden` (§75).
 
 
 ## SectionSelect
@@ -362,7 +362,7 @@ Confirms destructive and cycle-changing actions.
 ## SidePanel
 
 Details and corrections beside the page on desktop: `panel`, `panel-w`, `shadow-overlay`, a sticky footer. A full-screen sheet on phone.
-- **Motion (MO01, D196):** Docked `.ip-sidepanel--dock[data-state]`: in from the right edge (translateX 100% + opacity) 200 ms, the page's panel-w margin changes at once; phone sheet `--sheet[data-state]`: up from the foot, 280 ms (§75).
+- **Motion (MO01, D196):** Docked `.ip-sidepanel--dock[data-state]`: in from the right edge (translateX 100%, no fade; reduced motion fades instead) 200 ms, the page's panel-w margin changes at once; phone sheet `--sheet[data-state]`: up from the foot, 280 ms (§75).
 
 
 ## BottomSheet
@@ -1034,6 +1034,6 @@ CSS in additions.css §74 (+ §1 phone tab gap and §38 fill rule moved there; b
 Decided by: user (D196, /animate + /12-principles-of-animation); the gate per component, hooks and values by Claude, to review. additions.css §75 (both copies identical) + the motion block at its top; preview `components/Motion/preview.html`; canvas board M1 · Mișcare (interactive).
 - **Tokens (extended, no parallel system):** `--ip-ease` and the three durations stay the only curve and times; new distances beside them: `--ip-press-scale` 0.97, `--ip-pop-scale` 0.95, `--ip-modal-scale` 0.96, `--ip-off` 100%, `--ip-shift` space-2, `--ip-stagger` 40 ms. No second curve: the drawer-like sheet uses `--ip-ease` (already a strong ease-out) at the page duration.
 - **Hook:** the script that opens or closes an element sets `data-state="open|closed"` on it (Dialog scrim, BottomSheet scrim, SidePanel dock/sheet, Toast, `.ip-menu`, Banner, PeriodTable week tbody); "open" enters through `@starting-style`, "closed" leaves the same way and ends `display:none` (allow-discrete), so it replaces `hidden` on an element that moves. New weeks: `tbody.ip-ptable__week.is-new` + `--ip-i`. Loaded content: `[data-state="loaded"]`. Static boards carry no hook and draw as before.
-- **Accepted:** key press (Button, IconButton, BottomTabBar key) scale 0.97 120; Dialog scrim opacity + scale 0.96 200; BottomSheet translateY 100% 280; SidePanel dock translateX 100% + opacity 200, phone sheet translateY 280; Toast translateY 100% + opacity 200; menus/Select scale 0.95 + opacity from the trigger 120; Banner opacity + 8 px 200; week open/close opacity 120 (rows' display held, no height); loaded weeks 8 px + opacity 200, 40 ms stagger; loaded block opacity 120; toggles (chips, SegmentedControl, Checkbox, Tabs) colour 120.
+- **Accepted:** key press (Button, IconButton, BottomTabBar key) scale 0.97 120; Dialog scrim opacity + scale 0.96 200; BottomSheet translateY 100% 280; SidePanel dock translateX 100% 200, phone sheet translateY 280 (no fade; reduced motion fades); Toast translateY 100% + opacity 200; menus/Select scale 0.95 + opacity from the trigger corner 120; Banner opacity + 8 px 200; week open/close opacity 120 (rows' display held, no height); loaded weeks 8 px + opacity 200, 40 ms stagger; loaded block opacity 120; toggles (chips, SegmentedControl, Checkbox, Tabs) colour 120.
 - **Rejected:** sliding Tabs indicator and SegmentedControl thumb (tens a day, arrow keys; colour is enough), week height accordion (layout per frame in a wide sticky table), SaveBar entrance (always present), skeleton shimmer, any motion on figures, Readouts, charts, the CycleTrack, lamps, table cells, the focus ring and navigation.
 - **Reduced motion:** the distances go to rest (scale 1, 0 px, 0 %, no stagger); every fade keeps its timing. `.ip-motion--reduce` forces it on a subtree.
