@@ -1,0 +1,1 @@
+- [Backend build vs SPEC drift](project_backend_build_gaps.md) — M0: tests solid; gaps are SPEC.md not updated for build-time decisions, CI criteria unprovable pre-push

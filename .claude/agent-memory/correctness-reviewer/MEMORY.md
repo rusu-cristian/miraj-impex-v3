@@ -1,0 +1,1 @@
+- [Bug patterns](bug-patterns.md) — check-then-act races, NUL bytes in text params, read-only probe limits, test gaps in Impex backend
