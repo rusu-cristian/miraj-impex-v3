@@ -1,0 +1,18 @@
+# Keep the build context to what `go build` needs (Go sources, go.mod/go.sum, db/ with the embedded migrations).
+# Never send secrets or local state to the daemon.
+.env
+.env.*
+*.md
+Dockerfile
+.dockerignore
+compose.yaml
+Makefile
+deploy/
+scripts/
+**/*_test.go
+**/testdata/
+.git
+.idea/
+.vscode/
+*.out
+*.test

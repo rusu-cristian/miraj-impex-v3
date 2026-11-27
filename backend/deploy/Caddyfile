@@ -1,0 +1,33 @@
+# Dev/e2e reverse proxy (plan D3). Not a production config.
+# https://localhost:8443 with Caddy's local CA (`tls internal`), so the Secure il_session cookie works.
+# /api/* goes to the API; everything else gets a plain-text placeholder (the front end lives in another repo).
+# /healthz and /readyz are not exposed here (SPEC §11.12).
+{
+	# No admin endpoint, no port 80 redirect listener, no attempt to install the local CA in the container's trust store.
+	admin off
+	auto_https disable_redirects
+	skip_install_trust
+}
+
+https://localhost:8443 {
+	tls internal
+
+	# JSON access log on stdout. Caddy redacts Cookie, Set-Cookie and Authorization by default; bodies are never logged.
+	# scripts/e2e-login.sh reads request.remote_ip from it.
+	log {
+		output stdout
+		format json
+	}
+
+	handle /api/* {
+		# Caddy sets X-Forwarded-For / -Proto / -Host itself and ignores client-sent X-Forwarded-* (no trusted_proxies here).
+		reverse_proxy api:8080 {
+			header_up X-Request-ID {http.request.uuid}
+		}
+	}
+
+	handle {
+		header Content-Type "text/plain; charset=utf-8"
+		respond "Impex Line dev proxy: the front end is not served here. The API is under /api/." 200
+	}
+}

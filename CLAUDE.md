@@ -9,16 +9,16 @@ Impex Line: an internal, Romanian-language web app for a poultry breeder busines
 - Design (`design/`): finished design canvas, kit and real-data extracts. It is the source of truth for UI copy and figures. Python scripts there are reference only.
 
 ## Commands
-Target commands per SPEC §12.3 (run from `backend/`); none exist until milestone M0 creates the Go module and Makefile:
+Run from `backend/` (Makefile, SPEC §12.3). Full list, tool pins and working rules: `backend/CLAUDE.md`.
 test: `make test` (`go test -race ./...`, testcontainers or `TEST_DATABASE_URL`)
-lint: `make lint` (`gofmt -l`, `go vet ./...`, `staticcheck ./...`, `sqlc diff`)
+lint: `make lint` (`gofmt -l .`, `go vet ./...`, `go tool staticcheck ./...`, `sqlc diff`, no `time.Now()` outside `timex`)
 typecheck: `go build ./...`
 build: `docker build backend/` (assumed)
 dev: `make run` (`go run ./cmd/api serve`); migrations: `go run ./cmd/api migrate up`
 generate: `make generate` (`sqlc generate`)
 
 ## Structure
-- `backend/`: `SPEC.md` (what and how), `schema.sql` (PostgreSQL 16 DDL; becomes `db/migrations/0001_baseline.sql` at M0). Go module layout in SPEC §12.3.
+- `backend/`: `SPEC.md` (what and how), `CLAUDE.md` (backend working rules and commands), `NOTES-verify.md` (verify-at-implementation findings), `db/migrations/0001_baseline.sql` (PostgreSQL 16 DDL, the former `schema.sql`, never edited). Go module layout in SPEC §12.3.
 - `design/kit/`: product, spec, screens, components, data model, decisions (`decisions-current.md`: later `Dnn` wins), open questions.
 - `design/canvas/`: boards (`project/*.dc.html`, exact Romanian copy), generator scripts, reference `realdata.py`.
 - `design/data/`: workbook extracts (seed and golden values to 18.11.2026) and the scripts that built them.

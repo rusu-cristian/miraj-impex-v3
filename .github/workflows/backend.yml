@@ -1,0 +1,92 @@
+# Backend quality gates (plan D10, T8): lint, tests against PostgreSQL 16 (testcontainers), image build.
+name: backend
+
+on:
+  push:
+    branches: [main, "team/**"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Go 1.27.4 = go.mod's toolchain line (D2). GOTOOLCHAIN=local: fail instead of downloading another toolchain.
+  GO_VERSION: "1.27.4"
+  GOTOOLCHAIN: local
+  SQLC_VERSION: "1.31.1"
+  SQLC_SHA256: 497ae4fcdfa64c5b0c311ffe4c2bd991e43991e82e5367792ed78bc2dca27354 # sqlc_1.31.1_linux_amd64.tar.gz
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+      - name: Install sqlc
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL -o "$RUNNER_TEMP/sqlc.tar.gz" \
+            "https://github.com/sqlc-dev/sqlc/releases/download/v${SQLC_VERSION}/sqlc_${SQLC_VERSION}_linux_amd64.tar.gz"
+          echo "${SQLC_SHA256}  $RUNNER_TEMP/sqlc.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/sqlc.tar.gz" -C "$RUNNER_TEMP/bin" sqlc
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Build
+        run: make build
+      # gofmt -l, go vet, go tool staticcheck, sqlc diff, and the time.Now/Since/Until grep.
+      - name: Lint
+        run: make lint
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+      # testcontainers starts postgres:16 on the runner's Docker.
+      - name: Test
+        run: make test
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build image
+        working-directory: .
+        run: docker build -t impex-api:ci backend/
+      # With no environment the API must refuse to start (SPEC §11.10). 125-127 would mean the image itself is broken.
+      - name: Image starts and refuses a missing environment
+        run: |
+          set +e
+          docker run --rm impex-api:ci
+          code=$?
+          set -e
+          echo "exit code: $code"
+          if [ "$code" -eq 0 ] || [ "$code" -ge 125 ]; then exit 1; fi

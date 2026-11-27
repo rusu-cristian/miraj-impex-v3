@@ -1,0 +1,111 @@
+# Impex Line dev/e2e stack (plan T8). Not a production deployment.
+#   cp .env.example .env && docker compose up -d --build --wait     (or: make up)
+# Services: db (PostgreSQL 16 + role init) -> migrate (one-off `api migrate up`) -> api (`api serve`) -> proxy (Caddy,
+# https://localhost:8443). Only the proxy (8443) and db (DB_PORT) are published, on 127.0.0.1.
+name: impex-line
+
+x-api: &api-base
+  image: impex-api
+  build:
+    context: .
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  networks: [backend]
+
+services:
+  db:
+    image: postgres:16.16-bookworm
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env}
+      IL_OWNER_PASSWORD: ${IL_OWNER_PASSWORD:?copy .env.example to .env}
+      IL_APP_PASSWORD: ${IL_APP_PASSWORD:?copy .env.example to .env}
+      IL_MAINT_PASSWORD: ${IL_MAINT_PASSWORD:?copy .env.example to .env}
+    volumes:
+      - ./deploy/initdb:/docker-entrypoint-initdb.d:ro
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
+    healthcheck:
+      # Over TCP: the image's init-time server listens on the socket only, so this passes only after the init
+      # script has run and the real server is up.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "il_owner", "-d", "impex"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+    networks: [backend]
+
+  migrate:
+    <<: *api-base
+    command: ["migrate", "up"]
+    environment:
+      APP_ENV: dev
+      MIGRATE_DATABASE_URL: postgres://il_owner:${IL_OWNER_PASSWORD}@db:5432/impex?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *api-base
+    command: ["serve"]
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: postgres://il_app:${IL_APP_PASSWORD}@db:5432/impex?sslmode=disable
+      MAINT_DATABASE_URL: postgres://il_maint:${IL_MAINT_PASSWORD}@db:5432/impex?sslmode=disable
+      LISTEN_ADDR: ":8080"
+      APP_ORIGIN: ${APP_ORIGIN:-https://localhost:8443}
+      CORS_ENABLED: "false"
+      # Only the proxy's fixed address: its X-Forwarded-For carries the host-side client IP (SPEC §11.4).
+      TRUSTED_PROXIES: 10.231.70.10/32
+      APP_SECRET: ${APP_SECRET:?copy .env.example to .env}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    expose: ["8080"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2.11.9-alpine
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "127.0.0.1:8443:8443"
+    read_only: true
+    cap_drop: [ALL]
+    # The caddy binary carries the cap_net_bind_service file capability; exec fails if it is not in the bounding set.
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      # Healthy once the API behind it is ready (/readyz is not routed through the proxy, SPEC §11.12),
+      # so `docker compose up --wait` returns only when the whole stack serves.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://api:8080/readyz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      backend:
+        # Fixed so TRUSTED_PROXIES can name exactly this address.
+        ipv4_address: 10.231.70.10
+
+networks:
+  backend:
+    ipam:
+      config:
+        # Change both this subnet and the two addresses above if it clashes with a local network.
+        - subnet: 10.231.70.0/24
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
