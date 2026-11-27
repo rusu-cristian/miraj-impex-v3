@@ -1,1 +1,2 @@
 - [Backend build vs SPEC drift](project_backend_build_gaps.md) — M0: tests solid; gaps are SPEC.md not updated for build-time decisions, CI criteria unprovable pre-push
+- [Recurring spec gaps](feedback_recurring_gaps.md) — small repeat gaps in milestone reviews + read-only review mechanics

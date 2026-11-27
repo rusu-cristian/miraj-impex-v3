@@ -1,1 +1,2 @@
 - [Backend Go conventions](backend-go-conventions.md) — inferred layering rules and known M0 leaks to compare later milestones against
+- [Backend architecture conventions](project_backend_conventions.md) — builder/service/runner patterns, import direction, recurring duplication smells
