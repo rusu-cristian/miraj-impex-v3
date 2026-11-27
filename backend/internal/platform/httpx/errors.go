@@ -7,30 +7,31 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/pgerr"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
 )
 
 // Envelope codes (SPEC §7.0).
 const (
-	CodeValidation       = "VALIDATION"        // 400
-	CodeUnauthenticated  = "UNAUTHENTICATED"   // 401
-	CodeForbidden        = "FORBIDDEN"         // 403
-	CodeFarmForbidden    = "FARM_FORBIDDEN"    // 403
-	CodePastDayVet       = "PAST_DAY_VET"      // 403
-	CodePriceForbidden   = "PRICE_FORBIDDEN"   // 403
-	CodeAccountDisabled  = "ACCOUNT_DISABLED"  // 403
-	CodeNotFound         = "NOT_FOUND"         // 404
-	CodeAlreadyEntered   = "ALREADY_ENTERED"   // 409
-	CodeConfirmRequired  = "CONFIRM_REQUIRED"  // 409
-	CodeSeriesClosed     = "SERIES_CLOSED"     // 409
-	CodeStale            = "STALE"             // 409
-	CodePayloadTooLarge  = "PAYLOAD_TOO_LARGE" // 413
-	CodeRefused          = "REFUSED"           // 422
-	CodeRateLimited      = "RATE_LIMITED"      // 429
-	CodeInternal         = "INTERNAL"          // 500
-	CodeVoiceUnavailable = "VOICE_UNAVAILABLE" // 503
-	CodeUnavailable      = "UNAVAILABLE"       // 503
+	CodeValidation       = "VALIDATION"         // 400
+	CodeUnauthenticated  = "UNAUTHENTICATED"    // 401
+	CodeForbidden        = "FORBIDDEN"          // 403
+	CodeFarmForbidden    = "FARM_FORBIDDEN"     // 403
+	CodePastDayVet       = "PAST_DAY_VET"       // 403
+	CodePriceForbidden   = "PRICE_FORBIDDEN"    // 403
+	CodeAccountDisabled  = "ACCOUNT_DISABLED"   // 403
+	CodeNotFound         = "NOT_FOUND"          // 404
+	CodeMethodNotAllowed = "METHOD_NOT_ALLOWED" // 405 (proposed)
+	CodeAlreadyEntered   = "ALREADY_ENTERED"    // 409
+	CodeConfirmRequired  = "CONFIRM_REQUIRED"   // 409
+	CodeSeriesClosed     = "SERIES_CLOSED"      // 409
+	CodeStale            = "STALE"              // 409
+	CodePayloadTooLarge  = "PAYLOAD_TOO_LARGE"  // 413
+	CodeRefused          = "REFUSED"            // 422
+	CodeRateLimited      = "RATE_LIMITED"       // 429
+	CodeInternal         = "INTERNAL"           // 500
+	CodeVoiceUnavailable = "VOICE_UNAVAILABLE"  // 503
+	CodeUnavailable      = "UNAVAILABLE"        // 503
 )
 
 // Issue codes (SPEC §7.0a Issue.code). IssueMalformed and IssueBadContentType
@@ -93,6 +94,18 @@ func Forbidden() *Error {
 	return NewError(http.StatusForbidden, CodeForbidden, messages.Forbidden())
 }
 
+// NotFound is 404 NOT_FOUND "Adresa cerută nu există.": no route serves the
+// path (MuxFallback). A module whose resource is missing may use it too.
+func NotFound() *Error {
+	return NewError(http.StatusNotFound, CodeNotFound, messages.NotFound())
+}
+
+// MethodNotAllowed is 405 METHOD_NOT_ALLOWED: the path has routes, none for
+// the request's method (MuxFallback sets the Allow header).
+func MethodNotAllowed() *Error {
+	return NewError(http.StatusMethodNotAllowed, CodeMethodNotAllowed, messages.MethodNotAllowed())
+}
+
 // PayloadTooLarge is 413 PAYLOAD_TOO_LARGE: a body over the route's limit.
 func PayloadTooLarge() *Error {
 	return NewError(http.StatusRequestEntityTooLarge, CodePayloadTooLarge, messages.PayloadTooLarge())
@@ -131,21 +144,33 @@ func Validation(issues ...Issue) *Error {
 //   - context.DeadlineExceeded as 503 UNAVAILABLE;
 //   - anything else as 500 INTERNAL with the generic message.
 //
+// A context.Canceled (pgx wraps it, NOTES-verify) while the request's own
+// context is done means the client went away (plan D8): nothing is written,
+// and the access log records status 499 at info level. A cancellation while
+// the request context is still live is a 500 like any other error.
+//
 // The client never sees the error text. For every 5xx the error is handed to
 // the access log (logged with the request id; see AccessLog). PostgreSQL
-// constraint violations are named by db.MapError in that log line; services
+// constraint violations are named by pgerr.MapError in that log line; services
 // turn the ones a route expects (ALREADY_ENTERED with its entryId, a name
 // clash, a cycle overlap) into envelope errors themselves, because the
 // envelope needs data only the service has, so one that reaches WriteError
 // unmapped is a 500.
 func WriteError(w http.ResponseWriter, err error) {
+	if rec := recorderOf(w); rec != nil && clientGone(rec, err) {
+		if !rec.wroteHeader {
+			rec.status, rec.wroteHeader = StatusClientClosedRequest, true
+		}
+		rec.err = context.Canceled
+		return
+	}
 	status, body := envelope(err)
 	if status >= 500 {
 		cause := err
 		if cause == nil {
 			cause = errors.New("httpx: WriteError called with a nil error")
 		}
-		recordError(w, db.MapError(cause))
+		recordError(w, pgerr.MapError(cause))
 	}
 	if rec := recorderOf(w); rec != nil && rec.wroteHeader {
 		return // the response has started; the access log still gets the error
@@ -168,6 +193,13 @@ func WriteError(w http.ResponseWriter, err error) {
 		b, _ = Marshal(ErrorBody{Error: APIError{Code: CodeInternal, Message: messages.Internal()}})
 	}
 	WriteRaw(w, status, b)
+}
+
+// clientGone reports whether err is a cancellation caused by the client
+// going away: context.Canceled while the request context AccessLog saw is
+// done.
+func clientGone(rec *recorder, err error) bool {
+	return errors.Is(err, context.Canceled) && rec.ctx != nil && rec.ctx.Err() != nil
 }
 
 func envelope(err error) (int, APIError) {

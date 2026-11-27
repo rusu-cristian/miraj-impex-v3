@@ -7,6 +7,7 @@ toolchain go1.27.4
 tool honnef.co/go/tools/cmd/staticcheck
 
 require (
+	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
 	github.com/jackc/pgx/v5 v5.13.0
@@ -15,6 +16,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.45.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.45.0
 	golang.org/x/crypto v0.58.0
+	golang.org/x/text v0.44.0
 )
 
 require (
@@ -74,7 +76,6 @@ require (
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
-	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/tools v0.52.0 // indirect
 	honnef.co/go/tools v0.8.2 // indirect
 )

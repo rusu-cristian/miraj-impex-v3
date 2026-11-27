@@ -15,13 +15,14 @@ type Handler struct {
 // NewHandler builds the auth handler.
 func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 
-// Routes registers POST /api/auth/login (no session), POST /api/auth/logout
-// and GET /api/auth/me (session required), each wrapped in mw.
-func (h *Handler) Routes(mux httpx.Router, mw httpx.Chain) {
-	mux.Handle("POST /api/auth/login", mw.ThenFunc(h.login))
-	signedIn := mw.Append(h.svc.RequireSession)
-	mux.Handle("POST /api/auth/logout", signedIn.ThenFunc(h.logout))
-	mux.Handle("GET /api/auth/me", signedIn.ThenFunc(h.me))
+// Routes registers POST /api/auth/login on public (the only /api route
+// without a session) and POST /api/auth/logout and GET /api/auth/me on
+// authed, the chain that ends in the session check (RequireSession). Every
+// other module takes only authed (SPEC §12.3).
+func (h *Handler) Routes(mux httpx.Router, public, authed httpx.Chain) {
+	mux.Handle("POST /api/auth/login", public.ThenFunc(h.login))
+	mux.Handle("POST /api/auth/logout", authed.ThenFunc(h.logout))
+	mux.Handle("GET /api/auth/me", authed.ThenFunc(h.me))
 }
 
 func (h *Handler) login(w http.ResponseWriter, r *http.Request) {

@@ -2,14 +2,27 @@ package testdb_test
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb/seed"
 )
 
-func TestMain(m *testing.M) { testdb.Main(m) }
+// seedBuilds counts the seeded template builds of this process.
+var seedBuilds atomic.Int32
+
+// TestMain is seed.Main with a seeder that counts its runs.
+func TestMain(m *testing.M) {
+	testdb.MainSeeded(m, func(ctx context.Context, pool *pgxpool.Pool, clock timex.Clock, extracts string) error {
+		seedBuilds.Add(1)
+		return seed.Load(ctx, pool, clock, extracts)
+	})
+}
 
 func TestNew(t *testing.T) {
 	t.Parallel()

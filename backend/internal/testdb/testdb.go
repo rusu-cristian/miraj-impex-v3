@@ -13,6 +13,9 @@
 // never needs the roles' passwords and never changes them. Every database it
 // creates has a name unique to the process (il_t_<pid>_<random>_…), so test
 // packages running at the same time against one server don't collide.
+//
+// Tests that need the imported history and the dev seed use NewSeeded: see
+// seed.go.
 package testdb
 
 import (
@@ -61,6 +64,7 @@ var (
 	adminDSN string // superuser DSN of the server (its own database)
 	prefix   string // il_t_<pid>_<random>: unique to this process
 	template string // the migrated template database
+	seedName string // the seeded template (il_seed), built by the first NewSeeded
 	counter  atomic.Int64
 	createMu sync.Mutex // one CREATE DATABASE … TEMPLATE at a time in this process
 )
@@ -117,6 +121,7 @@ func setup(ctx context.Context) (func(), error) {
 	_, _ = rand.Read(suffix)
 	prefix = fmt.Sprintf("il_t_%d_%s", os.Getpid(), hex.EncodeToString(suffix))
 	template = prefix + "_tpl"
+	seedName = prefix + "_seed"
 
 	if err := ensureRoles(ctx); err != nil {
 		return stop, err
@@ -128,6 +133,8 @@ func setup(ctx context.Context) (func(), error) {
 	if err := migrate(ctx, template); err != nil {
 		return stop, err
 	}
+	// The seeded template exists only once a test asked for it.
+	stops = append(stops, func() { _ = dropDatabase(context.Background(), seedName) })
 	return stop, nil
 }
 
@@ -255,9 +262,15 @@ type DB struct {
 func New(t testing.TB) *DB {
 	t.Helper()
 	requireMain(t)
-	name := nextName("")
+	return copyOf(t, nextName(""), template)
+}
+
+// copyOf creates name as a copy of the template from and returns it as a DB
+// that is dropped when the test ends.
+func copyOf(t testing.TB, name, from string) *DB {
+	t.Helper()
 	createMu.Lock()
-	err := createDatabase(context.Background(), name, template)
+	err := createDatabase(context.Background(), name, from)
 	createMu.Unlock()
 	if err != nil {
 		t.Fatal(err)
@@ -277,9 +290,20 @@ func New(t testing.TB) *DB {
 // database is dropped.
 func (d *DB) Pool(role string) *pgxpool.Pool {
 	d.t.Helper()
-	pc, err := db.PoolConfig(DSN(d.Name), 4, &Today)
+	pool, err := openPool(context.Background(), d.Name, role)
 	if err != nil {
 		d.t.Fatal(err)
+	}
+	d.t.Cleanup(pool.Close)
+	return pool
+}
+
+// openPool opens a pool on database name that acts as role (SET ROLE) with
+// app.today = 2026-11-18.
+func openPool(ctx context.Context, name, role string) (*pgxpool.Pool, error) {
+	pc, err := db.PoolConfig(DSN(name), 4, &Today)
+	if err != nil {
+		return nil, err
 	}
 	prepare := pc.AfterConnect
 	pc.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
@@ -288,12 +312,7 @@ func (d *DB) Pool(role string) *pgxpool.Pool {
 		}
 		return prepare(ctx, conn)
 	}
-	pool, err := pgxpool.NewWithConfig(context.Background(), pc)
-	if err != nil {
-		d.t.Fatal(err)
-	}
-	d.t.Cleanup(pool.Close)
-	return pool
+	return pgxpool.NewWithConfig(ctx, pc)
 }
 
 // Empty returns the superuser DSN of a new empty database (no migrations), for

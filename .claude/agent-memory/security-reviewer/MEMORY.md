@@ -1,1 +1,1 @@
-- [Trust boundaries](trust_boundaries.md) — proxy/XFF, CSRF, session, throttle, DB roles, secrets of the Go backend (M0)
+- [Trust boundaries](trust_boundaries.md) — proxy/XFF, CSRF + per-route ContentType, session, throttle, DB roles, secrets, migrate-history guards (M0, M1)

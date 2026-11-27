@@ -46,11 +46,18 @@ func (c Chain) Then(h http.Handler) http.Handler {
 // ThenFunc wraps f in the chain.
 func (c Chain) ThenFunc(f http.HandlerFunc) http.Handler { return c.Then(f) }
 
+// StatusClientClosedRequest is the access-log status of a request whose
+// client went away before the answer (nginx's 499). Nothing is sent with it.
+const StatusClientClosedRequest = 499
+
 // recorder is the ResponseWriter AccessLog hands down: it records the status,
 // the bytes written, the user id (SetUserID) and the cause of a 5xx
-// (WriteError, Recover) for the access-log line.
+// (WriteError, Recover) or of a 499 for the access-log line. ctx is the
+// request's context as AccessLog saw it, so WriteError can tell a client
+// that went away from an internal cancellation.
 type recorder struct {
 	http.ResponseWriter
+	ctx         context.Context
 	status      int
 	bytes       int64
 	wroteHeader bool
@@ -146,8 +153,11 @@ func RequestIDFrom(ctx context.Context) string {
 // AccessLog writes one line per request (SPEC §11.11): request_id, method,
 // route (the matched pattern, r.Pattern), status, duration_ms, user_id and
 // bytes; a 5xx adds the error chain given to WriteError and is logged at
-// error level. /healthz and /readyz are logged at debug level. Bodies,
-// cookies, headers and query strings are never logged.
+// error level. A request whose client went away (WriteError with
+// context.Canceled after the request context ended, plan D8) is logged at
+// info level with status 499 and error "context canceled". /healthz and
+// /readyz are logged at debug level. Bodies, cookies, headers and query
+// strings are never logged.
 //
 // Place it inside RequestID and ClientIP and outside every middleware that
 // replaces the request (r.WithContext) before the ServeMux: the mux sets
@@ -156,7 +166,7 @@ func AccessLog(logger *slog.Logger, clock timex.Clock) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := clock.Now()
-			rec := &recorder{ResponseWriter: w, status: http.StatusOK}
+			rec := &recorder{ResponseWriter: w, ctx: r.Context(), status: http.StatusOK}
 			next.ServeHTTP(rec, r)
 
 			level := slog.LevelInfo
@@ -175,7 +185,7 @@ func AccessLog(logger *slog.Logger, clock timex.Clock) Middleware {
 				slog.String("user_id", rec.userID),
 				slog.Int64("bytes", rec.bytes),
 			}
-			if rec.status >= 500 && rec.err != nil {
+			if (rec.status >= 500 || rec.status == StatusClientClosedRequest) && rec.err != nil {
 				attrs = append(attrs, slog.String("error", rec.err.Error()))
 			}
 			logger.LogAttrs(r.Context(), level, "request", attrs...)

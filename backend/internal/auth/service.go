@@ -47,16 +47,17 @@ const (
 type Service struct {
 	store *db.Store
 	clock timex.Clock
-	hash  *hasher
+	hash  *Hasher
 }
 
 // NewService builds the auth service on the app pool's store.
 func NewService(store *db.Store, clock timex.Clock) *Service {
-	return &Service{store: store, clock: clock, hash: newHasher()}
+	return &Service{store: store, clock: clock, hash: NewHasher()}
 }
 
-// HashPassword returns the argon2id PHC string of password (create-owner,
-// user creation and resets).
+// HashPassword returns the argon2id PHC string of password through the
+// service's Hasher (user creation and resets), which it shares with login so
+// the maxHashers bound covers both.
 func (s *Service) HashPassword(ctx context.Context, password string) (string, error) {
 	return s.hash.Hash(ctx, password)
 }

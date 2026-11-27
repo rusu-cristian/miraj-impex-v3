@@ -33,6 +33,13 @@ func PageForbidden() string { return "Nu ai acces la această pagină." }
 // FarmForbidden is the 403 FARM_FORBIDDEN for a farm outside the caller's farms.
 func FarmForbidden() string { return "Nu ai acces la această fermă." }
 
+// NotFound is the 404 NOT_FOUND of an /api path no route serves. (proposed)
+func NotFound() string { return "Adresa cerută nu există." }
+
+// MethodNotAllowed is the 405 METHOD_NOT_ALLOWED of an /api route called with
+// a method it doesn't serve. (proposed)
+func MethodNotAllowed() string { return "Operația nu este permisă la această adresă." }
+
 // Internal is the 500 INTERNAL for anything unexpected. (proposed)
 func Internal() string { return "A apărut o eroare. Încearcă din nou." }
 
@@ -53,3 +60,23 @@ func InvalidData() string { return "Datele trimise nu sunt valide." }
 
 // Unavailable is the 503 UNAVAILABLE when a deadline runs out. (proposed)
 func Unavailable() string { return "Serviciul nu răspunde acum. Încearcă din nou." }
+
+// History migration (SPEC §10.3). These texts are stored in the migrated rows.
+
+// RegisterDifference is the note of every migrated `adjustment` row (glossary
+// "diferență registru", D63).
+func RegisterDifference() string { return "diferență registru" }
+
+// FeedStockMove is the note of both rows of a migrated feed stock move
+// between the ♀ and the ♂ stock (feed_stock_adjustment). (proposed)
+func FeedStockMove() string { return "mutare ♀ → ♂" }
+
+// TransferDeparture is the note of a migrated transfer entry whose birds left
+// the source on an earlier day than they arrived; day is dd.mm.yyyy.
+func TransferDeparture(day string) string { return "plecare " + day }
+
+// Audit (SPEC §4.10).
+
+// AuditKeyHensDead is the `changes[].key` of a corrected ♀ mortality value of
+// a section ("H5.2 · găini moarte", the §4.10 example).
+func AuditKeyHensDead(section string) string { return section + " · găini moarte" }

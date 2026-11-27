@@ -7,10 +7,14 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend.yml"
+      # Workbook extracts: input of the migrate-history and golden tests (M1).
+      - "design/data/extracts/**"
   pull_request:
     paths:
       - "backend/**"
       - ".github/workflows/backend.yml"
+      # Workbook extracts: input of the migrate-history and golden tests (M1).
+      - "design/data/extracts/**"
 
 permissions:
   contents: read
@@ -90,3 +94,6 @@ jobs:
           set -e
           echo "exit code: $code"
           if [ "$code" -eq 0 ] || [ "$code" -ge 125 ]; then exit 1; fi
+      # The one-off history loader ships in the same image (M1, D7).
+      - name: migrate-history is in the image
+        run: docker run --rm --entrypoint /usr/local/bin/migrate-history impex-api:ci --help

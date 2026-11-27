@@ -1,6 +1,6 @@
 ---
 name: backend-build-spec-drift
-description: Recurring spec-review gap in the Go backend milestones - build-time decisions not written back to SPEC.md, and CI/actionlint criteria that cannot be proven pre-push
+description: Recurring spec-review gap in the Go backend milestones - build-time decisions not written back to SPEC.md, user-answer wording drift, and CI criteria that cannot be proven pre-push
 metadata:
   type: project
 ---
@@ -10,4 +10,8 @@ M0 review (2026-11-27): the builders were strong on tests and criteria coverage 
 - New enum-like JSON values (issue codes) were added without a user answer.
 - CI criteria ("actionlint passes", "run green on team/backend") cannot be proven before the push; flag them as open instead of approving silently.
 
-**How to apply:** in later milestones, diff SPEC.md against the answers list, grep new `Code*`/`Issue*` constants against the SPEC code lists, and check each "verify at implementation" outcome that contradicts SPEC text has a matching SPEC edit or a question to the user.
+M1 review (2026-11-27): code, tests and goldens were solid (all packages green under -race on real PG, goldens 1-12/26/27 Want equal §11.7 exactly, lint clean). Gaps were again about SPEC wording:
+- A builder widened a user-approved rule (Q6: 14 rows skipped became 16 because the extract had 2 more g-with-0-kg rows) and the SPEC edit labelled the wider text "user answer Q6". Check that every "(user answer Qn)" tag in SPEC matches what the user actually approved.
+- A test-plumbing API change forced by an import cycle (`seed.Main` in `internal/testdb/seed` instead of `testdb.NewSeeded` alone) was in NOTES-verify but not in SPEC §11.8 / backend/CLAUDE.md.
+
+**How to apply:** in later milestones, diff SPEC.md against the answers list, grep new `Code*`/`Issue*` constants against the SPEC code lists, check each "verify at implementation" outcome that contradicts SPEC text has a matching SPEC edit or a question to the user, and compare every numeric claim in a "(user answer)" SPEC edit with the plan's answer text.

@@ -27,7 +27,11 @@ func (q *Queries) CountActiveOwners(ctx context.Context) (int32, error) {
 }
 
 const getActiveSession = `-- name: GetActiveSession :one
-select s.id as session_id, s.user_id, s.last_seen_at, s.expires_at, u.name, u.login, u.role
+select s.id as session_id, s.user_id, s.last_seen_at, s.expires_at, u.name, u.login, u.role,
+       coalesce((select array_agg(f.id order by f.name_key)
+                 from user_farm uf
+                 join farm f on f.id = uf.farm_id
+                 where uf.user_id = u.id), '{}')::uuid[] as farm_ids
 from user_session s
 join app_user u on u.id = s.user_id
 where s.token_hash = $1
@@ -49,9 +53,12 @@ type GetActiveSessionRow struct {
 	Name       string
 	Login      string
 	Role       UserRole
+	FarmIds    []uuid.UUID
 }
 
-// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active.
+// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active, with the user's
+// user_farm farms in name_key order (empty for the owner, who has no rows, and for a user without farms): the
+// session middleware needs one round trip.
 func (q *Queries) GetActiveSession(ctx context.Context, arg GetActiveSessionParams) (GetActiveSessionRow, error) {
 	row := q.db.QueryRow(ctx, getActiveSession, arg.TokenHash, arg.Now)
 	var i GetActiveSessionRow
@@ -63,6 +70,7 @@ func (q *Queries) GetActiveSession(ctx context.Context, arg GetActiveSessionPara
 		&i.Name,
 		&i.Login,
 		&i.Role,
+		&i.FarmIds,
 	)
 	return i, err
 }

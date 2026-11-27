@@ -12,8 +12,64 @@ import (
 )
 
 type Querier interface {
+	// The cycle of a farm whose [start_date, end_date] contains the day (an open cycle has no end), with its series'
+	// age parameters (§4.6, §5.1).
+	CalcCycleAt(ctx context.Context, arg CalcCycleAtParams) (CalcCycleAtRow, error)
+	// The base of §5.5 at farm scope over [from_day, to_day]: placements plus transfers in whose peer section is in
+	// another farm. A transfer row without a peer section (migration rows may have none) takes the source farm of
+	// its transfer entry, and counts as inside the farm in any other entry. Adjustments are never part of the base.
+	CalcFarmBase(ctx context.Context, arg CalcFarmBaseParams) (CalcFarmBaseRow, error)
+	// Farm × sex over [from_day, to_day]: deaths (mortality), culls and sales (§5.4). Sales are never deaths (D155).
+	CalcFarmRemovals(ctx context.Context, arg CalcFarmRemovalsParams) (CalcFarmRemovalsRow, error)
+	// Farm × sex on one day (§5.3, §5.4): birds alive at the start and end of the day, and the day's deaths, culls
+	// and sales. alive_start = Σ deltas before the day, alive_end = Σ deltas up to and including it.
+	CalcFarmSexDay(ctx context.Context, arg CalcFarmSexDayParams) (CalcFarmSexDayRow, error)
+	// Feed consumed by a farm on one day per sex (§5.7): the migrated kg, else g × birds at the start of the day / 1000
+	// (DATA03, as v_feed_consumption). Birds at the start of the day = Σ deltas of the section × sex before the day, a
+	// running sum over v_section_sex_delta, so it holds for any day (v_feed_consumption reads the dense
+	// v_section_sex_day, which stops at greatest(last event, app_today())).
+	CalcFeedKg(ctx context.Context, arg CalcFeedKgParams) (CalcFeedKgRow, error)
+	// Lay of a farm on one day (§5.6): Σ eggs and Σ hens at the start of the day over the egg units whose total is
+	// filled (a unit-day without a total is not a hen-day, D159). Hens at the start of the day = Σ ♀ deltas before the
+	// day over the unit's sections (§5.3, D156), a running sum over v_section_sex_delta like the other readers, so it
+	// holds for any day: v_egg_day reads the dense v_section_sex_day, which stops at greatest(last event, app_today()).
+	CalcLayDay(ctx context.Context, arg CalcLayDayParams) (CalcLayDayRow, error)
+	// Birds alive at the end of the day per bird-holding section (a section without children) × sex (§5.3), every
+	// such section of the farm, 0 when it has no birds. Ordered as the farm's tree: hall, then compartment.
+	CalcSectionAliveEnd(ctx context.Context, arg CalcSectionAliveEndParams) ([]CalcSectionAliveEndRow, error)
+	// Per bird-holding section (a section without children) × sex over [from_day, to_day]: mortality, culls and sales
+	// (§5.4), every such section of the farm, 0 when it has none. Ordered as the farm's tree: hall, then compartment.
+	CalcSectionRemovals(ctx context.Context, arg CalcSectionRemovalsParams) ([]CalcSectionRemovalsRow, error)
+	// The age parameters of a series (§5.1).
+	CalcSeriesAge(ctx context.Context, seriesID uuid.UUID) (CalcSeriesAgeRow, error)
+	// Stock at the end of the day per feed type of a farm (§5.8): the running stock of the latest movement day on or
+	// before it. Feed types with no movement up to that day are absent.
+	CalcStockEnd(ctx context.Context, arg CalcStockEndParams) ([]CalcStockEndRow, error)
+	CopyBirdEvents(ctx context.Context, arg []CopyBirdEventsParams) (int64, error)
+	CopyCycles(ctx context.Context, arg []CopyCyclesParams) (int64, error)
+	CopyEggProductions(ctx context.Context, arg []CopyEggProductionsParams) (int64, error)
+	CopyEntries(ctx context.Context, arg []CopyEntriesParams) (int64, error)
+	CopyFarms(ctx context.Context, arg []CopyFarmsParams) (int64, error)
+	CopyFeedAllocations(ctx context.Context, arg []CopyFeedAllocationsParams) (int64, error)
+	CopyFeedDeliveries(ctx context.Context, arg []CopyFeedDeliveriesParams) (int64, error)
+	CopyFeedStockAdjustments(ctx context.Context, arg []CopyFeedStockAdjustmentsParams) (int64, error)
+	CopyFeedTypes(ctx context.Context, arg []CopyFeedTypesParams) (int64, error)
+	CopyGuideWeeks(ctx context.Context, arg []CopyGuideWeeksParams) (int64, error)
+	CopyGuides(ctx context.Context, arg []CopyGuidesParams) (int64, error)
+	CopyLegacyMortality(ctx context.Context, arg []CopyLegacyMortalityParams) (int64, error)
+	CopySections(ctx context.Context, arg []CopySectionsParams) (int64, error)
+	CopySeries(ctx context.Context, arg []CopySeriesParams) (int64, error)
+	CopyUserFarms(ctx context.Context, arg []CopyUserFarmsParams) (int64, error)
+	// History migration (SPEC §10.3): bulk COPY of the plan, the per-farm audit rows and the checks of Verify.
+	// The column lists are explicit so a schema change breaks the generated code at compile time. The generated
+	// column egg_production.total_eggs is never listed.
+	// --seed-dev users (M1-D7).
+	CopyUsers(ctx context.Context, arg []CopyUsersParams) (int64, error)
+	CopyWeighings(ctx context.Context, arg []CopyWeighingsParams) (int64, error)
 	CountActiveOwners(ctx context.Context) (int32, error)
-	// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active.
+	// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active, with the user's
+	// user_farm farms in name_key order (empty for the owner, who has no rows, and for a user without farms): the
+	// session middleware needs one round trip.
 	GetActiveSession(ctx context.Context, arg GetActiveSessionParams) (GetActiveSessionRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserByLogin(ctx context.Context, login string) (GetUserByLoginRow, error)
@@ -22,6 +78,8 @@ type Querier interface {
 	// Audit log (SPEC §4.10), append-only: a setup or user row with no entry, farm scope or reason. `at` comes from
 	// the injected clock (plan D5); user_id null = system (create-owner, Q6).
 	InsertAudit(ctx context.Context, arg InsertAuditParams) error
+	// An audit row about an entry (SPEC §4.10). `at` comes from the injected clock (M1-D2); user_id null = migration.
+	InsertEntryAudit(ctx context.Context, arg InsertEntryAuditParams) error
 	InsertLoginAttempt(ctx context.Context, arg InsertLoginAttemptParams) (int64, error)
 	InsertSession(ctx context.Context, arg InsertSessionParams) (uuid.UUID, error)
 	InsertUser(ctx context.Context, arg InsertUserParams) (InsertUserRow, error)
@@ -37,6 +95,8 @@ type Querier interface {
 	LoginFailuresSince(ctx context.Context, arg LoginFailuresSinceParams) (LoginFailuresSinceRow, error)
 	// A sign-in reserves its attempt as a failure before the password check (§11.4); a success flips it.
 	MarkLoginAttemptSucceeded(ctx context.Context, id int64) error
+	// §10.3: the import runs once; a database that holds a migration entry is refused (unless --replace).
+	MigrationEntryExists(ctx context.Context) (bool, error)
 	RevokeSession(ctx context.Context, arg RevokeSessionParams) (int64, error)
 	// Password reset, deactivation, any role or farm change: the user signs in again everywhere (§4.3).
 	RevokeUserSessions(ctx context.Context, arg RevokeUserSessionsParams) (int64, error)
@@ -45,6 +105,12 @@ type Querier interface {
 	SlideSession(ctx context.Context, arg SlideSessionParams) (int64, error)
 	// Re-hash with new argon2id parameters after a successful login (§11.4); not a user change.
 	UpdatePasswordHash(ctx context.Context, arg UpdatePasswordHashParams) error
+	// §10.3 check: Σ total_eggs of a farm over [from_day, to_day].
+	VerifyEggTotal(ctx context.Context, arg VerifyEggTotalParams) (int64, error)
+	// §10.3 check: live deliveries of a farm, their Σ lei and how many have no price.
+	VerifyFarmDeliveries(ctx context.Context, farmID uuid.UUID) (VerifyFarmDeliveriesRow, error)
+	// §6.1 / M1-D4: the section × sex days that end below 0 (none expected), first ones first.
+	VerifyNegativeAlive(ctx context.Context) ([]VerifyNegativeAliveRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

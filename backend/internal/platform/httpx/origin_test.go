@@ -32,10 +32,13 @@ func TestCSRF(t *testing.T) {
 		{"neither header", "POST", "-", "", "application/json", false},
 		{"no Origin, Sec-Fetch-Site none", "POST", "-", "none", "application/json", false},
 		{"no Origin, Sec-Fetch-Site same-site", "PATCH", "-", "same-site", "application/json", false},
-		{"text/plain", "POST", appOrigin, "same-origin", "text/plain", false},
-		{"form post", "POST", appOrigin, "same-origin", "application/x-www-form-urlencoded", false},
-		{"multipart", "POST", appOrigin, "same-origin", "multipart/form-data; boundary=x", false},
-		{"no Content-Type", "POST", appOrigin, "same-origin", "", false},
+		// The Content-Type is ContentType's rule, per route: CSRF alone lets
+		// any media type through once the Origin is right (plan D9).
+		{"text/plain passes CSRF alone", "POST", appOrigin, "same-origin", "text/plain", true},
+		{"form post passes CSRF alone", "POST", appOrigin, "", "application/x-www-form-urlencoded", true},
+		{"multipart passes CSRF alone", "POST", "-", "same-origin", "multipart/form-data; boundary=x", true},
+		{"no Content-Type passes CSRF alone", "POST", appOrigin, "same-origin", "", true},
+		{"text/plain from another origin", "POST", "https://evil.example", "cross-site", "text/plain", false},
 		{"GET needs nothing", "GET", "https://evil.example", "cross-site", "", true},
 		{"HEAD needs nothing", "HEAD", "-", "", "", true},
 		{"OPTIONS needs nothing", "OPTIONS", "-", "", "", true},
@@ -51,6 +54,51 @@ func TestCSRF(t *testing.T) {
 			if tt.fetchSite != "" {
 				r.Header.Set("Sec-Fetch-Site", tt.fetchSite)
 			}
+			if tt.contentType != "" {
+				r.Header.Set("Content-Type", tt.contentType)
+			}
+			w := httptest.NewRecorder()
+			h.ServeHTTP(w, r)
+			if reached != tt.pass {
+				t.Fatalf("reached handler = %v, want %v", reached, tt.pass)
+			}
+			if !tt.pass && (w.Code != http.StatusForbidden || w.Body.String() != forbiddenBody) {
+				t.Errorf("refusal %d %s", w.Code, w.Body)
+			}
+		})
+	}
+}
+
+func TestContentType(t *testing.T) {
+	json := ContentType(MediaJSON)
+	multipart := ContentType("multipart/form-data")
+	tests := []struct {
+		name        string
+		mw          Middleware
+		method      string
+		contentType string // "" = absent
+		pass        bool
+	}{
+		{"JSON", json, "POST", "application/json", true},
+		{"JSON with charset", json, "PUT", "application/json; charset=utf-8", true},
+		{"JSON in capitals", json, "PATCH", "Application/JSON", true},
+		{"text/plain", json, "POST", "text/plain", false},
+		{"form post", json, "POST", "application/x-www-form-urlencoded", false},
+		{"multipart on a JSON route", json, "POST", "multipart/form-data; boundary=x", false},
+		{"no Content-Type", json, "DELETE", "", false},
+		{"unparseable", json, "POST", "application/json; charset", false},
+		{"JSON look-alike", json, "POST", "application/jsonx", false},
+		{"GET untouched", json, "GET", "text/plain", true},
+		{"HEAD untouched", json, "HEAD", "", true},
+		{"OPTIONS untouched", json, "OPTIONS", "", true},
+		{"multipart-only chain: multipart", multipart, "POST", "multipart/form-data; boundary=x", true},
+		{"multipart-only chain: JSON refused", multipart, "POST", "application/json", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reached := false
+			h := NewChain(tt.mw).ThenFunc(func(http.ResponseWriter, *http.Request) { reached = true })
+			r := httptest.NewRequest(tt.method, "/api/x", strings.NewReader(`{}`))
 			if tt.contentType != "" {
 				r.Header.Set("Content-Type", tt.contentType)
 			}

@@ -49,6 +49,9 @@ Go API service for Impex Line. `SPEC.md` (this directory) is the source of truth
   `d.Pool(testdb.RoleMaint)` for another role). Without `TEST_DATABASE_URL` it starts a `postgres:16` container per
   test package; `TEST_DATABASE_URL` must be a **superuser** DSN (e.g. the compose db's `postgres` user), because
   testdb creates databases and switches roles with `SET ROLE` (it never needs or changes the roles' passwords).
+  A package that needs real data (the imported history plus the dev seed) must be an external `_test` package
+  (`package foo_test`) with `func TestMain(m *testing.M) { seed.Main(m) }` (package `internal/testdb/seed`) and
+  `testdb.NewSeeded(t)` per test; every other package keeps `testdb.Main(m)` and `testdb.New(t)`.
 
 ## Commands
 | Command | What it runs |

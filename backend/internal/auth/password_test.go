@@ -17,7 +17,7 @@ var phcPattern = regexp.MustCompile(`^\$argon2id\$v=19\$m=19456,t=2,p=1\$([A-Za-
 
 func TestHashFormatAndVerify(t *testing.T) {
 	ctx := context.Background()
-	h := newHasher()
+	h := NewHasher()
 	phc, err := h.Hash(ctx, "parola-buna")
 	if err != nil {
 		t.Fatal(err)
@@ -51,7 +51,7 @@ func TestVerifyReadsParamsFromHash(t *testing.T) {
 	salt := []byte("0123456789abcdef")
 	phc := encodePHC(old, salt, argon2.IDKey([]byte("veche"), salt, old.Time, old.Memory, old.Threads, old.KeyLen))
 
-	h := newHasher()
+	h := NewHasher()
 	var seen Params
 	h.idKey = func(pw, s []byte, tm, mem uint32, th uint8, n uint32) []byte {
 		seen = Params{Time: tm, Memory: mem, Threads: th, KeyLen: n}
@@ -87,13 +87,13 @@ func TestDecodePHCRefusesBadHashes(t *testing.T) {
 			t.Errorf("accepted %q", bad)
 		}
 	}
-	if _, _, err := newHasher().Verify(context.Background(), "x", "garbage"); err == nil {
+	if _, _, err := NewHasher().Verify(context.Background(), "x", "garbage"); err == nil {
 		t.Error("Verify accepted a malformed hash")
 	}
 }
 
 func TestBurnRunsOneIDKey(t *testing.T) {
-	h := newHasher()
+	h := NewHasher()
 	if err := h.burn(context.Background(), "orice"); err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestBurnRunsOneIDKey(t *testing.T) {
 }
 
 func TestHashSemaphoreAllowsFour(t *testing.T) {
-	h := newHasher()
+	h := NewHasher()
 	var cur, peak atomic.Int32
 	h.idKey = func(_, _ []byte, _, _ uint32, _ uint8, n uint32) []byte {
 		c := cur.Add(1)
@@ -132,7 +132,7 @@ func TestHashSemaphoreAllowsFour(t *testing.T) {
 }
 
 func TestHashWaitHonoursContext(t *testing.T) {
-	h := newHasher()
+	h := NewHasher()
 	for range maxHashers {
 		h.sem <- struct{}{}
 	}

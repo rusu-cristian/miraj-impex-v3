@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/pgerr"
 )
 
 // ErrRollback, returned by an InTx callback, rolls the transaction back and
@@ -40,7 +41,7 @@ func (s *Store) Q() *dbq.Queries { return s.q }
 
 // InTx runs fn in one READ COMMITTED transaction (SPEC §12.1). fn's error
 // rolls back; ErrRollback rolls back and returns nil. Constraint violations
-// come back as *ConstraintError (MapError).
+// come back as *pgerr.ConstraintError (pgerr.MapError).
 func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
 	err := pgx.BeginTxFunc(ctx, s.pool, pgx.TxOptions{IsoLevel: pgx.ReadCommitted}, func(t pgx.Tx) error {
 		return fn(Tx{Tx: t, Q: dbq.New(t)})
@@ -48,5 +49,5 @@ func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
 	if errors.Is(err, ErrRollback) {
 		return nil
 	}
-	return MapError(err)
+	return pgerr.MapError(err)
 }

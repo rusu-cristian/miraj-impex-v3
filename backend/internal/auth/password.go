@@ -44,8 +44,10 @@ var b64 = base64.RawStdEncoding.Strict()
 // and timing doesn't reveal which logins exist (SPEC §11.4).
 var dummyHash = encodePHC(DefaultParams, make([]byte, saltLen), make([]byte, DefaultParams.KeyLen))
 
-// hasher hashes and verifies passwords, at most maxHashers at a time.
-type hasher struct {
+// Hasher hashes and verifies passwords with the §11.4 argon2id parameters, at
+// most maxHashers at a time. Every password hash of the backend comes from
+// one: the auth service, create-owner and the dev seed.
+type Hasher struct {
 	params Params
 	sem    chan struct{}
 	// idKey is argon2.IDKey; tests replace it to watch concurrency.
@@ -54,12 +56,13 @@ type hasher struct {
 	runs atomic.Int64
 }
 
-func newHasher() *hasher {
-	return &hasher{params: DefaultParams, sem: make(chan struct{}, maxHashers), idKey: argon2.IDKey}
+// NewHasher returns a Hasher with DefaultParams. It needs no database.
+func NewHasher() *Hasher {
+	return &Hasher{params: DefaultParams, sem: make(chan struct{}, maxHashers), idKey: argon2.IDKey}
 }
 
 // derive runs one IDKey under the semaphore.
-func (h *hasher) derive(ctx context.Context, password, salt []byte, p Params) ([]byte, error) {
+func (h *Hasher) derive(ctx context.Context, password, salt []byte, p Params) ([]byte, error) {
 	select {
 	case h.sem <- struct{}{}:
 	case <-ctx.Done():
@@ -72,7 +75,7 @@ func (h *hasher) derive(ctx context.Context, password, salt []byte, p Params) ([
 
 // Hash returns the PHC string of password with the current parameters:
 // $argon2id$v=19$m=19456,t=2,p=1$<salt>$<hash> (raw standard base64).
-func (h *hasher) Hash(ctx context.Context, password string) (string, error) {
+func (h *Hasher) Hash(ctx context.Context, password string) (string, error) {
 	salt := make([]byte, saltLen)
 	if _, err := rand.Read(salt); err != nil {
 		return "", fmt.Errorf("auth: salt: %w", err)
@@ -88,7 +91,7 @@ func (h *hasher) Hash(ctx context.Context, password string) (string, error) {
 // the string. rehash is true when the password matches and the string's
 // parameters differ from the current ones (re-hash on the next successful
 // login, §11.4).
-func (h *hasher) Verify(ctx context.Context, password, phc string) (ok, rehash bool, err error) {
+func (h *Hasher) Verify(ctx context.Context, password, phc string) (ok, rehash bool, err error) {
 	p, salt, want, err := decodePHC(phc)
 	if err != nil {
 		return false, false, err
@@ -104,7 +107,7 @@ func (h *hasher) Verify(ctx context.Context, password, phc string) (ok, rehash b
 }
 
 // burn runs one IDKey against the dummy hash (unknown login).
-func (h *hasher) burn(ctx context.Context, password string) error {
+func (h *Hasher) burn(ctx context.Context, password string) error {
 	_, _, err := h.Verify(ctx, password, dummyHash)
 	return err
 }

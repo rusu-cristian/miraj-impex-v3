@@ -40,13 +40,13 @@ func newApp(cfg config.Config, log *slog.Logger, clock timex.Clock, pools *db.Po
 	// Handlers and routes.
 	h := newHealth(pools.App, latest, log)
 	rec := newRouteRecorder()
-	registerRoutes(rec, h, auth.NewHandler(authService))
+	registerRoutes(rec, h, authService, auth.NewHandler(authService))
 
 	return &app{
 		log:             log,
 		pools:           pools,
 		health:          h,
-		handler:         middleware(cfg, log, clock).Then(rec.mux),
+		handler:         middleware(cfg, log, clock).Then(httpx.MuxFallback(rec.mux, "/api")),
 		routes:          rec.Patterns(),
 		shutdownTimeout: shutdownTimeout,
 	}, nil
@@ -64,12 +64,16 @@ func newApp(cfg config.Config, log *slog.Logger, clock timex.Clock, pools *db.Po
 //     the request it receives and AccessLog reads it from its own
 //     (NOTES-verify: "net/http ServeMux sets r.Pattern").
 //  4. Recover: inside AccessLog, so a panic is logged as a 500 line.
-//  5. SecurityHeaders: on every response, refusals and mux 404/405 included.
+//  5. SecurityHeaders: on every response, refusals and 404/405 included.
 //  6. CORS (when CORS_ENABLED): answers preflights from APP_ORIGIN and adds
 //     its headers before CSRF can refuse, so the browser can read a 403.
-//  7. CSRF: refuses cross-site and non-JSON writes before any handler runs.
+//  7. CSRF: refuses cross-site writes (the Origin rule) before any handler
+//     runs.
 //
-// Per-route middleware (the session check, RequireRole) runs inside the mux
+// Inside the chain, httpx.MuxFallback hands the request to the mux unchanged
+// (so r.Pattern still reaches AccessLog) and answers /api paths no route
+// serves with the 404/405 envelope. Per-route middleware (the Content-Type
+// rule, the session check, RequireRole; registerRoutes) runs inside the mux
 // and may replace the request; it names the user with httpx.SetUserID.
 func middleware(cfg config.Config, log *slog.Logger, clock timex.Clock) httpx.Chain {
 	return httpx.NewChain(

@@ -12,6 +12,7 @@ import (
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/pgerr"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
@@ -33,7 +34,7 @@ func TestUniqueViolation(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := insertUser(t, q, "ion.rusu")
-	ce, ok := db.AsConstraint(err, db.Unique)
+	ce, ok := pgerr.AsConstraint(err, pgerr.Unique)
 	if !ok {
 		t.Fatalf("err = %v, want a unique violation", err)
 	}
@@ -54,19 +55,19 @@ func TestMapErrorKinds(t *testing.T) {
 
 	// 23514: the login check constraint.
 	_, err := insertUser(t, store.Q(), "Bad Login!")
-	if ce, ok := db.AsConstraint(err, db.Check); !ok || ce.Constraint != "app_user_login_check" {
+	if ce, ok := pgerr.AsConstraint(err, pgerr.Check); !ok || ce.Constraint != "app_user_login_check" {
 		t.Errorf("check: %v", err)
 	}
 	// 23503: a session for a user that doesn't exist.
 	_, err = store.Q().InsertSession(ctx, dbq.InsertSessionParams{
 		UserID: [16]byte{1}, TokenHash: []byte{1}, Now: testdb.Now(), ExpiresAt: testdb.Now(),
 	})
-	if ce, ok := db.AsConstraint(err, db.ForeignKey); !ok || ce.Constraint != "user_session_user_id_fkey" {
+	if ce, ok := pgerr.AsConstraint(err, pgerr.ForeignKey); !ok || ce.Constraint != "user_session_user_id_fkey" {
 		t.Errorf("foreign key: %v", err)
 	}
 	// Other errors pass through unchanged.
 	plain := errors.New("plain")
-	if db.MapError(plain) != plain || db.MapError(nil) != nil {
+	if pgerr.MapError(plain) != plain || pgerr.MapError(nil) != nil {
 		t.Error("MapError changed a non-PostgreSQL error")
 	}
 }
@@ -106,7 +107,7 @@ func TestInTx(t *testing.T) {
 		_, err := insertUser(t, tx.Q, "dup.login")
 		return err
 	})
-	if _, ok := db.AsConstraint(err, db.Unique); !ok {
+	if _, ok := pgerr.AsConstraint(err, pgerr.Unique); !ok {
 		t.Fatalf("constraint in tx: %v", err)
 	}
 	var users int

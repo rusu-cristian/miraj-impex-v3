@@ -204,3 +204,185 @@ Entry format:
 - Consequence: the Dockerfile pins tags (no digests, as elsewhere in the project) and uses `USER 65532:65532`, the
   numeric form of §11.13's `nonroot:nonroot`. CI pins actions by SHA and sqlc by checksum. Moving to
   `static-debian13` stays optional and would be a SPEC change.
+
+## M1
+
+### Base image digests: golang build image          status: verified (2026-11-27, M1 T2)
+- SPEC: §11.13, §12.2; plan D2, D7
+- Library / version: `golang:1.27.4-bookworm` on Docker Hub (`registry-1.docker.io/library/golang`)
+- Checked (2026-11-27): `docker buildx imagetools inspect golang:1.27.4-bookworm` and a registry `HEAD
+  /v2/library/golang/manifests/1.27.4-bookworm` with an OCI index `Accept` header; both give the same
+  `docker-content-digest`.
+- Finding: the tag is an OCI image index (`application/vnd.oci.image.index.v1+json`), digest
+  `sha256:ce59b41415e2524ae99926fe1f37ce48ba8c194dcbd2a56a65436cdcefa2bd34` (built 2026-11-24), covering linux/amd64,
+  arm64/v8, arm/v7, 386 and ppc64le plus attestations. `docker build` resolves it on Docker 29.6.2 (arm64).
+- Consequence: the Dockerfile's build stage is `golang:1.27.4-bookworm@sha256:ce59b414…a2bd34`. This supersedes the
+  "tags, no digests" consequence of the M0 image-tags entry for the Dockerfile; compose and CI pins are unchanged.
+
+### Base image digests: distroless runtime image    status: verified (2026-11-27, M1 T2)
+- SPEC: §11.13
+- Library / version: `gcr.io/distroless/static-debian12:nonroot`
+- Checked (2026-11-27): `docker buildx imagetools inspect gcr.io/distroless/static-debian12:nonroot` and a registry
+  `HEAD https://gcr.io/v2/distroless/static-debian12/manifests/nonroot` with an OCI index `Accept` header; same digest.
+- Finding: OCI image index, digest `sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab`,
+  covering linux/amd64, arm64/v8, arm/v7, s390x and ppc64le. The image built on it is unchanged in behaviour: runs as
+  65532:65532; with no environment `docker run --rm impex-api` exits 1 with the one `config: missing required
+  environment variables: …` line; `make e2e` passes.
+- Consequence: the runtime stage is `gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872…ff57f7ab`.
+
+### How to bump the base image digests             status: verified (2026-11-27, M1 T2)
+- SPEC: §11.13
+- Procedure (from `backend/`), per image:
+  1. `docker buildx imagetools inspect <image>:<tag>`: take the top-level `Digest:` and check that `MediaType` is an
+     image index (`…oci.image.index…` or `…manifest.list…`). A per-platform digest from `docker pull`/`docker
+     images --digests` on one machine is the wrong one: it would pin one architecture.
+  2. Optionally cross-check with the registry: `HEAD /v2/<repo>/manifests/<tag>` with
+     `Accept: application/vnd.oci.image.index.v1+json`, header `docker-content-digest`.
+  3. Replace only the digest after `@` in the `FROM` line; keep the tag (it documents the version; the digest wins).
+     A Go version bump changes the golang tag, `go.mod`'s `toolchain` line and CI's `GO_VERSION` together (D2).
+  4. `make docker`; `docker run --rm impex-api` must exit 1 with the missing-variables line; `make e2e`
+     (`COMPOSE_ENV_FILES=.env.example make e2e` without a `.env`); push and check the CI `docker` job.
+  5. Update the two entries above (digest, date).
+- When: the distroless `nonroot` tag is rebuilt for Debian security fixes and golang for each patch release, so the
+  pins go stale; bump at least once per milestone and on any Go or Debian security release.
+
+### calc readers vs the dense view's app_today() reach   status: verified (2026-11-27, M1 T3; review COR-1)
+- SPEC: §4.12, §5.3–§5.8; plan M1 T3 criterion 2 ("never app_today() implicitly"), D4 (Verify does not set app.today)
+- Library / version: `0001_baseline.sql` views on PostgreSQL 16.16; sqlc v1.31.1
+- Checked: the view definitions; `TestReadFarmDay`, `TestLayDay`, `TestFeedKg` ("after app.today" cases, 31.12.2026
+  with app.today 18.11.2026);
+  generated `dbq/calc.sql.go`.
+- Finding: `v_section_sex_day` (and so `v_farm_sex_day`) lists days only up to `greatest(max(event date),
+  app_today())`, so a filter on a later day returns no row rather than the last count. `v_section_sex_delta`
+  and `v_bird_event` have no such bound. `v_egg_day` and `v_feed_consumption` read `v_section_sex_day` only for days
+  that have an egg or allocation row, so a row dated after that bound gets no count. sqlc types an aggregate cast `::integer` /
+  `::numeric` wrapped in `coalesce` as non-null; reusing `sqlc.arg(day)` binds one parameter.
+- Consequence: `calc` bird counts (`ReadFarmDay`, `SectionsAliveEnd`, `CycleDeaths`, `Sold`, `FarmBase`) are running
+  sums over `v_section_sex_delta` / `v_bird_event` up to the asked day (the §5.3 formula), so they hold for any day
+  and on a pool without app.today. Lay and feed (review COR-1) take the hens / birds at the start of the day the
+  same way, as a running sum over `v_section_sex_delta` before the day, not from `v_egg_day` / `v_feed_consumption`:
+  those join the dense view, so an egg or allocation row dated after `greatest(last event, app_today())` would read
+  0 hens / 0 kg (`TestLayDay`, `TestFeedKg` "after app.today", 31.12.2026). Stock still reads `v_feed_stock`
+  (stock = the latest row ≤ the day), whose consumption comes from `v_feed_consumption`: an allocation dated after
+  that bound would count 0 kg there (open for the M3 stock work; SPEC §3.2 refuses future-dated writes).
+  `FarmBase` counts a transfer-in row without `peer_section_id` (allowed for migration rows) as from outside only
+  when its entry is a `transfer` entry whose source farm is another farm.
+
+### pgx and context.Canceled                         status: verified (2026-11-27, M1 T1)
+- SPEC: §11.11; plan M1-D8 (follow-up COR-3)
+- Library / version: `github.com/jackc/pgx/v5` v5.13.0 (`pgconn/errors.go`: `normalizeTimeoutError`, `errTimeout`,
+  `contextAlreadyDoneError`; pgxpool acquire)
+- Checked: the source, and probes against PostgreSQL 16 (testcontainers) and a silent TCP listener.
+- Finding: every cancellation pgx returns satisfies `errors.Is(err, context.Canceled)`, in four shapes:
+  - canceled during a query (`select pg_sleep(5)` through the pool, sqlc `:one` included): bare `context.Canceled`
+    ("context canceled"); `normalizeTimeoutError` turns the deadline-interrupted read back into the context error;
+  - a pool call with an already-canceled context: bare `context.Canceled` from the acquire;
+  - a `*pgx.Conn` call with an already-done context: `*pgconn.errTimeout` → `contextAlreadyDoneError` → `Canceled`
+    ("timeout: context already done: context canceled"; `pgconn.Timeout(err)` is true);
+  - canceled while connecting: `*pgconn.ConnectError` wrapping it ("failed to connect to `user=… database=…`: …:
+    failed to receive message: context canceled"; a context canceled before the dial gives "dial error: … operation
+    was canceled", still `errors.Is` `Canceled`).
+- Consequence: `httpx.WriteError` tests `errors.Is(err, context.Canceled)` and whether the request context AccessLog
+  saw is done (the recorder keeps it). If so it writes nothing and the access line is INFO, status 499,
+  `error` "context canceled" (the literal, not the wrapped chain); a cancel with the request context still live stays
+  ERROR 500. Without AccessLog (no recorder) it can't tell and stays 500. `TestCanceled` uses the `ConnectError`
+  shape (no database needed).
+
+### ServeMux: telling 404 from 405                   status: verified (2026-11-27, M1 T1)
+- SPEC: §7.0 (user answer Q5); follow-up COR-5
+- Library / version: `net/http` in Go 1.27.4 (`(*ServeMux).Handler`, `findHandler`, `matchingMethods`)
+- Checked: the source and `TestMuxFallback`.
+- Finding: `ServeMux.Handler(r)` returns the matched pattern, or `""` with the mux's own handler: a 405 handler
+  (sets `Allow`, e.g. `POST` or `GET, HEAD`, then `http.Error` "Method Not Allowed"), `NotFoundHandler()`, or, for a
+  path that needs cleaning (`/api//x`), a 307 redirect (a trailing-slash redirect returns a non-empty pattern). The
+  handlers are unexported closures, so the pattern alone can't tell them apart; a catch-all pattern such as `/api/`
+  would also swallow the 405s (it matches every method). `Handler` does not touch the request; `ServeHTTP` sets
+  `r.Pattern`.
+- Consequence: `httpx.MuxFallback(mux, "/api")` wraps the mux (no pattern registered, so the route list and the §3.3
+  matrix don't see it). For a path at or under `/api` with an empty pattern it runs the mux's handler against a
+  throw-away writer: 404 → the `NOT_FOUND` envelope; 405 → `METHOD_NOT_ALLOWED` with the mux's `Allow` header; any
+  other status (the redirect) → the mux as before. Matched paths go to `mux.ServeHTTP` with the same request, so
+  `r.Pattern` still reaches the access log. Paths outside `/api` keep the mux's plain text.
+
+### sqlc: a uuid[] column with the uuid override     status: verified (2026-11-27, M1 T1)
+- SPEC: §12.4; follow-up ARC-2
+- Library / version: sqlc CLI v1.31.1, pgx/v5 v5.13.0
+- Checked: `make generate` output for `GetActiveSession` and `TestRequireSessionQueries`.
+- Finding: `coalesce(array_agg(f.id order by f.name_key), '{}')::uuid[]` generates `FarmIds []uuid.UUID` (the
+  `db_type: uuid` override applies to the element type); pgx scans `{}` as an empty slice.
+- Consequence: the session middleware gets the user's farms in the session query; `auth.principalFarms` keeps the
+  owner's `FarmIDs` nil and never hands out nil for the others.
+
+### textkey: x/text NFD and the cedilla / comma-below letters   status: verified (2026-11-27, M1 T4)
+- SPEC: §10.2 (`textkey.Key`), §4.4 (D111 name keys)
+- Library / version: `golang.org/x/text` v0.44.0 (`unicode/norm`), Go 1.27.4 `unicode`
+- Checked: `go doc golang.org/x/text/unicode/norm`; `TestKey` / `TestKeyCollisions` in `internal/platform/textkey`.
+- Finding: `norm.NFD` splits ş/ţ (U+015F/U+0163) into s/t + U+0327 (cedilla) and ș/ț (U+0219/U+021B) into s/t +
+  U+0326 (comma below); both marks are in `unicode.Mn`, as are the breve and circumflex of ă/î/â. Dropping `Mn`
+  and lower-casing gives "hirbovat" for "Hîrbovăț", "Hirbovat" and "HÎRBOVAŢ".
+- Consequence: `textkey.Key` = NFD, drop `Mn`, lower-case, drop whitespace and the stand-alone unit words "g" and
+  "%". The migration fills every `name_key` with it (farms, guides, feed types, series).
+
+### Extracts vs the §10.3 rules and the table constraints   status: verified (2026-11-27, M1 T4)
+- SPEC: §10.3
+- Library / version: design/data/extracts (DATA06), `migratehistory.BuildPlan`
+- Checked: `go test -race ./internal/migratehistory -run 'TestPlan|TestBuildPlanRejects'`; the plan's own
+  constraint check (`plan_check.go`) mirrors the 0001 checks and unique indexes before any COPY.
+- Finding: everything §10.3 lists reproduces (goldens 5, 7, 9–11, 16, 26, 27, 35, 36 from the plan alone), with
+  two extract facts the rules didn't name: (1) Telița also has two rows with g and 0 kg (H5-2 ♂ 22–23.02.2026), so
+  the Q6 rule skips 16 rows, not 14; (2) `eggs-hirbovat-prev-daily.json` has three negative ♂ cells (H1.2 = H5.2
+  10.09.2025 −75 and 09.11.2025 −6, H4.2 = H7.2 09.11.2025 −10) that `legacy_mortality.deaths >= 0` refuses.
+- Consequence: (1) skipped like the Q6 rows (user answer 27.11.2026), SPEC §10.3 names them; (2) skipped (user
+  answer Q-T4-1), SPEC §10.3 names them.
+
+### go-cmp, unexported fields and the golden value types   status: verified (2026-11-27, M1 T6)
+- SPEC: §11.7, §11.8 (`go-cmp` for diffs)
+- Library / version: `github.com/google/go-cmp` v0.7.0; Go 1.27.4 `reflect`, `errors.AsType`
+- Checked: `go doc github.com/google/go-cmp/cmp.Equal`; `TestCheck`, `TestGoldenRowsOnHandBuiltLedger` in
+  `internal/golden`, and a mutation run (banker's rounding in place of `num.Round` fails goldens 12 and 26 on the
+  hand-built ledger: 51,25 → "51.2", 1,05 → "1.0").
+- Finding: `cmp.Equal`/`cmp.Diff` panic on a struct with unexported fields unless it has an `Equal(T) bool` method
+  or an option allows it; `timex.Day` has unexported fields and no `Equal`, and `decimal.Decimal` compares by
+  representation (2303.2 vs 2303.20) under `reflect.DeepEqual`.
+- Consequence: the golden rows return plain values only (ints, `calc.PerSex`, days as "YYYY-MM-DD", decimals
+  rounded once with `num.Round` and written with `StringFixed` at the §11.7 precision). `Row.Check`
+  (`reflect.DeepEqual`, used by `migratehistory.Verify`) and `cmp.Diff` (TestGolden's message) then agree, and the
+  precision is part of the expected value (Cocoși "1781.0": 1 781,04 passes, 1 781,1 fails).
+
+### pgx CopyFrom vs sqlc :copyfrom                   status: verified (2026-11-27, M1 T5)
+- SPEC: §10.3 ("bulk rows with pgx `CopyFrom` / sqlc `:copyfrom`"), §12.4
+- Library / version: sqlc v1.31.1 (`sql_package: pgx/v5`), pgx v5.13.0 (`copy_from.go`, `values.go`)
+- Checked: `make generate` output for `db/queries/migratehistory.sql`; pgx source; `TestLoad` (16 tables, ~13 500 rows,
+  about 0.5 s with Verify).
+- Finding: `:copyfrom` generates `internal/db/dbq/copyfrom.go` (one `Copy…(ctx, []Copy…Params)` per query, an
+  iterator over the params) and adds `CopyFrom` to the generated `DBTX` interface; `*pgxpool.Pool` and `pgx.Tx`
+  satisfy it. The column list is the INSERT's, so `egg_production.total_eggs` (generated) is simply not listed.
+  pgx's `CopyFrom` always uses the binary format; for a column type it doesn't know (our enums) it encodes a
+  string-kind value's text bytes, which is the enum's binary form, so `dbq.Sex` etc. need no registration.
+  `timex.Day` (DateValuer) and `decimal.NullDecimal` (pgx-shopspring-decimal, registered by `db.PoolConfig`) encode
+  as date and numeric. COPY fires the row triggers (`cycle_guide_type_trg`) and checks every constraint.
+- Consequence: the migration writes through sqlc `:copyfrom` (compile-time column lists, §10.3 point 3), not
+  hand-written `pgx.CopyFrom` calls. Callers of `dbq.New` must pass a pool, a connection or a transaction (all
+  implement `CopyFrom`).
+
+### The dev seed vs golden 10                        status: verified (2026-11-27, M1 T7)
+- SPEC: §11.9, §11.7 row 10, §5.5; plan M1-D7
+- Library / version: `illustrative-events-hirbovat.json` (RF08), `migratehistory.Load` with `SeedDev`
+- Checked: a load with every D7 item, including the sexing error carved out of H6.2 ♀ 19.05.2026 deaths (3 → 2 + −1).
+- Finding: Verify then fails only golden 10: cycle deaths ♀ 1 520, 5,65 % (want 1 521, 5,66 %). §5.5 deaths are mortality +
+  culls; a sexing error is neither, so carving one out of the deaths lowers them. The 5 culls keep the deaths.
+- Consequence: the sexing error is not seeded (user answer Q-T7-1, 27.11.2026); everything else in D7 is.
+
+### testdb's seeded template vs Go's test import cycles   status: verified (2026-11-27, M1 T8)
+- SPEC: §11.8 (`il_seed` template), plan M1-D5/D6 ("testdb → migratehistory → golden → calc → db")
+- Library / version: Go 1.27.4 `go vet`/`go test`; PostgreSQL 16.16 `CREATE DATABASE … TEMPLATE`
+- Checked: a probe file in `internal/testdb` importing `migratehistory`, then `go vet ./internal/auth ./internal/calc`;
+  `go test -race ./internal/testdb ./internal/golden`.
+- Finding: `internal/auth/auth_test.go` (`package auth`) and `internal/calc/readers_test.go` (`package calc`) import
+  testdb, and migratehistory imports auth (seeddev.go) and calc (verify.go): "import cycle not allowed in test". So
+  testdb can't import migratehistory. Building `il_seed` (copy of the migrated template + Load with the dev seed +
+  Verify) takes about 2 s under `-race`; each `NewSeeded` copy about 0.1–0.3 s.
+- Consequence: testdb takes the loader as a `testdb.Seeder` through `testdb.MainSeeded(m, seeder)`; the small package
+  `internal/testdb/seed` supplies it (`seed.Main(m)`, `seed.Load`). A package that calls `testdb.NewSeeded(t)` uses
+  `func TestMain(m *testing.M) { seed.Main(m) }`; packages on `testdb.Main` are unchanged and never pay for the seed.
+  The seeded template is `il_t_<pid>_<random>_seed`, built lazily once per process (`sync.OnceValue`), dropped at exit.

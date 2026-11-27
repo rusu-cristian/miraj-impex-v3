@@ -36,6 +36,8 @@ func TestStrings(t *testing.T) {
 		{"Forbidden", Forbidden(), "Cererea a fost refuzată. Reîncarcă pagina și încearcă din nou."},
 		{"InvalidData", InvalidData(), "Datele trimise nu sunt valide."},
 		{"Unavailable", Unavailable(), "Serviciul nu răspunde acum. Încearcă din nou."},
+		{"NotFound", NotFound(), "Adresa cerută nu există."},
+		{"MethodNotAllowed", MethodNotAllowed(), "Operația nu este permisă la această adresă."},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.got != tc.want {
@@ -62,5 +64,35 @@ func TestNoCedilla(t *testing.T) {
 				t.Errorf("%s:%d uses a cedilla s/t (want U+0219/U+021B): %s", file, i+1, line)
 			}
 		}
+	}
+}
+
+func TestMigrationStrings(t *testing.T) {
+	spec, err := os.ReadFile(specPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := RegisterDifference(), "diferență registru"; got != want || !strings.Contains(string(spec), `"`+want+`"`) {
+		t.Errorf("RegisterDifference() = %q, want %q quoted in SPEC.md", got, want)
+	}
+	if got, want := FeedStockMove(), "mutare ♀ → ♂"; got != want || !strings.Contains(string(spec), `"`+want+`"`) {
+		t.Errorf("FeedStockMove() = %q, want %q quoted in SPEC.md", got, want)
+	}
+	// SPEC §10.3 gives the template `"plecare {out_date}"`.
+	if !strings.Contains(string(spec), `"plecare {out_date}"`) {
+		t.Error(`"plecare {out_date}" is not quoted in SPEC.md`)
+	}
+	if got, want := TransferDeparture("27.02.2026"), "plecare 27.02.2026"; got != want {
+		t.Errorf("TransferDeparture = %q, want %q", got, want)
+	}
+}
+
+func TestAuditKeys(t *testing.T) {
+	spec, err := os.ReadFile(specPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := AuditKeyHensDead("H5.2"), "H5.2 · găini moarte"; got != want || !strings.Contains(string(spec), `"`+want+`"`) {
+		t.Errorf("AuditKeyHensDead(H5.2) = %q, want %q quoted in SPEC.md", got, want)
 	}
 }

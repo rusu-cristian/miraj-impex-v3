@@ -18,6 +18,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/argon2"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
@@ -32,7 +34,7 @@ const goodPassword = "parola-corecta"
 
 // The hash of goodPassword, computed once: argon2 under -race is slow.
 var goodHash = sync.OnceValue(func() string {
-	h, err := newHasher().Hash(context.Background(), goodPassword)
+	h, err := NewHasher().Hash(context.Background(), goodPassword)
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +53,7 @@ func newEnv(t *testing.T) *env {
 	d := testdb.New(t)
 	svc := NewService(db.NewStore(d.App), d.Clock)
 	mux := http.NewServeMux()
-	NewHandler(svc).Routes(mux, httpx.NewChain())
+	NewHandler(svc).Routes(mux, httpx.NewChain(), httpx.NewChain(svc.RequireSession))
 	trusted := []netip.Prefix{netip.MustParsePrefix("10.0.0.0/8")}
 	return &env{t: t, d: d, svc: svc, h: httpx.NewChain(httpx.ClientIP(trusted)).Then(mux)}
 }
@@ -408,7 +410,7 @@ func TestRehashOnLogin(t *testing.T) {
 	if stored == oldHash || !phcPattern.MatchString(stored) {
 		t.Errorf("stored hash %q, want a new one with the current parameters", stored)
 	}
-	if ok, rehash, err := newHasher().Verify(context.Background(), goodPassword, stored); !ok || rehash || err != nil {
+	if ok, rehash, err := NewHasher().Verify(context.Background(), goodPassword, stored); !ok || rehash || err != nil {
 		t.Errorf("new hash: ok=%v rehash=%v err=%v", ok, rehash, err)
 	}
 }
@@ -485,6 +487,125 @@ func TestSessionMiddlewarePrincipal(t *testing.T) {
 	if got.UserID != viewer || got.FarmIDs == nil || len(got.FarmIDs) != 0 {
 		t.Errorf("viewer without farms %+v (FarmIDs must be empty, not nil)", got)
 	}
+}
+
+// queryCounter is a pgx QueryTracer that records the sqlc queries (their
+// "-- name: X" header) a pool runs; connection setup (SET ROLE, app.today)
+// is not counted.
+type queryCounter struct {
+	mu    sync.Mutex
+	names []string
+}
+
+func (c *queryCounter) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.TraceQueryStartData) context.Context {
+	if rest, ok := strings.CutPrefix(d.SQL, "-- name: "); ok {
+		name, _, _ := strings.Cut(rest, " ")
+		c.mu.Lock()
+		c.names = append(c.names, name)
+		c.mu.Unlock()
+	}
+	return ctx
+}
+
+func (c *queryCounter) TraceQueryEnd(context.Context, *pgx.Conn, pgx.TraceQueryEndData) {}
+
+func (c *queryCounter) take() []string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	out := c.names
+	c.names = nil
+	return out
+}
+
+// TestRequireSessionQueries: the session middleware loads the session, the
+// user and the user's farms in one query, and adds the slide only when it is
+// due (follow-up ARC-2).
+func TestRequireSessionQueries(t *testing.T) {
+	e := newEnv(t)
+	hirb := e.farm("Hîrbovăț", "hirbovat")
+	tel := e.farm("Telița", "telita")
+	cioc := e.farm("Ciocana", "ciocana")
+	vet := e.user("ceban", "Dr. Ceban", dbq.UserRoleVet, hirb)
+	mgr := e.user("lungu", "Ana Lungu", dbq.UserRoleManager, tel, cioc)
+	e.user("rusu", "Ion Rusu", dbq.UserRoleOwner)
+	e.user("gol", "Fără Ferme", dbq.UserRoleViewer)
+
+	// A second app pool on the same database, traced.
+	var counter queryCounter
+	pc, err := db.PoolConfig(testdb.DSN(e.d.Name), 2, &testdb.Today)
+	if err != nil {
+		t.Fatal(err)
+	}
+	prepare := pc.AfterConnect
+	pc.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		if _, err := conn.Exec(ctx, "set role "+testdb.RoleApp); err != nil {
+			return err
+		}
+		return prepare(ctx, conn)
+	}
+	pc.ConnConfig.Tracer = &counter
+	pool, err := pgxpool.NewWithConfig(context.Background(), pc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	svc := NewService(db.NewStore(pool), e.d.Clock)
+
+	var got Principal
+	probe := svc.RequireSession(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got, _ = PrincipalFrom(r.Context())
+	}))
+	call := func(t *testing.T, token string, want ...string) {
+		t.Helper()
+		r := httptest.NewRequest("GET", "/api/x", nil)
+		r.AddCookie(&http.Cookie{Name: CookieName, Value: token})
+		got = Principal{}
+		counter.take()
+		probe.ServeHTTP(httptest.NewRecorder(), r)
+		if names := counter.take(); !slices.Equal(names, want) {
+			t.Errorf("queries %q, want %q", names, want)
+		}
+	}
+
+	vetToken := e.signIn("ceban")
+	t.Run("vet, no slide due", func(t *testing.T) {
+		call(t, vetToken, "GetActiveSession")
+		if got.UserID != vet || !slices.Equal(got.FarmIDs, []uuid.UUID{hirb}) {
+			t.Errorf("principal %+v", got)
+		}
+	})
+	t.Run("manager, farms in name_key order", func(t *testing.T) {
+		call(t, e.signIn("lungu"), "GetActiveSession")
+		if got.UserID != mgr || !slices.Equal(got.FarmIDs, []uuid.UUID{cioc, tel}) {
+			t.Errorf("principal %+v, want farms Ciocana, Telița", got)
+		}
+	})
+	t.Run("owner", func(t *testing.T) {
+		call(t, e.signIn("rusu"), "GetActiveSession")
+		if got.Role != Owner || got.FarmIDs != nil {
+			t.Errorf("owner principal %+v (FarmIDs must be nil)", got)
+		}
+	})
+	t.Run("viewer without farms", func(t *testing.T) {
+		call(t, e.signIn("gol"), "GetActiveSession")
+		if got.FarmIDs == nil || len(got.FarmIDs) != 0 {
+			t.Errorf("principal %+v (FarmIDs must be empty, not nil)", got)
+		}
+	})
+	t.Run("vet, slide due", func(t *testing.T) {
+		e.d.Clock.Advance(SlideEvery + time.Minute)
+		call(t, vetToken, "GetActiveSession", "SlideSession")
+		if got.UserID != vet || !slices.Equal(got.FarmIDs, []uuid.UUID{hirb}) {
+			t.Errorf("principal %+v", got)
+		}
+	})
+	t.Run("unknown token", func(t *testing.T) {
+		random, _, _ := newToken()
+		call(t, random, "GetActiveSession")
+		if got.UserID != uuid.Nil {
+			t.Errorf("a principal for an unknown token: %+v", got)
+		}
+	})
 }
 
 func TestSessionRefusals(t *testing.T) {
@@ -618,16 +739,37 @@ func TestRevokeUserSessions(t *testing.T) {
 	}
 }
 
-type routeRecorder struct{ patterns []string }
+type routeRecorder struct {
+	patterns []string
+	handlers []http.Handler
+}
 
-func (r *routeRecorder) Handle(p string, _ http.Handler) { r.patterns = append(r.patterns, p) }
+func (r *routeRecorder) Handle(p string, h http.Handler) {
+	r.patterns = append(r.patterns, p)
+	r.handlers = append(r.handlers, h)
+}
 
+// TestRoutes: login is on the public chain, logout and me on the authed one
+// (plan D10). Each chain ends in a marker that answers without calling the
+// handler, so the test needs no database.
 func TestRoutes(t *testing.T) {
+	marker := func(name string) httpx.Middleware {
+		return func(http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte(name)) })
+		}
+	}
 	var rr routeRecorder
-	NewHandler(&Service{}).Routes(&rr, httpx.NewChain())
+	NewHandler(&Service{}).Routes(&rr, httpx.NewChain(marker("public")), httpx.NewChain(marker("authed")))
 	want := []string{"POST /api/auth/login", "POST /api/auth/logout", "GET /api/auth/me"}
 	if !slices.Equal(rr.patterns, want) {
-		t.Errorf("routes %q, want %q", rr.patterns, want)
+		t.Fatalf("routes %q, want %q", rr.patterns, want)
+	}
+	for i, chain := range []string{"public", "authed", "authed"} {
+		w := httptest.NewRecorder()
+		rr.handlers[i].ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+		if w.Body.String() != chain {
+			t.Errorf("%s runs on the %q chain, want %q", rr.patterns[i], w.Body, chain)
+		}
 	}
 }
 

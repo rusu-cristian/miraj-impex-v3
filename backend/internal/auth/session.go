@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -67,8 +66,9 @@ func clearCookie() *http.Cookie {
 }
 
 // RequireSession is the session middleware (SPEC §11.4). It looks up the
-// il_session cookie among unrevoked, unexpired sessions of active users, puts
-// the Principal in the context and names the user on the access-log line.
+// il_session cookie among unrevoked, unexpired sessions of active users (one
+// query, the user's farms included; a second only when the session slides),
+// puts the Principal in the context and names the user on the access-log line.
 // Anything else is 401 UNAUTHENTICATED. Once an hour of use it slides
 // expires_at to now + 30 days and re-sends the cookie with a fresh Max-Age.
 func (s *Service) RequireSession(next http.Handler) http.Handler {
@@ -108,13 +108,8 @@ func (s *Service) RequireSession(next http.Handler) http.Handler {
 			}
 		}
 		role := Role(row.Role)
-		farmIDs, err := s.farmIDs(ctx, row.UserID, role)
-		if err != nil {
-			httpx.WriteError(w, err)
-			return
-		}
 		p := Principal{
-			UserID: row.UserID, Name: row.Name, Role: role, FarmIDs: farmIDs,
+			UserID: row.UserID, Name: row.Name, Role: role, FarmIDs: principalFarms(role, row.FarmIds),
 			sessionID: row.SessionID, login: row.Login,
 		}
 		httpx.SetUserID(w, p.UserID)
@@ -122,18 +117,14 @@ func (s *Service) RequireSession(next http.Handler) http.Handler {
 	})
 }
 
-// farmIDs is nil for the owner and the user_farm farms (never nil) for others.
-func (s *Service) farmIDs(ctx context.Context, userID uuid.UUID, role Role) ([]uuid.UUID, error) {
+// principalFarms is nil for the owner, who sees every farm, and the user's
+// user_farm farms (GetActiveSession, name_key order; never nil) for others.
+func principalFarms(role Role, ids []uuid.UUID) []uuid.UUID {
 	if role == Owner {
-		return nil, nil
+		return nil
 	}
-	farms, err := s.store.Q().ListUserFarms(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("auth: load farms: %w", err)
+	if ids == nil {
+		return []uuid.UUID{}
 	}
-	ids := make([]uuid.UUID, 0, len(farms))
-	for _, f := range farms {
-		ids = append(ids, f.ID)
-	}
-	return ids, nil
+	return ids
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/pgerr"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
 
@@ -72,7 +73,7 @@ func createOwner(ctx context.Context, store *db.Store, clock timex.Clock, in own
 	if err != nil {
 		return createdOwner{}, err
 	}
-	hash, err := auth.NewService(store, clock).HashPassword(ctx, password)
+	hash, err := auth.NewHasher().Hash(ctx, password)
 	if err != nil {
 		return createdOwner{}, err
 	}
@@ -94,7 +95,7 @@ func createOwner(ctx context.Context, store *db.Store, clock timex.Clock, in own
 		u, err := tx.Q.InsertUser(ctx, dbq.InsertUserParams{
 			Name: in.Name, Login: in.Login, PasswordHash: hash, Role: dbq.UserRoleOwner, Now: now,
 		})
-		if ce, ok := db.AsConstraint(err, db.Unique); ok && ce.Constraint == "app_user_login_uq" {
+		if ce, ok := pgerr.AsConstraint(err, pgerr.Unique); ok && ce.Constraint == "app_user_login_uq" {
 			return errLoginTaken
 		}
 		if err != nil {

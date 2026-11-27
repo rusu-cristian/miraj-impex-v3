@@ -1,4 +1,7 @@
-package db
+// Package pgerr maps PostgreSQL constraint violations to typed errors
+// (SPEC §7.0a, §12.4). It depends only on pgconn, so httpx can name a
+// violation in its log line without importing the db package.
+package pgerr
 
 import (
 	"errors"
@@ -27,7 +30,7 @@ type ConstraintError struct {
 }
 
 func (e *ConstraintError) Error() string {
-	return "db: constraint violation " + string(e.Kind) + " on " + e.Constraint
+	return "pgerr: constraint violation " + string(e.Kind) + " on " + e.Constraint
 }
 
 func (e *ConstraintError) Unwrap() error { return e.Err }

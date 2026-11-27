@@ -27,7 +27,6 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
-	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
@@ -48,8 +47,7 @@ const testPassword = "parola-de-test"
 // passwordHash is the argon2id hash of testPassword, computed once per
 // process (argon2 under -race is slow). Hashing doesn't touch the database.
 var passwordHash = sync.OnceValues(func() (string, error) {
-	svc := auth.NewService(db.NewStore(nil), timex.FixedClock(testdb.Now()))
-	return svc.HashPassword(context.Background(), testPassword)
+	return auth.NewHasher().Hash(context.Background(), testPassword)
 })
 
 // loopback are the addresses the httptest client connects from; trusting
@@ -330,6 +328,8 @@ const (
 	bodyNoSession    = `{"error":{"code":"UNAUTHENTICATED","message":"Sesiunea a expirat. Intră din nou în cont."}}`
 	bodyForbidden    = `{"error":{"code":"FORBIDDEN","message":"Cererea a fost refuzată. Reîncarcă pagina și încearcă din nou."}}`
 	bodyTooLarge     = `{"error":{"code":"PAYLOAD_TOO_LARGE","message":"Datele trimise sunt prea mari."}}`
+	bodyNotFound     = `{"error":{"code":"NOT_FOUND","message":"Adresa cerută nu există."}}`
+	bodyNoMethod     = `{"error":{"code":"METHOD_NOT_ALLOWED","message":"Operația nu este permisă la această adresă."}}`
 	rateLimitMessage = "Prea multe încercări. Încearcă din nou peste 5 minute."
 )
 
@@ -757,6 +757,169 @@ func TestAPIResponseHeaders(t *testing.T) {
 	r = s.do(t, call{method: http.MethodGet, path: "/api/auth/me", header: map[string]string{"X-Request-ID": "not a valid id"}})
 	if !uuidPattern.MatchString(r.header.Get("X-Request-ID")) {
 		t.Errorf("invalid X-Request-ID came back as %q, want a generated UUID", r.header.Get("X-Request-ID"))
+	}
+}
+
+// /api paths no route serves answer with the envelope (user answer Q5); the
+// rest of the server keeps the mux's plain answers.
+func TestAPINotFoundAndMethodNotAllowed(t *testing.T) {
+	t.Parallel()
+	s := newStack(t)
+	envelope := func(what string, r response) {
+		t.Helper()
+		if ct := r.header.Get("Content-Type"); ct != "application/json; charset=utf-8" {
+			t.Errorf("%s: Content-Type %q", what, ct)
+		}
+		if cc := r.header.Get("Cache-Control"); cc != "no-store" {
+			t.Errorf("%s: Cache-Control %q", what, cc)
+		}
+	}
+
+	r := s.do(t, call{method: http.MethodGet, path: "/api/nope"})
+	wantBody(t, "GET /api/nope", r, http.StatusNotFound, bodyNotFound)
+	envelope("GET /api/nope", r)
+	r = s.do(t, call{method: http.MethodPost, path: "/api/nope", body: "{}"})
+	wantBody(t, "POST /api/nope", r, http.StatusNotFound, bodyNotFound)
+
+	r = s.do(t, call{method: http.MethodGet, path: "/api/auth/login"})
+	wantBody(t, "GET /api/auth/login", r, http.StatusMethodNotAllowed, bodyNoMethod)
+	envelope("GET /api/auth/login", r)
+	if allow := r.header.Values("Allow"); !slices.Equal(allow, []string{"POST"}) {
+		t.Errorf("GET /api/auth/login: Allow %q, want POST", allow)
+	}
+	r = s.do(t, call{method: http.MethodPost, path: "/api/auth/me", body: "{}"})
+	wantBody(t, "POST /api/auth/me", r, http.StatusMethodNotAllowed, bodyNoMethod)
+	if allow := r.header.Get("Allow"); allow != "GET, HEAD" {
+		t.Errorf("POST /api/auth/me: Allow %q, want GET, HEAD", allow)
+	}
+
+	// The global Origin rule still runs first: a cross-site write is a 403
+	// whether or not the path exists.
+	r = s.do(t, call{method: http.MethodPost, path: "/api/nope", body: "{}", header: map[string]string{"Origin": "https://evil.example"}})
+	wantBody(t, "cross-site POST /api/nope", r, http.StatusForbidden, bodyForbidden)
+
+	// Outside /api the mux's defaults stay.
+	for _, c := range []call{{method: http.MethodGet, path: "/nope"}, {method: http.MethodPost, path: "/healthz", body: "{}"}} {
+		r := s.do(t, c)
+		if r.status != http.StatusNotFound && r.status != http.StatusMethodNotAllowed || strings.HasPrefix(r.header.Get("Content-Type"), "application/json") {
+			t.Errorf("%s %s: %s (Content-Type %q), want the mux's plain-text answer", c.method, c.path, r, r.header.Get("Content-Type"))
+		}
+	}
+}
+
+// The Content-Type rule runs per route (plan D9): the authed chain refuses a
+// text/plain logout before the session check, and the session stays open.
+func TestContentTypeOnAuthedRoutes(t *testing.T) {
+	t.Parallel()
+	s := newStack(t)
+	id := s.user(t, "ceban", "Dr. Ceban", dbq.UserRoleVet, true)
+	token := s.session(t, id, sessionOpen)
+
+	r := s.do(t, call{method: http.MethodPost, path: "/api/auth/logout", cookie: token, header: map[string]string{"Content-Type": "text/plain"}})
+	wantBody(t, "text/plain logout", r, http.StatusForbidden, bodyForbidden)
+	r = s.do(t, call{method: http.MethodPost, path: "/api/auth/logout", header: map[string]string{"Content-Type": "text/plain"}})
+	wantBody(t, "text/plain logout without a session", r, http.StatusForbidden, bodyForbidden)
+	if r := s.do(t, call{method: http.MethodGet, path: "/api/auth/me", cookie: token}); r.status != http.StatusOK {
+		t.Errorf("me after the refused logout: %s, want 200", r)
+	}
+}
+
+// otherMediaRoutes are the /api write routes whose chain allows a media type
+// other than JSON (the guide preview's multipart, voice STT's audio when they
+// land): pattern → the type the route takes. Empty today.
+var otherMediaRoutes = map[string]string{}
+
+// wildcard is a {name}, {name...} or {$} segment of a ServeMux pattern.
+var wildcard = regexp.MustCompile(`\{[^}]*\}`)
+
+// writeRoute splits a registered pattern into the write method and the path
+// to request, or ok false for a read route or one outside /api. A pattern
+// without a method matches every method, so it is a write route too (POST).
+// Wildcards become a UUID; {$} becomes nothing.
+func writeRoute(pattern string) (method, path string, ok bool) {
+	method, path, found := strings.Cut(pattern, " ")
+	if !found {
+		method, path = http.MethodPost, pattern
+	}
+	if i := strings.Index(path, "/"); i > 0 { // a host before the path
+		path = path[i:]
+	}
+	switch method {
+	case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
+	default:
+		return "", "", false
+	}
+	if path != "/api" && !strings.HasPrefix(path, "/api/") {
+		return "", "", false
+	}
+	path = wildcard.ReplaceAllStringFunc(path, func(w string) string {
+		if w == "{$}" {
+			return ""
+		}
+		return "0b9e4b8e-6f0a-4c51-9d3e-2f7a1c5d8e90"
+	})
+	return method, path, true
+}
+
+// Every write route under /api carries the Content-Type rule (SPEC §11.4,
+// plan D9): a text/plain body with a valid Origin and a valid session is
+// refused with 403 FORBIDDEN before anything else runs. The walk covers
+// every pattern the real wiring registers, so a write route registered
+// without httpx.ContentType fails here.
+func TestEveryWriteRouteChecksContentType(t *testing.T) {
+	t.Parallel()
+	s := newStack(t)
+	id := s.user(t, "proprietar", "Proprietar", dbq.UserRoleOwner, true)
+	token := s.session(t, id, sessionOpen)
+
+	var checked []string
+	for _, pattern := range s.app.routes {
+		method, path, ok := writeRoute(pattern)
+		if !ok {
+			continue
+		}
+		checked = append(checked, pattern)
+		r := s.do(t, call{method: method, path: path, body: "{}", cookie: token,
+			header: map[string]string{"Origin": testOrigin, "Content-Type": "text/plain"}})
+		wantBody(t, pattern+" with text/plain", r, http.StatusForbidden, bodyForbidden)
+		if media, ok := otherMediaRoutes[pattern]; ok {
+			r := s.do(t, call{method: method, path: path, cookie: token,
+				header: map[string]string{"Origin": testOrigin, "Content-Type": media}})
+			if r.status == http.StatusForbidden && r.text() == bodyForbidden {
+				t.Errorf("%s with its own media type %s: %s, want it past the Content-Type rule", pattern, media, r)
+			}
+		}
+	}
+	if !slices.Contains(checked, "POST /api/auth/login") || !slices.Contains(checked, "POST /api/auth/logout") {
+		t.Errorf("checked %q; the walk missed the auth write routes", checked)
+	}
+	for pattern := range otherMediaRoutes {
+		if !slices.Contains(checked, pattern) {
+			t.Errorf("otherMediaRoutes names %q, which is not a registered /api write route", pattern)
+		}
+	}
+}
+
+func TestWriteRoute(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		pattern, method, path string
+		ok                    bool
+	}{
+		{"POST /api/auth/login", "POST", "/api/auth/login", true},
+		{"DELETE /api/entries/{id}", "DELETE", "/api/entries/0b9e4b8e-6f0a-4c51-9d3e-2f7a1c5d8e90", true},
+		{"PATCH /api/farms/{farm}/sections/{rest...}", "PATCH", "/api/farms/0b9e4b8e-6f0a-4c51-9d3e-2f7a1c5d8e90/sections/0b9e4b8e-6f0a-4c51-9d3e-2f7a1c5d8e90", true},
+		{"PUT example.com/api/x/{$}", "PUT", "/api/x/", true},
+		{"/api/any", "POST", "/api/any", true},
+		{"GET /api/auth/me", "", "", false},
+		{"HEAD /api/auth/me", "", "", false},
+		{"POST /healthz", "", "", false},
+		{"POST /apix", "", "", false},
+	} {
+		method, path, ok := writeRoute(tc.pattern)
+		if method != tc.method || path != tc.path || ok != tc.ok {
+			t.Errorf("writeRoute(%q) = %q %q %v, want %q %q %v", tc.pattern, method, path, ok, tc.method, tc.path, tc.ok)
+		}
 	}
 }
 
