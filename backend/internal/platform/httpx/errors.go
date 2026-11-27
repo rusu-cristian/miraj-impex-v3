@@ -94,6 +94,12 @@ func Forbidden() *Error {
 	return NewError(http.StatusForbidden, CodeForbidden, messages.Forbidden())
 }
 
+// FarmForbidden is 403 FARM_FORBIDDEN "Nu ai acces la această fermă.": a
+// farm-scoped route asked for a farm outside the caller's farms (§7.0, §3.1).
+func FarmForbidden() *Error {
+	return NewError(http.StatusForbidden, CodeFarmForbidden, messages.FarmForbidden())
+}
+
 // NotFound is 404 NOT_FOUND "Adresa cerută nu există.": no route serves the
 // path (MuxFallback). A module whose resource is missing may use it too.
 func NotFound() *Error {

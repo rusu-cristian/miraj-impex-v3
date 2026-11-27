@@ -51,3 +51,13 @@ func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
 	}
 	return pgerr.MapError(err)
 }
+
+// InReadTx runs fn in one REPEATABLE READ, READ ONLY transaction, so every
+// statement of a read that takes several (a page, a summary) sees the same
+// snapshot: a save committed between two of them can't skew one response.
+// fn's error is returned as it is, after the rollback. Writes use InTx: its
+// READ COMMITTED is what the login throttle and the ledger locks rely on.
+func (s *Store) InReadTx(ctx context.Context, fn func(dbq.DBTX) error) error {
+	return pgx.BeginTxFunc(ctx, s.pool, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly},
+		func(t pgx.Tx) error { return fn(t) })
+}

@@ -58,6 +58,9 @@ func TestSpecExamples(t *testing.T) {
 		{RangeNoYear(timex.MustDay(2026, 11, 16), timex.MustDay(2026, 11, 18)), "16.11–18.11"},
 		{WeekLabel(59), "SAPT 59"},
 		{WeekText(59), "sapt. 59"},
+		{WeekRange(56, 59), "SAPT 56–59"},
+		{WeekRange(58, 58), "SAPT 58"},
+		{DayMonth(timex.MustDay(2026, 2, 3)), "03.02"},
 	} {
 		if tc.got != tc.want {
 			t.Errorf("got %q, want %q", tc.got, tc.want)

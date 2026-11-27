@@ -8,6 +8,8 @@ import (
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
@@ -40,7 +42,11 @@ func newApp(cfg config.Config, log *slog.Logger, clock timex.Clock, pools *db.Po
 	// Handlers and routes.
 	h := newHealth(pools.App, latest, log)
 	rec := newRouteRecorder()
-	registerRoutes(rec, h, authService, auth.NewHandler(authService))
+	registerRoutes(rec, h, authService, handlers{
+		auth:  auth.NewHandler(authService),
+		table: periodtable.NewHandler(periodtable.NewService(store, clock)),
+		farms: farms.NewHandler(farms.NewService(store, clock)),
+	})
 
 	return &app{
 		log:             log,

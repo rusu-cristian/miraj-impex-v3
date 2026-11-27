@@ -14,6 +14,7 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
@@ -42,13 +43,39 @@ var callers = []caller{anonymous, vet, viewer, manager, owner, revoked, expired,
 // matrixRow is one route and the status each caller gets.
 type matrixRow struct {
 	route string // the pattern exactly as registered ("POST /api/auth/login")
-	path  string // a concrete path when route has wildcards; "" = route's path
+	// path builds the concrete path (wildcards filled, query added) from the
+	// farms the test creates at run time; nil = route's path.
+	path func(matrixFarms) string
 	// signIn: the body is the caller's own credentials (login, password).
 	signIn bool
 	// account: a 200 body is the caller's account (user, farms).
 	account bool
 	want    map[caller]int
+	// code is the error.code a caller's refusal must carry, where the status
+	// alone can't tell (403 FORBIDDEN vs FARM_FORBIDDEN).
+	code map[caller]string
+	// also are the same route on other targets (another farm, an unknown
+	// id), each with its own statuses. They belong to the row, so deleting
+	// the row still leaves its route without one.
+	also []matrixCase
 }
+
+// matrixCase is a row's route on another target.
+type matrixCase struct {
+	name string // the target, in the subtest name ("Telița")
+	path func(matrixFarms) string
+	want map[caller]int
+	code map[caller]string
+}
+
+// matrixFarms are the farms TestAuthMatrix creates; their ids exist only at
+// run time, so farm-scoped rows build their paths from them.
+type matrixFarms struct {
+	hirb, tel, cojusna uuid.UUID
+}
+
+// unknownFarm is a farm id that no farm has.
+var unknownFarm = uuid.MustParse("0b9e4b8e-6f0a-4c51-9d3e-2f7a1c5d8e90")
 
 func everyone(status int) map[caller]int {
 	m := make(map[caller]int, len(callers))
@@ -78,21 +105,77 @@ var authMatrix = []matrixRow{
 		anonymous: 401, vet: 200, viewer: 200, manager: 200, owner: 200,
 		revoked: 401, expired: 401, deactivated: 401,
 	}},
+
+	// The farm scope pages (M2 D4): viewer, manager and owner, each on the
+	// farms they may see. Vets never reach them (403 FORBIDDEN); the viewer
+	// of Telița is refused Hîrbovăț and Cojușna (403 FARM_FORBIDDEN), and so
+	// is anyone but the owner on an unknown id, which the owner gets as 404.
+	farmRow("GET /api/table", func(id uuid.UUID) string { return "/api/table?view=farm&farmId=" + id.String() }),
+	farmRow("GET /api/farms/{id}/page", func(id uuid.UUID) string { return "/api/farms/" + id.String() + "/page" }),
+	farmRow("GET /api/farms/{id}/summary", func(id uuid.UUID) string { return "/api/farms/" + id.String() + "/summary" }),
+
+	// The shell bootstrap (M2 D7): every active session, scoped to its farms.
+	{route: "GET /api/bootstrap", want: map[caller]int{
+		anonymous: 401, vet: 200, viewer: 200, manager: 200, owner: 200,
+		revoked: 401, expired: 401, deactivated: 401,
+	}},
+}
+
+// farmRow is the row of a farm-scoped read: path builds the request for a
+// farm id. The main target is Hîrbovăț (the viewer's other farm); also are
+// Telița (the viewer's farm), Cojușna (the owner's only) and an unknown id.
+func farmRow(route string, path func(uuid.UUID) string) matrixRow {
+	at := func(pick func(matrixFarms) uuid.UUID) func(matrixFarms) string {
+		return func(f matrixFarms) string { return path(pick(f)) }
+	}
+	// scoped are the statuses with the session check and RequireRole(viewer,
+	// manager, owner) in front of the farm check.
+	scoped := func(viewerStatus, managerStatus, ownerStatus int) map[caller]int {
+		return map[caller]int{
+			anonymous: 401, vet: 403, viewer: viewerStatus, manager: managerStatus, owner: ownerStatus,
+			revoked: 401, expired: 401, deactivated: 401,
+		}
+	}
+	return matrixRow{
+		route: route,
+		path:  at(func(f matrixFarms) uuid.UUID { return f.hirb }),
+		want:  scoped(403, 200, 200),
+		code:  map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden},
+		also: []matrixCase{
+			{name: "Telița", path: at(func(f matrixFarms) uuid.UUID { return f.tel }),
+				want: scoped(200, 200, 200),
+				code: map[caller]string{vet: httpx.CodeForbidden}},
+			{name: "Cojușna", path: at(func(f matrixFarms) uuid.UUID { return f.cojusna }),
+				want: scoped(403, 403, 200),
+				code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden, manager: httpx.CodeFarmForbidden}},
+			{name: "unknown farm", path: func(matrixFarms) string { return path(unknownFarm) },
+				want: scoped(403, 403, 404),
+				code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden,
+					manager: httpx.CodeFarmForbidden, owner: httpx.CodeNotFound}},
+		},
+	}
 }
 
 // matrixGaps compares the registered routes with the table: missing are
-// routes without a row, stale are rows naming no registered route, partial
-// are rows that lack a caller.
+// routes without a row, stale are rows naming no registered route (or a
+// route a previous row already has: one row per route, so deleting a row
+// always leaves its route missing), partial are rows or cases that lack a
+// caller.
 func matrixGaps(routes []string, rows []matrixRow) (missing, stale, partial []string) {
 	have := make(map[string]bool, len(rows))
 	for _, r := range rows {
-		have[r.route] = true
-		if !slices.Contains(routes, r.route) {
+		if have[r.route] || !slices.Contains(routes, r.route) {
 			stale = append(stale, r.route)
 		}
+		have[r.route] = true
 		for _, c := range callers {
 			if _, ok := r.want[c]; !ok {
 				partial = append(partial, r.route+" × "+string(c))
+			}
+			for _, a := range r.also {
+				if _, ok := a.want[c]; !ok {
+					partial = append(partial, r.route+" ("+a.name+") × "+string(c))
+				}
 			}
 		}
 	}
@@ -142,7 +225,7 @@ func TestAuthMatrix(t *testing.T) {
 	// Farms and accounts. Cojușna has no user_farm rows: only the owner sees it.
 	hirb := s.farm(t, "Hîrbovăț", "hirbovat")
 	tel := s.farm(t, "Telița", "telita")
-	s.farm(t, "Cojușna", "cojusna")
+	ids := matrixFarms{hirb: hirb, tel: tel, cojusna: s.farm(t, "Cojușna", "cojusna")}
 	accounts := map[caller]account{}
 	add := func(c caller, login, name string, role dbq.UserRole, active bool, farms []uuid.UUID, names ...string) {
 		accounts[c] = account{id: s.user(t, login, name, role, active, farms...), login: login, role: string(role), farms: names}
@@ -173,30 +256,64 @@ func TestAuthMatrix(t *testing.T) {
 
 	for _, row := range authMatrix {
 		method, path, _ := strings.Cut(row.route, " ")
-		if row.path != "" {
-			path = row.path
+		if row.path != nil {
+			path = row.path(ids)
 		}
-		for _, c := range callers {
-			want, ok := row.want[c]
-			if !ok {
-				continue // reported above
+		type target struct {
+			name, path string
+			want       map[caller]int
+			code       map[caller]string
+		}
+		cases := []target{{path: path, want: row.want, code: row.code}}
+		for _, a := range row.also {
+			cases = append(cases, target{name: a.name, path: a.path(ids), want: a.want, code: a.code})
+		}
+		for _, mc := range cases {
+			name := row.route
+			if mc.name != "" {
+				name += " (" + mc.name + ")"
 			}
-			t.Run(row.route+"/"+string(c), func(t *testing.T) {
-				t.Parallel()
-				req := call{method: method, path: path, cookie: newCookie(t, c)}
-				if row.signIn {
-					req.body = loginBody(accounts[c].login, testPassword)
+			for _, c := range callers {
+				want, ok := mc.want[c]
+				if !ok {
+					continue // reported above
 				}
-				r := s.do(t, req)
-				if r.status != want {
-					t.Fatalf("%s as %s: %s, want %d", row.route, c, r, want)
-				}
-				if row.account && r.status == http.StatusOK {
-					checkAccount(t, accounts[c], r)
-				}
-			})
+				t.Run(name+"/"+string(c), func(t *testing.T) {
+					t.Parallel()
+					req := call{method: method, path: mc.path, cookie: newCookie(t, c)}
+					if row.signIn {
+						req.body = loginBody(accounts[c].login, testPassword)
+					}
+					r := s.do(t, req)
+					if r.status != want {
+						t.Fatalf("%s as %s: %s, want %d", name, c, r, want)
+					}
+					if code, ok := mc.code[c]; ok {
+						if got := errorCode(t, r); got != code {
+							t.Fatalf("%s as %s: %s, want error.code %s", name, c, r, code)
+						}
+					}
+					if row.account && r.status == http.StatusOK {
+						checkAccount(t, accounts[c], r)
+					}
+				})
+			}
 		}
 	}
+}
+
+// errorCode is the error.code of an error envelope ("" for another body).
+func errorCode(t *testing.T, r response) string {
+	t.Helper()
+	var b struct {
+		Error struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(r.body), &b); err != nil {
+		t.Fatalf("body %q: %v", r.body, err)
+	}
+	return b.Error.Code
 }
 
 // checkAccount fails unless the body names a's user, role and farms.
@@ -239,15 +356,24 @@ func TestAuthMatrixCatchesMissingRow(t *testing.T) {
 		}
 	}
 
-	// A row naming an unregistered route, and a row without every caller.
+	// A row naming an unregistered route, and a second row for a route (both
+	// stale), and a row without every caller.
 	extra := append(slices.Clone(authMatrix),
 		matrixRow{route: "GET /api/nu-exista", want: everyone(http.StatusOK)},
 		matrixRow{route: "GET /healthz", want: map[caller]int{anonymous: 200}})
 	_, stale, partial := matrixGaps(a.routes, extra)
-	if !slices.Equal(stale, []string{"GET /api/nu-exista"}) {
-		t.Errorf("stale %q, want the unregistered route", stale)
+	if !slices.Equal(stale, []string{"GET /api/nu-exista", "GET /healthz"}) {
+		t.Errorf("stale %q, want the unregistered route and the second healthz row", stale)
 	}
 	if len(partial) != len(callers)-1 || !strings.HasPrefix(partial[0], "GET /healthz × ") {
 		t.Errorf("partial %q, want the healthz row's %d missing callers", partial, len(callers)-1)
+	}
+
+	// A case without every caller is partial too, named with its target.
+	row := farmRow("GET /api/table", func(uuid.UUID) string { return "/api/table" })
+	delete(row.also[0].want, viewer)
+	_, _, partial = matrixGaps(a.routes, []matrixRow{row})
+	if !slices.Equal(partial, []string{"GET /api/table (Telița) × viewer"}) {
+		t.Errorf("partial %q, want the Telița case's viewer", partial)
 	}
 }

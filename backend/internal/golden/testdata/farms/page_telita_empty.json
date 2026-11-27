@@ -1,0 +1,112 @@
+{
+  "farm": {
+    "id": "<farm:telita>",
+    "name": "Telița",
+    "type": "growth",
+    "guide": {
+      "id": "<guide:ross308crestere>",
+      "name": "Ross 308 creștere"
+    }
+  },
+  "cycle": {
+    "id": "<cycle:telita/2026>",
+    "series": "Seria 2026",
+    "startDate": "2025-10-07",
+    "endDate": "2026-02-28",
+    "saptStart": 1,
+    "saptToday": 21,
+    "ageDaysToday": 144,
+    "weeks": 21
+  },
+  "alive": {
+    "F": 0,
+    "M": 0
+  },
+  "cycles": [
+    {
+      "id": "<cycle:telita/2026>",
+      "series": "Seria 2026",
+      "label": "07.10.2025–28.02.2026 · SAPT 1–21",
+      "open": false
+    }
+  ],
+  "track": {
+    "lanes": [
+      {
+        "farm": {
+          "id": "<farm:telita>",
+          "name": "Telița"
+        },
+        "cycles": [
+          {
+            "id": "<cycle:telita/2026>",
+            "series": "Seria 2026",
+            "startDate": "2025-10-07",
+            "endDate": "2026-02-28",
+            "open": false,
+            "saptSpan": [
+              1,
+              21
+            ]
+          }
+        ],
+        "transfers": [
+          {
+            "date": "2026-02-22",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 0,
+            "M": 3024
+          },
+          {
+            "date": "2026-02-25",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 5783,
+            "M": 0
+          },
+          {
+            "date": "2026-02-26",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 7072,
+            "M": 0
+          },
+          {
+            "date": "2026-02-27",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 7027,
+            "M": 0
+          },
+          {
+            "date": "2026-02-28",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 7001,
+            "M": 0
+          }
+        ]
+      }
+    ],
+    "today": "2026-11-18"
+  },
+  "actions": {
+    "move": true,
+    "sell": false,
+    "newCycle": true,
+    "changeGuide": false
+  },
+  "tabs": [
+    "rezumat",
+    "pasari",
+    "hrana",
+    "greutate"
+  ],
+  "empty": {
+    "since": "2026-02-28",
+    "label": "Ferma e goală din 28.02.2026. Ultimul ciclu: Seria 2026, SAPT 1–21.",
+    "hint": "Ciclul pornește la prima populare sau transfer."
+  },
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

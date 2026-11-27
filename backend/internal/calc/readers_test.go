@@ -348,6 +348,18 @@ func TestCycleDeathsAndSold(t *testing.T) {
 			t.Errorf("%s: sold = %+v, want %+v", tc.name, got, tc.want)
 		}
 	}
+
+	// FarmRemovals is both from one read.
+	both, err := FarmRemovals(ctx, f.d.App, f.farmA, jan(10), jan(13))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := (Removals{Deaths: PerSex[int]{4, 1}, Sold: PerSex[int]{10, 3}}); both != want {
+		t.Errorf("removals 10–13.01 = %+v, want %+v", both, want)
+	}
+	if _, err := FarmRemovals(ctx, f.d.App, f.farmA, jan(13), jan(10)); !errors.Is(err, errRange) {
+		t.Errorf("a range that ends before it starts: %v", err)
+	}
 }
 
 func TestFarmBase(t *testing.T) {

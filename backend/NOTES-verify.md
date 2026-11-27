@@ -386,3 +386,104 @@ Entry format:
   `internal/testdb/seed` supplies it (`seed.Main(m)`, `seed.Load`). A package that calls `testdb.NewSeeded(t)` uses
   `func TestMain(m *testing.M) { seed.Main(m) }`; packages on `testdb.Main` are unchanged and never pay for the seed.
   The seeded template is `il_t_<pid>_<random>_seed`, built lazily once per process (`sync.OnceValue`), dropped at exit.
+
+## M2
+
+### pgx.RowToStructByName and the `db` tags            status: verified (2026-11-27, M2 T8)
+- SPEC: §12.4 (hand-written SQL scanned with `pgx.CollectRows(…, pgx.RowToStructByName[T])`); plan M2-D1
+- Library / version: `github.com/jackc/pgx/v5` v5.13.0 (`rows.go`: `RowToStructByName`, `namedStructRowScanner`,
+  `lookupNamedStructFields`, `computeNamedStructFields`, `fieldPosByName`)
+- Checked: the source, and a throw-away probe (`pgx.CollectRows` on PostgreSQL 16.16 through a testdb pool with the
+  registered decimal and `timex.Day` codecs), removed after the run.
+- Finding:
+  - The match is strict both ways: a struct field without a column fails with `cannot find field b in returned row`,
+    a column without a field with `struct doesn't have corresponding row field c` (the `…Lax` variants allow missing
+    columns, never extra ones). A `db:"name"` tag matches the column exactly first, then case-insensitively; an
+    untagged field matches case-insensitively with `_` ignored (`FooBar` ← `foo_bar`); `db:"-"` skips the field;
+    unexported fields are skipped; embedded structs are flattened.
+  - The field-to-column mapping is cached per struct type and column list (`sync.Map`), so the reflection cost is
+    paid once per query shape.
+  - Nullable columns: NULL into `int` fails (`cannot scan NULL into *int`), into `decimal.Decimal` fails (`use
+    NullDecimal or *Decimal`), into `timex.Day` fails (`timex: cannot scan NULL into Day (use *Day)`). NULL into
+    `*int`, `*timex.Day` gives nil, into `decimal.NullDecimal` `Valid: false`, into `[]string` a nil slice (`'{}'` an
+    empty one). `bigint` (`sum(int)`) and an integral `numeric` scan into `int`.
+- Consequence: `periodtable.dayRow` tags every column; every aggregate is `coalesce(…, 0)::integer|numeric` and the
+  chips come from `array(…)` (never NULL), so the struct has no nullable field. A later query with a nullable
+  column scans it into a pointer (or `decimal.NullDecimal`), never a value type. The tests that run `ReadDays` /
+  `Build` fail on any drift between `daysSQL` and `dayRow`.
+
+### encoding/json `omitzero` on maps, struct pointers and nil map values   status: verified (2026-11-27, M2 T8)
+- SPEC: §7.0a (`null` vs omitted), §7.4 (cells `null` = "–"; `more`, `start` always written)
+- Library / version: Go 1.27.4 `encoding/json` (the v2-backed v1 API, see M0 above)
+- Checked: a throw-away probe marshalling the field kinds below; `TestNullLists`, `TestFarmReadsOnSeededData`
+  (every M2 body on the seeded data through `stack.do`'s null walker).
+- Finding:
+  - `omitzero` omits a **nil** map, slice or pointer; a non-nil empty map is written `{}`, an empty slice `[]`, a
+    pointer to a zero struct `{"before":0,…}`. `omitzero` on a `bool` omits `false`.
+  - A pointer field without an omit option writes `null` when nil (`"more": null`).
+  - `map[string]*num.Num` writes a nil value as `null` (`{"a":null,"b":1.5}`); the map itself, nil and without
+    `omitzero`, is written `null`.
+- Consequence: `Cells` has no omit option and the builders always make it (`Cells{}`), so a row's cells are an
+  object and a missing figure is `"key": null`. `Status`/`Reasons` maps are `omitzero` and the builder leaves them
+  nil when empty (an empty non-nil one would be written `{}`). `Loaded`, `Totals`, `Empty` (pointers) and `NoGuide`
+  are left out when unset; `More` and `Start` have no omit option, so they are written `null` until they apply. The
+  cmd/api contract walker (`nullableFields`) lists every nullable path of the M2 bodies; `"weeks[].cells.*"` allows
+  a null under any cell key but not `"cells": null` itself.
+
+### Hen-days on an emptying day (M2 Q1 (b))            status: verified (2026-11-27, M2 T8)
+- SPEC: §5.6 (`hen_days`, amended in M2), §11.7 goldens 20 and 24
+- Library / version: `internal/periodtable/sql.go` (`daysSQL`, CTE `unit_day`), PostgreSQL 16.16
+- Checked: `daysSQL`; the golden figures in the plan (planner's Python on the extracts) and the periodtable tests.
+- Finding: the rule lives once, in `unit_day`: `case when egg_rows > 0 or alive_end_f = 0 then alive_start_f else 0
+  end as hen_days`, per egg unit and day. H7 on 14.11.2026 (6 915 hens at the start, sold out, no egg row) counts,
+  so SAPT 58 is 156 418 hen-days → 30,4 % and the foot SAPT 56–59 545 038 → 41,6 % (§5.6 as first written gave
+  31,8 % and 42,1 %). A unit with no hens contributes 0 either way. Weeks without any egg row (SAPT 21–22) keep a
+  null lay % (Σ eggs has no entry), and the hen-day guide weighting (59,9 over 56–59) uses the same hen-days.
+  Egg parts and egg weight still count only unit-days with a total.
+- Consequence: `calc` rollups take the hen-days from the row as summed by SQL; `WeekSeries` and the summary readout
+  use the same rows, so goldens 20, 23 and 24 share one definition.
+
+### Where the JSON golden files live                    status: verified (2026-11-27, M2 review)
+- SPEC: §11.8 (JSON golden files), plan M2 T9
+- Library / version: Go 1.27.4 test runner (one `TestMain` per test binary); `internal/testdb/seed`
+- Checked: `go vet` with a probe import of `seed` from an in-package `periodtable` test; `go test ./internal/golden
+  -run TestJSONGolden` (with and without `-update`).
+- Finding: the files need the seeded data, so the test binary that compares them needs `TestMain` = `seed.Main`.
+  `seed` imports `migratehistory` → `golden` → `farms` → `periodtable`, so an in-package test of `farms` or
+  `periodtable` importing it is "import cycle not allowed in test"; only an external `_test` package can. A
+  package's in-package and external test files build into one binary with one `TestMain`, so moving `TestMain`
+  to the external file (as `farms` and `periodtable` now do for their seeded tests) keeps `testdb.New` working for
+  the in-package tests.
+- Consequence: the JSON golden files are `internal/golden/testdata/periodtable/*.json` and
+  `internal/golden/testdata/farms/*.json`, compared by `internal/golden`'s external tests (`json_test.go`), which
+  already run under `seed.Main` and hold the id-token normaliser (M2 D9) every file shares. `-update` rewrites
+  them. §11.8 names that location.
+
+### cmd/api on the seeded data                         status: verified (2026-11-27, M2 T8)
+- SPEC: §11.8 (contract tests), §11.6 (performance targets)
+- Library / version: `internal/testdb/seed`, Go 1.27.4 test runner
+- Checked: `go vet ./cmd/api`; `go test -race ./cmd/api`.
+- Finding: `cmd/api` is `package main`, which nothing imports, so its in-package tests can use `seed.Main` without
+  the import cycle that keeps other packages' seeded tests external (M1 above). The seeded template is built lazily,
+  only by the tests that call `testdb.NewSeeded` (`TestFarmReadsOnSeededData`, `BenchmarkFarmReads`).
+- Consequence: `cmd/api`'s TestMain is `seed.Main(m)`; every other test there keeps `testdb.New`.
+
+### M2 read latency vs §11.6                           status: verified (2026-11-27, M2 T8)
+- SPEC: §11.6 (p95: `GET /api/table` page ≤ 300 ms, load-more ≤ 200 ms, summary/home ≤ 400 ms)
+- Library / version: `BenchmarkFarmReads` (cmd/api), PostgreSQL 16.16 in testcontainers (Docker Desktop), seeded data
+- Checked: `go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api` (no `-race`), Apple M5 Max, the owner,
+  200 requests each over a socket through the whole chain (session check, service, SQL, JSON), 18.11.2026.
+- Finding (p50 / p95 per request):
+  | read | p50 | p95 | §11.6 target |
+  |---|---|---|---|
+  | `GET /api/table` Hîrbovăț page 1 (SAPT 56–59, grain day) | 12.9 ms | 15.1 ms | ≤ 300 ms |
+  | load-more `before=56` (SAPT 52–55, totals over 52–59) | 14.7 ms | 16.0 ms | ≤ 200 ms |
+  | whole cycle, `grain=week&count=40` (SAPT 20–59) | 27.5 ms | 29.9 ms | – |
+  | `GET /api/farms/{id}/page` Hîrbovăț | 7.5 ms | 8.0 ms | – |
+  | `GET /api/farms/{id}/summary` Hîrbovăț (laying, readout series over 40 weeks) | 65.0 ms | 73.1 ms | ≤ 400 ms |
+  | `GET /api/farms/{id}/summary` Telița (growth) | 17.7 ms | 22.1 ms | ≤ 400 ms |
+  | `GET /api/bootstrap` | 1.1 ms | 1.8 ms | – |
+- Consequence: every M2 read is well inside §11.6 on the seeded data; the laying summary (its many statements and
+  the 40-week `WeekSeries`) is the slowest at about a fifth of its budget. §11.6's table target names detail
+  "Compartimente", which arrives in M6: rerun the benchmark then (and on production-sized data, ≤ 5 years). Under
+  `-race` the times are several times higher and are not a gate.

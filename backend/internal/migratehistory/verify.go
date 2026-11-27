@@ -52,7 +52,11 @@ func (e *VerifyError) Error() string {
 
 // Checks are the verifications of M1-D4, in order:
 //   - every golden value of §11.7 that has an implementation (the registry of
-//     internal/golden; later milestones add rows there and Verify runs them);
+//     internal/golden; later milestones add rows there and Verify runs them).
+//     Each row reads through the app's own builders and readers
+//     (periodtable.Build and WeekSeries, farms.BuildSummary, calc), never a
+//     copy of a formula, so the import verification also exercises the code
+//     that will serve the imported data;
 //   - the §10.3 checks that no golden covers: Hîrbovăț deliveries 69 ·
 //     9 562 437 lei (4 unpriced) and eggs Σ 5 073 155 to 18.11.2026 (the
 //     arrivals ♀ 26 883 · ♂ 3 024 and the stock 31 664,9 / 1 781 kg are
@@ -91,7 +95,10 @@ func Checks() []Check {
 }
 
 // Verify runs Checks (and extra) against db, the import transaction or a
-// pool, and returns a *VerifyError naming every failure.
+// pool, and returns a *VerifyError naming every failure. Inside the import
+// transaction it runs the app builders on the uncommitted data (they take a
+// dbq.DBTX, ARC-6), so a builder that fails on the real history fails the
+// import before anything is committed.
 func Verify(ctx context.Context, db dbq.DBTX, extra ...Check) error {
 	var failures []Failure
 	for _, c := range append(Checks(), extra...) {

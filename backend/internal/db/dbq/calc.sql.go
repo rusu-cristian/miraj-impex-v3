@@ -53,6 +53,161 @@ func (q *Queries) CalcCycleAt(ctx context.Context, arg CalcCycleAtParams) (CalcC
 	return i, err
 }
 
+const calcCycleByID = `-- name: CalcCycleByID :one
+select c.id, c.series_id, s.name as series_name, c.farm_id, c.start_date, c.end_date, c.started_by,
+       c.start_inferred, c.ended_by, c.guide_id, g.name as guide_name, g.type as guide_type,
+       s.placement_date, s.age_at_placement_days::integer as age_at_placement_days,
+       exists (select 1
+               from bird_event e
+               join entry n on n.id = e.entry_id and n.deleted_at is null
+               where e.farm_id = c.farm_id
+                 and e.deleted_at is null
+                 and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date))::boolean as has_bird_events
+from cycle c
+join series s on s.id = c.series_id
+left join guide g on g.id = c.guide_id
+where c.id = $1::uuid
+  and c.farm_id = $2::uuid
+`
+
+type CalcCycleByIDParams struct {
+	CycleID uuid.UUID
+	FarmID  uuid.UUID
+}
+
+type CalcCycleByIDRow struct {
+	ID                 uuid.UUID
+	SeriesID           uuid.UUID
+	SeriesName         string
+	FarmID             uuid.UUID
+	StartDate          timex.Day
+	EndDate            *timex.Day
+	StartedBy          CycleStartKind
+	StartInferred      bool
+	EndedBy            *CycleEndKind
+	GuideID            *uuid.UUID
+	GuideName          *string
+	GuideType          *FarmType
+	PlacementDate      timex.Day
+	AgeAtPlacementDays int32
+	HasBirdEvents      bool
+}
+
+// One cycle of a farm (§4.6) with its series, its guide and whether it has any live bird event (a past cycle without
+// one has no flock count, D52/D54). No row when the cycle belongs to another farm.
+func (q *Queries) CalcCycleByID(ctx context.Context, arg CalcCycleByIDParams) (CalcCycleByIDRow, error) {
+	row := q.db.QueryRow(ctx, calcCycleByID, arg.CycleID, arg.FarmID)
+	var i CalcCycleByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.SeriesID,
+		&i.SeriesName,
+		&i.FarmID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.StartedBy,
+		&i.StartInferred,
+		&i.EndedBy,
+		&i.GuideID,
+		&i.GuideName,
+		&i.GuideType,
+		&i.PlacementDate,
+		&i.AgeAtPlacementDays,
+		&i.HasBirdEvents,
+	)
+	return i, err
+}
+
+const calcEmptySince = `-- name: CalcEmptySince :many
+with scope_leaf as (
+  select l.id as leaf_id, l.id as scope_id
+  from section l
+  where l.farm_id = $1::uuid
+    and not exists (select 1 from section c where c.parent_id = l.id)
+  union all
+  select l.id, l.parent_id
+  from section l
+  where l.farm_id = $1::uuid
+    and l.parent_id is not null
+    and not exists (select 1 from section c where c.parent_id = l.id)
+), day_delta as (
+  select m.scope_id, x.date, sum(x.delta) as delta
+  from scope_leaf m
+  join v_section_sex_delta x on x.section_id = m.leaf_id
+  where x.farm_id = $1::uuid
+    and x.date <= $2::date
+  group by m.scope_id, x.date
+), running as (
+  select scope_id, date, sum(delta) over w as alive_end,
+         coalesce(sum(delta) over w - delta, 0) as alive_before
+  from day_delta
+  window w as (partition by scope_id order by date rows between unbounded preceding and current row)
+), scope as (
+  select scope_id,
+         (array_agg(alive_end order by date desc))[1] as alive_end,
+         max(date) filter (where alive_end = 0 and alive_before > 0) as emptied
+  from running
+  group by scope_id
+), emptied as (
+  select scope_id, emptied::date as empty_since
+  from scope
+  where alive_end = 0
+)
+select s.id as section_id, s.code,
+       exists (select 1 from section c where c.parent_id = s.id)::boolean as is_hall,
+       coalesce(sc.alive_end, 0)::integer as alive_end,
+       e.empty_since
+from section s
+left join section p on p.id = s.parent_id
+left join scope sc on sc.scope_id = s.id
+left join emptied e on e.scope_id = s.id
+where s.farm_id = $1::uuid
+order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), p.id is not null, s.sort_order, s.code
+`
+
+type CalcEmptySinceParams struct {
+	FarmID uuid.UUID
+	Day    timex.Day
+}
+
+type CalcEmptySinceRow struct {
+	SectionID  uuid.UUID
+	Code       string
+	IsHall     bool
+	AliveEnd   int32
+	EmptySince *timex.Day
+}
+
+// empty_since per section of a farm at the end of the day (§5.3): every section, a hall counting its compartments
+// and a section without children itself, both sexes together. alive_end is the scope's count at the end of the day;
+// empty_since is the last day its count went from > 0 to 0, null while it has birds or when it never had any.
+// Ordered as the farm's tree: hall, then compartment.
+func (q *Queries) CalcEmptySince(ctx context.Context, arg CalcEmptySinceParams) ([]CalcEmptySinceRow, error) {
+	rows, err := q.db.Query(ctx, calcEmptySince, arg.FarmID, arg.Day)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcEmptySinceRow{}
+	for rows.Next() {
+		var i CalcEmptySinceRow
+		if err := rows.Scan(
+			&i.SectionID,
+			&i.Code,
+			&i.IsHall,
+			&i.AliveEnd,
+			&i.EmptySince,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const calcFarmBase = `-- name: CalcFarmBase :one
 select coalesce(sum(e.qty) filter (where e.sex = 'F'), 0)::integer as base_f,
        coalesce(sum(e.qty) filter (where e.sex = 'M'), 0)::integer as base_m
@@ -86,6 +241,78 @@ func (q *Queries) CalcFarmBase(ctx context.Context, arg CalcFarmBaseParams) (Cal
 	var i CalcFarmBaseRow
 	err := row.Scan(&i.BaseF, &i.BaseM)
 	return i, err
+}
+
+const calcFarmCycles = `-- name: CalcFarmCycles :many
+select c.id, c.series_id, s.name as series_name, c.farm_id, c.start_date, c.end_date, c.started_by,
+       c.start_inferred, c.ended_by, c.guide_id, g.name as guide_name, g.type as guide_type,
+       s.placement_date, s.age_at_placement_days::integer as age_at_placement_days,
+       exists (select 1
+               from bird_event e
+               join entry n on n.id = e.entry_id and n.deleted_at is null
+               where e.farm_id = c.farm_id
+                 and e.deleted_at is null
+                 and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date))::boolean as has_bird_events
+from cycle c
+join series s on s.id = c.series_id
+left join guide g on g.id = c.guide_id
+where c.farm_id = $1::uuid
+order by c.start_date desc
+`
+
+type CalcFarmCyclesRow struct {
+	ID                 uuid.UUID
+	SeriesID           uuid.UUID
+	SeriesName         string
+	FarmID             uuid.UUID
+	StartDate          timex.Day
+	EndDate            *timex.Day
+	StartedBy          CycleStartKind
+	StartInferred      bool
+	EndedBy            *CycleEndKind
+	GuideID            *uuid.UUID
+	GuideName          *string
+	GuideType          *FarmType
+	PlacementDate      timex.Day
+	AgeAtPlacementDays int32
+	HasBirdEvents      bool
+}
+
+// Every cycle of a farm, newest first (CycleSelector, §7.3), with the fields of CalcCycleByID.
+func (q *Queries) CalcFarmCycles(ctx context.Context, farmID uuid.UUID) ([]CalcFarmCyclesRow, error) {
+	rows, err := q.db.Query(ctx, calcFarmCycles, farmID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcFarmCyclesRow{}
+	for rows.Next() {
+		var i CalcFarmCyclesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SeriesID,
+			&i.SeriesName,
+			&i.FarmID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.StartedBy,
+			&i.StartInferred,
+			&i.EndedBy,
+			&i.GuideID,
+			&i.GuideName,
+			&i.GuideType,
+			&i.PlacementDate,
+			&i.AgeAtPlacementDays,
+			&i.HasBirdEvents,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const calcFarmRemovals = `-- name: CalcFarmRemovals :one
@@ -227,6 +454,130 @@ func (q *Queries) CalcFeedKg(ctx context.Context, arg CalcFeedKgParams) (CalcFee
 	return i, err
 }
 
+const calcGuideWeeks = `-- name: CalcGuideWeeks :many
+select gw.week::integer as week, gw.sex, gw.feed_g, gw.body_weight_g, gw.mortality_cum_pct, gw.lay_pct,
+       gw.hatching_pct, gw.egg_weight_g
+from guide_week gw
+where gw.guide_id = $1::uuid
+  and gw.week between $2::integer and $3::integer
+order by gw.week, gw.sex
+`
+
+type CalcGuideWeeksParams struct {
+	GuideID  uuid.UUID
+	FromWeek int32
+	ToWeek   int32
+}
+
+type CalcGuideWeeksRow struct {
+	Week            int32
+	Sex             Sex
+	FeedG           decimal.NullDecimal
+	BodyWeightG     decimal.NullDecimal
+	MortalityCumPct decimal.NullDecimal
+	LayPct          decimal.NullDecimal
+	HatchingPct     decimal.NullDecimal
+	EggWeightG      decimal.NullDecimal
+}
+
+// The rows of a guide over [from_week, to_week] (age weeks SAPT, D151), one per week × sex present. A null cell is
+// "– fără date în ghid" (D29); a week × sex outside the guide span has no row.
+func (q *Queries) CalcGuideWeeks(ctx context.Context, arg CalcGuideWeeksParams) ([]CalcGuideWeeksRow, error) {
+	rows, err := q.db.Query(ctx, calcGuideWeeks, arg.GuideID, arg.FromWeek, arg.ToWeek)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcGuideWeeksRow{}
+	for rows.Next() {
+		var i CalcGuideWeeksRow
+		if err := rows.Scan(
+			&i.Week,
+			&i.Sex,
+			&i.FeedG,
+			&i.BodyWeightG,
+			&i.MortalityCumPct,
+			&i.LayPct,
+			&i.HatchingPct,
+			&i.EggWeightG,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const calcLatestWeighings = `-- name: CalcLatestWeighings :many
+select w.section_id, s.code, w.sex, w.date, w.avg_weight_g,
+       coalesce((select sum(x.delta)
+                 from v_section_sex_delta x
+                 where x.farm_id = w.farm_id
+                   and x.section_id = w.section_id
+                   and x.sex = w.sex
+                   and x.date <= w.date), 0)::integer as alive_end
+from (
+  select distinct on (w.section_id, w.sex) w.farm_id, w.section_id, w.sex, w.date, w.avg_weight_g
+  from weighing w
+  join entry n on n.id = w.entry_id and n.deleted_at is null
+  where w.farm_id = $1::uuid
+    and w.deleted_at is null
+    and w.date between $2::date and $3::date
+  order by w.section_id, w.sex, w.date desc
+) w
+join section s on s.id = w.section_id
+left join section p on p.id = s.parent_id
+order by w.sex, w.date desc, coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code
+`
+
+type CalcLatestWeighingsParams struct {
+	FarmID  uuid.UUID
+	FromDay timex.Day
+	ToDay   timex.Day
+}
+
+type CalcLatestWeighingsRow struct {
+	SectionID  uuid.UUID
+	Code       string
+	Sex        Sex
+	Date       timex.Day
+	AvgWeightG decimal.Decimal
+	AliveEnd   int32
+}
+
+// The latest live weighing per section × sex of a farm in [from_day, to_day] (§5.10, §5.13), with the birds of the
+// section × sex at the end of the weighing day (for a bird-weighted mean, §5.10). Ordered by sex, then newest
+// first, then the farm's tree (hall, then compartment): the first row of a sex is the farm's latest weighing.
+func (q *Queries) CalcLatestWeighings(ctx context.Context, arg CalcLatestWeighingsParams) ([]CalcLatestWeighingsRow, error) {
+	rows, err := q.db.Query(ctx, calcLatestWeighings, arg.FarmID, arg.FromDay, arg.ToDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcLatestWeighingsRow{}
+	for rows.Next() {
+		var i CalcLatestWeighingsRow
+		if err := rows.Scan(
+			&i.SectionID,
+			&i.Code,
+			&i.Sex,
+			&i.Date,
+			&i.AvgWeightG,
+			&i.AliveEnd,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const calcLayDay = `-- name: CalcLayDay :one
 with eggs as (
   select ep.section_id, ep.total_eggs
@@ -309,6 +660,116 @@ func (q *Queries) CalcSectionAliveEnd(ctx context.Context, arg CalcSectionAliveE
 			&i.Code,
 			&i.AliveEndF,
 			&i.AliveEndM,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const calcSectionFeedDay = `-- name: CalcSectionFeedDay :many
+select s.id as section_id, s.code, coalesce(p.id, s.id)::uuid as hall_id, coalesce(p.code, s.code)::text as hall_code,
+       coalesce(b.alive_start_f, 0)::integer as alive_start_f,
+       coalesce(b.alive_start_m, 0)::integer as alive_start_m,
+       coalesce(b.alive_end_f, 0)::integer as alive_end_f,
+       coalesce(b.alive_end_m, 0)::integer as alive_end_m,
+       coalesce(b.mortality_entered_f, false)::boolean as mortality_entered_f,
+       coalesce(b.mortality_entered_m, false)::boolean as mortality_entered_m,
+       (af.id is not null)::boolean as fed_f,
+       (am.id is not null)::boolean as fed_m,
+       af.g_per_bird as g_f,
+       am.g_per_bird as g_m,
+       coalesce(af.kg_recorded, af.g_per_bird * coalesce(b.alive_start_f, 0) / 1000.0, 0)::numeric as kg_f,
+       coalesce(am.kg_recorded, am.g_per_bird * coalesce(b.alive_start_m, 0) / 1000.0, 0)::numeric as kg_m
+from section s
+left join section p on p.id = s.parent_id
+left join lateral (
+  select sum(x.delta) filter (where x.sex = 'F' and x.date < $1::date) as alive_start_f,
+         sum(x.delta) filter (where x.sex = 'M' and x.date < $1::date) as alive_start_m,
+         sum(x.delta) filter (where x.sex = 'F') as alive_end_f,
+         sum(x.delta) filter (where x.sex = 'M') as alive_end_m,
+         bool_or(x.mortality_entered) filter (where x.sex = 'F' and x.date = $1::date) as mortality_entered_f,
+         bool_or(x.mortality_entered) filter (where x.sex = 'M' and x.date = $1::date) as mortality_entered_m
+  from v_section_sex_delta x
+  where x.farm_id = s.farm_id
+    and x.section_id = s.id
+    and x.date <= $1::date
+) b on true
+left join lateral (
+  select fa.id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.section_id = s.id and fa.sex = 'F' and fa.date = $1::date and fa.deleted_at is null
+) af on true
+left join lateral (
+  select fa.id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.section_id = s.id and fa.sex = 'M' and fa.date = $1::date and fa.deleted_at is null
+) am on true
+where s.farm_id = $2::uuid
+  and not exists (select 1 from section c where c.parent_id = s.id)
+order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code
+`
+
+type CalcSectionFeedDayParams struct {
+	Day    timex.Day
+	FarmID uuid.UUID
+}
+
+type CalcSectionFeedDayRow struct {
+	SectionID         uuid.UUID
+	Code              string
+	HallID            uuid.UUID
+	HallCode          string
+	AliveStartF       int32
+	AliveStartM       int32
+	AliveEndF         int32
+	AliveEndM         int32
+	MortalityEnteredF bool
+	MortalityEnteredM bool
+	FedF              bool
+	FedM              bool
+	GF                decimal.NullDecimal
+	GM                decimal.NullDecimal
+	KgF               decimal.Decimal
+	KgM               decimal.Decimal
+}
+
+// Per bird-holding section (a section without children) × sex on one day (§5.3, §5.7, §5.11): birds at the start
+// and end of the day, whether a live mortality row was entered, and the day's live allocation: fed or not, the typed
+// g (null for a migrated kg-only row) and the kg (the migrated kg, else g × birds at the start / 1000, DATA03).
+// Every such section of the farm, in tree order (hall, then compartment), with its hall (itself when parentless).
+func (q *Queries) CalcSectionFeedDay(ctx context.Context, arg CalcSectionFeedDayParams) ([]CalcSectionFeedDayRow, error) {
+	rows, err := q.db.Query(ctx, calcSectionFeedDay, arg.Day, arg.FarmID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcSectionFeedDayRow{}
+	for rows.Next() {
+		var i CalcSectionFeedDayRow
+		if err := rows.Scan(
+			&i.SectionID,
+			&i.Code,
+			&i.HallID,
+			&i.HallCode,
+			&i.AliveStartF,
+			&i.AliveStartM,
+			&i.AliveEndF,
+			&i.AliveEndM,
+			&i.MortalityEnteredF,
+			&i.MortalityEnteredM,
+			&i.FedF,
+			&i.FedM,
+			&i.GF,
+			&i.GM,
+			&i.KgF,
+			&i.KgM,
 		); err != nil {
 			return nil, err
 		}
@@ -403,6 +864,40 @@ func (q *Queries) CalcSeriesAge(ctx context.Context, seriesID uuid.UUID) (CalcSe
 	var i CalcSeriesAgeRow
 	err := row.Scan(&i.PlacementDate, &i.AgeAtPlacementDays)
 	return i, err
+}
+
+const calcSettings = `-- name: CalcSettings :many
+select a.key, coalesce(a.value #>> '{}', '')::text as value
+from app_setting a
+where a.key = any($1::text[])
+order by a.key
+`
+
+type CalcSettingsRow struct {
+	Key   string
+	Value string
+}
+
+// The asked app settings (D19 thresholds and the other numeric settings) as their JSON text; keys that don't exist
+// are absent.
+func (q *Queries) CalcSettings(ctx context.Context, keys []string) ([]CalcSettingsRow, error) {
+	rows, err := q.db.Query(ctx, calcSettings, keys)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcSettingsRow{}
+	for rows.Next() {
+		var i CalcSettingsRow
+		if err := rows.Scan(&i.Key, &i.Value); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const calcStockEnd = `-- name: CalcStockEnd :many

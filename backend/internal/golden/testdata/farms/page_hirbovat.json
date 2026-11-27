@@ -1,0 +1,127 @@
+{
+  "farm": {
+    "id": "<farm:hirbovat>",
+    "name": "Hîrbovăț",
+    "type": "laying",
+    "guide": {
+      "id": "<guide:ross308ouat>",
+      "name": "Ross 308 ouat"
+    }
+  },
+  "cycle": {
+    "id": "<cycle:hirbovat/2026>",
+    "series": "Seria 2026",
+    "startDate": "2026-02-22",
+    "endDate": null,
+    "saptStart": 20,
+    "saptToday": 59,
+    "ageDaysToday": 407,
+    "weeks": 40
+  },
+  "alive": {
+    "F": 12561,
+    "M": 794
+  },
+  "cycles": [
+    {
+      "id": "<cycle:hirbovat/2026>",
+      "series": "Seria 2026",
+      "label": "22.02.2026–azi · SAPT 20–59",
+      "open": true
+    },
+    {
+      "id": "<cycle:hirbovat/2025>",
+      "series": "Seria 2025",
+      "label": "07.03.2025–28.01.2026 · SAPT 19–65",
+      "open": false,
+      "startInferred": true
+    }
+  ],
+  "track": {
+    "lanes": [
+      {
+        "farm": {
+          "id": "<farm:hirbovat>",
+          "name": "Hîrbovăț"
+        },
+        "cycles": [
+          {
+            "id": "<cycle:hirbovat/2025>",
+            "series": "Seria 2025",
+            "startDate": "2025-03-07",
+            "endDate": "2026-01-28",
+            "open": false,
+            "startInferred": true,
+            "saptSpan": [
+              19,
+              65
+            ]
+          },
+          {
+            "id": "<cycle:hirbovat/2026>",
+            "series": "Seria 2026",
+            "startDate": "2026-02-22",
+            "endDate": null,
+            "open": true,
+            "saptSpan": [
+              20,
+              59
+            ]
+          }
+        ],
+        "transfers": [
+          {
+            "date": "2026-02-22",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 0,
+            "M": 3024
+          },
+          {
+            "date": "2026-02-25",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 5783,
+            "M": 0
+          },
+          {
+            "date": "2026-02-26",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 7072,
+            "M": 0
+          },
+          {
+            "date": "2026-02-27",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 7027,
+            "M": 0
+          },
+          {
+            "date": "2026-02-28",
+            "fromFarm": "Telița",
+            "toFarm": "Hîrbovăț",
+            "F": 7001,
+            "M": 0
+          }
+        ]
+      }
+    ],
+    "today": "2026-11-18"
+  },
+  "actions": {
+    "move": true,
+    "sell": true,
+    "newCycle": true,
+    "changeGuide": true
+  },
+  "tabs": [
+    "rezumat",
+    "pasari",
+    "hrana",
+    "greutate",
+    "productie"
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

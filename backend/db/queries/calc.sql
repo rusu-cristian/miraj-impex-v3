@@ -154,3 +154,178 @@ where s.farm_id = sqlc.arg(farm_id)::uuid
   and not exists (select 1 from section c where c.parent_id = s.id)
 group by s.id, s.code, s.sort_order, p.code, p.sort_order
 order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code;
+
+-- name: CalcGuideWeeks :many
+-- The rows of a guide over [from_week, to_week] (age weeks SAPT, D151), one per week × sex present. A null cell is
+-- "– fără date în ghid" (D29); a week × sex outside the guide span has no row.
+select gw.week::integer as week, gw.sex, gw.feed_g, gw.body_weight_g, gw.mortality_cum_pct, gw.lay_pct,
+       gw.hatching_pct, gw.egg_weight_g
+from guide_week gw
+where gw.guide_id = sqlc.arg(guide_id)::uuid
+  and gw.week between sqlc.arg(from_week)::integer and sqlc.arg(to_week)::integer
+order by gw.week, gw.sex;
+
+-- name: CalcSettings :many
+-- The asked app settings (D19 thresholds and the other numeric settings) as their JSON text; keys that don't exist
+-- are absent.
+select a.key, coalesce(a.value #>> '{}', '')::text as value
+from app_setting a
+where a.key = any(sqlc.arg(keys)::text[])
+order by a.key;
+
+-- name: CalcCycleByID :one
+-- One cycle of a farm (§4.6) with its series, its guide and whether it has any live bird event (a past cycle without
+-- one has no flock count, D52/D54). No row when the cycle belongs to another farm.
+select c.id, c.series_id, s.name as series_name, c.farm_id, c.start_date, c.end_date, c.started_by,
+       c.start_inferred, c.ended_by, c.guide_id, g.name as guide_name, g.type as guide_type,
+       s.placement_date, s.age_at_placement_days::integer as age_at_placement_days,
+       exists (select 1
+               from bird_event e
+               join entry n on n.id = e.entry_id and n.deleted_at is null
+               where e.farm_id = c.farm_id
+                 and e.deleted_at is null
+                 and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date))::boolean as has_bird_events
+from cycle c
+join series s on s.id = c.series_id
+left join guide g on g.id = c.guide_id
+where c.id = sqlc.arg(cycle_id)::uuid
+  and c.farm_id = sqlc.arg(farm_id)::uuid;
+
+-- name: CalcFarmCycles :many
+-- Every cycle of a farm, newest first (CycleSelector, §7.3), with the fields of CalcCycleByID.
+select c.id, c.series_id, s.name as series_name, c.farm_id, c.start_date, c.end_date, c.started_by,
+       c.start_inferred, c.ended_by, c.guide_id, g.name as guide_name, g.type as guide_type,
+       s.placement_date, s.age_at_placement_days::integer as age_at_placement_days,
+       exists (select 1
+               from bird_event e
+               join entry n on n.id = e.entry_id and n.deleted_at is null
+               where e.farm_id = c.farm_id
+                 and e.deleted_at is null
+                 and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date))::boolean as has_bird_events
+from cycle c
+join series s on s.id = c.series_id
+left join guide g on g.id = c.guide_id
+where c.farm_id = sqlc.arg(farm_id)::uuid
+order by c.start_date desc;
+
+-- name: CalcLatestWeighings :many
+-- The latest live weighing per section × sex of a farm in [from_day, to_day] (§5.10, §5.13), with the birds of the
+-- section × sex at the end of the weighing day (for a bird-weighted mean, §5.10). Ordered by sex, then newest
+-- first, then the farm's tree (hall, then compartment): the first row of a sex is the farm's latest weighing.
+select w.section_id, s.code, w.sex, w.date, w.avg_weight_g,
+       coalesce((select sum(x.delta)
+                 from v_section_sex_delta x
+                 where x.farm_id = w.farm_id
+                   and x.section_id = w.section_id
+                   and x.sex = w.sex
+                   and x.date <= w.date), 0)::integer as alive_end
+from (
+  select distinct on (w.section_id, w.sex) w.farm_id, w.section_id, w.sex, w.date, w.avg_weight_g
+  from weighing w
+  join entry n on n.id = w.entry_id and n.deleted_at is null
+  where w.farm_id = sqlc.arg(farm_id)::uuid
+    and w.deleted_at is null
+    and w.date between sqlc.arg(from_day)::date and sqlc.arg(to_day)::date
+  order by w.section_id, w.sex, w.date desc
+) w
+join section s on s.id = w.section_id
+left join section p on p.id = s.parent_id
+order by w.sex, w.date desc, coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code;
+
+-- name: CalcSectionFeedDay :many
+-- Per bird-holding section (a section without children) × sex on one day (§5.3, §5.7, §5.11): birds at the start
+-- and end of the day, whether a live mortality row was entered, and the day's live allocation: fed or not, the typed
+-- g (null for a migrated kg-only row) and the kg (the migrated kg, else g × birds at the start / 1000, DATA03).
+-- Every such section of the farm, in tree order (hall, then compartment), with its hall (itself when parentless).
+select s.id as section_id, s.code, coalesce(p.id, s.id)::uuid as hall_id, coalesce(p.code, s.code)::text as hall_code,
+       coalesce(b.alive_start_f, 0)::integer as alive_start_f,
+       coalesce(b.alive_start_m, 0)::integer as alive_start_m,
+       coalesce(b.alive_end_f, 0)::integer as alive_end_f,
+       coalesce(b.alive_end_m, 0)::integer as alive_end_m,
+       coalesce(b.mortality_entered_f, false)::boolean as mortality_entered_f,
+       coalesce(b.mortality_entered_m, false)::boolean as mortality_entered_m,
+       (af.id is not null)::boolean as fed_f,
+       (am.id is not null)::boolean as fed_m,
+       af.g_per_bird as g_f,
+       am.g_per_bird as g_m,
+       coalesce(af.kg_recorded, af.g_per_bird * coalesce(b.alive_start_f, 0) / 1000.0, 0)::numeric as kg_f,
+       coalesce(am.kg_recorded, am.g_per_bird * coalesce(b.alive_start_m, 0) / 1000.0, 0)::numeric as kg_m
+from section s
+left join section p on p.id = s.parent_id
+left join lateral (
+  select sum(x.delta) filter (where x.sex = 'F' and x.date < sqlc.arg(day)::date) as alive_start_f,
+         sum(x.delta) filter (where x.sex = 'M' and x.date < sqlc.arg(day)::date) as alive_start_m,
+         sum(x.delta) filter (where x.sex = 'F') as alive_end_f,
+         sum(x.delta) filter (where x.sex = 'M') as alive_end_m,
+         bool_or(x.mortality_entered) filter (where x.sex = 'F' and x.date = sqlc.arg(day)::date) as mortality_entered_f,
+         bool_or(x.mortality_entered) filter (where x.sex = 'M' and x.date = sqlc.arg(day)::date) as mortality_entered_m
+  from v_section_sex_delta x
+  where x.farm_id = s.farm_id
+    and x.section_id = s.id
+    and x.date <= sqlc.arg(day)::date
+) b on true
+left join lateral (
+  select fa.id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.section_id = s.id and fa.sex = 'F' and fa.date = sqlc.arg(day)::date and fa.deleted_at is null
+) af on true
+left join lateral (
+  select fa.id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.section_id = s.id and fa.sex = 'M' and fa.date = sqlc.arg(day)::date and fa.deleted_at is null
+) am on true
+where s.farm_id = sqlc.arg(farm_id)::uuid
+  and not exists (select 1 from section c where c.parent_id = s.id)
+order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code;
+
+-- name: CalcEmptySince :many
+-- empty_since per section of a farm at the end of the day (§5.3): every section, a hall counting its compartments
+-- and a section without children itself, both sexes together. alive_end is the scope's count at the end of the day;
+-- empty_since is the last day its count went from > 0 to 0, null while it has birds or when it never had any.
+-- Ordered as the farm's tree: hall, then compartment.
+with scope_leaf as (
+  select l.id as leaf_id, l.id as scope_id
+  from section l
+  where l.farm_id = sqlc.arg(farm_id)::uuid
+    and not exists (select 1 from section c where c.parent_id = l.id)
+  union all
+  select l.id, l.parent_id
+  from section l
+  where l.farm_id = sqlc.arg(farm_id)::uuid
+    and l.parent_id is not null
+    and not exists (select 1 from section c where c.parent_id = l.id)
+), day_delta as (
+  select m.scope_id, x.date, sum(x.delta) as delta
+  from scope_leaf m
+  join v_section_sex_delta x on x.section_id = m.leaf_id
+  where x.farm_id = sqlc.arg(farm_id)::uuid
+    and x.date <= sqlc.arg(day)::date
+  group by m.scope_id, x.date
+), running as (
+  select scope_id, date, sum(delta) over w as alive_end,
+         coalesce(sum(delta) over w - delta, 0) as alive_before
+  from day_delta
+  window w as (partition by scope_id order by date rows between unbounded preceding and current row)
+), scope as (
+  select scope_id,
+         (array_agg(alive_end order by date desc))[1] as alive_end,
+         max(date) filter (where alive_end = 0 and alive_before > 0) as emptied
+  from running
+  group by scope_id
+), emptied as (
+  select scope_id, emptied::date as empty_since
+  from scope
+  where alive_end = 0
+)
+select s.id as section_id, s.code,
+       exists (select 1 from section c where c.parent_id = s.id)::boolean as is_hall,
+       coalesce(sc.alive_end, 0)::integer as alive_end,
+       e.empty_since
+from section s
+left join section p on p.id = s.parent_id
+left join scope sc on sc.scope_id = s.id
+left join emptied e on e.scope_id = s.id
+where s.farm_id = sqlc.arg(farm_id)::uuid
+order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), p.id is not null, s.sort_order, s.code;

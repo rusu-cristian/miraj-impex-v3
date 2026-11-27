@@ -14,4 +14,9 @@ M1 review (2026-11-27): code, tests and goldens were solid (all packages green u
 - A builder widened a user-approved rule (Q6: 14 rows skipped became 16 because the extract had 2 more g-with-0-kg rows) and the SPEC edit labelled the wider text "user answer Q6". Check that every "(user answer Qn)" tag in SPEC matches what the user actually approved.
 - A test-plumbing API change forced by an import cycle (`seed.Main` in `internal/testdb/seed` instead of `testdb.NewSeeded` alone) was in NOTES-verify but not in SPEC §11.8 / backend/CLAUDE.md.
 
+M2 review r1 (2026-11-27): strongest milestone so far (all 28 goldens Want == §11.7, full -race suite and make lint green, SPEC edits tagged "(proposed)" and matching the user answers). Remaining gaps were small SPEC/plan fidelity items:
+- A DTO "verbatim from SPEC" silently dropped a field (`DayRow.Label`) because the SPEC type and its own JSON example disagree; the builder followed the example and did not report it.
+- A SPEC JSON example (§7.6 tile `lamps: []`) was left contradicting a newly accepted rule (lamp `abatere`). When a rule is added, grep the section's examples.
+- Plan file locations (JSON goldens under per-package testdata) were changed without a note; builder-chosen tie-break rules (weighing tie = first section in tree order) stayed in code only.
+
 **How to apply:** in later milestones, diff SPEC.md against the answers list, grep new `Code*`/`Issue*` constants against the SPEC code lists, check each "verify at implementation" outcome that contradicts SPEC text has a matching SPEC edit or a question to the user, and compare every numeric claim in a "(user answer)" SPEC edit with the plan's answer text.

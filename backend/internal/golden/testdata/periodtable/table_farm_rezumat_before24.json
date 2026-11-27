@@ -1,0 +1,897 @@
+{
+  "scope": {
+    "view": "farm",
+    "farmId": "<farm:hirbovat>",
+    "cycleId": "<cycle:hirbovat/2026>",
+    "seriesId": "<series:seria2026>",
+    "label": "Total fermă"
+  },
+  "period": {
+    "kind": "cycle",
+    "label": "Ciclul curent",
+    "saptFrom": 20,
+    "saptTo": 59,
+    "from": "2026-02-22",
+    "to": "2026-11-18",
+    "weeksTotal": 40
+  },
+  "chips": [
+    "mortalitate",
+    "sacrificare",
+    "transfer",
+    "vanzare",
+    "hrana",
+    "cantarire",
+    "oua"
+  ],
+  "groups": [
+    {
+      "id": "vii",
+      "record": "vii",
+      "label": "În viață",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "alive.F",
+          "label": "♀",
+          "kind": "level"
+        },
+        {
+          "id": "alive.M",
+          "label": "♂",
+          "kind": "level"
+        }
+      ]
+    },
+    {
+      "id": "morti",
+      "record": "mortalitate",
+      "label": "Morți",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "deaths.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "deaths.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "ouat",
+      "record": "oua",
+      "label": "Ouat",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "egg.total",
+          "label": "ouă",
+          "kind": "count"
+        },
+        {
+          "id": "egg.layPct",
+          "label": "% ouat",
+          "kind": "rate"
+        },
+        {
+          "id": "egg.guide",
+          "label": "ghid",
+          "kind": "guide"
+        },
+        {
+          "id": "egg.inc",
+          "label": "incub.",
+          "kind": "count"
+        },
+        {
+          "id": "egg.incPct",
+          "label": "% incub.",
+          "kind": "rate"
+        },
+        {
+          "id": "egg.jos",
+          "label": "jos",
+          "kind": "count"
+        },
+        {
+          "id": "egg.josPct",
+          "label": "% jos",
+          "kind": "rate"
+        }
+      ]
+    },
+    {
+      "id": "hranaKg",
+      "record": "hrana",
+      "label": "Hrană kg",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "feed.kg.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "feed.kg.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "vanzare",
+      "record": "vanzare",
+      "label": "Vânzare",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "sold.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "sold.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    }
+  ],
+  "weeks": [
+    {
+      "sapt": 23,
+      "from": "2026-03-10",
+      "to": "2026-03-16",
+      "daysInRow": 7,
+      "label": "SAPT 23 · 10.03–16.03",
+      "cells": {
+        "alive.F": 26835,
+        "alive.M": 2911,
+        "deaths.F": 10,
+        "deaths.M": 20,
+        "egg.guide": 5.4,
+        "egg.inc": 5075,
+        "egg.incPct": 39.5034,
+        "egg.jos": 6144,
+        "egg.josPct": 47.8244,
+        "egg.layPct": 6.8373,
+        "egg.total": 12847,
+        "feed.kg.F": 21519.1,
+        "feed.kg.M": 2041.2,
+        "sold.F": 0,
+        "sold.M": 0
+      },
+      "status": {
+        "egg.layPct": "in_norma"
+      },
+      "days": [
+        {
+          "date": "2026-03-10",
+          "ageDays": 154,
+          "sapt": 23,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 26845,
+            "alive.M": 2931,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": 5.4,
+            "egg.inc": 0,
+            "egg.incPct": 0,
+            "egg.jos": 173,
+            "egg.josPct": 74.569,
+            "egg.layPct": 0.8642,
+            "egg.total": 232,
+            "feed.kg.F": 3033.5,
+            "feed.kg.M": 287.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "abatere"
+          }
+        },
+        {
+          "date": "2026-03-11",
+          "ageDays": 155,
+          "sapt": 23,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 26845,
+            "alive.M": 2929,
+            "deaths.F": 0,
+            "deaths.M": 2,
+            "egg.guide": 5.4,
+            "egg.inc": 0,
+            "egg.incPct": 0,
+            "egg.jos": 276,
+            "egg.josPct": 67.1533,
+            "egg.layPct": 1.531,
+            "egg.total": 411,
+            "feed.kg.F": 3033.5,
+            "feed.kg.M": 289.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "abatere"
+          }
+        },
+        {
+          "date": "2026-03-12",
+          "ageDays": 156,
+          "sapt": 23,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 26844,
+            "alive.M": 2926,
+            "deaths.F": 1,
+            "deaths.M": 3,
+            "egg.guide": 5.4,
+            "egg.inc": 0,
+            "egg.incPct": 0,
+            "egg.jos": 527,
+            "egg.josPct": 42.4658,
+            "egg.layPct": 4.6228,
+            "egg.total": 1241,
+            "feed.kg.F": 3033.5,
+            "feed.kg.M": 288.9,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "in_norma"
+          }
+        },
+        {
+          "date": "2026-03-13",
+          "ageDays": 157,
+          "sapt": 23,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 26842,
+            "alive.M": 2924,
+            "deaths.F": 2,
+            "deaths.M": 2,
+            "egg.guide": 5.4,
+            "egg.inc": 0,
+            "egg.incPct": 0,
+            "egg.jos": 629,
+            "egg.josPct": 45.1868,
+            "egg.layPct": 5.1855,
+            "egg.total": 1392,
+            "feed.kg.F": 3069.3,
+            "feed.kg.M": 288.6,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "in_norma"
+          }
+        },
+        {
+          "date": "2026-03-14",
+          "ageDays": 158,
+          "sapt": 23,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 26838,
+            "alive.M": 2922,
+            "deaths.F": 4,
+            "deaths.M": 2,
+            "egg.guide": 5.4,
+            "egg.inc": 960,
+            "egg.incPct": 52.089,
+            "egg.jos": 985,
+            "egg.josPct": 53.4455,
+            "egg.layPct": 6.8661,
+            "egg.total": 1843,
+            "feed.kg.F": 3086.8,
+            "feed.kg.M": 296.2,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "in_norma"
+          }
+        },
+        {
+          "date": "2026-03-15",
+          "ageDays": 159,
+          "sapt": 23,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 26838,
+            "alive.M": 2917,
+            "deaths.F": 0,
+            "deaths.M": 5,
+            "egg.guide": 5.4,
+            "egg.inc": 1510,
+            "egg.incPct": 47.8302,
+            "egg.jos": 1482,
+            "egg.josPct": 46.9433,
+            "egg.layPct": 11.7632,
+            "egg.total": 3157,
+            "feed.kg.F": 3122.3,
+            "feed.kg.M": 295.9,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "abatere"
+          }
+        },
+        {
+          "date": "2026-03-16",
+          "ageDays": 160,
+          "sapt": 23,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 26835,
+            "alive.M": 2911,
+            "deaths.F": 3,
+            "deaths.M": 6,
+            "egg.guide": 5.4,
+            "egg.inc": 2605,
+            "egg.incPct": 56.9897,
+            "egg.jos": 2072,
+            "egg.josPct": 45.3292,
+            "egg.layPct": 17.0318,
+            "egg.total": 4571,
+            "feed.kg.F": 3140.2,
+            "feed.kg.M": 295.4,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "status": {
+            "egg.layPct": "abatere"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 22,
+      "from": "2026-03-03",
+      "to": "2026-03-09",
+      "daysInRow": 7,
+      "label": "SAPT 22 · 03.03–09.03",
+      "cells": {
+        "alive.F": 26845,
+        "alive.M": 2931,
+        "deaths.F": 32,
+        "deaths.M": 30,
+        "egg.guide": null,
+        "egg.inc": null,
+        "egg.incPct": null,
+        "egg.jos": null,
+        "egg.josPct": null,
+        "egg.layPct": null,
+        "egg.total": null,
+        "feed.kg.F": 18813.9,
+        "feed.kg.M": 2030.7,
+        "sold.F": 0,
+        "sold.M": 0
+      },
+      "reasons": {
+        "egg.guide": "no_guide"
+      },
+      "days": [
+        {
+          "date": "2026-03-03",
+          "ageDays": 147,
+          "sapt": 22,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-04",
+          "ageDays": 148,
+          "sapt": 22,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-05",
+          "ageDays": 149,
+          "sapt": 22,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-06",
+          "ageDays": 150,
+          "sapt": 22,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-07",
+          "ageDays": 151,
+          "sapt": 22,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-08",
+          "ageDays": 152,
+          "sapt": 22,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-09",
+          "ageDays": 153,
+          "sapt": 22,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 26845,
+            "alive.M": 2931,
+            "deaths.F": 32,
+            "deaths.M": 30,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2687.7,
+            "feed.kg.M": 290.1,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 21,
+      "from": "2026-02-24",
+      "to": "2026-03-02",
+      "daysInRow": 7,
+      "label": "SAPT 21 · 24.02–02.03",
+      "cells": {
+        "alive.F": 26877,
+        "alive.M": 2961,
+        "deaths.F": 6,
+        "deaths.M": 63,
+        "egg.guide": null,
+        "egg.inc": null,
+        "egg.incPct": null,
+        "egg.jos": null,
+        "egg.josPct": null,
+        "egg.layPct": null,
+        "egg.total": null,
+        "feed.kg.F": 8305.9,
+        "feed.kg.M": 2074.1,
+        "sold.F": 0,
+        "sold.M": 0
+      },
+      "reasons": {
+        "egg.guide": "no_guide"
+      },
+      "days": [
+        {
+          "date": "2026-02-24",
+          "ageDays": 140,
+          "sapt": 21,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 0,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 0,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-02-25",
+          "ageDays": 141,
+          "sapt": 21,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 5783,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 0,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-02-26",
+          "ageDays": 142,
+          "sapt": 21,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 12855,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 520.5,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-02-27",
+          "ageDays": 143,
+          "sapt": 21,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 19882,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 1157,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-02-28",
+          "ageDays": 144,
+          "sapt": 21,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 26883,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 1789.4,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-01",
+          "ageDays": 145,
+          "sapt": 21,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 26883,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2419.5,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-03-02",
+          "ageDays": 146,
+          "sapt": 21,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 26877,
+            "alive.M": 2961,
+            "deaths.F": 6,
+            "deaths.M": 63,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 2419.5,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 20,
+      "from": "2026-02-22",
+      "to": "2026-02-23",
+      "daysInRow": 2,
+      "partial": true,
+      "label": "SAPT 20 · 22.02–23.02 · 2 din 7 zile",
+      "cells": {
+        "alive.F": 0,
+        "alive.M": 3024,
+        "deaths.F": 0,
+        "deaths.M": 0,
+        "egg.guide": null,
+        "egg.inc": null,
+        "egg.incPct": null,
+        "egg.jos": null,
+        "egg.josPct": null,
+        "egg.layPct": null,
+        "egg.total": null,
+        "feed.kg.F": 0,
+        "feed.kg.M": 296.3,
+        "sold.F": 0,
+        "sold.M": 0
+      },
+      "reasons": {
+        "egg.guide": "no_guide"
+      },
+      "days": [
+        {
+          "date": "2026-02-22",
+          "ageDays": 138,
+          "sapt": 20,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 0,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": null,
+            "feed.kg.M": null,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        },
+        {
+          "date": "2026-02-23",
+          "ageDays": 139,
+          "sapt": 20,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 0,
+            "alive.M": 3024,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "egg.guide": null,
+            "egg.inc": null,
+            "egg.incPct": null,
+            "egg.jos": null,
+            "egg.josPct": null,
+            "egg.layPct": null,
+            "egg.total": null,
+            "feed.kg.F": 0,
+            "feed.kg.M": 296.3,
+            "sold.F": 0,
+            "sold.M": 0
+          },
+          "reasons": {
+            "egg.guide": "no_guide"
+          }
+        }
+      ]
+    }
+  ],
+  "loaded": {
+    "saptFrom": 20,
+    "saptTo": 59,
+    "weeks": 40
+  },
+  "more": null,
+  "start": {
+    "label": "Începutul ciclului · SAPT 20"
+  },
+  "totals": {
+    "label": "Total SAPT 20–59",
+    "cells": {
+      "alive.F": 12561,
+      "alive.M": 794,
+      "deaths.F": 1521,
+      "deaths.M": 1048,
+      "egg.guide": 71.2941,
+      "egg.inc": 4902522,
+      "egg.incPct": 96.6366,
+      "egg.jos": 297776,
+      "egg.josPct": 5.8696,
+      "egg.layPct": 76.4686,
+      "egg.total": 5073155,
+      "feed.kg.F": 1079145.1,
+      "feed.kg.M": 79749,
+      "sold.F": 12801,
+      "sold.M": 1182
+    },
+    "status": {
+      "egg.layPct": "abatere"
+    }
+  },
+  "notes": [
+    "Morți include sacrificările, ca în registru."
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

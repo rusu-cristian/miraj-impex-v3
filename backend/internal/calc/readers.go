@@ -139,6 +139,23 @@ func Sold(ctx context.Context, db dbq.DBTX, farmID uuid.UUID, from, to timex.Day
 	return pair(r.SoldF, r.SoldM), nil
 }
 
+// Removals are a farm's deaths (§5.5: mortality + culls, D165) and sales
+// (§5.4) over a day range, from one read.
+type Removals struct {
+	Deaths PerSex[int]
+	Sold   PerSex[int]
+}
+
+// FarmRemovals is CycleDeaths and Sold of [from, to] in one statement, for a
+// caller that needs both.
+func FarmRemovals(ctx context.Context, db dbq.DBTX, farmID uuid.UUID, from, to timex.Day) (Removals, error) {
+	r, err := readRemovals(ctx, db, farmID, from, to)
+	if err != nil {
+		return Removals{}, err
+	}
+	return Removals{Deaths: pair(r.DeathsF+r.CullsF, r.DeathsM+r.CullsM), Sold: pair(r.SoldF, r.SoldM)}, nil
+}
+
 // SectionRemovals is one bird-holding section's removals over a day range
 // (§5.4).
 type SectionRemovals struct {

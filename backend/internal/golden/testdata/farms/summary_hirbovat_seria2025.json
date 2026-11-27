@@ -1,0 +1,58 @@
+{
+  "readout": null,
+  "stats": [
+    {
+      "id": "alive",
+      "F": null,
+      "M": null,
+      "arrivals": {
+        "F": 0,
+        "M": 0
+      },
+      "sold": {
+        "F": 0,
+        "M": 0
+      }
+    },
+    {
+      "id": "cumMortality",
+      "F": null,
+      "M": null,
+      "guideF": null,
+      "reason": "no_guide",
+      "note": "(ghid din intrarea în ouat)",
+      "deaths": {
+        "F": 0,
+        "M": 0
+      }
+    },
+    {
+      "id": "weight",
+      "F": null,
+      "M": null,
+      "guide": null,
+      "reason": "no_weighing",
+      "at": null,
+      "section": null
+    },
+    {
+      "id": "feedToday",
+      "F": null,
+      "M": null,
+      "guideF": 156,
+      "guideM": 158
+    },
+    {
+      "id": "layToday",
+      "value": null,
+      "guide": null,
+      "diffPts": null,
+      "reason": "no_guide",
+      "eggs": 485,
+      "halls": 1
+    }
+  ],
+  "tiles": [],
+  "alerts": [],
+  "latest": []
+}

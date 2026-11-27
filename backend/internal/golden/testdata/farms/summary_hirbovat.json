@@ -1,0 +1,369 @@
+{
+  "readout": {
+    "kind": "lay",
+    "label": "SAPT 59 · efectiv 40,4% · ghid 57,6% · −17,2 pct",
+    "value": 40.4025,
+    "guide": 57.6,
+    "status": "abatere",
+    "series": [
+      {
+        "sapt": 20,
+        "value": null,
+        "guide": null
+      },
+      {
+        "sapt": 21,
+        "value": null,
+        "guide": null
+      },
+      {
+        "sapt": 22,
+        "value": null,
+        "guide": null
+      },
+      {
+        "sapt": 23,
+        "value": 6.8373,
+        "guide": 5.4
+      },
+      {
+        "sapt": 24,
+        "value": 43.1997,
+        "guide": 22.9
+      },
+      {
+        "sapt": 25,
+        "value": 75.1728,
+        "guide": 53
+      },
+      {
+        "sapt": 26,
+        "value": 85.4622,
+        "guide": 74.2
+      },
+      {
+        "sapt": 27,
+        "value": 87.0202,
+        "guide": 83.3
+      },
+      {
+        "sapt": 28,
+        "value": 88.852,
+        "guide": 87.5
+      },
+      {
+        "sapt": 29,
+        "value": 89.9841,
+        "guide": 88.9
+      },
+      {
+        "sapt": 30,
+        "value": 90.3454,
+        "guide": 88.1
+      },
+      {
+        "sapt": 31,
+        "value": 89.9682,
+        "guide": 87.3
+      },
+      {
+        "sapt": 32,
+        "value": 89.6406,
+        "guide": 86.5
+      },
+      {
+        "sapt": 33,
+        "value": 89.3046,
+        "guide": 85.6
+      },
+      {
+        "sapt": 34,
+        "value": 88.4982,
+        "guide": 84.7
+      },
+      {
+        "sapt": 35,
+        "value": 88.5386,
+        "guide": 83.7
+      },
+      {
+        "sapt": 36,
+        "value": 87.9354,
+        "guide": 82.8
+      },
+      {
+        "sapt": 37,
+        "value": 87.0822,
+        "guide": 81.8
+      },
+      {
+        "sapt": 38,
+        "value": 85.8,
+        "guide": 80.8
+      },
+      {
+        "sapt": 39,
+        "value": 85.4904,
+        "guide": 79.9
+      },
+      {
+        "sapt": 40,
+        "value": 84.9883,
+        "guide": 78.9
+      },
+      {
+        "sapt": 41,
+        "value": 84.4098,
+        "guide": 77.9
+      },
+      {
+        "sapt": 42,
+        "value": 83.804,
+        "guide": 76.8
+      },
+      {
+        "sapt": 43,
+        "value": 83.3028,
+        "guide": 75.7
+      },
+      {
+        "sapt": 44,
+        "value": 82.5726,
+        "guide": 74.6
+      },
+      {
+        "sapt": 45,
+        "value": 80.9789,
+        "guide": 73.5
+      },
+      {
+        "sapt": 46,
+        "value": 80.6853,
+        "guide": 72.4
+      },
+      {
+        "sapt": 47,
+        "value": 80.3914,
+        "guide": 71.3
+      },
+      {
+        "sapt": 48,
+        "value": 78.038,
+        "guide": 70.2
+      },
+      {
+        "sapt": 49,
+        "value": 74.7438,
+        "guide": 69.1
+      },
+      {
+        "sapt": 50,
+        "value": 78.157,
+        "guide": 67.9
+      },
+      {
+        "sapt": 51,
+        "value": 77.2495,
+        "guide": 66.8
+      },
+      {
+        "sapt": 52,
+        "value": 76.4728,
+        "guide": 65.7
+      },
+      {
+        "sapt": 53,
+        "value": 75.2173,
+        "guide": 64.5
+      },
+      {
+        "sapt": 54,
+        "value": 73.9265,
+        "guide": 63.4
+      },
+      {
+        "sapt": 55,
+        "value": 73.5219,
+        "guide": 62.2
+      },
+      {
+        "sapt": 56,
+        "value": 65.1559,
+        "guide": 61.1
+      },
+      {
+        "sapt": 57,
+        "value": 27.5919,
+        "guide": 59.9
+      },
+      {
+        "sapt": 58,
+        "value": 30.375,
+        "guide": 58.8
+      },
+      {
+        "sapt": 59,
+        "value": 40.4025,
+        "guide": 57.6
+      }
+    ]
+  },
+  "stats": [
+    {
+      "id": "alive",
+      "F": 12561,
+      "M": 794,
+      "arrivals": {
+        "F": 26883,
+        "M": 3024
+      },
+      "sold": {
+        "F": 12801,
+        "M": 1182
+      }
+    },
+    {
+      "id": "cumMortality",
+      "F": 5.6579,
+      "M": 34.6561,
+      "guideF": 7.25,
+      "status": "in_norma",
+      "note": "(ghid din intrarea în ouat)",
+      "deaths": {
+        "F": 1521,
+        "M": 1048
+      }
+    },
+    {
+      "id": "weight",
+      "F": 3960,
+      "M": 4870,
+      "guide": null,
+      "reason": "no_guide",
+      "at": "2026-11-10",
+      "section": "H5.1"
+    },
+    {
+      "id": "feedToday",
+      "F": 160,
+      "M": 142.844,
+      "guideF": 157,
+      "guideM": 156,
+      "status": "in_norma",
+      "note": "H7 goală din 14.11"
+    },
+    {
+      "id": "layToday",
+      "value": 41.0837,
+      "guide": 57.6,
+      "diffPts": -16.5163,
+      "status": "abatere",
+      "eggs": 5914,
+      "halls": 2
+    }
+  ],
+  "tiles": [
+    {
+      "hall": "H5",
+      "sections": [
+        {
+          "code": "H5.1",
+          "alive": {
+            "F": 4263,
+            "M": 342
+          },
+          "deathsWeek": {
+            "F": 1,
+            "M": 0
+          },
+          "gToday": {
+            "F": 160,
+            "M": 144
+          },
+          "weight": {
+            "F": 3960,
+            "at": "2026-11-10",
+            "guide": null,
+            "reason": "no_guide"
+          },
+          "lamps": [
+            "abatere"
+          ],
+          "layHall": 45.3024
+        },
+        {
+          "code": "H5.2",
+          "alive": {
+            "F": 4281,
+            "M": 323
+          },
+          "deathsWeek": {
+            "F": 5,
+            "M": 0
+          },
+          "gToday": {
+            "F": 160,
+            "M": 143
+          },
+          "weight": null,
+          "lamps": [
+            "abatere"
+          ],
+          "layHall": 45.3024
+        }
+      ]
+    },
+    {
+      "hall": "H6",
+      "sections": [
+        {
+          "code": "H6.1",
+          "alive": {
+            "F": 3542,
+            "M": 124
+          },
+          "deathsWeek": {
+            "F": 4,
+            "M": 0
+          },
+          "gToday": {
+            "F": 160,
+            "M": 142
+          },
+          "weight": null,
+          "lamps": [
+            "abatere"
+          ],
+          "layHall": 34.9179
+        },
+        {
+          "code": "H6.2",
+          "alive": {
+            "F": 475,
+            "M": 5
+          },
+          "deathsWeek": {
+            "F": 0,
+            "M": 0
+          },
+          "gToday": {
+            "F": 160,
+            "M": 141
+          },
+          "weight": null,
+          "lamps": [
+            "abatere"
+          ],
+          "layHall": 34.9179
+        }
+      ]
+    },
+    {
+      "hall": "H7",
+      "emptySince": "2026-11-14",
+      "label": "goală din 14.11.2026 · H7.1, H7.2"
+    }
+  ],
+  "alerts": [],
+  "latest": []
+}

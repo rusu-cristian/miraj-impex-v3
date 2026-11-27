@@ -1,1 +1,1 @@
-- [Trust boundaries](trust_boundaries.md) — proxy/XFF, CSRF + per-route ContentType, session, throttle, DB roles, secrets, migrate-history guards (M0, M1)
+- [Trust boundaries](trust_boundaries.md) — proxy/XFF, CSRF + per-route ContentType, session, throttle, DB roles, secrets, migrate-history guards (M0, M1); farm-scoped reads, cycleId, period bounds (M2)

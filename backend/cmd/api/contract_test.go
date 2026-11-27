@@ -27,10 +27,11 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
-// The HTTP contract of the M0 routes (SPEC §11.8 "HTTP contract", §6.16,
+// The HTTP contract of the M0 routes and the M2 farm reads (SPEC §11.8 "HTTP contract", §6.16,
 // §7.0, §7.0a, §7.1, §11.4; plan T7). Every request goes over a socket to the
 // real `api serve` handler (newApp: the whole middleware chain, the mux and
 // the auth module) behind an httptest.Server, on a fresh test database with
@@ -74,7 +75,18 @@ type stack struct {
 // serves it over HTTP.
 func newStack(t *testing.T, opts ...func(*config.Config)) *stack {
 	t.Helper()
-	d := testdb.New(t)
+	return newStackOn(t, testdb.New(t), opts...)
+}
+
+// newSeededStack is newStack on a copy of the seeded database: the imported
+// history plus the dev seed (§11.9), with its farms and users.
+func newSeededStack(t testing.TB) *stack {
+	t.Helper()
+	return newStackOn(t, testdb.NewSeeded(t))
+}
+
+func newStackOn(t testing.TB, d *testdb.DB, opts ...func(*config.Config)) *stack {
+	t.Helper()
 	cfg := config.Config{Env: config.Dev, AppOrigin: testOrigin, LogFormat: config.FormatJSON}
 	for _, o := range opts {
 		o(&cfg)
@@ -113,7 +125,7 @@ func (r response) String() string { return fmt.Sprintf("%d %s", r.status, r.text
 // Cache-Control: no-store and the X-Request-ID echoed (a UUID generated when
 // none was sent; a test that overrides the header checks other values
 // itself); for a JSON body, no null list (SPEC §7.0a).
-func (s *stack) do(t *testing.T, c call) response {
+func (s *stack) do(t testing.TB, c call) response {
 	t.Helper()
 	var body io.Reader
 	if c.body != "" {
@@ -177,9 +189,67 @@ var uuidPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 // nullableFields are the response paths (array indexes written "[]") that
 // may hold a JSON null scalar (SPEC §7.0a: "endDate": null, …). JSON alone
 // can't tell a null list from a null scalar, so nullLists reports every null
-// that is not listed here. No M0 response has a nullable field; later
-// milestones add theirs.
-var nullableFields = map[string]bool{}
+// that is not listed here. A path ending in ".*" allows a null under any key
+// of that object (the PeriodTable's cells, keyed "alive.F", "egg.layPct", …:
+// a null cell is "–"). The paths are those of every route's DTO, whichever
+// route returns them; no M0 response has one.
+var nullableFields = map[string]bool{
+	// GET /api/table (§7.4): the load-more row and the start note; cells.
+	"more":                   true,
+	"start":                  true,
+	"weeks[].cells.*":        true,
+	"weeks[].days[].cells.*": true,
+	"totals.cells.*":         true,
+
+	// GET /api/farms/{id}/page (§7.3): no cycle, no flock count, no guide.
+	"farm.guide":                     true,
+	"cycle":                          true,
+	"cycle.endDate":                  true,
+	"alive":                          true,
+	"track.lanes[].cycles[].endDate": true,
+
+	// GET /api/bootstrap (§7.2).
+	"farms[].guide":      true,
+	"farms[].openCycle":  true,
+	"feedTypes[].forSex": true,
+
+	// GET /api/farms/{id}/summary (§7.6): the readout and its series; the
+	// stats' figures without a base, guide or weighing; the tiles' g on an
+	// unfed day, weighing and lay % without an entry.
+	"readout":                         true,
+	"readout.guide":                   true,
+	"readout.series[].value":          true,
+	"readout.series[].guide":          true,
+	"stats[].F":                       true,
+	"stats[].M":                       true,
+	"stats[].guide":                   true,
+	"stats[].guideF":                  true,
+	"stats[].guideM":                  true,
+	"stats[].at":                      true,
+	"stats[].section":                 true,
+	"stats[].value":                   true,
+	"stats[].diffPts":                 true,
+	"tiles[].sections[].gToday.F":     true,
+	"tiles[].sections[].gToday.M":     true,
+	"tiles[].sections[].weight":       true,
+	"tiles[].sections[].weight.guide": true,
+	"tiles[].sections[].layHall":      true,
+}
+
+// nullable reports whether nullableFields allows a null at path (array
+// indexes already written "[]"): the path itself, or a ".*" entry for one of
+// its parent objects.
+func nullable(path string) bool {
+	if nullableFields[path] {
+		return true
+	}
+	for i := range len(path) {
+		if path[i] == '.' && nullableFields[path[:i]+".*"] {
+			return true
+		}
+	}
+	return false
+}
 
 var arrayIndex = regexp.MustCompile(`\[\d+\]`)
 
@@ -195,7 +265,7 @@ func nullLists(body string) ([]string, error) {
 	walk = func(v any, path string) {
 		switch v := v.(type) {
 		case nil:
-			if !nullableFields[arrayIndex.ReplaceAllString(path, "[]")] {
+			if !nullable(arrayIndex.ReplaceAllString(path, "[]")) {
 				out = append(out, path)
 			}
 		case map[string]any:
@@ -218,7 +288,7 @@ func nullLists(body string) ([]string, error) {
 }
 
 // exec runs fixture SQL as il_app.
-func (s *stack) exec(t *testing.T, sql string, args ...any) {
+func (s *stack) exec(t testing.TB, sql string, args ...any) {
 	t.Helper()
 	if _, err := s.d.App.Exec(context.Background(), sql, args...); err != nil {
 		t.Fatal(err)
@@ -266,7 +336,7 @@ const (
 // session stores a session for userID as login would (SPEC §11.4: 32 random
 // bytes, base64url in the cookie, sha256 in the database) and returns the
 // cookie value. Times come from the frozen clock.
-func (s *stack) session(t *testing.T, userID uuid.UUID, state sessionState) string {
+func (s *stack) session(t testing.TB, userID uuid.UUID, state sessionState) string {
 	t.Helper()
 	raw := make([]byte, 32)
 	_, _ = rand.Read(raw)
@@ -924,6 +994,192 @@ func TestWriteRoute(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// M2 farm reads: table, farm page, summary, bootstrap (§7.2–§7.4, §7.6)
+// ---------------------------------------------------------------------------
+
+// bodyUnknownParam is the 400 for an unknown query parameter (§7.0a, M2 D2).
+func bodyUnknownParam(name string) string {
+	return `{"error":{"code":"VALIDATION","message":"Datele trimise nu sunt valide.",` +
+		`"issues":[{"path":"` + name + `","code":"unknown_field","message":"Datele trimise nu sunt valide."}]}}`
+}
+
+// An unknown query parameter is refused with an issue naming it, on every
+// M2 read; the farm page takes no period, the bootstrap no parameter at all.
+func TestFarmReadsRejectUnknownParams(t *testing.T) {
+	t.Parallel()
+	s := newStack(t)
+	farm := s.farm(t, "Hîrbovăț", "hirbovat").String()
+	token := s.session(t, s.user(t, "proprietar", "Proprietar", dbq.UserRoleOwner, true), sessionOpen)
+
+	for _, tc := range []struct{ path, param string }{
+		{"/api/table?view=farm&farmId=" + farm + "&foo=1", "foo"},
+		{"/api/table?farmId=" + farm + "&view=farm&farmid=" + farm, "farmid"},
+		{"/api/farms/" + farm + "/page?period=cycle", "period"},
+		{"/api/farms/" + farm + "/summary?zi=2026-11-18", "zi"},
+		{"/api/bootstrap?farmId=" + farm, "farmId"},
+	} {
+		r := s.do(t, call{method: http.MethodGet, path: tc.path, cookie: token})
+		wantBody(t, tc.path, r, http.StatusBadRequest, bodyUnknownParam(tc.param))
+	}
+	// The same requests without the stray parameter pass.
+	for _, path := range []string{
+		"/api/table?view=farm&farmId=" + farm, "/api/farms/" + farm + "/page",
+		"/api/farms/" + farm + "/summary", "/api/bootstrap",
+	} {
+		if r := s.do(t, call{method: http.MethodGet, path: path, cookie: token}); r.status != http.StatusOK {
+			t.Errorf("%s: %s, want 200", path, r)
+		}
+	}
+}
+
+// seededReader is a seeded user's open session.
+type seededReader struct {
+	login string
+	token string
+}
+
+// seededFarm returns the id of the seeded farm with that name_key.
+func seededFarm(t testing.TB, s *stack, key string) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := s.d.App.QueryRow(context.Background(), `select id from farm where name_key = $1`, key).Scan(&id); err != nil {
+		t.Fatalf("farm %s: %v", key, err)
+	}
+	return id
+}
+
+// seededSession opens a session for the seeded user with that login.
+func seededSession(t testing.TB, s *stack, login string) seededReader {
+	t.Helper()
+	var id uuid.UUID
+	if err := s.d.App.QueryRow(context.Background(), `select id from app_user where login = $1`, login).Scan(&id); err != nil {
+		t.Fatalf("user %s: %v", login, err)
+	}
+	return seededReader{login: login, token: s.session(t, id, sessionOpen)}
+}
+
+// On the real data (the imported history and the dev seed), every M2 read
+// answers 200 for the owner, the manager and the viewer, on both farms and
+// for each of their cycles (laying with a guide, growth, the Seria 2025 cycle
+// without a flock count), and every body passes stack.do's contract: no null
+// list, a null only where nullableFields allows it, Cache-Control: no-store.
+// The vet gets the bootstrap and is refused the pages.
+func TestFarmReadsOnSeededData(t *testing.T) {
+	t.Parallel()
+	s := newSeededStack(t)
+	hirb, tel := seededFarm(t, s, "hirbovat"), seededFarm(t, s, "telita")
+	get := func(t *testing.T, u seededReader, path string, want int) response {
+		t.Helper()
+		r := s.do(t, call{method: http.MethodGet, path: path, cookie: u.token})
+		if r.status != want {
+			t.Fatalf("%s as %s: %s, want %d", path, u.login, r, want)
+		}
+		return r
+	}
+
+	for _, login := range []string{"proprietar", "ion.rusu", "observator"} {
+		u := seededSession(t, s, login)
+		t.Run(login, func(t *testing.T) {
+			get(t, u, "/api/bootstrap", http.StatusOK)
+			for _, farm := range []uuid.UUID{hirb, tel} {
+				base := "/api/farms/" + farm.String()
+				var page struct {
+					Cycles []struct {
+						ID uuid.UUID `json:"id"`
+					} `json:"cycles"`
+				}
+				if err := json.Unmarshal([]byte(get(t, u, base+"/page", http.StatusOK).body), &page); err != nil {
+					t.Fatal(err)
+				}
+				if len(page.Cycles) == 0 {
+					t.Fatalf("%s/page as %s: no cycles on the seeded farm", base, login)
+				}
+				for _, c := range page.Cycles {
+					q := "cycleId=" + c.ID.String()
+					get(t, u, base+"/page?"+q, http.StatusOK)
+					get(t, u, base+"/summary?"+q, http.StatusOK)
+					get(t, u, "/api/table?view=farm&farmId="+farm.String()+"&"+q, http.StatusOK)
+					get(t, u, "/api/table?view=farm&farmId="+farm.String()+"&grain=week&"+q, http.StatusOK)
+				}
+			}
+			// Hîrbovăț's open cycle: load-more, the start note, a short and an
+			// interval period, one week.
+			table := "/api/table?view=farm&farmId=" + hirb.String()
+			for _, q := range []string{
+				"&before=56", "&before=24", "&period=weeks:4", "&period=interval:2026-11-01,2026-11-15", "&sapt=58",
+				"&types=oua,hrana",
+			} {
+				get(t, u, table+q, http.StatusOK)
+			}
+			get(t, u, "/api/farms/"+hirb.String()+"/summary?period=weeks:4", http.StatusOK)
+		})
+	}
+
+	vet := seededSession(t, s, "dr.ceban")
+	get(t, vet, "/api/bootstrap", http.StatusOK)
+	for _, path := range []string{
+		"/api/farms/" + hirb.String() + "/page", "/api/farms/" + hirb.String() + "/summary",
+		"/api/table?view=farm&farmId=" + hirb.String(),
+	} {
+		if code := errorCode(t, get(t, vet, path, http.StatusForbidden)); code != httpx.CodeForbidden {
+			t.Errorf("%s as the vet: code %s, want %s", path, code, httpx.CodeForbidden)
+		}
+	}
+}
+
+// BenchmarkFarmReads times the M2 reads through the whole server (socket,
+// middleware, session check, service, SQL, JSON) on the seeded database, the
+// owner on Hîrbovăț's open cycle (SAPT 20–59) and Telița's growth cycle. It
+// reports the p50 and p95 per request against SPEC §11.6 (table page ≤ 300
+// ms, load-more ≤ 200 ms, summary ≤ 400 ms). Run it without -race:
+//
+//	go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api
+func BenchmarkFarmReads(b *testing.B) {
+	s := newSeededStack(b)
+	hirb, tel := seededFarm(b, s, "hirbovat").String(), seededFarm(b, s, "telita").String()
+	owner := seededSession(b, s, "proprietar")
+
+	for _, bc := range []struct{ name, path string }{
+		{"table-page", "/api/table?view=farm&farmId=" + hirb},
+		{"table-load-more", "/api/table?view=farm&farmId=" + hirb + "&before=56"},
+		{"table-whole-cycle-weeks", "/api/table?view=farm&farmId=" + hirb + "&grain=week&count=40"},
+		{"farm-page", "/api/farms/" + hirb + "/page"},
+		{"summary", "/api/farms/" + hirb + "/summary"},
+		{"summary-growth", "/api/farms/" + tel + "/summary"},
+		{"bootstrap", "/api/bootstrap"},
+	} {
+		b.Run(bc.name, func(b *testing.B) {
+			req, err := http.NewRequest(http.MethodGet, s.srv.URL+bc.path, nil)
+			if err != nil {
+				b.Fatal(err)
+			}
+			req.AddCookie(&http.Cookie{Name: auth.CookieName, Value: owner.token})
+			client := s.srv.Client()
+			var took []time.Duration
+			for b.Loop() {
+				start := time.Now()
+				res, err := client.Do(req)
+				if err != nil {
+					b.Fatal(err)
+				}
+				_, err = io.Copy(io.Discard, res.Body)
+				_ = res.Body.Close()
+				took = append(took, time.Since(start))
+				if err != nil || res.StatusCode != http.StatusOK {
+					b.Fatalf("%s: %d %v", bc.path, res.StatusCode, err)
+				}
+			}
+			slices.Sort(took)
+			ms := func(q float64) float64 {
+				return float64(took[int(q*float64(len(took)-1))]) / float64(time.Millisecond)
+			}
+			b.ReportMetric(ms(0.50), "p50-ms")
+			b.ReportMetric(ms(0.95), "p95-ms")
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
 // The null-list walker itself
 // ---------------------------------------------------------------------------
 
@@ -939,6 +1195,14 @@ func TestNullLists(t *testing.T) {
 		{`{"farms":[{"sections":null},{"sections":[]}]}`, []string{"farms[0].sections"}},
 		{`[null]`, []string{"[0]"}},
 		{`null`, []string{""}},
+		// Nullable scalars pass; the same name elsewhere does not.
+		{`{"cycle":null,"alive":null,"more":null}`, nil},
+		{`{"farm":{"guide":null},"guide":null}`, []string{"guide"}},
+		// A ".*" entry allows any key under that object, dotted keys included,
+		// but not the object itself nor a deeper list.
+		{`{"weeks":[{"cells":{"alive.F":null,"egg.layPct":null}}],"totals":{"cells":{"alive.F":null}}}`, nil},
+		{`{"weeks":[{"cells":null,"days":null}]}`, []string{"weeks[0].cells", "weeks[0].days"}},
+		{`{"chips":null,"groups":[{"leaves":null}]}`, []string{"chips", "groups[0].leaves"}},
 	} {
 		got, err := nullLists(tc.body)
 		if err != nil {

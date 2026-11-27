@@ -7,9 +7,10 @@
 // transaction before it commits (M1-D4, M1-D5). A row whose service does not
 // exist yet has Got == nil and names the milestone that brings it.
 //
-// Got functions call the services (calc for M1) and round once, at the
-// precision §11.7 states, into plain values (ints and fixed-point strings), so
-// Want and Got compare exactly. They never copy a formula into SQL.
+// Got functions call the services (calc; periodtable and farms from M2) and
+// round once, at the precision §11.7 states, into plain values (ints and
+// fixed-point strings), so Want and Got compare exactly. They never copy a
+// formula into SQL.
 package golden
 
 import (
@@ -204,19 +205,63 @@ func Rows() []Row {
 		{ID: 12, Name: "lay 18.11", Milestone: "M1",
 			Want: LayDay{Eggs: 5914, HensStart: 14395, Pct: "41.1"},
 			Got:  layDay},
-		{ID: 13, Name: "guide lay SAPT 59, 53, 56", Milestone: "M2"},
-		{ID: 14, Name: "lay per hall, lay alert since", Milestone: "M8"},
-		{ID: 15, Name: "eggs 18.11", Milestone: "M2"},
-		{ID: 16, Name: "Cat 18.11", Milestone: "M2"},
-		{ID: 17, Name: "egg weight", Milestone: "M2"},
-		{ID: 18, Name: "SAPT 59 week row", Milestone: "M2"},
-		{ID: 19, Name: "SAPT 59 deaths, sold, kg", Milestone: "M2"},
-		{ID: 20, Name: "SAPT 58 week row", Milestone: "M2"},
-		{ID: 21, Name: "SAPT 58 kg, g", Milestone: "M2"},
-		{ID: 22, Name: "SAPT 57, SAPT 56 week rows", Milestone: "M2"},
-		{ID: 23, Name: "peak lay SAPT 30", Milestone: "M2"},
-		{ID: 24, Name: "foot Total SAPT 56–59", Milestone: "M2"},
-		{ID: 25, Name: "load-more label", Milestone: "M2"},
+		{ID: 13, Name: "guide lay SAPT 59, 53, 56", Milestone: "M2",
+			Want: GuideLay{Guide59: "57.6", DiffToday: "-16.5", StatusToday: calc.Abatere, Guide53: "64.5", Guide56: "61.1"},
+			Got:  guideLay},
+		// Golden 14 is split (M2 Q2): M2 checks the lay per hall; M8 adds
+		// "H5 below guide since 01.11.2026" (alert lay.since) to Want.
+		{ID: 14, Name: "lay per hall 18.11 (alert since: M8)", Milestone: "M2",
+			Want: []HallLay{{Hall: "H5", Pct: "45.3", DiffPts: "-12.3"}, {Hall: "H6", Pct: "34.9", DiffPts: "-22.7"}},
+			Got:  layPerHall},
+		{ID: 15, Name: "eggs 18.11", Milestone: "M2",
+			Want: EggsDay{Eggs: 5914, Inc: 5308, IncPct: "89.8", Jos: 158, JosPct: "2.7"},
+			Got:  eggsDay},
+		{ID: 16, Name: "Cat 18.11", Milestone: "M2",
+			Want: []HallEggs{
+				{Hall: "H5", Cat: [3]int{13, 417, 27}, Inc: 3415, Total: 3872},
+				{Hall: "H6", Cat: [3]int{8, 110, 31}, Inc: 1893, Total: 2042},
+			},
+			Got: hallEggs},
+		{ID: 17, Name: "egg weight", Milestone: "M2",
+			Want: EggWeight{FarmDay: "66.4", H7Week58: "66.3", FarmWeek58: "66.6"},
+			Got:  eggWeight},
+		{ID: 18, Name: "SAPT 59 week row", Milestone: "M2",
+			Want: LayWeek{Label: "SAPT 59 · 17.11–18.11 · 2 din 7 zile", DaysInRow: 2, Eggs: 11806, HenDays: 29221,
+				Lay: "40.4", Guide: "57.6", DiffPts: "-17.2", IncPct: "92.5", JosPct: "2.6", CatPct: [3]string{"0.3", "6.2", "1.1"}},
+			Got: layWeek59},
+		{ID: 19, Name: "SAPT 59 deaths, sold, kg", Milestone: "M2",
+			Want: WeekRemovals{Deaths: calc.PerSex[int]{F: 10, M: 0}, Sold: calc.PerSex[int]{F: 2255, M: 433},
+				FeedKg: calc.PerSex[string]{F: "4675.3", M: "329.7"}},
+			Got: weekRemovals(59)},
+		// Goldens 20 and 24 hold under the hen-day rule of M2 Q1 (b): a unit-day
+		// counts when it has eggs or the unit is emptied that day (H7 on
+		// 14.11.2026, 6 915 hens). §5.6's old rule gives 149 503 → 31,8 % and
+		// 538 123 → 42,1 %. Golden 24's hen-days (545 038) are not in §11.7: they
+		// are the M2 plan's check of the 41,6 %.
+		{ID: 20, Name: "SAPT 58 week row", Milestone: "M2",
+			Want: Week58{Eggs: 47512, HenDays: 156418, Lay: "30.4", Guide: "58.8", IncPct: "96.3", CatPct: [3]string{"0.3", "2.6", "0.8"},
+				Deaths: calc.PerSex[int]{F: 36, M: 8}, Sold: calc.PerSex[int]{F: 10546, M: 749}, AliveEnd: calc.PerSex[int]{F: 14826, M: 1227}},
+			Got: week58},
+		{ID: 21, Name: "SAPT 58 kg, g", Milestone: "M2",
+			Want: WeekFeed{Kg: calc.PerSex[string]{F: "22230.9", M: "1682.7"}, G: calc.PerSex[string]{F: "155.9", M: "142.2"}},
+			Got:  weekFeed(58)},
+		{ID: 22, Name: "SAPT 57, SAPT 56 week rows", Milestone: "M2",
+			Want: Weeks5756{
+				Weeks:    []WeekLay{{Sapt: 57, Eggs: 49225, Lay: "27.6", Guide: "59.9"}, {Sapt: 56, Eggs: 117929, Lay: "65.2", Guide: "61.1"}},
+				IncPct56: "98.3",
+			},
+			Got: weeks5756},
+		{ID: 23, Name: "peak lay SAPT 30", Milestone: "M2",
+			Want: PeakLay{Sapt: 30, Eggs: 168122, HenDays: 186088, Lay: "90.3"},
+			Got:  peakLay},
+		{ID: 24, Name: "foot Total SAPT 56–59", Milestone: "M2",
+			Want: Foot{Label: "Total SAPT 56–59", Eggs: 226472, HenDays: 545038, Lay: "41.6", Guide: "59.9",
+				Deaths: calc.PerSex[int]{F: 534, M: 77}, Sold: calc.PerSex[int]{F: 12801, M: 1182}, IncPct: "97.7",
+				FeedKg: calc.PerSex[string]{F: "78898.6", M: "5996.6"}},
+			Got: foot},
+		{ID: 25, Name: "load-more label", Milestone: "M2",
+			Want: LoadMore{Label: "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40", SaptFrom: 20, SaptTo: 59, WeeksTotal: 40},
+			Got:  loadMore},
 		{ID: 26, Name: "feed 18.11", Milestone: "M1",
 			Want: FeedDay{Kg: calc.PerSex[string]{F: "2303.2", M: "154.7"}, Total: "2457.9"},
 			Got:  feedDay},
@@ -233,7 +278,9 @@ func Rows() []Row {
 		{ID: 35, Name: "placement Seria 2026, Telița cycle", Milestone: "M4"},
 		{ID: 36, Name: "guide spans", Milestone: "M10"},
 		{ID: 37, Name: "correction 17.11 H5.2", Milestone: "M5"},
-		{ID: 38, Name: "H7 empty since 14.11.2026", Milestone: "M2"},
+		{ID: 38, Name: "H7 empty since 14.11.2026", Milestone: "M2",
+			Want: []EmptyHall{{Hall: "H7", Since: "2026-11-14", Tile: "goală din 14.11.2026 · H7.1, H7.2", Note: "H7 goală din 14.11"}},
+			Got:  emptyHalls},
 	}
 }
 

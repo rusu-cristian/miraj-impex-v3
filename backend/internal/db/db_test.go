@@ -116,6 +116,52 @@ func TestInTx(t *testing.T) {
 	}
 }
 
+func TestInReadTx(t *testing.T) {
+	t.Parallel()
+	d := testdb.New(t)
+	ctx := context.Background()
+	store := db.NewStore(d.App)
+
+	// One REPEATABLE READ, READ ONLY transaction: a row committed by another
+	// connection after the first read stays invisible to the second.
+	var iso, ro string
+	var before, after int
+	err := store.InReadTx(ctx, func(q dbq.DBTX) error {
+		if err := q.QueryRow(ctx, "select current_setting('transaction_isolation'), current_setting('transaction_read_only')").Scan(&iso, &ro); err != nil {
+			return err
+		}
+		if err := q.QueryRow(ctx, "select count(*) from login_attempt").Scan(&before); err != nil {
+			return err
+		}
+		if _, err := dbq.New(d.App).InsertLoginAttempt(ctx, dbq.InsertLoginAttemptParams{Login: "ion", At: testdb.Now()}); err != nil {
+			return err
+		}
+		return q.QueryRow(ctx, "select count(*) from login_attempt").Scan(&after)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if iso != "repeatable read" || ro != "on" {
+		t.Errorf("transaction %q, read only %q; want repeatable read, on", iso, ro)
+	}
+	if before != 0 || after != 0 {
+		t.Errorf("counts %d then %d inside one snapshot, want 0 and 0", before, after)
+	}
+
+	// A write is refused; fn's error comes back as it is.
+	err = store.InReadTx(ctx, func(q dbq.DBTX) error {
+		_, err := dbq.New(q).InsertLoginAttempt(ctx, dbq.InsertLoginAttemptParams{Login: "ion", At: testdb.Now()})
+		return err
+	})
+	if pe, ok := errors.AsType[*pgconn.PgError](err); !ok || pe.Code != "25006" { // read_only_sql_transaction
+		t.Errorf("write in a read tx: %v, want 25006", err)
+	}
+	boom := errors.New("boom")
+	if err := store.InReadTx(ctx, func(dbq.DBTX) error { return boom }); !errors.Is(err, boom) {
+		t.Errorf("fn's error = %v, want boom", err)
+	}
+}
+
 func TestDecimalCodec(t *testing.T) {
 	t.Parallel()
 	d := testdb.New(t)

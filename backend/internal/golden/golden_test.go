@@ -22,6 +22,14 @@ import (
 // m1Rows are the goldens SPEC §12.6 puts in M1.
 var m1Rows = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 27}
 
+// m2Rows are the goldens of M2: SPEC §12.6 "13–25", golden 38 (M2 D8) and
+// the per-hall part of golden 14 (M2 Q2; M8 adds its "since").
+var m2Rows = []int{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 38}
+
+// implementedMilestones are the milestones done so far: each of their rows
+// must have Got.
+var implementedMilestones = map[string]bool{"M1": true, "M2": true}
+
 // TestGolden runs every implemented row of §11.7 against the dev seed
 // (§11.9) and skips the others with the milestone that implements them.
 func TestGolden(t *testing.T) {
@@ -52,8 +60,8 @@ func seededDB(t *testing.T) *testdb.DB {
 }
 
 // checkRegistry lists what is wrong with a registry: ids not exactly 1–38
-// once each, a row without a name or a valid milestone, an M1 row without Got,
-// or a Got without a Want.
+// once each, a row without a name or a valid milestone, a row of an
+// implemented milestone (M1, M2) without Got, or a Got without a Want.
 func checkRegistry(rows []golden.Row) []string {
 	var problems []string
 	seen := map[int]int{}
@@ -69,8 +77,8 @@ func checkRegistry(rows []golden.Row) []string {
 		if !milestone.MatchString(r.Milestone) {
 			problems = append(problems, fmt.Sprintf("golden %d has milestone %q", r.ID, r.Milestone))
 		}
-		if r.Milestone == "M1" && r.Got == nil {
-			problems = append(problems, fmt.Sprintf("golden %d is M1 but has no Got", r.ID))
+		if implementedMilestones[r.Milestone] && r.Got == nil {
+			problems = append(problems, fmt.Sprintf("golden %d is %s but has no Got", r.ID, r.Milestone))
 		}
 		if r.Got != nil && r.Want == nil {
 			problems = append(problems, fmt.Sprintf("golden %d has Got but no Want", r.ID))
@@ -92,13 +100,16 @@ func TestRegistry(t *testing.T) {
 	if problems := checkRegistry(rows); len(problems) > 0 {
 		t.Fatalf("registry problems:\n%s", strings.Join(problems, "\n"))
 	}
-	var m1, implemented []int
+	var m1, m2, implemented []int
 	for i, r := range rows {
 		if r.ID != i+1 {
 			t.Errorf("row %d has id %d: rows are in id order", i, r.ID)
 		}
-		if r.Milestone == "M1" {
+		switch r.Milestone {
+		case "M1":
 			m1 = append(m1, r.ID)
+		case "M2":
+			m2 = append(m2, r.ID)
 		}
 		if r.Got != nil {
 			implemented = append(implemented, r.ID)
@@ -107,8 +118,11 @@ func TestRegistry(t *testing.T) {
 	if diff := cmp.Diff(m1Rows, m1); diff != "" {
 		t.Errorf("M1 rows differ from SPEC §12.6 (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff(m1Rows, implemented); diff != "" {
-		t.Errorf("implemented rows at M1 (-want +got):\n%s", diff)
+	if diff := cmp.Diff(m2Rows, m2); diff != "" {
+		t.Errorf("M2 rows differ from SPEC §12.6 and the M2 plan (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff(slices.Sorted(slices.Values(append(slices.Clone(m1Rows), m2Rows...))), implemented); diff != "" {
+		t.Errorf("implemented rows at M2 (-want +got):\n%s", diff)
 	}
 }
 
@@ -131,6 +145,11 @@ func TestCheckRegistryCatchesProblems(t *testing.T) {
 			rows[11].Got = nil
 			return rows
 		}(), "golden 12 is M1 but has no Got"},
+		{"M2 row without Got", func() []golden.Row {
+			rows := golden.Rows()
+			rows[19].Got = nil
+			return rows
+		}(), "golden 20 is M2 but has no Got"},
 		{"bad milestone", func() []golden.Row {
 			rows := golden.Rows()
 			rows[20].Milestone = "M13"
@@ -201,16 +220,18 @@ func TestCheck(t *testing.T) {
 
 // ledger is a hand-built miniature Hîrbovăț: the golden farm and Seria 2026
 // with their real names and dates, and a few birds, eggs and feed rows whose
-// figures are worked out by hand below. It proves every M1 row reads the
+// figures are worked out by hand below. It proves every implemented row reads the
 // right farm, cycle and days and rounds at its precision, before the full
 // import exists. Seria 2026: placed 07.10.2025 at age 0; cycle from
-// 22.02.2026, open.
+// 22.02.2026 (SAPT 20), open, with a laying guide whose ♀ lay % is 70 at
+// SAPT 53, 60 at 56, 55 at 57, 50 at 58 and 45 at 59. SAPT 30 = 28.04–04.05,
+// 56 = 27.10–02.11, 57 = 03.11–09.11, 58 = 10.11–16.11, 59 = 17.11–23.11.
 //
 //	22.02.2026 placement H5.1 ♀ 60 · ♂ 8, H5.2 ♀ 20                   base ♀ 80 · ♂ 8
 //	01.03.2026 adjustment H5.1 ♀ +7 (not in the base); mortality H5.1 ♂ 1
 //	01.06.2026 cull H5.2 ♀ 1
 //	11.11.2026 sale H5.2 ♀ 1 and adjustment H5.2 ♀ +1 (no net change: a sale before the 12–18.11 range)
-//	12.11.2026 sale H5.2 ♀ 5
+//	12.11.2026 sale H5.2 ♀ 5; mortality H5.1 ♀ 0 · ♂ 0 (entered as zero)
 //	17.11.2026 mortality H5.1 ♀ 1
 //	18.11.2026 mortality H5.1 ♀ 2; sale H5.2 ♀ 10, H5.1 ♂ 2
 //
@@ -224,7 +245,38 @@ func TestCheck(t *testing.T) {
 //	            ♂ H5.1 150 g × 7 = 1,05 → 1,1; total 13,78 → 13,8
 //	sold 18.11 by section: H5.1 0 · 2, H5.2 10 · 0 (H6.1 sold nothing: not listed; the 12.11 sale is another day)
 //	sold in the cycle ♀ 1 + 5 + 10 = 16 · ♂ 2; sold 12–18.11 ♀ 15 · ♂ 2
-//	stock 18.11: Breeder 2 100 − 12,73 = 87,27 → 87,3; Cocoși 10 − 1,05 = 8,95 → 9,0
+//	feed 12.11: ♀ H5.1 150 g × 67 = 10,05 kg + H5.2 160 g × 19 = 3,04 kg = 13,09; ♂ H5.1 140 g × 7 = 0,98
+//	stock 18.11: Breeder 2 100 − 13,09 − 12,73 = 74,18 → 74,2; Cocoși 10 − 0,98 − 1,05 = 7,97 → 8,0
+//
+// Eggs, all at hall H5 (Cat. 1 · 2 · 3 + incubabile = total; jos apart; mean
+// egg weight), and the hens of H5 at the start of the day:
+//
+//	01.05.2026 SAPT 30  0 · 0 · 0 + 80 = 80, jos 0              hens 87
+//	28.10.2026 SAPT 56  0 · 0 · 0 + 60 = 60, jos 0              hens 86
+//	05.11.2026 SAPT 57  0 · 1 · 0 + 43 = 44, jos 1              hens 86
+//	12.11.2026 SAPT 58  1 · 0 · 1 + 48 = 50, jos 2, 65 g        hens 86
+//	17.11.2026 SAPT 59  0 · 2 · 0 + 38 = 40, jos 1, 60 g        hens 81
+//	18.11.2026 SAPT 59  1 · 2 · 3 + 35 = 41, jos 0, 62 g        hens 80
+//
+// so the M2 rows read (1 dp, half away from zero, from full precision):
+//
+//	13: guide 59 45,0, 53 70,0, 56 60,0; lay 18.11 51,25 − 45 = 6,25 → 6,3 pts > 3: abatere
+//	14: H5 51,25 → 51,3 (6,3 pts); H6 never had birds: no tile
+//	15: 18.11 eggs 41, incub. 35 (85,4 %), jos 0 (0,0 %)
+//	16: H5 1 · 2 · 3 + 35 = 41
+//	17: farm 18.11 62,0 g; SAPT 58 farm 65,0 g; no H7: ""
+//	18: SAPT 59 (2 din 7 zile) eggs 81 ÷ 161 hen-days = 50,31 → 50,3; guide 45,0 → 5,3 pts;
+//	    incub. 73 ÷ 81 = 90,1; jos 1 ÷ 81 = 1,2; Cat 1 ÷ 81 = 1,2 · 4 ÷ 81 = 4,9 · 3 ÷ 81 = 3,7
+//	19: SAPT 59 deaths ♀ 1 + 2 = 3 · ♂ 0; sold ♀ 10 · ♂ 2; kg ♀ 12,7 · ♂ 1,1 (18.11 only)
+//	20: SAPT 58 eggs 50 ÷ 86 = 58,1; guide 50,0; incub. 96,0; Cat 2,0 · 0,0 · 2,0; deaths 0 · 0;
+//	    sold ♀ 1 + 5 = 6 · ♂ 0; alive end 16.11 ♀ 67 + 14 = 81 · ♂ 7
+//	21: SAPT 58 kg ♀ 13,09 → 13,1 · ♂ 0,98 → 1,0; g ♀ 13 090 ÷ 86 = 152,2 · ♂ 980 ÷ 7 = 140,0
+//	22: SAPT 57 44 ÷ 86 = 51,2, guide 55,0; SAPT 56 60 ÷ 86 = 69,8, guide 60,0, incub. 100,0
+//	23: peak SAPT 30: 80 ÷ 87 = 91,95 → 92,0
+//	24: SAPT 56–59 eggs 235 ÷ 419 hen-days = 56,1; guide (86 × 60 + 86 × 55 + 86 × 50 + 161 × 45) ÷ 419
+//	    = 51,16 → 51,2; deaths ♀ 3 · ♂ 0; sold ♀ 16 · ♂ 2; incub. 224 ÷ 235 = 95,3; kg ♀ 25,82 → 25,8 · ♂ 2,03 → 2,0
+//	25: depends only on the cycle (SAPT 20–59): the real golden value
+//	38: no hall emptied in the cycle: []
 type ledger struct {
 	t    *testing.T
 	d    *testdb.DB
@@ -277,8 +329,15 @@ func newLedger(t *testing.T) *ledger {
 		values ('Seria 2026', 'seria2026', 2026, $1, 0)`, day(2025, time.October, 7))
 	l.farm = l.id(`insert into farm (name, name_key, type) values ('Hîrbovăț', 'hirbovat', 'laying')`)
 	other := l.id(`insert into farm (name, name_key, type) values ('Telița', 'telita', 'growth')`)
-	l.id(`insert into cycle (series_id, farm_id, start_date, started_by) values ($1, $2, $3, 'auto')`,
-		series, l.farm, day(2026, time.February, 22))
+	guide := l.id(`insert into guide (name, name_key, type) values ('Ghid ouat', 'ghidouat', 'laying')`)
+	for k, lay := range map[int]float64{53: 70, 56: 60, 57: 55, 58: 50, 59: 45} {
+		if _, err := l.d.App.Exec(context.Background(),
+			`insert into guide_week (guide_id, week, sex, lay_pct) values ($1, $2, 'F', $3)`, guide, k, lay); err != nil {
+			t.Fatal(err)
+		}
+	}
+	l.id(`insert into cycle (series_id, farm_id, start_date, started_by, guide_id) values ($1, $2, $3, 'auto', $4)`,
+		series, l.farm, day(2026, time.February, 22), guide)
 	// A Telița cycle over the same days: the rows must pick Hîrbovăț's.
 	l.id(`insert into cycle (series_id, farm_id, start_date, end_date, started_by, ended_by) values ($1, $2, $3, $4, 'auto', 'emptied')`,
 		series, other, day(2025, time.October, 7), day(2026, time.February, 28))
@@ -305,14 +364,30 @@ func newLedger(t *testing.T) *ledger {
 	l.bird(e, "H5.2", day(2026, time.November, 11), "F", "adjustment", 1)
 	e = l.entry("sale", day(2026, time.November, 12), nil)
 	l.bird(e, "H5.2", day(2026, time.November, 12), "F", "sale", -5)
+	e = l.entry("daily", day(2026, time.November, 12), nil)
+	l.bird(e, "H5.1", day(2026, time.November, 12), "F", "mortality", 0)
+	l.bird(e, "H5.1", day(2026, time.November, 12), "M", "mortality", 0)
 	e = l.entry("daily", day(2026, time.November, 17), nil)
 	l.bird(e, "H5.1", day(2026, time.November, 17), "F", "mortality", -1)
+
+	eggs := func(d timex.Day, floor, cat1, cat2, cat3, hatching int, weight *float64) {
+		t.Helper()
+		e := l.entry("daily", d, nil)
+		l.id(`insert into egg_production (entry_id, farm_id, section_id, date, floor_eggs, cat1, cat2, cat3, hatching_eggs, avg_egg_weight_g)
+			values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, e, l.farm, l.sec["H5"], d, floor, cat1, cat2, cat3, hatching, weight)
+	}
+	grams := func(g float64) *float64 { return &g }
+	eggs(day(2026, time.May, 1), 0, 0, 0, 0, 80, nil)
+	eggs(day(2026, time.October, 28), 0, 0, 0, 0, 60, nil)
+	eggs(day(2026, time.November, 5), 1, 0, 1, 0, 43, nil)
+	eggs(day(2026, time.November, 12), 2, 1, 0, 1, 48, grams(65))
+	eggs(day(2026, time.November, 17), 1, 0, 2, 0, 38, grams(60))
 
 	today := golden.AsOf
 	e = l.entry("daily", today, nil)
 	l.bird(e, "H5.1", today, "F", "mortality", -2)
-	l.id(`insert into egg_production (entry_id, farm_id, section_id, date, floor_eggs, cat1, cat2, cat3, hatching_eggs)
-		values ($1, $2, $3, $4, 0, 1, 2, 3, 35)`, e, l.farm, l.sec["H5"], today)
+	l.id(`insert into egg_production (entry_id, farm_id, section_id, date, floor_eggs, cat1, cat2, cat3, hatching_eggs, avg_egg_weight_g)
+		values ($1, $2, $3, $4, 0, 1, 2, 3, 35, 62.00)`, e, l.farm, l.sec["H5"], today)
 	e = l.entry("sale", today, nil)
 	l.bird(e, "H5.2", today, "F", "sale", -10)
 	l.bird(e, "H5.1", today, "M", "sale", -2)
@@ -323,9 +398,14 @@ func newLedger(t *testing.T) *ledger {
 	delivery := `insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg) values ($1, $2, $3, $4, $5)`
 	l.id(delivery, e, l.farm, breeder, day(2026, time.November, 1), 100)
 	l.id(delivery, e, l.farm, cocosi, day(2026, time.November, 1), 10)
-	e = l.entry("feed_daily", today, nil)
 	alloc := `insert into feed_allocation (entry_id, farm_id, section_id, date, sex, feed_type_id, g_per_bird)
 		values ($1, $2, $3, $4, $5, $6, $7)`
+	d12 := day(2026, time.November, 12)
+	e = l.entry("feed_daily", d12, nil)
+	l.id(alloc, e, l.farm, l.sec["H5.1"], d12, "F", breeder, 150)
+	l.id(alloc, e, l.farm, l.sec["H5.2"], d12, "F", breeder, 160)
+	l.id(alloc, e, l.farm, l.sec["H5.1"], d12, "M", cocosi, 140)
+	e = l.entry("feed_daily", today, nil)
 	l.id(alloc, e, l.farm, l.sec["H5.1"], today, "F", breeder, 160)
 	l.id(alloc, e, l.farm, l.sec["H5.2"], today, "F", breeder, 155)
 	l.id(alloc, e, l.farm, l.sec["H5.1"], today, "M", cocosi, 150)
@@ -333,12 +413,14 @@ func newLedger(t *testing.T) *ledger {
 }
 
 // TestGoldenRowsOnHandBuiltLedger runs every implemented row against the
-// miniature ledger. Rows 1–4 depend only on the series and the cycle, so they
-// must already give the real golden values; the others must give the
+// miniature ledger. Rows 1–4 and 25 depend only on the series and the cycle,
+// so they must already give the real golden values; the others must give the
 // hand-worked figures, and Check must report them as mismatches.
 func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 	env := golden.Env{DB: newLedger(t).d.App}
 	ps := func(f, m int) calc.PerSex[int] { return calc.PerSex[int]{F: f, M: m} }
+	pss := func(f, m string) calc.PerSex[string] { return calc.PerSex[string]{F: f, M: m} }
+	cycleOnly := map[int]bool{1: true, 2: true, 3: true, 4: true, 25: true}
 	want := map[int]any{
 		5: ps(68, 5),
 		6: ps(80, 7),
@@ -350,7 +432,27 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 		11: golden.SoldSpan{Cycle: ps(16, 2), Range: ps(15, 2)},
 		12: golden.LayDay{Eggs: 41, HensStart: 80, Pct: "51.3"},
 		26: golden.FeedDay{Kg: calc.PerSex[string]{F: "12.7", M: "1.1"}, Total: "13.8"},
-		27: []golden.StockKg{{Name: "Breeder 2", Kg: "87.3"}, {Name: "Cocoși", Kg: "9.0"}},
+		27: []golden.StockKg{{Name: "Breeder 2", Kg: "74.2"}, {Name: "Cocoși", Kg: "8.0"}},
+
+		13: golden.GuideLay{Guide59: "45.0", DiffToday: "6.3", StatusToday: calc.Abatere, Guide53: "70.0", Guide56: "60.0"},
+		14: []golden.HallLay{{Hall: "H5", Pct: "51.3", DiffPts: "6.3"}},
+		15: golden.EggsDay{Eggs: 41, Inc: 35, IncPct: "85.4", Jos: 0, JosPct: "0.0"},
+		16: []golden.HallEggs{{Hall: "H5", Cat: [3]int{1, 2, 3}, Inc: 35, Total: 41}},
+		17: golden.EggWeight{FarmDay: "62.0", H7Week58: "", FarmWeek58: "65.0"},
+		18: golden.LayWeek{Label: "SAPT 59 · 17.11–18.11 · 2 din 7 zile", DaysInRow: 2, Eggs: 81, HenDays: 161,
+			Lay: "50.3", Guide: "45.0", DiffPts: "5.3", IncPct: "90.1", JosPct: "1.2", CatPct: [3]string{"1.2", "4.9", "3.7"}},
+		19: golden.WeekRemovals{Deaths: ps(3, 0), Sold: ps(10, 2), FeedKg: pss("12.7", "1.1")},
+		20: golden.Week58{Eggs: 50, HenDays: 86, Lay: "58.1", Guide: "50.0", IncPct: "96.0", CatPct: [3]string{"2.0", "0.0", "2.0"},
+			Deaths: ps(0, 0), Sold: ps(6, 0), AliveEnd: ps(81, 7)},
+		21: golden.WeekFeed{Kg: pss("13.1", "1.0"), G: pss("152.2", "140.0")},
+		22: golden.Weeks5756{
+			Weeks:    []golden.WeekLay{{Sapt: 57, Eggs: 44, Lay: "51.2", Guide: "55.0"}, {Sapt: 56, Eggs: 60, Lay: "69.8", Guide: "60.0"}},
+			IncPct56: "100.0",
+		},
+		23: golden.PeakLay{Sapt: 30, Eggs: 80, HenDays: 87, Lay: "92.0"},
+		24: golden.Foot{Label: "Total SAPT 56–59", Eggs: 235, HenDays: 419, Lay: "56.1", Guide: "51.2",
+			Deaths: ps(3, 0), Sold: ps(16, 2), IncPct: "95.3", FeedKg: pss("25.8", "2.0")},
+		38: []golden.EmptyHall{},
 	}
 	for _, r := range golden.Rows() {
 		if r.Got == nil {
@@ -358,7 +460,7 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 		}
 		t.Run(fmt.Sprintf("%02d %s", r.ID, r.Name), func(t *testing.T) {
 			ctx := t.Context()
-			if r.ID <= 4 {
+			if cycleOnly[r.ID] {
 				if err := r.Check(ctx, env); err != nil {
 					t.Fatal(err)
 				}

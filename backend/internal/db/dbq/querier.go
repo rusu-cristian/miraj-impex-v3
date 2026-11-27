@@ -15,10 +15,20 @@ type Querier interface {
 	// The cycle of a farm whose [start_date, end_date] contains the day (an open cycle has no end), with its series'
 	// age parameters (§4.6, §5.1).
 	CalcCycleAt(ctx context.Context, arg CalcCycleAtParams) (CalcCycleAtRow, error)
+	// One cycle of a farm (§4.6) with its series, its guide and whether it has any live bird event (a past cycle without
+	// one has no flock count, D52/D54). No row when the cycle belongs to another farm.
+	CalcCycleByID(ctx context.Context, arg CalcCycleByIDParams) (CalcCycleByIDRow, error)
+	// empty_since per section of a farm at the end of the day (§5.3): every section, a hall counting its compartments
+	// and a section without children itself, both sexes together. alive_end is the scope's count at the end of the day;
+	// empty_since is the last day its count went from > 0 to 0, null while it has birds or when it never had any.
+	// Ordered as the farm's tree: hall, then compartment.
+	CalcEmptySince(ctx context.Context, arg CalcEmptySinceParams) ([]CalcEmptySinceRow, error)
 	// The base of §5.5 at farm scope over [from_day, to_day]: placements plus transfers in whose peer section is in
 	// another farm. A transfer row without a peer section (migration rows may have none) takes the source farm of
 	// its transfer entry, and counts as inside the farm in any other entry. Adjustments are never part of the base.
 	CalcFarmBase(ctx context.Context, arg CalcFarmBaseParams) (CalcFarmBaseRow, error)
+	// Every cycle of a farm, newest first (CycleSelector, §7.3), with the fields of CalcCycleByID.
+	CalcFarmCycles(ctx context.Context, farmID uuid.UUID) ([]CalcFarmCyclesRow, error)
 	// Farm × sex over [from_day, to_day]: deaths (mortality), culls and sales (§5.4). Sales are never deaths (D155).
 	CalcFarmRemovals(ctx context.Context, arg CalcFarmRemovalsParams) (CalcFarmRemovalsRow, error)
 	// Farm × sex on one day (§5.3, §5.4): birds alive at the start and end of the day, and the day's deaths, culls
@@ -29,6 +39,13 @@ type Querier interface {
 	// running sum over v_section_sex_delta, so it holds for any day (v_feed_consumption reads the dense
 	// v_section_sex_day, which stops at greatest(last event, app_today())).
 	CalcFeedKg(ctx context.Context, arg CalcFeedKgParams) (CalcFeedKgRow, error)
+	// The rows of a guide over [from_week, to_week] (age weeks SAPT, D151), one per week × sex present. A null cell is
+	// "– fără date în ghid" (D29); a week × sex outside the guide span has no row.
+	CalcGuideWeeks(ctx context.Context, arg CalcGuideWeeksParams) ([]CalcGuideWeeksRow, error)
+	// The latest live weighing per section × sex of a farm in [from_day, to_day] (§5.10, §5.13), with the birds of the
+	// section × sex at the end of the weighing day (for a bird-weighted mean, §5.10). Ordered by sex, then newest
+	// first, then the farm's tree (hall, then compartment): the first row of a sex is the farm's latest weighing.
+	CalcLatestWeighings(ctx context.Context, arg CalcLatestWeighingsParams) ([]CalcLatestWeighingsRow, error)
 	// Lay of a farm on one day (§5.6): Σ eggs and Σ hens at the start of the day over the egg units whose total is
 	// filled (a unit-day without a total is not a hen-day, D159). Hens at the start of the day = Σ ♀ deltas before the
 	// day over the unit's sections (§5.3, D156), a running sum over v_section_sex_delta like the other readers, so it
@@ -37,11 +54,19 @@ type Querier interface {
 	// Birds alive at the end of the day per bird-holding section (a section without children) × sex (§5.3), every
 	// such section of the farm, 0 when it has no birds. Ordered as the farm's tree: hall, then compartment.
 	CalcSectionAliveEnd(ctx context.Context, arg CalcSectionAliveEndParams) ([]CalcSectionAliveEndRow, error)
+	// Per bird-holding section (a section without children) × sex on one day (§5.3, §5.7, §5.11): birds at the start
+	// and end of the day, whether a live mortality row was entered, and the day's live allocation: fed or not, the typed
+	// g (null for a migrated kg-only row) and the kg (the migrated kg, else g × birds at the start / 1000, DATA03).
+	// Every such section of the farm, in tree order (hall, then compartment), with its hall (itself when parentless).
+	CalcSectionFeedDay(ctx context.Context, arg CalcSectionFeedDayParams) ([]CalcSectionFeedDayRow, error)
 	// Per bird-holding section (a section without children) × sex over [from_day, to_day]: mortality, culls and sales
 	// (§5.4), every such section of the farm, 0 when it has none. Ordered as the farm's tree: hall, then compartment.
 	CalcSectionRemovals(ctx context.Context, arg CalcSectionRemovalsParams) ([]CalcSectionRemovalsRow, error)
 	// The age parameters of a series (§5.1).
 	CalcSeriesAge(ctx context.Context, seriesID uuid.UUID) (CalcSeriesAgeRow, error)
+	// The asked app settings (D19 thresholds and the other numeric settings) as their JSON text; keys that don't exist
+	// are absent.
+	CalcSettings(ctx context.Context, keys []string) ([]CalcSettingsRow, error)
 	// Stock at the end of the day per feed type of a farm (§5.8): the running stock of the latest movement day on or
 	// before it. Feed types with no movement up to that day are absent.
 	CalcStockEnd(ctx context.Context, arg CalcStockEndParams) ([]CalcStockEndRow, error)
@@ -67,6 +92,23 @@ type Querier interface {
 	CopyUsers(ctx context.Context, arg []CopyUsersParams) (int64, error)
 	CopyWeighings(ctx context.Context, arg []CopyWeighingsParams) (int64, error)
 	CountActiveOwners(ctx context.Context) (int32, error)
+	// The active feed types (§7.2), ordered by name_key. for_sex null = both sexes.
+	FarmsActiveFeedTypes(ctx context.Context) ([]FarmsActiveFeedTypesRow, error)
+	// One farm with its own guide (the guide its next cycle copies, B1).
+	FarmsGetFarm(ctx context.Context, farmID uuid.UUID) (FarmsGetFarmRow, error)
+	// The farms a caller sees (§7.2): every farm when all_farms, else the listed ids; ordered by name_key like
+	// /api/auth/me. Each with its own guide and its open cycle (null columns when it has none) with the series' age
+	// parameters (§5.1).
+	FarmsListFarms(ctx context.Context, arg FarmsListFarmsParams) ([]FarmsListFarmsRow, error)
+	// The active (not retired) sections of the farms a caller sees (§7.2), siblings by sort_order then code. is_hall:
+	// the section has children (retired ones included: a hall never holds birds, §4.4).
+	FarmsSections(ctx context.Context, arg FarmsSectionsParams) ([]FarmsSectionsRow, error)
+	// The series with a cycle on the farms a caller sees (§7.2, M2 D7), newest first, with the first day and the last
+	// day of those cycles (an open cycle counts up to today) and the age parameters (§5.1) for saptSpan.
+	FarmsSeries(ctx context.Context, arg FarmsSeriesParams) ([]FarmsSeriesRow, error)
+	// The live transfers between a farm and another farm (§7.3 farm track links), one row per day and direction, with
+	// the birds that arrived per sex (the destination side of each pair). Moves inside one farm are not links.
+	FarmsTransfers(ctx context.Context, farmID uuid.UUID) ([]FarmsTransfersRow, error)
 	// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active, with the user's
 	// user_farm farms in name_key order (empty for the owner, who has no rows, and for a user without farms): the
 	// session middleware needs one round trip.

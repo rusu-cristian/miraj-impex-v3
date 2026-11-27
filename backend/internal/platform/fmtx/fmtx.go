@@ -103,8 +103,8 @@ func Day(d timex.Day) string {
 	return fmt.Sprintf("%02d.%02d.%04d", dd, int(m), y)
 }
 
-// dayMonth formats "18.11".
-func dayMonth(d timex.Day) string {
+// DayMonth formats a day without its year, for in-context labels: "18.11".
+func DayMonth(d timex.Day) string {
 	_, m, dd := d.Date()
 	return fmt.Sprintf("%02d.%02d", dd, int(m))
 }
@@ -122,7 +122,7 @@ func Range(from, to timex.Day) string {
 	fy, _, _ := from.Date()
 	ty, _, _ := to.Date()
 	if fy == ty {
-		return dayMonth(from) + EnDash + Day(to)
+		return DayMonth(from) + EnDash + Day(to)
 	}
 	return Day(from) + EnDash + Day(to)
 }
@@ -130,12 +130,21 @@ func Range(from, to timex.Day) string {
 // RangeNoYear formats an in-context window that drops both years:
 // "16.11–18.11".
 func RangeNoYear(from, to timex.Day) string {
-	return dayMonth(from) + EnDash + dayMonth(to)
+	return DayMonth(from) + EnDash + DayMonth(to)
 }
 
 // WeekLabel is the week in labels, column heads and Mono context lines:
 // "SAPT 59".
 func WeekLabel(week int) string { return "SAPT " + strconv.Itoa(week) }
+
+// WeekRange is a span of weeks in labels: "SAPT 56–59", or "SAPT 58" when
+// it is one week.
+func WeekRange(from, to int) string {
+	if from == to {
+		return WeekLabel(from)
+	}
+	return WeekLabel(from) + EnDash + strconv.Itoa(to)
+}
 
 // WeekText is the week in running text, Toasts and notes: "sapt. 59".
 func WeekText(week int) string { return "sapt. " + strconv.Itoa(week) }

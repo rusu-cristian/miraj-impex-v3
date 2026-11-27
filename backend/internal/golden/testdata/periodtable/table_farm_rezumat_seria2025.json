@@ -1,0 +1,620 @@
+{
+  "scope": {
+    "view": "farm",
+    "farmId": "<farm:hirbovat>",
+    "cycleId": "<cycle:hirbovat/2025>",
+    "seriesId": "<series:seria2025>",
+    "label": "Total fermă"
+  },
+  "period": {
+    "kind": "cycle",
+    "label": "Tot ciclul",
+    "saptFrom": 23,
+    "saptTo": 65,
+    "from": "2025-04-04",
+    "to": "2026-01-28",
+    "weeksTotal": 43
+  },
+  "chips": [
+    "mortalitate",
+    "oua"
+  ],
+  "groups": [
+    {
+      "id": "morti",
+      "record": "mortalitate",
+      "label": "Morți",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "deaths.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "deaths.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "ouat",
+      "record": "oua",
+      "label": "Ouat",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "egg.total",
+          "label": "ouă",
+          "kind": "count"
+        },
+        {
+          "id": "egg.inc",
+          "label": "incub.",
+          "kind": "count"
+        },
+        {
+          "id": "egg.incPct",
+          "label": "% incub.",
+          "kind": "rate"
+        },
+        {
+          "id": "egg.jos",
+          "label": "jos",
+          "kind": "count"
+        },
+        {
+          "id": "egg.josPct",
+          "label": "% jos",
+          "kind": "rate"
+        }
+      ]
+    }
+  ],
+  "weeks": [
+    {
+      "sapt": 65,
+      "from": "2026-01-23",
+      "to": "2026-01-28",
+      "daysInRow": 6,
+      "partial": true,
+      "label": "SAPT 65 · 23.01–28.01 · 6 din 7 zile",
+      "cells": {
+        "deaths.F": null,
+        "deaths.M": null,
+        "egg.inc": 5838,
+        "egg.incPct": 97.7235,
+        "egg.jos": 194,
+        "egg.josPct": 3.2474,
+        "egg.total": 5974
+      },
+      "reasons": {
+        "deaths.F": "emptying",
+        "deaths.M": "emptying"
+      },
+      "days": [
+        {
+          "date": "2026-01-23",
+          "ageDays": 448,
+          "sapt": 65,
+          "weekday": "Vi",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 1578,
+            "egg.incPct": 96.8098,
+            "egg.jos": 68,
+            "egg.josPct": 4.1718,
+            "egg.total": 1630
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-24",
+          "ageDays": 449,
+          "sapt": 65,
+          "weekday": "Sâ",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 1080,
+            "egg.incPct": 97.2097,
+            "egg.jos": 64,
+            "egg.josPct": 5.7606,
+            "egg.total": 1111
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-25",
+          "ageDays": 450,
+          "sapt": 65,
+          "weekday": "Du",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 1260,
+            "egg.incPct": 97.9021,
+            "egg.jos": 38,
+            "egg.josPct": 2.9526,
+            "egg.total": 1287
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-26",
+          "ageDays": 451,
+          "sapt": 65,
+          "weekday": "Lu",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 840,
+            "egg.incPct": 98.476,
+            "egg.jos": 10,
+            "egg.josPct": 1.1723,
+            "egg.total": 853
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-27",
+          "ageDays": 452,
+          "sapt": 65,
+          "weekday": "Ma",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 600,
+            "egg.incPct": 98.6842,
+            "egg.jos": 8,
+            "egg.josPct": 1.3158,
+            "egg.total": 608
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-28",
+          "ageDays": 453,
+          "sapt": 65,
+          "weekday": "Mi",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 480,
+            "egg.incPct": 98.9691,
+            "egg.jos": 6,
+            "egg.josPct": 1.2371,
+            "egg.total": 485
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 64,
+      "from": "2026-01-16",
+      "to": "2026-01-22",
+      "daysInRow": 7,
+      "label": "SAPT 64 · 16.01–22.01",
+      "cells": {
+        "deaths.F": 19,
+        "deaths.M": 2,
+        "egg.inc": 36259,
+        "egg.incPct": 96.8017,
+        "egg.jos": 1128,
+        "egg.josPct": 3.0115,
+        "egg.total": 37457
+      },
+      "days": [
+        {
+          "date": "2026-01-16",
+          "ageDays": 441,
+          "sapt": 64,
+          "weekday": "Vi",
+          "cells": {
+            "deaths.F": 2,
+            "deaths.M": 0,
+            "egg.inc": 9285,
+            "egg.incPct": 96.6282,
+            "egg.jos": 335,
+            "egg.josPct": 3.4863,
+            "egg.total": 9609
+          }
+        },
+        {
+          "date": "2026-01-17",
+          "ageDays": 442,
+          "sapt": 64,
+          "weekday": "Sâ",
+          "cells": {
+            "deaths.F": 5,
+            "deaths.M": 0,
+            "egg.inc": 6686,
+            "egg.incPct": 97.0251,
+            "egg.jos": 141,
+            "egg.josPct": 2.0461,
+            "egg.total": 6891
+          }
+        },
+        {
+          "date": "2026-01-18",
+          "ageDays": 443,
+          "sapt": 64,
+          "weekday": "Du",
+          "cells": {
+            "deaths.F": 4,
+            "deaths.M": 2,
+            "egg.inc": 5559,
+            "egg.incPct": 96.8636,
+            "egg.jos": 175,
+            "egg.josPct": 3.0493,
+            "egg.total": 5739
+          }
+        },
+        {
+          "date": "2026-01-19",
+          "ageDays": 444,
+          "sapt": 64,
+          "weekday": "Lu",
+          "cells": {
+            "deaths.F": 8,
+            "deaths.M": 0,
+            "egg.inc": 4821,
+            "egg.incPct": 97.1388,
+            "egg.jos": 101,
+            "egg.josPct": 2.0351,
+            "egg.total": 4963
+          }
+        },
+        {
+          "date": "2026-01-20",
+          "ageDays": 445,
+          "sapt": 64,
+          "weekday": "Ma",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 4512,
+            "egg.incPct": 97.1367,
+            "egg.jos": 119,
+            "egg.josPct": 2.5619,
+            "egg.total": 4645
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-21",
+          "ageDays": 446,
+          "sapt": 64,
+          "weekday": "Mi",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 2985,
+            "egg.incPct": 96.3836,
+            "egg.jos": 116,
+            "egg.josPct": 3.7456,
+            "egg.total": 3097
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        },
+        {
+          "date": "2026-01-22",
+          "ageDays": 447,
+          "sapt": 64,
+          "weekday": "Jo",
+          "cells": {
+            "deaths.F": null,
+            "deaths.M": null,
+            "egg.inc": 2411,
+            "egg.incPct": 95.9411,
+            "egg.jos": 141,
+            "egg.josPct": 5.6108,
+            "egg.total": 2513
+          },
+          "reasons": {
+            "deaths.F": "emptying",
+            "deaths.M": "emptying"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 63,
+      "from": "2026-01-09",
+      "to": "2026-01-15",
+      "daysInRow": 7,
+      "label": "SAPT 63 · 09.01–15.01",
+      "cells": {
+        "deaths.F": 211,
+        "deaths.M": 4,
+        "egg.inc": 68688,
+        "egg.incPct": 96.6647,
+        "egg.jos": 2228,
+        "egg.josPct": 3.1355,
+        "egg.total": 71058
+      },
+      "days": [
+        {
+          "date": "2026-01-09",
+          "ageDays": 434,
+          "sapt": 63,
+          "weekday": "Vi",
+          "cells": {
+            "deaths.F": 12,
+            "deaths.M": 1,
+            "egg.inc": 9900,
+            "egg.incPct": 96.2848,
+            "egg.jos": 327,
+            "egg.josPct": 3.1803,
+            "egg.total": 10282
+          }
+        },
+        {
+          "date": "2026-01-10",
+          "ageDays": 435,
+          "sapt": 63,
+          "weekday": "Sâ",
+          "cells": {
+            "deaths.F": 123,
+            "deaths.M": 1,
+            "egg.inc": 9900,
+            "egg.incPct": 96.6702,
+            "egg.jos": 334,
+            "egg.josPct": 3.2614,
+            "egg.total": 10241
+          }
+        },
+        {
+          "date": "2026-01-11",
+          "ageDays": 436,
+          "sapt": 63,
+          "weekday": "Du",
+          "cells": {
+            "deaths.F": 14,
+            "deaths.M": 0,
+            "egg.inc": 9935,
+            "egg.incPct": 96.4376,
+            "egg.jos": 327,
+            "egg.josPct": 3.1741,
+            "egg.total": 10302
+          }
+        },
+        {
+          "date": "2026-01-12",
+          "ageDays": 437,
+          "sapt": 63,
+          "weekday": "Lu",
+          "cells": {
+            "deaths.F": 23,
+            "deaths.M": 1,
+            "egg.inc": 9857,
+            "egg.incPct": 96.5615,
+            "egg.jos": 332,
+            "egg.josPct": 3.2524,
+            "egg.total": 10208
+          }
+        },
+        {
+          "date": "2026-01-13",
+          "ageDays": 438,
+          "sapt": 63,
+          "weekday": "Ma",
+          "cells": {
+            "deaths.F": 16,
+            "deaths.M": 1,
+            "egg.inc": 9693,
+            "egg.incPct": 96.9882,
+            "egg.jos": 266,
+            "egg.josPct": 2.6616,
+            "egg.total": 9994
+          }
+        },
+        {
+          "date": "2026-01-14",
+          "ageDays": 439,
+          "sapt": 63,
+          "weekday": "Mi",
+          "cells": {
+            "deaths.F": 13,
+            "deaths.M": 0,
+            "egg.inc": 9740,
+            "egg.incPct": 96.8383,
+            "egg.jos": 324,
+            "egg.josPct": 3.2213,
+            "egg.total": 10058
+          }
+        },
+        {
+          "date": "2026-01-15",
+          "ageDays": 440,
+          "sapt": 63,
+          "weekday": "Jo",
+          "cells": {
+            "deaths.F": 10,
+            "deaths.M": 0,
+            "egg.inc": 9663,
+            "egg.incPct": 96.8916,
+            "egg.jos": 318,
+            "egg.josPct": 3.1886,
+            "egg.total": 9973
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 62,
+      "from": "2026-01-02",
+      "to": "2026-01-08",
+      "daysInRow": 7,
+      "label": "SAPT 62 · 02.01–08.01",
+      "cells": {
+        "deaths.F": 154,
+        "deaths.M": 6,
+        "egg.inc": 71033,
+        "egg.incPct": 96.3368,
+        "egg.jos": 1931,
+        "egg.josPct": 2.6189,
+        "egg.total": 73734
+      },
+      "days": [
+        {
+          "date": "2026-01-02",
+          "ageDays": 427,
+          "sapt": 62,
+          "weekday": "Vi",
+          "cells": {
+            "deaths.F": 24,
+            "deaths.M": 0,
+            "egg.inc": 10195,
+            "egg.incPct": 96.3428,
+            "egg.jos": 251,
+            "egg.josPct": 2.372,
+            "egg.total": 10582
+          }
+        },
+        {
+          "date": "2026-01-03",
+          "ageDays": 428,
+          "sapt": 62,
+          "weekday": "Sâ",
+          "cells": {
+            "deaths.F": 17,
+            "deaths.M": 1,
+            "egg.inc": 10280,
+            "egg.incPct": 96.2907,
+            "egg.jos": 251,
+            "egg.josPct": 2.3511,
+            "egg.total": 10676
+          }
+        },
+        {
+          "date": "2026-01-04",
+          "ageDays": 429,
+          "sapt": 62,
+          "weekday": "Du",
+          "cells": {
+            "deaths.F": 23,
+            "deaths.M": 0,
+            "egg.inc": 10260,
+            "egg.incPct": 96.6284,
+            "egg.jos": 292,
+            "egg.josPct": 2.75,
+            "egg.total": 10618
+          }
+        },
+        {
+          "date": "2026-01-05",
+          "ageDays": 430,
+          "sapt": 62,
+          "weekday": "Lu",
+          "cells": {
+            "deaths.F": 11,
+            "deaths.M": 1,
+            "egg.inc": 10163,
+            "egg.incPct": 96.3957,
+            "egg.jos": 301,
+            "egg.josPct": 2.855,
+            "egg.total": 10543
+          }
+        },
+        {
+          "date": "2026-01-06",
+          "ageDays": 431,
+          "sapt": 62,
+          "weekday": "Ma",
+          "cells": {
+            "deaths.F": 21,
+            "deaths.M": 1,
+            "egg.inc": 10230,
+            "egg.incPct": 96.2009,
+            "egg.jos": 301,
+            "egg.josPct": 2.8305,
+            "egg.total": 10634
+          }
+        },
+        {
+          "date": "2026-01-07",
+          "ageDays": 432,
+          "sapt": 62,
+          "weekday": "Mi",
+          "cells": {
+            "deaths.F": 30,
+            "deaths.M": 1,
+            "egg.inc": 9990,
+            "egg.incPct": 96.41,
+            "egg.jos": 272,
+            "egg.josPct": 2.625,
+            "egg.total": 10362
+          }
+        },
+        {
+          "date": "2026-01-08",
+          "ageDays": 433,
+          "sapt": 62,
+          "weekday": "Jo",
+          "cells": {
+            "deaths.F": 28,
+            "deaths.M": 2,
+            "egg.inc": 9915,
+            "egg.incPct": 96.0849,
+            "egg.jos": 263,
+            "egg.josPct": 2.5487,
+            "egg.total": 10319
+          }
+        }
+      ]
+    }
+  ],
+  "loaded": {
+    "saptFrom": 62,
+    "saptTo": 65,
+    "weeks": 4
+  },
+  "more": {
+    "before": 62,
+    "remaining": 39,
+    "label": "Încarcă încă 4 săptămâni · SAPT 62–65 · 4 din 43"
+  },
+  "start": null,
+  "totals": {
+    "label": "Total SAPT 62–65",
+    "cells": {
+      "deaths.F": 384,
+      "deaths.M": 12,
+      "egg.inc": 181818,
+      "egg.incPct": 96.5971,
+      "egg.jos": 5481,
+      "egg.josPct": 2.912,
+      "egg.total": 188223
+    }
+  },
+  "notes": [],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

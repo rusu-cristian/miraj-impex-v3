@@ -25,4 +25,13 @@ Added in M1 (review 2026-11-27):
 - **Route-walk guard**: `TestEveryWriteRouteChecksContentType` (cmd/api/contract_test.go) walks every registered /api write pattern with an owner session + valid Origin + text/plain and wants 403; non-JSON routes must be listed in `otherMediaRoutes`. A new write route that skips ContentType fails it.
 - **Hashing**: all password hashes come from `auth.NewHasher()` (Service, create-owner, seed-dev); each Hasher has its own maxHashers=4 semaphore, so only the Service's instance bounds request-path argon2.
 
+Added in M2 (review 2026-11-27):
+
+- **Farm-scoped reads**: `/api/table`, `/api/farms/{id}/page|summary` = authed + `RequireRole(viewer, manager, owner)`; the service calls `p.CanSeeFarm` BEFORE any DB read, so a non-owner gets FARM_FORBIDDEN for unknown ids too (no existence oracle); only the owner sees 404. Builders (`BuildPage`, `BuildSummary`, `periodtable.Build`) do NOT check access: any new caller of them must check first.
+- **cycleId**: scoped by SQL (`CalcCycleByID ... and c.farm_id = $farm`) or by picking from `FarmCycles(farm)`; foreign cycle = 404.
+- **Bootstrap**: every role; farms/sections/series filtered by `all_farms OR farm_id = any(FarmIDs)`; feed types and settings are global (no prices).
+- **Dynamic SQL**: `periodtable/sql.go` `daysSQL` has one `%s` filled by `strings.Replace` from the `scopeSQL` map (ScopeFarm/ScopeHall constants, never request text).
+- **Wide periods**: every period is clipped to the cycle by `calc.ResolvePeriod`; int params are int32 ≥ 1; so work per request is bounded by cycle length, not by `weeks`/`count`/interval width.
+- **Accepted-by-design cross-farm data**: farm page `track.transfers` carries the peer farm's NAME (spec §7.3) even when the caller can't see that farm (flagged minor in M2).
+
 **How to apply:** in later milestones check new routes get RequireSession + RequireRole/CanSeeFarm, new tables get explicit grants, and nothing logs bodies/cookies/tokens (§11.11).

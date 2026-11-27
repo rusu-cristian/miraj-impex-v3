@@ -1,0 +1,293 @@
+{
+  "scope": {
+    "view": "farm",
+    "farmId": "<farm:hirbovat>",
+    "cycleId": "<cycle:hirbovat/2026>",
+    "seriesId": "<series:seria2026>",
+    "label": "Total fermă"
+  },
+  "period": {
+    "kind": "cycle",
+    "label": "Ciclul curent",
+    "saptFrom": 20,
+    "saptTo": 59,
+    "from": "2026-02-22",
+    "to": "2026-11-18",
+    "weeksTotal": 40
+  },
+  "chips": [
+    "mortalitate",
+    "sacrificare",
+    "transfer",
+    "vanzare",
+    "hrana",
+    "cantarire",
+    "oua"
+  ],
+  "groups": [
+    {
+      "id": "vii",
+      "record": "vii",
+      "label": "În viață",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "alive.F",
+          "label": "♀",
+          "kind": "level"
+        },
+        {
+          "id": "alive.M",
+          "label": "♂",
+          "kind": "level"
+        }
+      ]
+    },
+    {
+      "id": "morti",
+      "record": "mortalitate",
+      "label": "Morți",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "deaths.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "deaths.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "ouat",
+      "record": "oua",
+      "label": "Ouat",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "egg.total",
+          "label": "ouă",
+          "kind": "count"
+        },
+        {
+          "id": "egg.layPct",
+          "label": "% ouat",
+          "kind": "rate"
+        },
+        {
+          "id": "egg.guide",
+          "label": "ghid",
+          "kind": "guide"
+        },
+        {
+          "id": "egg.inc",
+          "label": "incub.",
+          "kind": "count"
+        },
+        {
+          "id": "egg.incPct",
+          "label": "% incub.",
+          "kind": "rate"
+        },
+        {
+          "id": "egg.jos",
+          "label": "jos",
+          "kind": "count"
+        },
+        {
+          "id": "egg.josPct",
+          "label": "% jos",
+          "kind": "rate"
+        }
+      ]
+    },
+    {
+      "id": "hranaKg",
+      "record": "hrana",
+      "label": "Hrană kg",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "feed.kg.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "feed.kg.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "vanzare",
+      "record": "vanzare",
+      "label": "Vânzare",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "sold.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "sold.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    }
+  ],
+  "weeks": [
+    {
+      "sapt": 59,
+      "from": "2026-11-17",
+      "to": "2026-11-18",
+      "daysInRow": 2,
+      "partial": true,
+      "label": "SAPT 59 · 17.11–18.11 · 2 din 7 zile",
+      "cells": {
+        "alive.F": 12561,
+        "alive.M": 794,
+        "deaths.F": 10,
+        "deaths.M": 0,
+        "egg.guide": 57.6,
+        "egg.inc": 10918,
+        "egg.incPct": 92.4784,
+        "egg.jos": 311,
+        "egg.josPct": 2.6343,
+        "egg.layPct": 40.4025,
+        "egg.total": 11806,
+        "feed.kg.F": 4675.3,
+        "feed.kg.M": 329.7,
+        "sold.F": 2255,
+        "sold.M": 433
+      },
+      "status": {
+        "egg.layPct": "abatere"
+      }
+    },
+    {
+      "sapt": 58,
+      "from": "2026-11-10",
+      "to": "2026-11-16",
+      "daysInRow": 7,
+      "label": "SAPT 58 · 10.11–16.11",
+      "cells": {
+        "alive.F": 14826,
+        "alive.M": 1227,
+        "deaths.F": 36,
+        "deaths.M": 8,
+        "egg.guide": 58.8,
+        "egg.inc": 45745,
+        "egg.incPct": 96.2809,
+        "egg.jos": 1221,
+        "egg.josPct": 2.5699,
+        "egg.layPct": 30.375,
+        "egg.total": 47512,
+        "feed.kg.F": 22230.9,
+        "feed.kg.M": 1682.7,
+        "sold.F": 10546,
+        "sold.M": 749
+      },
+      "status": {
+        "egg.layPct": "abatere"
+      }
+    },
+    {
+      "sapt": 57,
+      "from": "2026-11-03",
+      "to": "2026-11-09",
+      "daysInRow": 7,
+      "label": "SAPT 57 · 03.11–09.11",
+      "cells": {
+        "alive.F": 25408,
+        "alive.M": 1984,
+        "deaths.F": 260,
+        "deaths.M": 34,
+        "egg.guide": 59.9,
+        "egg.inc": 48606,
+        "egg.incPct": 98.7425,
+        "egg.jos": 1750,
+        "egg.josPct": 3.5551,
+        "egg.layPct": 27.5919,
+        "egg.total": 49225,
+        "feed.kg.F": 23284.2,
+        "feed.kg.M": 1970.6,
+        "sold.F": 0,
+        "sold.M": 0
+      },
+      "status": {
+        "egg.layPct": "abatere"
+      }
+    },
+    {
+      "sapt": 56,
+      "from": "2026-10-27",
+      "to": "2026-11-02",
+      "daysInRow": 7,
+      "label": "SAPT 56 · 27.10–02.11",
+      "cells": {
+        "alive.F": 25668,
+        "alive.M": 2018,
+        "deaths.F": 228,
+        "deaths.M": 35,
+        "egg.guide": 61.1,
+        "egg.inc": 115920,
+        "egg.incPct": 98.2964,
+        "egg.jos": 4915,
+        "egg.josPct": 4.1678,
+        "egg.layPct": 65.1559,
+        "egg.total": 117929,
+        "feed.kg.F": 28708.2,
+        "feed.kg.M": 2013.6,
+        "sold.F": 0,
+        "sold.M": 0
+      },
+      "status": {
+        "egg.layPct": "abatere"
+      }
+    }
+  ],
+  "loaded": {
+    "saptFrom": 56,
+    "saptTo": 59,
+    "weeks": 4
+  },
+  "more": {
+    "before": 56,
+    "remaining": 36,
+    "label": "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40"
+  },
+  "start": null,
+  "totals": {
+    "label": "Total SAPT 56–59",
+    "cells": {
+      "alive.F": 12561,
+      "alive.M": 794,
+      "deaths.F": 534,
+      "deaths.M": 77,
+      "egg.guide": 59.8595,
+      "egg.inc": 221189,
+      "egg.incPct": 97.6673,
+      "egg.jos": 8197,
+      "egg.josPct": 3.6194,
+      "egg.layPct": 41.5516,
+      "egg.total": 226472,
+      "feed.kg.F": 78898.6,
+      "feed.kg.M": 5996.6,
+      "sold.F": 12801,
+      "sold.M": 1182
+    },
+    "status": {
+      "egg.layPct": "abatere"
+    }
+  },
+  "notes": [
+    "Morți include sacrificările, ca în registru."
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

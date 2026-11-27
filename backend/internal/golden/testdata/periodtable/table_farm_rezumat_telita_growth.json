@@ -1,0 +1,946 @@
+{
+  "scope": {
+    "view": "farm",
+    "farmId": "<farm:telita>",
+    "cycleId": "<cycle:telita/2026>",
+    "seriesId": "<series:seria2026>",
+    "label": "Total fermă"
+  },
+  "period": {
+    "kind": "cycle",
+    "label": "Tot ciclul",
+    "saptFrom": 1,
+    "saptTo": 21,
+    "from": "2025-10-07",
+    "to": "2026-02-28",
+    "weeksTotal": 21
+  },
+  "chips": [
+    "mortalitate",
+    "eroare_sexare",
+    "transfer",
+    "populare",
+    "hrana",
+    "cantarire"
+  ],
+  "groups": [
+    {
+      "id": "vii",
+      "record": "vii",
+      "label": "În viață",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "alive.F",
+          "label": "♀",
+          "kind": "level"
+        },
+        {
+          "id": "alive.M",
+          "label": "♂",
+          "kind": "level"
+        }
+      ]
+    },
+    {
+      "id": "morti",
+      "record": "mortalitate",
+      "label": "Morți",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "deaths.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "deaths.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "gPasare",
+      "record": "hrana",
+      "label": "g/pasăre",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "feed.g.F",
+          "label": "♀ efectiv",
+          "kind": "rate"
+        },
+        {
+          "id": "feed.g.guide.F",
+          "label": "♀ ghid",
+          "kind": "guide"
+        },
+        {
+          "id": "feed.g.M",
+          "label": "♂ efectiv",
+          "kind": "rate"
+        },
+        {
+          "id": "feed.g.guide.M",
+          "label": "♂ ghid",
+          "kind": "guide"
+        }
+      ]
+    },
+    {
+      "id": "greutateF",
+      "record": "cantarire",
+      "label": "Greutate ♀",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "weight.F",
+          "label": "medie g",
+          "kind": "level"
+        },
+        {
+          "id": "weight.guide.F",
+          "label": "ghid",
+          "kind": "guide"
+        },
+        {
+          "id": "weight.diffPct.F",
+          "label": "față de ghid",
+          "kind": "rate"
+        }
+      ]
+    },
+    {
+      "id": "hranaKg",
+      "record": "hrana",
+      "label": "Hrană kg",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "feed.kg.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "feed.kg.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    }
+  ],
+  "weeks": [
+    {
+      "sapt": 21,
+      "from": "2026-02-24",
+      "to": "2026-02-28",
+      "daysInRow": 5,
+      "partial": true,
+      "label": "SAPT 21 · 24.02–28.02 · 5 din 7 zile",
+      "cells": {
+        "alive.F": 0,
+        "alive.M": 0,
+        "deaths.F": 4,
+        "deaths.M": 0,
+        "feed.g.F": 87.8229,
+        "feed.g.M": 104.4444,
+        "feed.g.guide.F": 105,
+        "feed.g.guide.M": 107,
+        "feed.kg.F": 4240,
+        "feed.kg.M": 188,
+        "weight.F": 2530.7234,
+        "weight.diffPct.F": 6.7816,
+        "weight.guide.F": 2370
+      },
+      "status": {
+        "feed.g.F": "abatere",
+        "feed.g.M": "in_norma",
+        "weight.F": "abatere"
+      },
+      "days": [
+        {
+          "date": "2026-02-24",
+          "ageDays": 140,
+          "sapt": 21,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 26947,
+            "alive.M": 566,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "feed.g.F": 86.3373,
+            "feed.g.M": 97.1731,
+            "feed.g.guide.F": 105,
+            "feed.g.guide.M": 107,
+            "feed.kg.F": 2340,
+            "feed.kg.M": 55,
+            "weight.F": 2530.7234,
+            "weight.diffPct.F": 6.7816,
+            "weight.guide.F": 2370
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma",
+            "weight.F": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-25",
+          "ageDays": 141,
+          "sapt": 21,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 21145,
+            "alive.M": 668,
+            "deaths.F": 1,
+            "deaths.M": 0,
+            "feed.g.F": 89.7242,
+            "feed.g.M": 116.6078,
+            "feed.g.guide.F": 105,
+            "feed.g.guide.M": 107,
+            "feed.kg.F": 1900,
+            "feed.kg.M": 66,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-26",
+          "ageDays": 142,
+          "sapt": 21,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 14082,
+            "alive.M": 684,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "feed.g.F": null,
+            "feed.g.M": 100.2994,
+            "feed.g.guide.F": 105,
+            "feed.g.guide.M": 107,
+            "feed.kg.F": 0,
+            "feed.kg.M": 67,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-27",
+          "ageDays": 143,
+          "sapt": 21,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 7052,
+            "alive.M": 698,
+            "deaths.F": 3,
+            "deaths.M": 0,
+            "feed.g.F": null,
+            "feed.g.M": null,
+            "feed.g.guide.F": 105,
+            "feed.g.guide.M": 107,
+            "feed.kg.F": null,
+            "feed.kg.M": null,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "reasons": {
+            "feed.g.F": "missing",
+            "feed.g.M": "missing",
+            "feed.kg.F": "missing",
+            "feed.kg.M": "missing"
+          }
+        },
+        {
+          "date": "2026-02-28",
+          "ageDays": 144,
+          "sapt": 21,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 0,
+            "alive.M": 0,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "feed.g.F": null,
+            "feed.g.M": null,
+            "feed.g.guide.F": 105,
+            "feed.g.guide.M": 107,
+            "feed.kg.F": null,
+            "feed.kg.M": null,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "reasons": {
+            "feed.g.F": "missing",
+            "feed.g.M": "missing",
+            "feed.kg.F": "missing",
+            "feed.kg.M": "missing"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 20,
+      "from": "2026-02-17",
+      "to": "2026-02-23",
+      "daysInRow": 7,
+      "label": "SAPT 20 · 17.02–23.02",
+      "cells": {
+        "alive.F": 27103,
+        "alive.M": 566,
+        "deaths.F": 3,
+        "deaths.M": 13,
+        "feed.g.F": 86.7097,
+        "feed.g.M": 88.7378,
+        "feed.g.guide.F": 103,
+        "feed.g.guide.M": 106,
+        "feed.kg.F": 16620,
+        "feed.kg.M": 1631,
+        "weight.F": 2418.8959,
+        "weight.diffPct.F": 8.4707,
+        "weight.guide.F": 2230
+      },
+      "status": {
+        "feed.g.F": "abatere",
+        "feed.g.M": "abatere",
+        "weight.F": "abatere"
+      },
+      "days": [
+        {
+          "date": "2026-02-17",
+          "ageDays": 133,
+          "sapt": 20,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 27383,
+            "alive.M": 3283,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 86.55,
+            "feed.g.M": 94.3971,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2370,
+            "feed.kg.M": 310,
+            "weight.F": 2418.8959,
+            "weight.diffPct.F": 8.4707,
+            "weight.guide.F": 2230
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere",
+            "weight.F": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-18",
+          "ageDays": 134,
+          "sapt": 20,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 27382,
+            "alive.M": 3283,
+            "deaths.F": 1,
+            "deaths.M": 0,
+            "feed.g.F": 86.9152,
+            "feed.g.M": 94.4258,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2380,
+            "feed.kg.M": 310,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-19",
+          "ageDays": 135,
+          "sapt": 20,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 27382,
+            "alive.M": 3283,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "feed.g.F": 86.9184,
+            "feed.g.M": 94.4258,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2380,
+            "feed.kg.M": 310,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-20",
+          "ageDays": 136,
+          "sapt": 20,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 27382,
+            "alive.M": 3281,
+            "deaths.F": 0,
+            "deaths.M": 2,
+            "feed.g.F": 86.9184,
+            "feed.g.M": 94.4258,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2380,
+            "feed.kg.M": 310,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-21",
+          "ageDays": 137,
+          "sapt": 20,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 27381,
+            "alive.M": 3286,
+            "deaths.F": 1,
+            "deaths.M": 6,
+            "feed.g.F": 86.9184,
+            "feed.g.M": 94.4834,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2380,
+            "feed.kg.M": 310,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-22",
+          "ageDays": 138,
+          "sapt": 20,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 27381,
+            "alive.M": 290,
+            "deaths.F": 0,
+            "deaths.M": 2,
+            "feed.g.F": 86.9216,
+            "feed.g.M": 16.1002,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2380,
+            "feed.kg.M": 27,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-23",
+          "ageDays": 139,
+          "sapt": 20,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 27103,
+            "alive.M": 566,
+            "deaths.F": 1,
+            "deaths.M": 2,
+            "feed.g.F": 85.8259,
+            "feed.g.M": 186.8512,
+            "feed.g.guide.F": 103,
+            "feed.g.guide.M": 106,
+            "feed.kg.F": 2350,
+            "feed.kg.M": 54,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "abatere"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 19,
+      "from": "2026-02-10",
+      "to": "2026-02-16",
+      "daysInRow": 7,
+      "label": "SAPT 19 · 10.02–16.02",
+      "cells": {
+        "alive.F": 27383,
+        "alive.M": 3284,
+        "deaths.F": 7,
+        "deaths.M": 21,
+        "feed.g.F": 83.672,
+        "feed.g.M": 92.4297,
+        "feed.g.guide.F": 97,
+        "feed.g.guide.M": 101,
+        "feed.kg.F": 16040,
+        "feed.kg.M": 2133,
+        "weight.F": 2277.9761,
+        "weight.diffPct.F": 8.4751,
+        "weight.guide.F": 2100
+      },
+      "status": {
+        "feed.g.F": "abatere",
+        "feed.g.M": "in_norma",
+        "weight.F": "abatere"
+      },
+      "days": [
+        {
+          "date": "2026-02-10",
+          "ageDays": 126,
+          "sapt": 19,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 27389,
+            "alive.M": 3304,
+            "deaths.F": 1,
+            "deaths.M": 1,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 92.587,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 306,
+            "weight.F": 2277.9761,
+            "weight.diffPct.F": 8.4751,
+            "weight.guide.F": 2100
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma",
+            "weight.F": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-11",
+          "ageDays": 127,
+          "sapt": 19,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 27386,
+            "alive.M": 3304,
+            "deaths.F": 3,
+            "deaths.M": 0,
+            "feed.g.F": 83.9753,
+            "feed.g.M": 92.615,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2300,
+            "feed.kg.M": 306,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-12",
+          "ageDays": 128,
+          "sapt": 19,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 27385,
+            "alive.M": 3300,
+            "deaths.F": 1,
+            "deaths.M": 4,
+            "feed.g.F": 83.9845,
+            "feed.g.M": 92.3123,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2300,
+            "feed.kg.M": 305,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-13",
+          "ageDays": 129,
+          "sapt": 19,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 27384,
+            "alive.M": 3290,
+            "deaths.F": 1,
+            "deaths.M": 10,
+            "feed.g.F": 83.9876,
+            "feed.g.M": 92.1212,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2300,
+            "feed.kg.M": 304,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-14",
+          "ageDays": 130,
+          "sapt": 19,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 27384,
+            "alive.M": 3289,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 83.9907,
+            "feed.g.M": 92.4012,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2300,
+            "feed.kg.M": 304,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-15",
+          "ageDays": 131,
+          "sapt": 19,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 27383,
+            "alive.M": 3285,
+            "deaths.F": 1,
+            "deaths.M": 4,
+            "feed.g.F": 83.9907,
+            "feed.g.M": 92.4293,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2300,
+            "feed.kg.M": 304,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-16",
+          "ageDays": 132,
+          "sapt": 19,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 27383,
+            "alive.M": 3284,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 83.9937,
+            "feed.g.M": 92.5419,
+            "feed.g.guide.F": 97,
+            "feed.g.guide.M": 101,
+            "feed.kg.F": 2300,
+            "feed.kg.M": 304,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 18,
+      "from": "2026-02-03",
+      "to": "2026-02-09",
+      "daysInRow": 7,
+      "label": "SAPT 18 · 03.02–09.02",
+      "cells": {
+        "alive.F": 27390,
+        "alive.M": 3305,
+        "deaths.F": 10,
+        "deaths.M": 15,
+        "feed.g.F": 81.7774,
+        "feed.g.M": 90.3518,
+        "feed.g.guide.F": 92,
+        "feed.g.guide.M": 97,
+        "feed.kg.F": 15680,
+        "feed.kg.M": 2093,
+        "weight.F": 2135.5012,
+        "weight.diffPct.F": 8.1266,
+        "weight.guide.F": 1975
+      },
+      "status": {
+        "feed.g.F": "abatere",
+        "feed.g.M": "in_norma",
+        "weight.F": "abatere"
+      },
+      "days": [
+        {
+          "date": "2026-02-03",
+          "ageDays": 119,
+          "sapt": 18,
+          "weekday": "Ma",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3309,
+            "deaths.F": 10,
+            "deaths.M": 11,
+            "feed.g.F": 81.7518,
+            "feed.g.M": 90.0602,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": 2135.5012,
+            "weight.diffPct.F": 8.1266,
+            "weight.guide.F": 1975
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma",
+            "weight.F": "abatere"
+          }
+        },
+        {
+          "date": "2026-02-04",
+          "ageDays": 120,
+          "sapt": 18,
+          "weekday": "Mi",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3309,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 90.3596,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-05",
+          "ageDays": 121,
+          "sapt": 18,
+          "weekday": "Jo",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3308,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 90.3596,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-06",
+          "ageDays": 122,
+          "sapt": 18,
+          "weekday": "Vi",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3307,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 90.3869,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-07",
+          "ageDays": 123,
+          "sapt": 18,
+          "weekday": "Sâ",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3306,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 90.4143,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-08",
+          "ageDays": 124,
+          "sapt": 18,
+          "weekday": "Du",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3306,
+            "deaths.F": 0,
+            "deaths.M": 0,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 90.4416,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-02-09",
+          "ageDays": 125,
+          "sapt": 18,
+          "weekday": "Lu",
+          "cells": {
+            "alive.F": 27390,
+            "alive.M": 3305,
+            "deaths.F": 0,
+            "deaths.M": 1,
+            "feed.g.F": 81.7817,
+            "feed.g.M": 90.4416,
+            "feed.g.guide.F": 92,
+            "feed.g.guide.M": 97,
+            "feed.kg.F": 2240,
+            "feed.kg.M": 299,
+            "weight.F": null,
+            "weight.diffPct.F": null,
+            "weight.guide.F": null
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ]
+    }
+  ],
+  "loaded": {
+    "saptFrom": 18,
+    "saptTo": 21,
+    "weeks": 4
+  },
+  "more": {
+    "before": 18,
+    "remaining": 17,
+    "label": "Încarcă încă 4 săptămâni · SAPT 18–21 · 4 din 21"
+  },
+  "start": null,
+  "totals": {
+    "label": "Total SAPT 18–21",
+    "cells": {
+      "alive.F": 0,
+      "alive.M": 0,
+      "deaths.F": 24,
+      "deaths.M": 49,
+      "feed.g.F": 84.3447,
+      "feed.g.M": 91.009,
+      "feed.g.guide.F": 97.9265,
+      "feed.g.guide.M": 101.1512,
+      "feed.kg.F": 52580,
+      "feed.kg.M": 6045,
+      "weight.F": null,
+      "weight.diffPct.F": null,
+      "weight.guide.F": null
+    },
+    "status": {
+      "feed.g.F": "abatere",
+      "feed.g.M": "abatere"
+    }
+  },
+  "notes": [
+    "Morți include sacrificările, ca în registru."
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

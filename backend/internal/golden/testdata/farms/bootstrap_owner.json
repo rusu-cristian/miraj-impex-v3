@@ -1,0 +1,157 @@
+{
+  "farms": [
+    {
+      "id": "<farm:hirbovat>",
+      "name": "Hîrbovăț",
+      "type": "laying",
+      "guide": {
+        "id": "<guide:ross308ouat>",
+        "name": "Ross 308 ouat"
+      },
+      "openCycle": {
+        "id": "<cycle:hirbovat/2026>",
+        "seriesId": "<series:seria2026>",
+        "seriesName": "Seria 2026",
+        "startDate": "2026-02-22",
+        "saptStart": 20,
+        "saptToday": 59,
+        "ageDaysToday": 407
+      },
+      "sections": [
+        {
+          "id": "<section:hirbovat/H5>",
+          "code": "H5",
+          "isHall": true,
+          "children": [
+            {
+              "id": "<section:hirbovat/H5.1>",
+              "code": "H5.1"
+            },
+            {
+              "id": "<section:hirbovat/H5.2>",
+              "code": "H5.2"
+            }
+          ]
+        },
+        {
+          "id": "<section:hirbovat/H6>",
+          "code": "H6",
+          "isHall": true,
+          "children": [
+            {
+              "id": "<section:hirbovat/H6.1>",
+              "code": "H6.1"
+            },
+            {
+              "id": "<section:hirbovat/H6.2>",
+              "code": "H6.2"
+            }
+          ]
+        },
+        {
+          "id": "<section:hirbovat/H7>",
+          "code": "H7",
+          "isHall": true,
+          "children": [
+            {
+              "id": "<section:hirbovat/H7.1>",
+              "code": "H7.1"
+            },
+            {
+              "id": "<section:hirbovat/H7.2>",
+              "code": "H7.2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "<farm:telita>",
+      "name": "Telița",
+      "type": "growth",
+      "guide": {
+        "id": "<guide:ross308crestere>",
+        "name": "Ross 308 creștere"
+      },
+      "openCycle": null,
+      "sections": [
+        {
+          "id": "<section:telita/H1>",
+          "code": "H1",
+          "isHall": false,
+          "children": []
+        },
+        {
+          "id": "<section:telita/H2>",
+          "code": "H2",
+          "isHall": false,
+          "children": []
+        },
+        {
+          "id": "<section:telita/H3>",
+          "code": "H3",
+          "isHall": false,
+          "children": []
+        },
+        {
+          "id": "<section:telita/H6>",
+          "code": "H6",
+          "isHall": false,
+          "children": []
+        },
+        {
+          "id": "<section:telita/H5-1>",
+          "code": "H5-1",
+          "isHall": false,
+          "children": []
+        },
+        {
+          "id": "<section:telita/H5-2>",
+          "code": "H5-2",
+          "isHall": false,
+          "children": []
+        }
+      ]
+    }
+  ],
+  "series": [
+    {
+      "id": "<series:seria2026>",
+      "name": "Seria 2026",
+      "status": "active",
+      "saptSpan": [
+        1,
+        59
+      ]
+    },
+    {
+      "id": "<series:seria2025>",
+      "name": "Seria 2025",
+      "status": "closed",
+      "saptSpan": [
+        19,
+        65
+      ]
+    }
+  ],
+  "feedTypes": [
+    {
+      "id": "<feedType:breeder2>",
+      "name": "Breeder 2",
+      "forSex": "F",
+      "active": true
+    },
+    {
+      "id": "<feedType:cocosi>",
+      "name": "Cocoși",
+      "forSex": "M",
+      "active": true
+    }
+  ],
+  "settings": {
+    "toleranceWeightPct": 5,
+    "toleranceLayPts": 3,
+    "toleranceFeedPct": 10,
+    "stockDaysMin": 5
+  }
+}
