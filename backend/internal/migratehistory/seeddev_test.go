@@ -69,7 +69,7 @@ func TestSeedDev(t *testing.T) {
 	ctx := t.Context()
 
 	// Verify passed inside Load; it still passes on the committed data, so
-	// the implemented goldens (M1, M2) are unchanged by the seed.
+	// the implemented goldens (M1–M3) are unchanged by the seed.
 	if err := migratehistory.Verify(ctx, d.App); err != nil {
 		t.Fatal(err)
 	}

@@ -35,6 +35,14 @@ func TestNumbers(t *testing.T) {
 		{"percent diff zero", PercentDiff(dec("0.04")), "0,0%"},
 		{"points", Points(dec("-16.5")), "\u221216,5 pct"},
 		{"signed plus", Signed(dec("1500"), 0), "+1\u202f500"},
+		{"up to: whole", DecUpTo(dec("160.0"), 1), "160"},
+		{"up to: one decimal", DecUpTo(dec("160.5"), 1), "160,5"},
+		{"up to: rounds first", DecUpTo(dec("160.25"), 1), "160,3"},
+		{"up to: rounds to whole", DecUpTo(dec("159.96"), 1), "160"},
+		{"up to: grouped", DecUpTo(dec("1500"), 1), "1\u202f500"},
+		{"up to: minus", DecUpTo(dec("-2.50"), 2), "\u22122,5"},
+		{"up to: zero", DecUpTo(dec("-0.04"), 1), "0"},
+		{"up to: no places", DecUpTo(dec("10"), 0), "10"},
 	} {
 		if tc.got != tc.want {
 			t.Errorf("%s: got %q, want %q", tc.name, tc.got, tc.want)
@@ -79,6 +87,12 @@ func TestDates(t *testing.T) {
 	}
 	if got := DateTime(time.Date(2026, 7, 1, 9, 5, 0, 0, time.UTC)); got != "01.07.2026, 12:05" {
 		t.Errorf("DateTime summer = %q", got)
+	}
+	if got := TimeOfDay(time.Date(2026, 11, 18, 6, 44, 30, 0, time.UTC)); got != "08:44" {
+		t.Errorf("TimeOfDay = %q", got)
+	}
+	if got := TimeOfDay(time.Date(2026, 7, 1, 21, 5, 0, 0, time.UTC)); got != "00:05" {
+		t.Errorf("TimeOfDay summer across midnight = %q", got)
 	}
 	if got := Range(timex.MustDay(2025, 12, 29), timex.MustDay(2026, 1, 4)); got != "29.12.2025\u201304.01.2026" {
 		t.Errorf("Range across years = %q", got)

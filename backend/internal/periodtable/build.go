@@ -52,8 +52,13 @@ const (
 // count adds the read of its first register day. A cycleId of another farm is
 // calc.ErrNoCycle; a period or paging parameter out of range is the calc
 // error (calc.ErrPeriod, calc.ErrIntervalFuture, *calc.PageError).
+//
+// view=report-feed is the Consum table (buildReportFeed, reportfeed.go).
 func Build(ctx context.Context, db dbq.DBTX, in Input) (TableResponse, error) {
 	q := in.Query
+	if q.View == viewReportFeed {
+		return buildReportFeed(ctx, db, in)
+	}
 	if q.View != viewFarm || q.FarmID == nil || (q.Tab != "" && q.Tab != tabRezumat) ||
 		(q.Detail != "" && q.Detail != detailFarm) || (q.Grain != "" && q.Grain != grainDay && q.Grain != grainWeek) {
 		return TableResponse{}, ErrUnsupported

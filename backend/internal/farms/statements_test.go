@@ -99,12 +99,19 @@ func TestBuildSummaryStatements(t *testing.T) {
 		"CalcSectionFeedDay", "CalcSectionRemovals", "CalcEmptySince",
 	}
 	head := []string{"FarmsGetFarm", "CalcFarmCycles"}
+	// The open cycle up to today adds the stock and days left (M3 D10).
+	stock := []string{"CalcStockEnd", "CalcFeedDayComplete", "CalcConsumption"}
 	t.Run("laying, whole cycle", func(t *testing.T) {
-		run(t, f.input(owner(), f.hirbovat, nil), append(head, reads...)...)
+		run(t, f.input(owner(), f.hirbovat, nil), slices.Concat(head, reads, stock)...)
 	})
 	t.Run("laying, weeks:4", func(t *testing.T) {
 		in := f.input(owner(), f.hirbovat, nil)
 		in.Period = calc.Period{Kind: calc.PeriodWeeks, Weeks: 4}
+		run(t, in, slices.Concat(head, reads, stock)...)
+	})
+	t.Run("laying, interval ending yesterday", func(t *testing.T) {
+		in := f.input(owner(), f.hirbovat, nil)
+		in.Period = calc.Period{Kind: calc.PeriodInterval, From: day(2026, time.November, 1), To: day(2026, time.November, 17)}
 		run(t, in, append(head, reads...)...)
 	})
 	t.Run("growth", func(t *testing.T) {

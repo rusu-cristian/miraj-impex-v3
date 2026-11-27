@@ -241,26 +241,4 @@ func FeedKg(ctx context.Context, db dbq.DBTX, farmID uuid.UUID, day timex.Day) (
 	return PerSex[decimal.Decimal]{F: r.KgF, M: r.KgM}, nil
 }
 
-// Stock is the stock of one feed type at the end of a day (§5.8).
-type Stock struct {
-	FeedTypeID uuid.UUID
-	Name       string
-	LastMove   timex.Day       // the latest movement day on or before the asked day
-	Kg         decimal.Decimal // full precision; negative when consumption outran deliveries
-}
-
-// StockEnd returns the farm's stock per feed type at the end of day, ordered
-// by name. Feed types with no movement up to that day are absent.
-func StockEnd(ctx context.Context, db dbq.DBTX, farmID uuid.UUID, day timex.Day) ([]Stock, error) {
-	rows, err := dbq.New(db).CalcStockEnd(ctx, dbq.CalcStockEndParams{FarmID: farmID, Day: day})
-	if err != nil {
-		return nil, fmt.Errorf("calc: stock %s: %w", day, err)
-	}
-	out := make([]Stock, 0, len(rows))
-	for _, r := range rows {
-		out = append(out, Stock{FeedTypeID: r.FeedTypeID, Name: r.Name, LastMove: r.Date, Kg: r.StockEnd})
-	}
-	return out, nil
-}
-
 func pair(f, m int32) PerSex[int] { return PerSex[int]{F: int(f), M: int(m)} }

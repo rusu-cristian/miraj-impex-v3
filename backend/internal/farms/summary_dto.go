@@ -25,7 +25,7 @@ type SummaryResponse struct {
 }
 
 // Stat is one item of SummaryResponse.Stats: AliveStat, CumMortalityStat,
-// WeightStat, FeedTodayStat or LayTodayStat. The interface is sealed (its
+// WeightStat, FeedTodayStat, FeedDaysLeftStat or LayTodayStat. The interface is sealed (its
 // method is unexported); each item encodes as its own type.
 type Stat interface{ stat() }
 
@@ -33,6 +33,7 @@ func (AliveStat) stat()        {}
 func (CumMortalityStat) stat() {}
 func (WeightStat) stat()       {}
 func (FeedTodayStat) stat()    {}
+func (FeedDaysLeftStat) stat() {}
 func (LayTodayStat) stat()     {}
 
 // Tile is one item of SummaryResponse.Tiles: a HallTile of TileSection
@@ -72,6 +73,7 @@ const (
 	StatCumMortality = "cumMortality"
 	StatWeight       = "weight"
 	StatFeedToday    = "feedToday"
+	StatFeedDaysLeft = "feedDaysLeft"
 	StatLayToday     = "layToday"
 )
 
@@ -82,29 +84,30 @@ const (
 )
 
 // AliveStat is "În viață" at the period's last day, with the cycle's arrivals
-// (the §5.5 base, "la sosire") and sales up to that day (M2 Q5, proposed). F
-// and M are null for a cycle without a flock count (Seria 2025, like the
-// page's alive, M2 D5).
+// (the §5.5 base, "la sosire") and sales up to that day (M2 Q5, proposed).
+// Every figure is null for a cycle without a flock count (Seria 2025, like
+// the page's alive, M2 D5; arrivals and sold per M3 Q10, proposed).
 type AliveStat struct {
-	ID       string             `json:"id"`
-	F        *int               `json:"F"`
-	M        *int               `json:"M"`
-	Arrivals httpx.SexPair[int] `json:"arrivals"`
-	Sold     httpx.SexPair[int] `json:"sold"`
+	ID       string              `json:"id"`
+	F        *int                `json:"F"`
+	M        *int                `json:"M"`
+	Arrivals httpx.SexPair[*int] `json:"arrivals"`
+	Sold     httpx.SexPair[*int] `json:"sold"`
 }
 
 // CumMortalityStat is "Mortalitate cumulată" (§5.5) at the period's last
 // day: % per sex (null without a base, and for a cycle without a flock
-// count), the ♀ guide and the deaths.
+// count), the ♀ guide and the deaths (null per sex for a cycle without a
+// flock count, M3 Q10, proposed).
 type CumMortalityStat struct {
-	ID     string             `json:"id"`
-	F      *num.Num           `json:"F"`
-	M      *num.Num           `json:"M"`
-	GuideF *num.Num           `json:"guideF"`
-	Status *calc.Status       `json:"status,omitzero"`
-	Reason string             `json:"reason,omitzero"`
-	Note   string             `json:"note,omitzero"` // laying: "(ghid din intrarea în ouat)"
-	Deaths httpx.SexPair[int] `json:"deaths"`
+	ID     string              `json:"id"`
+	F      *num.Num            `json:"F"`
+	M      *num.Num            `json:"M"`
+	GuideF *num.Num            `json:"guideF"`
+	Status *calc.Status        `json:"status,omitzero"`
+	Reason string              `json:"reason,omitzero"`
+	Note   string              `json:"note,omitzero"` // laying: "(ghid din intrarea în ouat)"
+	Deaths httpx.SexPair[*int] `json:"deaths"`
 }
 
 // WeightStat is "Greutate": the latest weighing per sex in the cycle up to
@@ -134,6 +137,29 @@ type FeedTodayStat struct {
 	Status *calc.Status `json:"status,omitzero"`
 	Reason string       `json:"reason,omitzero"`
 	Note   string       `json:"note,omitzero"`
+}
+
+// FeedDaysLeftStat is the feed days left (§5.8, §7.6, M3 D10, Q7, proposed):
+// the farm's stock rows as of today. It is in the stats only for the open
+// cycle with a period that ends today, between feedToday and layToday.
+type FeedDaysLeftStat struct {
+	ID    string             `json:"id"`
+	Items []FeedDaysLeftItem `json:"items"` // feed type name order; the client puts the lowest days first
+}
+
+// FeedDaysLeftItem is one feed type's stock at the end of today: days left
+// (full precision, 0 below a stock of 0, null without consumption in the
+// window), the run-out day (null with days), the kg and the lamp with its
+// reason ("stoc sub 0 · verifică livrările", "sub pragul de 5 zile", "– fără
+// consum în ultimele 3 zile"; absent when in_norma).
+type FeedDaysLeftItem struct {
+	Type   string      `json:"type"`
+	ForSex *string     `json:"forSex"` // null = ambele sexe
+	Days   *num.Num    `json:"days"`
+	RunOut *timex.Day  `json:"runOut"`
+	Kg     num.Num     `json:"kg"`
+	Lamp   calc.Status `json:"lamp"`
+	Reason string      `json:"reason,omitzero"`
 }
 
 // LayTodayStat is "Ouat azi" (§5.6), laying cycles only: the farm's lay % on

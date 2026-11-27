@@ -27,14 +27,16 @@ import (
 // when day is in.Today, from the missing.from_hour of in.Now. The period is
 // resolved on periodtable.TableCycle, as the table resolves it: a past cycle
 // without a flock count runs from its first register day (M2 Q7), and its
-// alive and cumulative mortality figures are null (M2 D5).
+// alive and cumulative mortality figures are null (M2 D5, M3 Q10). The feed
+// days left (§5.8) are the stock as of in.Today, shown only for the open
+// cycle with a period that ends on in.Today (M3 D10).
 //
 // A farm without a cycle, or a period with no day in the cycle, gives a
 // summary with no readout and empty lists. Alerts and the latest records are
-// [] (M8, M6), the feed days left stat comes in M3 (M2 Q3). It does not check
-// the caller's access (the service does, M2 D4). ErrFarmNotFound and
-// ErrCycleNotFound name a missing farm or cycle; a period that doesn't apply
-// is calc's error (calc.ErrPeriod, calc.ErrIntervalFuture).
+// [] (M8, M6). It does not check the caller's access (the service does, M2
+// D4). ErrFarmNotFound and ErrCycleNotFound name a missing farm or cycle; a
+// period that doesn't apply is calc's error (calc.ErrPeriod,
+// calc.ErrIntervalFuture).
 func BuildSummary(ctx context.Context, db dbq.DBTX, in Input) (SummaryResponse, error) {
 	res := SummaryResponse{Stats: []Stat{}, Tiles: []Tile{}, Alerts: []any{}, Latest: []any{}}
 	farm, err := dbq.New(db).FarmsGetFarm(ctx, in.FarmID)
@@ -108,6 +110,9 @@ type summary struct {
 	week     map[uuid.UUID]calc.PerSex[int] // deaths per section in SAPT(day) ∩ cycle
 	empty    map[uuid.UUID]calc.SectionEmpty
 	missing  bool // today, after missing.from_hour: the §5.11 gaps show
+	// stock is the farm's stock and days left as of today, nil unless the
+	// cycle is the open one and day is today (M3 D10).
+	stock *calc.StockDays
 }
 
 // readSummary reads what the summary shows on the period's last day. Each
@@ -184,6 +189,13 @@ func readSummary(ctx context.Context, db dbq.DBTX, c calc.CycleInfo, rp calc.Res
 		s.empty[e.SectionID] = e
 	}
 	s.missing = day == in.Today && in.Now.In(timex.Chisinau).Hour() >= s.settings.MissingFromHour
+	if c.EndDate == nil && day == in.Today {
+		stock, err := calc.ReadStockDays(ctx, db, c.FarmID, in.Today, s.settings)
+		if err != nil {
+			return s, err
+		}
+		s.stock = &stock
+	}
 	return s, nil
 }
 
@@ -246,6 +258,9 @@ func (s summary) growthReadout() *Readout {
 
 func (s summary) stats() []Stat {
 	out := []Stat{s.aliveStat(), s.cumMortalityStat(), s.weightStat(), s.feedTodayStat()}
+	if s.stock != nil {
+		out = append(out, s.feedDaysLeftStat())
+	}
 	if s.laying {
 		out = append(out, s.layTodayStat())
 	}
@@ -253,7 +268,7 @@ func (s summary) stats() []Stat {
 }
 
 func (s summary) aliveStat() AliveStat {
-	st := AliveStat{ID: StatAlive, Arrivals: sexPair(s.arrivals), Sold: sexPair(s.sold)}
+	st := AliveStat{ID: StatAlive, Arrivals: s.countPair(s.arrivals), Sold: s.countPair(s.sold)}
 	if !s.noFlockCount {
 		f, m := s.farmDay.AliveEnd.F, s.farmDay.AliveEnd.M
 		st.F, st.M = &f, &m
@@ -261,12 +276,21 @@ func (s summary) aliveStat() AliveStat {
 	return st
 }
 
+// countPair is a count per sex, null for both sexes on a cycle without a
+// flock count: it has no bird event to count (M3 Q10).
+func (s summary) countPair(p calc.PerSex[int]) httpx.SexPair[*int] {
+	if s.noFlockCount {
+		return httpx.SexPair[*int]{}
+	}
+	return httpx.SexPair[*int]{F: &p.F, M: &p.M}
+}
+
 func (s summary) cumMortalityStat() CumMortalityStat {
 	var pct calc.PerSex[*decimal.Decimal]
 	if !s.noFlockCount { // no flock count, no base (§5.5)
 		pct.F, pct.M = calc.CumMortalityPct(s.deaths.F, s.arrivals.F), calc.CumMortalityPct(s.deaths.M, s.arrivals.M)
 	}
-	st := CumMortalityStat{ID: StatCumMortality, F: numPtr(pct.F), M: numPtr(pct.M), Deaths: sexPair(s.deaths)}
+	st := CumMortalityStat{ID: StatCumMortality, F: numPtr(pct.F), M: numPtr(pct.M), Deaths: s.countPair(s.deaths)}
 	var guide *decimal.Decimal
 	if c := s.guide[s.sapt].F; c != nil {
 		guide = c.MortalityCumPct
@@ -326,6 +350,19 @@ func (s summary) feedTodayStat() FeedTodayStat {
 		calc.Compared(calc.StatusOf(calc.DeviationPct(g.F, guide.F), s.settings.ToleranceFeedPct)),
 		calc.Compared(calc.StatusOf(calc.DeviationPct(g.M, guide.M), s.settings.ToleranceFeedPct)),
 	))
+	return st
+}
+
+// feedDaysLeftStat is the stock rows of the farm as of today (§5.8): one
+// item per feed type with a movement, in name order.
+func (s summary) feedDaysLeftStat() FeedDaysLeftStat {
+	st := FeedDaysLeftStat{ID: StatFeedDaysLeft, Items: make([]FeedDaysLeftItem, 0, len(s.stock.Items))}
+	for _, it := range s.stock.Items {
+		st.Items = append(st.Items, FeedDaysLeftItem{
+			Type: it.Name, ForSex: it.ForSexText(), Days: numPtr(it.Left.Days), RunOut: it.Left.RunOut, Kg: num.Of(it.Kg),
+			Lamp: it.Left.Lamp, Reason: it.Left.Reason.Text(s.settings),
+		})
+	}
 	return st
 }
 

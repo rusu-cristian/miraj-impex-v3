@@ -3,7 +3,10 @@ package calc
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
@@ -35,6 +38,58 @@ var (
 	// (messages.IntervalInFuture).
 	ErrIntervalFuture = errors.New("calc: the interval ends after today")
 )
+
+// ParsePeriod reads one `period` query value (§5.2): "cycle", "weeks:n" (any
+// n ≥ 1; the FilterBar offers 4, 8 and 13, load-more widens it) or
+// "interval:from,to". A problem is a VALIDATION issue on v under path (the
+// §7.0a codes, M2 D2), and the zero Period comes back:
+//   - a malformed value (cycle with an argument, weeks or interval without
+//     one, n not an integer, an interval without two days) → bad_type;
+//   - an interval day that is not a date → bad_date;
+//   - a kind other than cycle, weeks or interval, n < 1 or beyond int32, an
+//     interval that starts after it ends → out_of_range.
+//
+// The future end of an interval needs today, so ResolvePeriod reports it
+// (ErrIntervalFuture). GET /api/table, the farm routes and GET
+// /api/reports/feed all read `period` here.
+func ParsePeriod(v *httpx.Validator, path, s string) Period {
+	invalid := messages.InvalidData()
+	kind, arg, hasArg := strings.Cut(s, ":")
+	switch kind {
+	case PeriodCycle:
+		if v.Check(!hasArg, path, httpx.IssueBadType, invalid) {
+			return Period{Kind: PeriodCycle}
+		}
+	case PeriodWeeks:
+		if !v.Check(hasArg, path, httpx.IssueBadType, invalid) {
+			return Period{}
+		}
+		n, err := strconv.ParseInt(arg, 10, 32)
+		switch {
+		case errors.Is(err, strconv.ErrRange):
+			v.Add(path, httpx.IssueOutOfRange, invalid)
+		case !v.Check(err == nil, path, httpx.IssueBadType, invalid):
+		case v.Check(n >= 1, path, httpx.IssueOutOfRange, invalid):
+			return Period{Kind: PeriodWeeks, Weeks: int(n)}
+		}
+	case PeriodInterval:
+		a, b, ok := strings.Cut(arg, ",")
+		if !v.Check(hasArg && ok, path, httpx.IssueBadType, invalid) {
+			return Period{}
+		}
+		from, errFrom := timex.ParseDay(a)
+		to, errTo := timex.ParseDay(b)
+		if !v.Check(errFrom == nil && errTo == nil, path, httpx.IssueBadDate, invalid) {
+			return Period{}
+		}
+		if v.Check(!from.After(to), path, httpx.IssueOutOfRange, invalid) {
+			return Period{Kind: PeriodInterval, From: from, To: to}
+		}
+	default:
+		v.Add(path, httpx.IssueOutOfRange, invalid)
+	}
+	return Period{}
+}
 
 // ResolvedPeriod is a period applied to one cycle and today (§5.2): the days
 // it covers are inside the period, the cycle and ≤ today.

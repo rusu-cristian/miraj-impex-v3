@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
@@ -208,5 +209,68 @@ func TestValidate(t *testing.T) {
 	}
 	if !errors.As(Validate(loginBody{Login: "a"}), &e) || len(e.Issues) != 1 || e.Message != "Scrie parola." {
 		t.Errorf("no password: %+v", e)
+	}
+}
+
+func TestWriteErrorWriteCodes(t *testing.T) {
+	id := uuid.MustParse("0b3f6c1e-5d2a-4c8e-9f10-2a3b4c5d6e7f")
+	refusals := []Refusal{
+		{SectionCode: "H7.1", Sex: "F", Message: "H7.1 nu are găini la începutul zilei 18.11.2026."},
+		{SectionCode: "H7.2", Sex: "F", Message: "H7.2 nu are găini la începutul zilei 18.11.2026."},
+	}
+	warnings := []Warning{{Code: WarnFeedGuide, SectionCode: "H5.2", Sex: "M", Message: "w"}}
+	tests := []struct {
+		name   string
+		err    error
+		status int
+		body   string
+	}{
+		{"past day vet", PastDayVet(), 403,
+			`{"error":{"code":"PAST_DAY_VET","message":"Pentru zilele trecute cere managerului."}}`},
+		{"series closed", SeriesClosed("Seria 2025"), 409,
+			`{"error":{"code":"SERIES_CLOSED","message":"Seria 2025 e închisă: nu mai primește înregistrări sau corecții."}}`},
+		{"stale", fmt.Errorf("replay: %w", Stale()), 409,
+			`{"error":{"code":"STALE","message":"Înregistrarea s-a schimbat între timp. Reîncarcă și încearcă din nou."}}`},
+		{"already entered", AlreadyEntered(id, "H5.1 ♀ are deja hrana introdusă pe 18.11.2026 la 08:44. Apasă Editează ca să schimbi valorile."), 409,
+			`{"error":{"code":"ALREADY_ENTERED","message":"H5.1 ♀ are deja hrana introdusă pe 18.11.2026 la 08:44. Apasă Editează ca să schimbi valorile.","entryId":"0b3f6c1e-5d2a-4c8e-9f10-2a3b4c5d6e7f"}}`},
+		{"refused with: first refusal's message, every refusal, warnings", RefusedWith(refusals, warnings), 422,
+			`{"error":{"code":"REFUSED","message":"H7.1 nu are găini la începutul zilei 18.11.2026.","refusals":[` +
+				`{"sectionCode":"H7.1","sex":"F","message":"H7.1 nu are găini la începutul zilei 18.11.2026."},` +
+				`{"sectionCode":"H7.2","sex":"F","message":"H7.2 nu are găini la începutul zilei 18.11.2026."}],` +
+				`"warnings":[{"code":"FEED_GUIDE","sectionCode":"H5.2","sex":"M","message":"w"}]}}`},
+		{"refused with nil warnings", RefusedWith(refusals[:1], nil), 422,
+			`{"error":{"code":"REFUSED","message":"H7.1 nu are găini la începutul zilei 18.11.2026.","refusals":[` +
+				`{"sectionCode":"H7.1","sex":"F","message":"H7.1 nu are găini la începutul zilei 18.11.2026."}],"warnings":[]}}`},
+		{"refused with no refusal", RefusedWith(nil, nil), 422,
+			`{"error":{"code":"REFUSED","message":"Datele trimise nu sunt valide.","refusals":[],"warnings":[]}}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			WriteError(w, tt.err)
+			if w.Code != tt.status {
+				t.Errorf("status %d want %d", w.Code, tt.status)
+			}
+			if got := strings.TrimSuffix(w.Body.String(), "\n"); got != tt.body {
+				t.Errorf("body %s\nwant %s", got, tt.body)
+			}
+			assertJSONHeaders(t, w.Header())
+		})
+	}
+}
+
+// A REFUSED error marshalled outside WriteError (e.g. a dry-run preview built
+// from it) still has [] for empty refusals and warnings, never null.
+func TestRefusedWithNeverNull(t *testing.T) {
+	e := RefusedWith(nil, nil)
+	if e.Refusals == nil || e.Warnings == nil {
+		t.Fatalf("refusals %v warnings %v", e.Refusals, e.Warnings)
+	}
+	b, err := Marshal(e.APIError)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(b), "null") || !strings.Contains(string(b), `"refusals":[]`) || !strings.Contains(string(b), `"warnings":[]`) {
+		t.Errorf("body %s", b)
 	}
 }

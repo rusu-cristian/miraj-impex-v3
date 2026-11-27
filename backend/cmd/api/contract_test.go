@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -28,6 +29,7 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
@@ -234,6 +236,47 @@ var nullableFields = map[string]bool{
 	"tiles[].sections[].weight":       true,
 	"tiles[].sections[].weight.guide": true,
 	"tiles[].sections[].layHall":      true,
+
+	// The summary's counts on a cycle without a flock count (M3 Q10); its
+	// feedDaysLeft items of a type for both sexes, or without consumption
+	// (M3 Q7).
+	"stats[].arrivals.F":     true,
+	"stats[].arrivals.M":     true,
+	"stats[].sold.F":         true,
+	"stats[].sold.M":         true,
+	"stats[].deaths.F":       true,
+	"stats[].deaths.M":       true,
+	"stats[].items[].forSex": true,
+	"stats[].items[].days":   true,
+	"stats[].items[].runOut": true,
+
+	// GET /api/table?view=report-feed (§7.4, M3 Q2): the Consum section week
+	// rows' cells, like the week rows'.
+	"weeks[].sections[].cells.*": true,
+
+	// GET /api/forms/feed-daily (§7.8, M3 D8, Q1): no cycle on the date, no
+	// guide (or no guide row for a sex), nothing locked; a row without a
+	// guide, a suggestion or a saved allocation (a migrated kg-only one has
+	// no g); a migration entry has no author.
+	"sapt":                         true,
+	"ageDays":                      true,
+	"guide":                        true,
+	"guide.F":                      true,
+	"guide.M":                      true,
+	"lockedReason":                 true,
+	"rows[].guideG":                true,
+	"rows[].suggestion.g":          true,
+	"rows[].suggestion.feedTypeId": true,
+	"rows[].existing":              true,
+	"rows[].existing.g":            true,
+	"existing[].author":            true,
+
+	// The stock rows of the form state and of GET /api/reports/feed (§5.8,
+	// §7.12, M3 D7): a type for both sexes; no consumption in the window (no
+	// days left, no run-out).
+	"stock[].forSex":   true,
+	"stock[].daysLeft": true,
+	"stock[].runOut":   true,
 }
 
 // nullable reports whether nullableFields allows a null at path (array
@@ -960,8 +1003,10 @@ func TestEveryWriteRouteChecksContentType(t *testing.T) {
 			}
 		}
 	}
-	if !slices.Contains(checked, "POST /api/auth/login") || !slices.Contains(checked, "POST /api/auth/logout") {
-		t.Errorf("checked %q; the walk missed the auth write routes", checked)
+	for _, want := range []string{"POST /api/auth/login", "POST /api/auth/logout", "POST /api/entries/feed-daily"} {
+		if !slices.Contains(checked, want) {
+			t.Errorf("checked %q; the walk missed %s", checked, want)
+		}
 	}
 	for pattern := range otherMediaRoutes {
 		if !slices.Contains(checked, pattern) {
@@ -1059,11 +1104,14 @@ func seededSession(t testing.TB, s *stack, login string) seededReader {
 }
 
 // On the real data (the imported history and the dev seed), every M2 read
-// answers 200 for the owner, the manager and the viewer, on both farms and
-// for each of their cycles (laying with a guide, growth, the Seria 2025 cycle
-// without a flock count), and every body passes stack.do's contract: no null
-// list, a null only where nullableFields allows it, Cache-Control: no-store.
-// The vet gets the bootstrap and is refused the pages.
+// and the M3 reads (Consum by day and by week, the Hrană zilnică form, the
+// Stoc report) answer 200 for the owner, the manager and the viewer, on both
+// farms and for each of their cycles (laying with a guide, growth, the
+// Seria 2025 cycle without a flock count), and every body passes stack.do's
+// contract: no null list, a null only where nullableFields allows it,
+// Cache-Control: no-store. The viewer is refused the form (FORBIDDEN). The
+// vet gets the bootstrap and his farm's form, and is refused the pages,
+// Consum, the Stoc report and another farm's form (FARM_FORBIDDEN).
 func TestFarmReadsOnSeededData(t *testing.T) {
 	t.Parallel()
 	s := newSeededStack(t)
@@ -1100,8 +1148,27 @@ func TestFarmReadsOnSeededData(t *testing.T) {
 					get(t, u, base+"/summary?"+q, http.StatusOK)
 					get(t, u, "/api/table?view=farm&farmId="+farm.String()+"&"+q, http.StatusOK)
 					get(t, u, "/api/table?view=farm&farmId="+farm.String()+"&grain=week&"+q, http.StatusOK)
+					// M3: Consum per cycle, by day and by week; the Hrană
+					// zilnică form on a day of the cycle (a closed series' day
+					// comes back locked).
+					get(t, u, "/api/table?view=report-feed&farmId="+farm.String()+"&"+q, http.StatusOK)
+					get(t, u, "/api/table?view=report-feed&farmId="+farm.String()+"&grain=week&"+q, http.StatusOK)
+					form := "/api/forms/feed-daily?farmId=" + farm.String() + "&date=" + cycleDay(t, s, c.ID).String()
+					if login == "observator" {
+						if code := errorCode(t, get(t, u, form, http.StatusForbidden)); code != httpx.CodeForbidden {
+							t.Errorf("%s as the viewer: code %s, want %s", form, code, httpx.CodeForbidden)
+						}
+					} else {
+						get(t, u, form, http.StatusOK)
+					}
+				}
+				get(t, u, "/api/reports/feed?farmId="+farm.String(), http.StatusOK)
+				if login != "observator" {
+					get(t, u, "/api/forms/feed-daily?farmId="+farm.String()+"&date=2026-11-18", http.StatusOK)
 				}
 			}
+			get(t, u, "/api/reports/feed", http.StatusOK)
+			get(t, u, "/api/reports/feed?farmId=all&period=weeks:4", http.StatusOK)
 			// Hîrbovăț's open cycle: load-more, the start note, a short and an
 			// interval period, one week.
 			table := "/api/table?view=farm&farmId=" + hirb.String()
@@ -1120,43 +1187,96 @@ func TestFarmReadsOnSeededData(t *testing.T) {
 	for _, path := range []string{
 		"/api/farms/" + hirb.String() + "/page", "/api/farms/" + hirb.String() + "/summary",
 		"/api/table?view=farm&farmId=" + hirb.String(),
+		"/api/table?view=report-feed&farmId=" + hirb.String(), "/api/reports/feed",
 	} {
 		if code := errorCode(t, get(t, vet, path, http.StatusForbidden)); code != httpx.CodeForbidden {
 			t.Errorf("%s as the vet: code %s, want %s", path, code, httpx.CodeForbidden)
 		}
 	}
+	// The vet's Hrană zilnică: today on his farm, a past day (locked), and
+	// Telița, not his.
+	get(t, vet, "/api/forms/feed-daily?farmId="+hirb.String()+"&date=2026-11-18", http.StatusOK)
+	get(t, vet, "/api/forms/feed-daily?farmId="+hirb.String()+"&date=2026-11-10", http.StatusOK)
+	telForm := "/api/forms/feed-daily?farmId=" + tel.String() + "&date=2026-11-18"
+	if code := errorCode(t, get(t, vet, telForm, http.StatusForbidden)); code != httpx.CodeFarmForbidden {
+		t.Errorf("%s as the vet: code %s, want %s", telForm, code, httpx.CodeFarmForbidden)
+	}
 }
 
-// BenchmarkFarmReads times the M2 reads through the whole server (socket,
-// middleware, session check, service, SQL, JSON) on the seeded database, the
-// owner on Hîrbovăț's open cycle (SAPT 20–59) and Telița's growth cycle. It
-// reports the p50 and p95 per request against SPEC §11.6 (table page ≤ 300
-// ms, load-more ≤ 200 ms, summary ≤ 400 ms). Run it without -race:
+// cycleDay is a day inside the seeded cycle: its start + 30 days, or its last
+// day (its end, or today) when the cycle is shorter.
+func cycleDay(t *testing.T, s *stack, cycleID uuid.UUID) timex.Day {
+	t.Helper()
+	var day timex.Day
+	if err := s.d.App.QueryRow(context.Background(), `select least(start_date + 30, coalesce(end_date, $2::date))
+		from cycle where id = $1`, cycleID, testdb.Today).Scan(&day); err != nil {
+		t.Fatalf("cycle %s: %v", cycleID, err)
+	}
+	return day
+}
+
+// BenchmarkFarmReads times the M2 reads and the M3 feed routes through the
+// whole server (socket, middleware, session check, service, SQL, JSON) on the
+// seeded database, the owner on Hîrbovăț's open cycle (SAPT 20–59) and
+// Telița's growth cycle. It reports the p50 and p95 per request against SPEC
+// §11.6 (table page ≤ 300 ms, load-more ≤ 200 ms, summary ≤ 400 ms, save ≤
+// 300 ms). The feed save is a real save of Hîrbovăț's 18.11.2026 rows, its dry
+// run the same save rolled back: before each one (outside the timed request)
+// the day's live entry is soft-deleted.
+// Run it without -race:
 //
 //	go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api
 func BenchmarkFarmReads(b *testing.B) {
 	s := newSeededStack(b)
-	hirb, tel := seededFarm(b, s, "hirbovat").String(), seededFarm(b, s, "telita").String()
+	hirbID := seededFarm(b, s, "hirbovat")
+	hirb, tel := hirbID.String(), seededFarm(b, s, "telita").String()
 	owner := seededSession(b, s, "proprietar")
+	feedSave := seededFeedDay(b, s, hirbID)
 
-	for _, bc := range []struct{ name, path string }{
-		{"table-page", "/api/table?view=farm&farmId=" + hirb},
-		{"table-load-more", "/api/table?view=farm&farmId=" + hirb + "&before=56"},
-		{"table-whole-cycle-weeks", "/api/table?view=farm&farmId=" + hirb + "&grain=week&count=40"},
-		{"farm-page", "/api/farms/" + hirb + "/page"},
-		{"summary", "/api/farms/" + hirb + "/summary"},
-		{"summary-growth", "/api/farms/" + tel + "/summary"},
-		{"bootstrap", "/api/bootstrap"},
+	for _, bc := range []struct {
+		name, method, path, body string
+		before                   func() // untimed, before each request
+		status                   int
+	}{
+		{name: "table-page", path: "/api/table?view=farm&farmId=" + hirb},
+		{name: "table-load-more", path: "/api/table?view=farm&farmId=" + hirb + "&before=56"},
+		{name: "table-whole-cycle-weeks", path: "/api/table?view=farm&farmId=" + hirb + "&grain=week&count=40"},
+		{name: "farm-page", path: "/api/farms/" + hirb + "/page"},
+		{name: "summary", path: "/api/farms/" + hirb + "/summary"},
+		{name: "summary-growth", path: "/api/farms/" + tel + "/summary"},
+		{name: "bootstrap", path: "/api/bootstrap"},
+		// M3.
+		{name: "feed-form", path: "/api/forms/feed-daily?farmId=" + hirb + "&date=2026-11-18"},
+		{name: "feed-save", method: http.MethodPost, path: feedDailyPath, body: feedSave,
+			before: func() { deleteFeedDay(b, s, hirbID) }, status: http.StatusCreated},
+		{name: "feed-save-dry-run", method: http.MethodPost, path: feedDailyPath,
+			body:   strings.Replace(feedSave, "{", `{"dryRun":true,`, 1),
+			before: func() { deleteFeedDay(b, s, hirbID) }}, // the whole save path, rolled back
+		{name: "reports-feed", path: "/api/reports/feed"},
+		{name: "consum-page", path: "/api/table?view=report-feed&farmId=" + hirb},
+		{name: "consum-load-more", path: "/api/table?view=report-feed&farmId=" + hirb + "&before=56"},
 	} {
 		b.Run(bc.name, func(b *testing.B) {
-			req, err := http.NewRequest(http.MethodGet, s.srv.URL+bc.path, nil)
-			if err != nil {
-				b.Fatal(err)
-			}
-			req.AddCookie(&http.Cookie{Name: auth.CookieName, Value: owner.token})
+			method, status := cmp.Or(bc.method, http.MethodGet), cmp.Or(bc.status, http.StatusOK)
 			client := s.srv.Client()
 			var took []time.Duration
 			for b.Loop() {
+				if bc.before != nil {
+					bc.before()
+				}
+				var body io.Reader
+				if bc.body != "" {
+					body = strings.NewReader(bc.body)
+				}
+				req, err := http.NewRequest(method, s.srv.URL+bc.path, body)
+				if err != nil {
+					b.Fatal(err)
+				}
+				req.AddCookie(&http.Cookie{Name: auth.CookieName, Value: owner.token})
+				if method == http.MethodPost {
+					req.Header.Set("Origin", testOrigin)
+					req.Header.Set("Content-Type", "application/json")
+				}
 				start := time.Now()
 				res, err := client.Do(req)
 				if err != nil {
@@ -1165,8 +1285,8 @@ func BenchmarkFarmReads(b *testing.B) {
 				_, err = io.Copy(io.Discard, res.Body)
 				_ = res.Body.Close()
 				took = append(took, time.Since(start))
-				if err != nil || res.StatusCode != http.StatusOK {
-					b.Fatalf("%s: %d %v", bc.path, res.StatusCode, err)
+				if err != nil || res.StatusCode != status {
+					b.Fatalf("%s %s: %d %v, want %d", method, bc.path, res.StatusCode, err, status)
 				}
 			}
 			slices.Sort(took)
@@ -1197,7 +1317,7 @@ func TestNullLists(t *testing.T) {
 		{`null`, []string{""}},
 		// Nullable scalars pass; the same name elsewhere does not.
 		{`{"cycle":null,"alive":null,"more":null}`, nil},
-		{`{"farm":{"guide":null},"guide":null}`, []string{"guide"}},
+		{`{"farm":{"guide":null},"cycle":{"guide":null}}`, []string{"cycle.guide"}},
 		// A ".*" entry allows any key under that object, dotted keys included,
 		// but not the object itself nor a deeper list.
 		{`{"weeks":[{"cells":{"alive.F":null,"egg.layPct":null}}],"totals":{"cells":{"alive.F":null}}}`, nil},

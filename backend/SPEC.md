@@ -259,7 +259,7 @@ Rules: every write is logged, creates included (needed for "who entered what" an
 - `live_event(id bigserial, at, farm_ids[], type, payload)`: written in the same transaction as the change together with `select pg_notify('live_event', id::text)` (PostgreSQL delivers a notification only when the transaction commits, and drops it on rollback); the SSE handler replays from `Last-Event-ID` (24 h retention). §9.
 - `voice_usage(user_id, day, commands, audio_seconds, llm_tokens_in/out)`: cost tracking without text (§8.9).
 - `app_setting`: D19 thresholds and limits (seeded in `schema.sql`); code reads them once per request.
-- `request_replay(client_request_id pk, user_id, route, status, body bytea, created_at)`: the exact response bytes of every create that carried a `clientRequestId`, written in the save's transaction; a repeat returns them unchanged (§7.0, §12.5). `bytea`, not `jsonb`, so key order and spacing never drift. Purged after 7 days by the maintenance role; `entry.client_request_id` keeps the key, so a repeat after the purge gets `409 ALREADY_ENTERED` with that `entryId` instead of a new save.
+- `request_replay(client_request_id pk, user_id, route, status, body bytea, created_at)`: the exact response bytes of every create that carried a `clientRequestId`, written in the save's transaction; a repeat returns them unchanged (§7.0, §12.5). `bytea`, not `jsonb`, so key order and spacing never drift. Purged after 7 days by the maintenance role; `entry.client_request_id` keeps the key, so a repeat after the purge gets `409 ALREADY_ENTERED` with that `entryId` instead of a new save, when the caller created that entry and it is of the route's kind; otherwise `409 STALE` *(M3 review SEC-1)*.
 
 ### 4.12 Views in `schema.sql`
 | View | Columns (main) | Used for |
@@ -380,6 +380,7 @@ deviation_pct        = 100 × (g / guide_g − 1);  |deviation| > 10 → abatere
 - A day with no allocation for a section × sex with birds is **missing**, never carried over (data-model). An allocation of 0 kg (the register's row on H7's sell-out day 14.11.2026) is not a fed day: SAPT 58 ♀ = 142 583 bird-days. Week rows cover fed days only and name the gap ("6 din 7 zile").
 - Like-for-like totals (D46): Σ daily g over the fed days vs the guide over the same days.
 - Migrated anomaly kept as typed: 02–06.11.2026 kg = 460 per compartment while g × birds ≈ 690 (D163, open question 12); the Hrană foot note says so.
+- *(proposed, M3 T7)* The Consum farm **day row** (`view=report-feed`, §7.4) shows the register's g ("zi = g din registru", its foot note, §7.12): `g = 1000 × Σ kg / Σ birds(row)` over the fed rows of that day, with `birds(row) = 1000 × kg(row) / g_per_bird` (`alive_start` for a row without g; equal to `alive_start` for app rows), the birds the row's kg was rationed for. So a migrated kg far from g × alive_start (D163) or a register kg on a sale day (H6.2 ♀ 15.11.2026: 428 kg) keeps the typed g. Hîrbovăț ♀: 03.11.2026 161,2 g (not 2 760 kg ÷ 25 668 birds = 107,5), 05.11 145,5, 15.11 160,0. Week, section and period rows stay `g_week` (kg ÷ bird-days): SAPT 57 ♀ 130,5 g.
 
 ### 5.8 Stock, days left, run-out (data-model; SYS04; D40, D49, D50)
 ```
@@ -392,6 +393,8 @@ run_out_date           = window_end + floor(days_left) days
 - 18.11.2026: Breeder 2 **31 664,9 kg** (= 1 114 110 delivered − 300 − 3 000 adjusted − 1 079 145,1 consumed), avg 16–18.11 2 392 kg/zi → **13,2 zile**, se termină 01.12.2026; Cocoși **1 781 kg**, 171 kg/zi → 10,4 zile, 28.11.2026.
 - Lamp: stock < 0 → `abatere` "stoc sub 0 · verifică livrările"; days_left < 5 → `abatere` "sub pragul de 5 zile"; avg = 0 → `oprit` "– fără consum în ultimele 3 zile"; farm without an open cycle → `oprit` "fără ciclu deschis" (Telița never shows its workbook −716 kg).
 - Hrană zilnică "Stoc după azi" = stock at the end of today including the form's confirmed rows (draft), "din {stock now} kg".
+- *(proposed, M3 D7)* Computed with an explicit day, never from the dense views (`v_feed_stock`, `v_feed_consumption`, `v_section_sex_day` stop at `app_today()`): Σ deliveries − Σ allocation kg (the migrated `kg_recorded`, else g × alive_start as a running sum of the leaf deltas) + Σ adjustments. The window is the last `alert.stock_avg_days` (3) complete days; it ends today when every section × sex with `has_birds(today)` (§5.11) has a live allocation, else yesterday; one window per farm, shared by its types. `days_left` is clamped at 0 when the stock is below 0 (S7 "stoc sub 0": "0,0 zile · se termină azi", run-out = window end); `run_out_date` and the `alert.stock_days_min` (5) lamp threshold use the full-precision days (13,237 → shown 13,2, run-out 18.11 + 13); avg = 0 → `days_left` and `run_out_date` null. A type with no movement up to the day is left out; a farm with no cycle at all has no "ultimul ciclu" sub line. Plurals *(proposed)*: "sub pragul de 1 zi", "sub pragul de 20 de zile", "– fără consum în ultima zi" (a 1-day window).
+- *(proposed, M3 Q5)* The form state's "stoc acum" (`stock[].kg`) and a save's `byType[].stockAfter` are always the stock at the **end of today** (after the save), for a past-day save too; the save Toast's "stoc Breeder 2: …" therefore always means "now". H5 still checks every day from the saved date to today.
 
 ### 5.9 Feed cost (D05, D49, CostBlock)
 ```
@@ -509,7 +512,12 @@ Hints the form needs (returned by the form-state endpoint, §7.7): `alive_start`
 | H5 | stock of a type at the end of d (or any later day) < 0 | warn (D40) | "Stocul de Breeder 2 la Hîrbovăț ar ajunge la −1 240 kg. Verifică livrările." |
 | H6 | vet past day | refuse | "Pentru zilele trecute cere managerului." |
 - Only confirmed rows are sent (an unconfirmed suggestion is not saved; the section stays missing, D13). The suggestion source = yesterday's g and feed type per row (`GET` form state).
-- Toast: "Hrană zilnică salvată · 8 rânduri · 2 457,9 kg · stoc Breeder 2: 31 665 kg".
+- Toast: "Hrană zilnică salvată · 8 rânduri · 2 457,9 kg · stoc Breeder 2: 31 665 kg". *(proposed, M3 D6)* It names the type with the largest kg in the save, its stock at the end of today (§5.8, Q5); "1 rând", "20 de rânduri". The audit `summary` and Jurnal name *(proposed, S4 board)*: "Hrană zilnică · 8 din 8 rânduri · 2 457,9 kg" (the save's rows out of the section × sex rows with birds that day).
+- *(proposed)* H1 below 1: "H1.1 ♀: 0,5 g e sub limită. Scrie o valoare între 1 și 300 g." H1 is level 1 (`400 VALIDATION`, `rows[i].g`, `out_of_range`). A g with more than one decimal → the same issue with "Datele trimise nu sunt valide." (M3 Q9: the `numeric(6,1)` column would round 160,25 to 160,3 silently).
+- *(proposed, M3 Q4)* H2 for an inactive (retired) type: "Breeder 1 e retras. Alege alt tip."; the wrong-sex sentence is for `for_sex` ≠ row sex ("Cocoși nu e pentru găini. Alege alt tip.").
+- H3 also refuses a row for a hall or a retired section ("H7.1 nu are găini la începutul zilei 18.11.2026."). H2–H6 are level 2 (inside the transaction after the farm lock); every refusal of one save comes back together in `refusals[]`, in document order, `error.message` = the first one's (M3 D5).
+- *(proposed, M3 Q3)* A row whose (section, day, sex) already has a live allocation in another entry → `409 ALREADY_ENTERED` with the `entryId` of the first colliding row's entry: "H5.1 ♀ are deja hrana introdusă pe 18.11.2026 la 08:44. Apasă Editează ca să schimbi valorile." (the time is the owning entry's creation time). An owning entry without an author (the history import, `source = migration`) has no such time: its 409 uses the sentence "Valorile acestei zile sunt deja introduse. Deschide înregistrarea ca să le modifici." *(M3 review COR-1)*. `feed_allocation_uq` is the safety net for a concurrent save (§12.5).
+- H4 and H5 (M3 D6): H4 compares on full precision and shows a whole percent, rounded half away from zero; no guide or no guide row → no H4. H5 (`STOCK_NEGATIVE`) takes, per saved type, the **lowest** stock at the end of any day in [date, today] after the save, in whole kg.
 
 ### 6.4 Cycles (B4, data-model Cycle rules, D17, D54, D63)
 **reconcileCycles(farm, from)** — run in the same transaction after every write that adds, changes or removes `bird_event` rows of the farm (both farms for a transfer):
@@ -673,7 +681,7 @@ The deactivated check runs only after a correct password (no account probing). T
   Codes: `VALIDATION` 400 (shape: malformed JSON, unknown field, wrong type, missing required field; the problems in `issues[]`, §7.0b; an issue with no §6 sentence uses *(proposed)* "Datele trimise nu sunt valide."), `UNAUTHENTICATED` 401 (no, expired or revoked session: *(proposed)* "Sesiunea a expirat. Intră din nou în cont."), `FORBIDDEN` (Origin/CSRF/Content-Type refusals, §11.4: *(proposed)* "Cererea a fost refuzată. Reîncarcă pagina și încearcă din nou."; a route the caller's role may not use, `auth.RequireRole`: *(proposed)* "Nu ai acces la această pagină.", except where §3.3 or a screen gives its own sentence, e.g. "Nu ai acces la Serii.", which wins when that route lands) / `FARM_FORBIDDEN` / `PAST_DAY_VET` / `PRICE_FORBIDDEN` / `ACCOUNT_DISABLED` 403, `NOT_FOUND` 404 (an `/api` path no route serves: *(proposed)* "Adresa cerută nu există."), *(proposed)* `METHOD_NOT_ALLOWED` 405 (an `/api` route called with a method it doesn't serve, with the `Allow` header: *(proposed)* "Operația nu este permisă la această adresă."; `httpx.MuxFallback`, paths outside `/api` keep the mux's plain answers), `ALREADY_ENTERED` / `CONFIRM_REQUIRED` / `SERIES_CLOSED` / `STALE` 409, `PAYLOAD_TOO_LARGE` 413 (body over the route's limit: 64 KiB JSON, 2 MB guide file, 1 MB audio; *(proposed)* "Datele trimise sunt prea mari."), `REFUSED` 422 (business rules §6), `RATE_LIMITED` 429 (+ `retryAfterSeconds`), `VOICE_UNAVAILABLE` 503, `UNAVAILABLE` 503 (a deadline ran out, `context.DeadlineExceeded`: *(proposed)* "Serviciul nu răspunde acum. Încearcă din nou.").
 - **Warnings** never block: successful responses carry `warnings: [{ code, sectionCode?, sex?, message }]`.
 - **Dry run**: every write that shows an effect preview accepts `"dryRun": true` and returns `{ effects, warnings, refusals }` without writing (transfer, sale, correction, delete, new cycle, series create, series age change, guide save; the entry creates accept it too). A dry run answers **200** with the refusals **in the body** (never 422): the server runs the real writes and checks in a transaction (child rows, §6.1 counts, `ReconcileCycles`) and then rolls it back, so the preview is exactly what a save would do. The preview inserts its entry **without** the `clientRequestId` (null key), so it never collides with, or waits on, the real save of the same draft. No audit, live event or replay row survives it. The client calls it on change (debounced 300 ms).
-- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same body, byte for byte: the original response is stored with the key in `request_replay`, §4.11, §12.5), so "Reîncearcă" never saves twice. The same key from another user or on another route → `409 STALE`; a key whose stored reply was purged (> 7 days) → `409 ALREADY_ENTERED` with the `entryId` that holds it.
+- **Idempotency**: create requests carry `clientRequestId` (UUID generated when the form draft starts). A repeat with the same id returns the first result (`200` with the same body, byte for byte: the original response is stored with the key in `request_replay`, §4.11, §12.5), so "Reîncearcă" never saves twice. The same key from another user or on another route → `409 STALE`; a key whose stored reply was purged (> 7 days) → `409 ALREADY_ENTERED` with the `entryId` that holds it, *(proposed)* "Valorile acestei zile sunt deja introduse. Deschide înregistrarea ca să le modifici.", when the caller created that entry and it is of the route's kind; another user's entry or another kind → `409 STALE` (a key never names another user's entry, *M3 review SEC-1*).
 - **Optimistic concurrency**: entry reads return `version` (= `updated_at ?? created_at`); edits send `ifVersion`; mismatch → `409 STALE` *(proposed)* "Înregistrarea s-a schimbat între timp. Reîncarcă și încearcă din nou."
 - **Every successful write** returns `toast` (the exact Toast text), the affected entity, `asOf`, and emits live events (§9).
 - **Pagination**: cursor-based (`cursor` opaque, `nextCursor` null at the end) except the PeriodTable, whose cursor is the oldest loaded SAPT (§7.4).
@@ -753,7 +761,7 @@ type EntryRef struct {
 
 ### 7.0b Validation (one approach: explicit `Validate()` methods)
 Every request struct has a method `Validate(v *httpx.Validator)` written in plain Go; **go-playground/validator is not used**. Why: the messages are exact Romanian sentences with section codes, sex-word agreement ("cele 4 383 găini" / "cei 93 cocoși"), formatted numbers and dates (§6, §11.3); struct tags can express "1 ≤ g ≤ 300" but not "H1.1 ♀: 350 g e peste limită. Scrie o valoare între 1 și 300 g.", so tags would need a second translation layer keyed by field and tag, which is where messages drift. Plain methods keep each rule next to its sentence and are trivially table-tested.
-- **Level 1 — shape, no database** (`Validate()` on the decoded struct): required fields, enums, integrality, fixed ranges (g 1–300, % 0–100, Motiv 1–200 trimmed, buyer ≤ 120, login pattern), no duplicate sections in one body. Failures → `400 VALIDATION` with `issues[]`; the `message` of each issue is the §6 sentence when §6 has one (e.g. H1 "H1.1 ♀: 350 g e peste limită. Scrie o valoare între 1 și 300 g." needs the section code, so the validator gets a resolver for codes from the bootstrap data the handler already loaded) and the `error.message` is the first issue's message.
+- **Level 1 — shape, no database** (`Validate()` on the decoded struct): required fields, enums, integrality, fixed ranges (g 1–300, % 0–100, Motiv 1–200 trimmed, buyer ≤ 120, login pattern), no duplicate sections in one body. Failures → `400 VALIDATION` with `issues[]`; the `message` of each issue is the §6 sentence when §6 has one (e.g. H1 "H1.1 ♀: 350 g e peste limită. Scrie o valoare între 1 și 300 g." needs the section code, so the handler reads the farm's section codes after the role and farm checks and passes them to `Validate`, so no code of another farm leaks; M3 D5) and the `error.message` is the first issue's message.
 - **Level 2 — business rules with database state** (in the service, inside the write transaction, after the farm lock): §6.1 counts, Z3/Z4/Z6, H2–H5, cycle rules, uniqueness (`ALREADY_ENTERED`), time windows. Failures → `422 REFUSED` with `refusals[]`/`warnings[]`, or the specific 403/409 code of §6/§7.0.
 - **Messages**: every Romanian string of §6–§8 is a Go function in `internal/platform/messages/ro.go` with typed parameters (`messages.FeedOutOfRange(section string, sex dbq.Sex, g num.Num) string`); the formatters of §11.3 (`fmtx.Int`, `fmtx.Dec1`, `fmtx.Day`, `fmtx.SexWord`) live beside them. Tests snapshot each function's output against the exact strings quoted in this spec.
 - The validator collects all issues (it doesn't stop at the first), in document order, so the client can mark every field at once.
@@ -863,7 +871,7 @@ Rules:
   - `detail=halls|sections` adds one group per hall/compartment after "Total fermă" (scope = the section id); Producție with `sections` repeats the hall figures with `reasons: "hall_eggs"` ("ouăle se numără pe hală").
   - `series` view: one "Total serie" group + a text column `farm` per day ("Telița", "Hîrbovăț", both in transfer weeks SAPT 20–21; each bird counted once: in Telița until its batch arrives), every group of the series' types (Eroare sexare and Populare included, D45).
   - `report-production` (S14): per week the farm week row → its 7 farm day rows → the hall **week** rows (`halls[]` inside the week, no hall days); columns găini · ouă · Ouat (efectiv · ghid · față de ghid · stare) · % Cat. 1–3 · incubabile (n · %) · masă ou · mortalitate ♀ · ♂ · vândute ♀ (weeks with sales) · hrană g/găină (efectiv · ghid).
-  - `report-feed` (S11 Consum): farm week row (kg ♀ · ♂, g vs guide) → 7 farm day rows → section week rows.
+  - `report-feed` (S11 Consum): farm week row (kg ♀ · ♂, g vs guide) → 7 farm day rows → section week rows. *(proposed, M3 Q2, D11)* Params: `view, farmId, cycleId, period, grain, before, count, sapt, fromSapt`; `tab` is ignored, `detail` and `types` → 400 `out_of_range`. Groups: "Hrană · kg" (`feed.kg.F`, `feed.kg.M`) and "Hrană · g/pasăre" (`feed.g.F` "♀ efectiv", `feed.g.guide.F` "♀ ghid", `feed.g.diffPct.F` "♀ față de ghid", the same for ♂, then `feed.state` "stare", kind `status`, which has no cell); without a guide the ghid and față de ghid leaves are left out. `status["feed.g.F" | "feed.g.M"]` is `abatere` when |diff| > `tolerance.feed_pct`. Each week row carries its section week rows in `sections[]` (tree order, `code` = the section code); a hall emptied in the cycle whose sections have nothing that week is one row `{ "code": "H7", "label": "goală din 14.11.2026 · H7.1, H7.2", "cells": {}, "reasons": { "*": "empty_since:2026-11-14" } }`. Week, day and section rows and `totals` carry `missing: { "rows": 2, "days": ["2026-11-13"], "keys": [ { "code": "H7.1", "sex": "F", "date": "2026-11-13" }, … ] }` (omitted when none) for the section × sex × day rows with `has_birds` (§5.11) and no live allocation, on **every** day of the period (today's only from `missing.from_hour`); the client's "stare" shows "lipsă" when `missing` is present, else `abatere` when any status is, else "în normă". "Toate fermele" is composed by the client, one call per farm. `notes` = the §7.12 foot note, plus the D163 line (§7.12) when the loaded days have one.
 - **`cells` keys** are `"{leaf}"` for the scope group and `"{leaf}@{sectionCode}"` for detail groups (`"alive.F@H5"`). `null` = `–`; its reason in `reasons[key]`: `missing` ("lipsă"), `empty_since:2026-11-14` ("goală din 14.11"), `no_guide` ("fără date în ghid"), `no_weighing`, `not_in_register` ("– fără hrană în registru"), `hall_eggs`, `no_flock_count` (past cycle without counts), `emptying` ("– golire, nu mortalitate": a past cycle's emptying removals, never mortality) *(proposed)*. `status[key]` ∈ `in_norma|abatere` for guide comparisons.
 - **Phone** sends a single `types` chip; the server still returns `vii` (and for Producție `găini`).
 - **States**: no data in the period → `weeks: []`, `chips: []`, `empty: { "next": "Alege ciclul curent" }`; no guide → guide leaves omitted and `noGuide: true` (header Tag "fără ghid"); partial guide → null + `no_guide`.
@@ -940,6 +948,7 @@ type Leaf struct {
 type Cells map[string]*num.Num // nil value = "–"; its reason is in Reasons[key]
 
 type WeekRow struct {
+	Code      string            `json:"code,omitzero"` // report-feed section rows: the section's (or emptied hall's) code
 	Sapt      int               `json:"sapt"`
 	From      timex.Day         `json:"from"`
 	To        timex.Day         `json:"to"`
@@ -949,8 +958,15 @@ type WeekRow struct {
 	Cells     Cells             `json:"cells"`
 	Status    map[string]string `json:"status,omitzero"`  // key → in_norma | abatere
 	Reasons   map[string]string `json:"reasons,omitzero"` // key → missing | empty_since:2026-11-14 | no_guide | …
-	Days      []DayRow          `json:"days,omitzero"`    // grain=day
-	Halls     []WeekRow         `json:"halls,omitzero"`   // report-production: hall week rows
+	Missing   *Missing          `json:"missing,omitzero"`  // report-feed: rations not entered (also on DayRow, Totals)
+	Days      []DayRow          `json:"days,omitzero"`     // grain=day
+	Sections  []WeekRow         `json:"sections,omitzero"` // report-feed: section week rows
+	Halls     []WeekRow         `json:"halls,omitzero"`    // report-production: hall week rows
+}
+type Missing struct { // report-feed (M3 Q2, proposed)
+	Rows int          `json:"rows"` // len(Keys)
+	Days []timex.Day  `json:"days"` // oldest first, once each
+	Keys []MissingKey `json:"keys"` // { code, sex, date }: by day, then tree order, ♀ before ♂
 }
 type DayRow struct {
 	Date    timex.Day         `json:"date"`
@@ -1001,7 +1017,8 @@ Each chart also returns `table` rows for the screen-reader data table and `noGui
              { "id": "cumMortality", "F": 5.66, "M": 34.66, "guideF": 7.25, "status": "in_norma", "note": "(ghid din intrarea în ouat)", "deaths": { "F": 1521, "M": 1048 } },
              { "id": "weight", "F": 3960, "M": 4870, "guide": null, "reason": "no_guide", "at": "2026-11-10", "section": "H5.1" },
              { "id": "feedToday", "F": 160, "M": 142.8, "guideF": 157, "guideM": 156, "status": "in_norma", "note": "H7 goală din 14.11" },
-             { "id": "feedDaysLeft", "items": [ { "type": "Breeder 2", "days": 13.2 }, { "type": "Cocoși", "days": 10.4 } ] },
+             { "id": "feedDaysLeft", "items": [ { "type": "Breeder 2", "forSex": "F", "days": 13.2, "runOut": "2026-12-01", "kg": 31664.9, "lamp": "in_norma" },
+                                                { "type": "Cocoși", "forSex": "M", "days": 10.4, "runOut": "2026-11-28", "kg": 1781.0, "lamp": "in_norma" } ] },
              { "id": "layToday", "value": 41.08, "guide": 57.6, "diffPts": -16.52, "status": "abatere", "eggs": 5914, "halls": 2 } ],
   "tiles": [ { "hall": "H5", "sections": [ { "code": "H5.1", "alive": { "F": 4263, "M": 342 }, "deathsWeek": { "F": 1, "M": 0 }, "gToday": { "F": 160, "M": 144 }, "layHall": 45.30, "lamps": ["abatere"] } ] },
              { "hall": "H7", "emptySince": "2026-11-14", "label": "goală din 14.11.2026 · H7.1, H7.2" } ],
@@ -1015,9 +1032,10 @@ Rules (M2 D4, D6, Q3, Q5):
 - `readout`: laying = the latest week of the `WeekSeries` with a lay %; growth (`"kind": "weight"`) = the latest ♀ weighing vs the guide of SAPT − 1, its `series` `[]` until the Greutate charts (M6); `null` when there is nothing to show. `status` is present only when there is a guide value.
 - A missing guide figure is `null` with `"reason": "no_guide"` (a cycle without a guide too; the page's guide tag tells them apart); `status` is omitted when nothing was compared. `feedToday.status` is `abatere` when either sex is off by more than `tolerance.feed_pct`. A missing weighing: `weight` values `null`, `"reason": "no_weighing"`.
 - `alive` adds *(proposed, M2 Q5)* `"arrivals": { "F": 26883, "M": 3024 }` (the §5.5 base, "la sosire") and `"sold": { "F": 12801, "M": 1182 }` (sales since the cycle start, "vânzări").
-- A past cycle without a flock count (Seria 2025, D52, D54): the period is resolved on the cycle as the PeriodTable counts it, from its first register day (SAPT 23–65, M2 Q7), so a period before that day is the empty summary as the table's is empty; `alive` and `cumMortality` have `"F": null, "M": null` (no counts, no §5.5 base), like the page's `alive` (M2 D5).
+- A past cycle without a flock count (Seria 2025, D52, D54): the period is resolved on the cycle as the PeriodTable counts it, from its first register day (SAPT 23–65, M2 Q7), so a period before that day is the empty summary as the table's is empty; `alive` and `cumMortality` have `"F": null, "M": null` (no counts, no §5.5 base), like the page's `alive` (M2 D5); *(proposed, M3 Q10)* so do their `arrivals`, `sold` and `deaths` (`{ "F": null, "M": null }`, not 0).
 - `weight`: when several sections weighed the shown sex on the same (latest) day, `at` and `section` are those of the first of them in hall order (hall, then compartment).
-- `feedToday.note` names the halls emptied in the cycle ("H7 goală din 14.11", several joined with ", "). `layToday` (laying only): `halls` = the egg units with an egg entry that day. `feedDaysLeft` comes with M3, `alerts` with M8 and `latest` with M6: until then `alerts: []`, `latest: []` and no `feedDaysLeft` (M2 Q3).
+- `feedToday.note` names the halls emptied in the cycle ("H7 goală din 14.11", several joined with ", "). `layToday` (laying only): `halls` = the egg units with an egg entry that day. `alerts` come with M8 and `latest` with M6: until then `alerts: []`, `latest: []` (M2 Q3).
+- *(proposed, M3 Q7, D10)* `feedDaysLeft`: present only when the shown cycle is the open one and the period ends today, between `feedToday` and `layToday` (past cycles, Seria 2025, Telița and a period ending before today have none). Items `{ type, forSex, days, runOut, kg, lamp, reason? }`, one per feed type of the farm's stock (§5.8), in type-name order (the client puts the lowest days first): `forSex` null = ambele sexe; `days` full precision, 0 below a stock of 0, null without consumption in the window (and then `runOut` null); `lamp` and `reason` as §5.8 (`reason` absent when `in_norma`).
 - Tiles: per hall in tree order, its sections with birds at the start or end of the day; a laying farm's section adds `layHall` (the hall's lay % that day, `null` without an egg entry). A hall emptied in the cycle is one `{ hall, emptySince, label }` line; a hall without birds in this cycle is left out. Each section adds *(proposed, M2 Q5)* `"weight": { "F": 3960, "at": "2026-11-10", "guide": null, "reason": "no_guide" }` (its latest ♀ weighing in the cycle, guide of SAPT − 1), `null` when it has none ("– necântărit"). `lamps` *(proposed values)*: `"lipsa"` = a §5.11 gap of the section that day, only today from `missing.from_hour`; `"abatere"` = the hall's lay % below guide − `tolerance.lay_pts`, or a section × sex g more than `tolerance.feed_pct` off the guide.
 
 ### 7.7 Acasă (S2; D65, D86–D89, D169, D181)
@@ -1035,7 +1053,7 @@ Missing rows appear for today only from 12:00 (`app_setting missing.from_hour`).
 | Route | Returns |
 |---|---|
 | `GET /api/forms/daily?farmId&date` | `sections[]` with birds (`aliveStart {F,M}`, `yesterday {F,M}`, `mean7 {F,M}`, hall code), `eggUnits[]` (hall, hens start, guide lay %), `existing[]` (entries already holding values for that day, with `editable`, `correctable`, author, time), `lockedReason` ("Pentru zilele trecute cere managerului." for a vet on a past day), `sapt`, `ageDays` |
-| `GET /api/forms/feed-daily?farmId&date` | `rows[]` per section × sex with birds: `birdsStart`, `suggestion { g, feedTypeId }` (yesterday's), `guideG`, `existing`; `stock[]` per type: `now`, `avgDaily`, `daysLeft`; feed types allowed per sex |
+| `GET /api/forms/feed-daily?farmId&date` | *(proposed, M3 Q1, D8)* `{ farm: {id, name, type}, date, sapt, ageDays, cycle: {id, series, startDate} \| null, guide: {F, M} \| null, lockedReason, rows: [ {sectionId, code, hallCode, sex, birdsStart, guideG, suggestion: {g, feedTypeId}, existing: {entryId, g, feedTypeId, kg} \| null} ], emptyHalls: [ {hall, emptySince, label} ], existing: [ {entryId, author, at, rows, editable, correctable} ], stock: [ {feedTypeId, type, forSex, kg, avgDaily, window, daysLeft, runOut, lamp, reason?} ], feedTypes: [ {id, name, forSex} ], asOf }`. `rows` = every active leaf section × sex with `alive_start > 0` that day, in tree order (`[]` without birds); `suggestion.g` = yesterday's typed g (null when none or kg-only), `suggestion.feedTypeId` = the row's last used type on any earlier day; `guide` / `guideG` = the guide's g of SAPT(date), null without a guide or a guide row. `stock` = the §7.12 stock rows on saved data at the end of today (Q5), `[]` without an open cycle; the client derives "Stoc după azi" = `kg` − the draft's kg of the type (the dry run gives the server's figures). `feedTypes` = the active types (the client filters by sex). Vet, manager, owner on their farms; viewer 403 `FORBIDDEN`; a future `date` → 400 `VALIDATION` on `date` (§3.2 sentence); a vet's past day or a closed series → 200 with `lockedReason` |
 | `GET /api/forms/weighing?farmId&date&sectionId&sex` | alive, sexes present, guide weight SAPT − 1, previous weighing, existing |
 | `GET /api/forms/transfer?date` | sections of the caller's farms with current alive ♀ · ♂ (Din list), open cycles |
 | `GET /api/forms/sale?farmId&date` | sections with current alive, farm total ("ouat · 6 secțiuni · 4 cu păsări · în viață ♀ 12 561 · ♂ 794") |
@@ -1094,8 +1112,9 @@ type EntryWriteResponse struct { // shared by every entry create / edit / correc
 POST /api/entries/feed-daily
 { "farmId": "…", "date": "2026-11-18", "rows": [ { "sectionId": "…H5.1", "sex": "F", "feedTypeId": "…breeder2", "g": 160 }, "…8 rows…" ] }
 → 201 { "entry": {…}, "kgTotal": 2457.9, "byType": [ { "type": "Breeder 2", "kg": 2303.2, "stockAfter": 31664.9 }, { "type": "Cocoși", "kg": 154.7, "stockAfter": 1781.0 } ],
-        "toast": "Hrană zilnică salvată · 8 rânduri · 2 457,9 kg · stoc Breeder 2: 31 665 kg", "warnings": [] }
+        "toast": "Hrană zilnică salvată · 8 rânduri · 2 457,9 kg · stoc Breeder 2: 31 665 kg", "warnings": [], "asOf": "2026-11-18T12:00:00+02:00" }
 ```
+*(proposed, M3 D5, D6)* Feed save: handler order decode (64 KiB) → role (viewer 403 `FORBIDDEN`) → farm (`FARM_FORBIDDEN`; an owner's unknown farm 404) → the farm's section codes → `Validate` (level 1: `farmId`, `date`, ≥ 1 row, each (sectionId, sex) once, `sex` F/M, a section of this farm and an existing type, H1 and Q9 on `g`) → service (level 2, §6.3). `kgTotal`, `byType[].kg` and `byType[].stockAfter` are full precision; `byType` is in type-name order; `stockAfter` per §5.8 Q5. A dry run answers 200 `{ "effects": [], "warnings": [], "refusals": [] }` (a feed save has no cycle effects). The save writes one audit row (`record_types {hrana}`, `new_values` = the rows {section, sex, feedTypeId, g, kg}, `changes` `[]`) and one `entry.created` live event (no `counts.changed`: no bird moves).
 ```http
 POST /api/entries/weighing
 { "farmId": "…telita", "date": "2026-02-24", "sectionId": "…H1", "sex": "F", "avgWeightG": 2553, "cvPct": 8.95, "uniformityPct": 74.1, "sampleSize": null }
@@ -1205,7 +1224,8 @@ The handler loads the entry, decodes `Values` with `DisallowUnknownFields` into 
     "total": { "label": "Total Seria 2026", "kg": 1438220, "lei": 11594205, "leiPerBird": 367.02, "leiPerEgg": 2.29, "excludedKg": 18160 } } }
 ```
 - Viewer: `pricePerKg`, `totalLei`, `cost` omitted entirely (not nulls) — never sent (D64, D200). Vet: 403.
-- Consum = `GET /api/table?view=report-feed&farmId&period` (§7.4). Its foot note: "g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre (♀ după găini, ♂ după cocoși). Toleranță ±10%."
+- *(proposed, M3 Q6, D9)* In M3 the route returns the Stoc part only, `{ "stock": [ … ], "asOf": "…" }`; M4 adds `deliveries` and `cost` (never `cost` for the viewer). `farmId` defaults to `all` = the caller's farms, by farm name then type name; a `farmId` outside them → 403 `FARM_FORBIDDEN` (an owner's unknown farm 404). `period` is parsed and checked as `/api/table`'s but the stock is "now" (§5.8, end of today). Each type row carries `window` (the farm's consumption window, both ends included); `daysLeft`/`runOut` are null without consumption, `forSex` null = ambele sexe.
+- Consum = `GET /api/table?view=report-feed&farmId&period` (§7.4). Its foot note: "g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre (♀ după găini, ♂ după cocoși). Toleranță ±10%." *(proposed format, M3 Q8)* When the loaded days hold migrated allocations whose `kg_recorded` differs from g × birds ÷ 1000 by more than `tolerance.feed_pct` (D163), `notes` adds one line per sex, grouped by week (newest first), hall and day range: "♀ 460 kg/compartiment în registru (g × păsări ≈ 690 kg): SAPT 57: H5, H6 03.11–04.11 · H7 03.11–06.11; SAPT 56: H6 02.11."
 
 ### 7.13 Prețuri hrană (C6, S12)
 | Route | Body | Result |
@@ -1909,9 +1929,9 @@ Fixture: the dev seed (§11.9) loaded from the extracts, clock frozen at **2026-
 | 23 | peak lay SAPT 30: 168 122 ÷ 186 088 = 90,3 % (not 90,4) | readout/stat "Vârf de ouat" |
 | 24 | foot "Total SAPT 56–59": eggs 226 472, lay 41,6 %, guide 59,9 (hen-day weighted), deaths ♀ 534 · ♂ 77, sold ♀ 12 801 · ♂ 1 182, inc 97,7 %, kg ♀ 78 898,6 · ♂ 5 996,6 | table `totals` |
 | 25 | load-more label "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40" (cycle SAPT 20–59) | table `more` |
-| 26 | feed 18.11 ♀ 2 303,2 kg (14 395 × 160 g) · ♂ 154,7 kg; total 2 457,9 kg | `v_feed_consumption` |
-| 27 | stock end 18.11 Breeder 2 31 664,9 kg · Cocoși 1 781 kg | `v_feed_stock` |
-| 28 | days left Breeder 2 13,2 (avg 16–18.11 2 392 kg/zi), run-out 01.12.2026; Cocoși 10,4 (171 kg/zi), 28.11.2026 | §5.8 |
+| 26 | feed 18.11 ♀ 2 303,2 kg (14 395 × 160 g) · ♂ 154,7 kg; total 2 457,9 kg | the Consum day row 18.11 (`periodtable` `view=report-feed`), checked against `calc.FeedKg` (M3 D12) |
+| 27 | stock end 18.11 Breeder 2 31 664,9 kg · Cocoși 1 781 kg | `calc.StockAt` (running sums with an explicit day, no dense view; M3 D7) |
+| 28 | days left Breeder 2 13,2 (avg 16–18.11 2 392 kg/zi), run-out 01.12.2026; Cocoși 10,4 (171 kg/zi), 28.11.2026 | §5.8, `calc.ReadStockDays` (window + `calc.DaysLeft`); `reports/feed` and the summary's `feedDaysLeft` give the same figures |
 | 29 | Hîrbovăț deliveries 69 · ♀ 1 114 110 kg · ♂ 78 530 kg · 9 562 437 lei · 4 unpriced 18 160 kg (17.02 2 000 + 1 000, 14.03 6 160, 12.11 9 000) | `feed_delivery` |
 | 30 | 13.11.2026 delivery 25 640 kg · 199 000 lei → 7,76 lei/kg | price derivation |
 | 31 | cost Hîrbovăț 319,74 lei/pasăre (÷ 29 907), 1,88 lei/ou (÷ 5 073 155); Telița 2 031 768 lei, 64,32 lei/pasăre (÷ 31 590); total 11 594 205 lei, 367,02, 2,29 | §5.9 |
@@ -1998,6 +2018,7 @@ The binaries embed the migrations and tzdata, so the image needs nothing else (C
 ### 12.1 Shape
 - **Domain services** own every rule of §5–§6: `ledger` (running counts, the §6.1 bounds, `ReconcileCycles` §6.4, farm locks), `calc` (§5 formulas: age/week, lay, feed, stock, cost, weighing, missing, alerts), `entries` (create/edit/correct/delete/undo/restore with audit), `reports` (feed: consumption, stock, deliveries, cost; production), `guides` (parse, validate), `periodtable` (PeriodTable builder), `voice`. **Handlers are thin**: decode (`httpx.Decode`) → `Validate()` (§7.0b) → authorize (`auth`) → call a service → map to the DTO → `httpx.JSON`. Services take `context.Context`, an `auth.Principal` and a typed request; they never see `*http.Request`.
 - **One transaction per save** (READ COMMITTED): `pg_advisory_xact_lock` on every touched farm in ascending id order (§6.1 step 0) → write rows → §6.1 check → `ReconcileCycles` → `audit_log` → `live_event` + `pg_notify` → commit (the notification is delivered at commit). Setup writes (farm, section, feed type, series, cycle) take the same farm lock when they touch a farm. The worked example is §12.5.
+- *(M3 D13)* **Reads that take several statements** (a page, a summary, a form state, a report) run in one `REPEATABLE READ, READ ONLY` transaction (`db.Store.InReadTx`), so every statement sees one snapshot and a save that commits between two of them can't skew one response; a single-statement read may use the pool directly. Writes never use it: they run in `InTx` (READ COMMITTED), whose per-statement snapshots after the farm lock are what §6.1 and the idempotency re-check rely on.
 - **Heavy reads in SQL** (views §4.12 + window functions, one pass per page); presentation shaping (groups, labels, reasons, Romanian strings) in Go.
 - No ORM, no web framework, no dependency-injection container: `cmd/api/main.go` builds the pool, the services and the handlers by hand and registers the routes.
 
@@ -2127,7 +2148,7 @@ sql:
 | Constraint errors | every write | `var pgErr *pgconn.PgError; errors.As(err, &pgErr)` → `pgErr.Code` (`23505`, `23P01`, `23514`, `23503`) + `pgErr.ConstraintName` → the typed error of §7.0a (`bird_event_daily_uq`/`egg_production_uq`/`feed_allocation_uq`/`weighing_uq` → `ALREADY_ENTERED` with the owning entry id looked up by key) |
 
 ### 12.5 Worked example: the Zilnic save, end to end
-`POST /api/entries/daily` (§7.8, rules §6.1–§6.2). Decode → validate → transaction → lock → insert → §6.1 check → `ReconcileCycles` → audit → `live_event` + NOTIFY → replay row → response. A dry run runs the same writes and checks and then rolls back (§7.0). Code is a sketch for structure; helper names are this spec's, signatures may differ.
+`POST /api/entries/daily` (§7.8, rules §6.1–§6.2). Decode → validate → transaction → lock → key re-check → insert → §6.1 check → `ReconcileCycles` → audit → `live_event` + NOTIFY → replay row → response; unique violations are mapped after the transaction. A dry run runs the same writes and checks and then rolls back (§7.0). Code is a sketch for structure; helper names are this spec's, signatures may differ. *(M3)* The code realises this skeleton once, as `entries.Runner.Create` (`internal/entries/save.go`): a form supplies its `Create` (route, kind, farms, meta, `OnConflict`) and its `Plan` (load state, plan, inserts, post-insert checks); the runner does the replay lookup, the lock, the key re-check, the dry-run rollback, audit, live, encoding, the replay row and the mapping after the transaction. Its first user is `POST /api/entries/feed-daily` (§7.8).
 
 ```go
 // internal/entries/handler.go
@@ -2138,8 +2159,15 @@ func (h *Handler) CreateDaily(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, err)
 		return
 	}
-	if issues := req.Validate(h.boot.Codes(r.Context(), req.FarmID)); len(issues) > 0 { // 2. level-1 validation (§7.0b)
-		httpx.WriteError(w, httpx.Invalid(issues))
+	// 2. role and farm (no code of another farm leaks), then the farm's section codes, then level 1 (§7.0b, M3 D5)
+	refs, err := h.svc.DailyRefs(r.Context(), p, req)
+	if err != nil {
+		httpx.WriteError(w, err)
+		return
+	}
+	var v httpx.Validator
+	if req.Validate(&v, refs); v.Err() != nil {
+		httpx.WriteError(w, v.Err())
 		return
 	}
 	res, err := h.svc.CreateDaily(r.Context(), p, req) // 3–12
@@ -2160,7 +2188,8 @@ type Result struct {
 }
 
 func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCreateRequest) (Result, error) {
-	today := timex.Today(s.clock)
+	now := s.clock.Now() // entry.created_at, audit_log.at, asOf (M3 D3)
+	today := timex.DayOf(now)
 	// 3. authorization and the checks that need no farm state
 	switch {
 	case !p.Role.In(auth.Vet, auth.Manager, auth.Owner):
@@ -2186,6 +2215,17 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 		if err := ledger.LockFarms(ctx, q, req.FarmID); err != nil { // 5. pg_advisory_xact_lock, ascending ids
 			return err
 		}
+		now = s.clock.Now() // M3 COR-3: read again after the lock wait (created_at, audit at, asOf, today);
+		today = timex.DayOf(now) // the date checks of step 3 run on it (the code runs them only here, in the plan)
+		if crid := req.ClientRequestID; crid != nil && !req.DryRun { // under the lock: an identical request may have
+			_, err := q.EntryIDByClientRequest(ctx, *crid) // committed while this one waited (M3 D2): answer with its
+			if err == nil {                                // bytes, not with 409 ALREADY_ENTERED on its rows
+				return errReplay
+			}
+			if !errors.Is(err, pgx.ErrNoRows) {
+				return err
+			}
+		}
 		st, err := s.loadDailyState(ctx, q, req.FarmID, req.Date) // under the lock: alive_start + inflows saved that day,
 		if err != nil {                                           // egg units, live value keys, mean7, cycle + series status
 			return err
@@ -2208,18 +2248,19 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 		ins, err := q.InsertEntry(ctx, dbq.InsertEntryParams{ // 7. the save and its child rows
 			Kind: dbq.EntryKindDaily, FarmID: req.FarmID, Date: req.Date,
 			Source: src, ClientRequestID: crid, CreatedBy: &p.UserID,
+			CreatedAt: now, // the injected clock (M3 D3): "today = local date of created_at" holds under a frozen clock
 		})
 		if err != nil {
-			return s.mapInsertErr(ctx, err, req) // 23505 entry_client_request_uq → errReplay
+			return err // a 23505 aborts the transaction: mapped after InTx returns (M3 D2)
 		}
 		for _, ev := range plan.BirdEvents { // mortality, cull + reason, sexing_error per section × sex
 			if err := q.InsertBirdEvent(ctx, ev.Params(ins.ID)); err != nil {
-				return s.mapInsertErr(ctx, err, req) // 23505 bird_event_daily_uq → 409 ALREADY_ENTERED + entryId
+				return err // 23505 bird_event_daily_uq: mapped after InTx
 			}
 		}
 		for _, eg := range plan.Eggs { // one egg_production per hall (total_eggs is generated)
 			if err := q.InsertEggProduction(ctx, eg.Params(ins.ID)); err != nil {
-				return s.mapInsertErr(ctx, err, req)
+				return err
 			}
 		}
 		bad, err := ledger.CheckCounts(ctx, q, plan.Affected, req.Date) // 8. §6.1 over every later day, after the change
@@ -2242,8 +2283,8 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 			preview.Effects = append(preview.Effects, cycleEffects(cyc)...)
 			return answerDryRun(&out, preview)
 		}
-		if err := audit.Write(ctx, q, audit.Row{ // 10. one audit row per save action (§4.10)
-			UserID: &p.UserID, Action: dbq.AuditActionCreate, Entity: "entry", EntityID: ins.ID,
+		if err := audit.Write(ctx, q, audit.Row{ // 10. one audit row per save action (§4.10), query InsertAuditLog
+			At: now, UserID: &p.UserID, Action: dbq.AuditActionCreate, Entity: "entry", EntityID: ins.ID,
 			EntryID: &ins.ID, EntryKind: dbq.EntryKindDaily, RecordTypes: plan.RecordTypes,
 			FarmIDs: []uuid.UUID{req.FarmID}, RecordDate: &req.Date, Summary: plan.Summary,
 			NewValues: plan.Snapshot(), Source: src, VoiceTranscript: transcript,
@@ -2265,11 +2306,11 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 			return err
 		}
 		body, err := httpx.Marshal(EntryWriteResponse{ // 12. encode once; the same bytes go to the client and the replay row
-			Entry:    httpx.EntryRef{ID: ins.ID, Kind: "daily", Version: timex.Version(ins.VersionAt)},
+			Entry:    httpx.EntryRef{ID: ins.ID, Kind: "daily", Version: version(ins.VersionAt)},
 			Warnings: plan.Warnings, // Z6 MORTALITY_SPIKE etc., never nil
 			Toast:    plan.Toast(),  // "Zilnic salvat · 4 secțiuni · ♀ −3 · ♂ 0"
 			Alive:    &httpx.SexPair[int]{F: int(alive.F), M: int(alive.M)},
-			AsOf:     timex.LocalTime(s.clock.Now()),
+			AsOf:     timex.At(now),
 		})
 		if err != nil {
 			return err
@@ -2279,16 +2320,27 @@ func (s *Service) CreateDaily(ctx context.Context, p auth.Principal, req DailyCr
 				ClientRequestID: *req.ClientRequestID, UserID: p.UserID,
 				Route: routeDaily, Status: http.StatusCreated, Body: body,
 			}); err != nil {
-				return s.mapInsertErr(ctx, err, req) // 23505 request_replay_pkey → errReplay
+				return err // 23505 request_replay_pkey: mapped after InTx
 			}
 		}
 		out = Result{Status: http.StatusCreated, Body: body}
 		return nil
 	})
+	// 13. after the transaction, on the pool (M3 D2): PostgreSQL refuses every statement of a transaction after a
+	// unique violation, so the lookups that name the conflict run here. The key re-check under the lock normally
+	// answers first; the constraints are the safety net for a race it can't see.
+	if ce, ok := pgerr.AsConstraint(err, pgerr.Unique); ok {
+		switch ce.Constraint {
+		case "entry_client_request_uq", "request_replay_pkey":
+			err = errReplay
+		case "bird_event_daily_uq", "egg_production_uq":
+			return Result{}, s.valueHolder(ctx, ce, req) // 409 ALREADY_ENTERED + the entryId owning the key (Z9)
+		}
+	}
 	if errors.Is(err, errReplay) { // the key is already used: a concurrent duplicate, or an older save
 		prev, rerr := s.replay(ctx, p, *req.ClientRequestID, routeDaily)
 		if errors.Is(rerr, errReplayNotFound) { // its stored reply was purged (7 days) while entry keeps the key
-			return Result{}, s.alreadyEntered(ctx, *req.ClientRequestID) // 409 ALREADY_ENTERED + that entryId
+			return Result{}, s.alreadyEntered(ctx, p, *req.ClientRequestID) // 409 ALREADY_ENTERED + that entryId, or STALE
 		}
 		return prev, rerr
 	}
@@ -2326,13 +2378,17 @@ func (s *Service) replay(ctx context.Context, p auth.Principal, key uuid.UUID, r
 	return Result{Status: http.StatusOK, Body: row.Body}, nil
 }
 
-// alreadyEntered answers a reused key whose reply is gone with the entry that holds it.
-func (s *Service) alreadyEntered(ctx context.Context, key uuid.UUID) error {
-	id, err := s.q.EntryIDByClientRequest(ctx, &key)
+// alreadyEntered answers a reused key whose reply is gone with the entry that holds it, if p created it on
+// this route's kind; else 409 STALE (M3 review SEC-1: a key never names another user's entry).
+func (s *Service) alreadyEntered(ctx context.Context, p auth.Principal, key uuid.UUID) error {
+	e, err := s.q.EntryIDByClientRequest(ctx, key) // id, created_by, kind
 	if err != nil {
 		return err
 	}
-	return httpx.AlreadyEntered(id) // 409 ALREADY_ENTERED, "entryId": id
+	if e.CreatedBy == nil || *e.CreatedBy != p.UserID || e.Kind != dbq.EntryKindDaily {
+		return httpx.Stale()
+	}
+	return httpx.AlreadyEntered(e.ID, messages.EntryAlreadySaved()) // 409 ALREADY_ENTERED, "entryId": e.ID
 }
 ```
 ```go
@@ -2374,10 +2430,10 @@ func LockFarms(ctx context.Context, q *dbq.Queries, ids ...uuid.UUID) error {
 	return nil
 }
 
-// internal/platform/timex/version.go
-// Version formats an entry's coalesce(updated_at, created_at) as RFC 3339 with microseconds (PostgreSQL's precision),
+// internal/entries/save.go
+// version formats an entry's coalesce(updated_at, created_at) as RFC 3339 with microseconds (PostgreSQL's precision),
 // fixed width so equal instants give equal strings; ifVersion is parsed back and compared in SQL.
-func Version(t time.Time) string { return t.UTC().Format("2006-01-02T15:04:05.000000Z07:00") }
+func version(t time.Time) string { return t.UTC().Format("2006-01-02T15:04:05.000000Z07:00") }
 ```
 ```sql
 -- db/queries/ledger.sql (sqlc)
@@ -2404,9 +2460,11 @@ where farm_id = sqlc.arg(farm_id) and date = sqlc.arg(date)::date;
 
 -- db/queries/entries.sql
 -- name: InsertEntry :one
-insert into entry (kind, farm_id, peer_farm_id, date, series_id, buyer, note, source, client_request_id, created_by)
+insert into entry (kind, farm_id, peer_farm_id, date, series_id, buyer, note, source, client_request_id, created_by,
+                   created_at)
 values (sqlc.arg(kind), sqlc.arg(farm_id), sqlc.narg(peer_farm_id), sqlc.arg(date), sqlc.narg(series_id),
-        sqlc.narg(buyer), sqlc.narg(note), sqlc.arg(source), sqlc.narg(client_request_id), sqlc.narg(created_by))
+        sqlc.narg(buyer), sqlc.narg(note), sqlc.arg(source), sqlc.narg(client_request_id), sqlc.narg(created_by),
+        sqlc.arg(created_at))   -- the injected clock (M3 D3)
 returning id, coalesce(updated_at, created_at)::timestamptz as version_at;
 
 -- name: UpdateEntry :one
@@ -2429,20 +2487,31 @@ insert into request_replay (client_request_id, user_id, route, status, body) val
 select user_id, route, status, body from request_replay where client_request_id = $1;
 
 -- name: EntryIDByClientRequest :one
-select id from entry where client_request_id = sqlc.narg(client_request_id)::uuid;
+select id, created_by, kind from entry where client_request_id = sqlc.arg(client_request_id)::uuid;
+
+-- db/queries/audit.sql
+-- name: InsertAuditLog :exec
+-- every §4.10 column; `at` from the injected clock (M3 D3); changes '[]' for a create
+insert into audit_log (at, user_id, action, entity, entity_id, entry_id, entry_kind, record_types, farm_ids,
+                       record_date, reason, same_day_author, summary, changes, old_values, new_values, source,
+                       voice_transcript)
+values (…);
 
 -- db/queries/live.sql
--- name: InsertLiveEvent :one
-insert into live_event (farm_ids, type, payload) values (sqlc.arg(farm_ids)::uuid[], sqlc.arg(type), sqlc.arg(payload)) returning id;
-
--- name: NotifyLive :exec
-select pg_notify('live_event', sqlc.arg(id)::bigint::text);
+-- name: EmitLiveEvent :one
+-- the live_event row and its pg_notify in one statement (M3 T3; delivered at commit, dropped on rollback)
+with ins as (
+  insert into live_event (farm_ids, type, payload)
+  values (sqlc.arg(farm_ids)::uuid[], sqlc.arg(type), sqlc.arg(payload)::jsonb)
+  returning id
+)
+select ins.id from ins cross join lateral pg_notify('live_event', ins.id::text);
 ```
 Notes on the example:
 - **Order matters**: the lock is taken before any count is read, so `loadDailyState`, the per-day bound (Z5), `CheckCounts` and `ReconcileCycles` all see a stable farm; a second save of the same farm waits at `LockFarm` until this one commits, then sees its rows (READ COMMITTED reads the newest committed data per statement).
 - **Dry run** (§7.0): `InsertEntry` gets a nil `ClientRequestID`, so the preview never touches `entry_client_request_uq`; the same path up to `ReconcileCycles`, so the preview includes the §6.1 bounds over later days and the cycle effects; `answerDryRun` encodes `{effects, warnings, refusals}` as 200 and returns `db.ErrRollback`, which `InTx` turns into a rollback without an error. No audit, live event or replay row is written; a pending `pg_notify` would be dropped by the rollback anyway.
-- **Idempotency** (§7.0): the response is encoded once (`httpx.Marshal`, the same encoder settings as `httpx.JSON`) and those bytes are both sent and stored in `request_replay` inside the save's transaction; a repeat with the same key gets them back unchanged with status 200. `entry_client_request_uq` and the `request_replay` primary key settle the race between two identical concurrent requests (the loser maps the 23505 to `errReplay`, rolls back and answers from the winner's row). `replay` never returns an empty result with a nil error: no row → `errReplayNotFound` (before the transaction: go on and save; after `errReplay`: the reply was purged, so `409 ALREADY_ENTERED` with the entry that holds the key); another user or route → `409 STALE`. `WriteRaw` answers 500 rather than send a zero status or an empty body.
-- **Version** (§7.0 optimistic concurrency): `InsertEntry`/`UpdateEntry` return `version_at` from the database, never the Go clock; `ifVersion` is compared in the `UPDATE … where coalesce(updated_at, created_at) = $if_version`, under the farm lock.
+- **Idempotency** (§7.0): the response is encoded once (`httpx.Marshal`, the same encoder settings as `httpx.JSON`) and those bytes are both sent and stored in `request_replay` inside the save's transaction; a repeat with the same key gets them back unchanged with status 200. Two identical concurrent requests are settled under the farm lock: the one that waited looks the key up again after taking the lock (`EntryIDByClientRequest`), finds the winner's entry and answers from its replay row (`errReplay`), so it gets the winner's bytes with 200 rather than `409 ALREADY_ENTERED` on the winner's rows (M3 D2). `entry_client_request_uq` and the `request_replay` primary key remain the safety net: a 23505 aborts the transaction (PostgreSQL refuses every later statement, NOTES-verify M3), so it is mapped **after** `InTx` returns, on the pool: the key constraints → `errReplay`, a form's value constraint (`bird_event_daily_uq`, `feed_allocation_uq`, …) → `409 ALREADY_ENTERED` with the entry that owns the key. `replay` never returns an empty result with a nil error: no row → `errReplayNotFound` (before the transaction: go on and save; after `errReplay`: the reply was purged, so `409 ALREADY_ENTERED` with the entry that holds the key when the caller created it and it is of the route's kind, else `409 STALE`, *M3 review SEC-1*); another user or route → `409 STALE`. *(M3 review COR-3)* The clock is read inside the transaction once the farm locks are held, so a save that waited on them is dated, checked ("today") and audited at the instant it runs. `WriteRaw` answers 500 rather than send a zero status or an empty body.
+- **Version** (§7.0 optimistic concurrency): `InsertEntry`/`UpdateEntry` return `version_at` from the database, never formatted from the Go clock (`entries.version`); *(M3 D3)* `created_at` itself is a parameter from the injected `timex.Clock` (as auth SQL takes `now`), so "today = local date of `created_at`" (§3.2) holds under the frozen test clock, while `live_event.at` and `request_replay.created_at` keep the database `now()` (only the purge, on the real clock, reads them); `ifVersion` is compared in the `UPDATE … where coalesce(updated_at, created_at) = $if_version`, under the farm lock.
 - **Errors inside `InTx`** roll the transaction back; nothing is half-saved, and no notification is sent (it would only be delivered at commit).
 - **Edits and corrections** (`PUT /api/entries/{id}`) use the same steps with the stored entry's farm (both farms for a transfer, ascending ids), `UpdateEntry` for the header, soft-delete/update/insert of child rows by key, `action = update`, the diff as `changes`.
 - The same skeleton serves every write: only `loadXState`, `planX` and the child inserts change per kind.

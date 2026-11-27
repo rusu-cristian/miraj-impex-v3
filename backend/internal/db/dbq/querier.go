@@ -12,6 +12,11 @@ import (
 )
 
 type Querier interface {
+	// Feed consumed by a farm per feed type over [from_day, to_day] (§5.7, §5.8): Σ allocation kg (the migrated kg, else
+	// g × birds at the start of the day / 1000), the birds from one running sum over v_section_sex_delta as in
+	// CalcStockEnd. Types without an allocation in the range are absent.
+	// Its leaf/alloc CTEs are CalcStockEnd's (and CalcStockSeries') with the date range filter: change the three together.
+	CalcConsumption(ctx context.Context, arg CalcConsumptionParams) ([]CalcConsumptionRow, error)
 	// The cycle of a farm whose [start_date, end_date] contains the day (an open cycle has no end), with its series'
 	// age parameters (§4.6, §5.1).
 	CalcCycleAt(ctx context.Context, arg CalcCycleAtParams) (CalcCycleAtRow, error)
@@ -34,6 +39,10 @@ type Querier interface {
 	// Farm × sex on one day (§5.3, §5.4): birds alive at the start and end of the day, and the day's deaths, culls
 	// and sales. alive_start = Σ deltas before the day, alive_end = Σ deltas up to and including it.
 	CalcFarmSexDay(ctx context.Context, arg CalcFarmSexDayParams) (CalcFarmSexDayRow, error)
+	// Whether every section × sex of a farm with birds on the day has a live allocation that day (§5.8 window end).
+	// has_birds = alive_start > 0 and alive_end > 0 (§5.11): the sale day that empties a section is not missing. Running
+	// sums over v_section_sex_delta, so it holds for any day. A farm without birds that day is complete.
+	CalcFeedDayComplete(ctx context.Context, arg CalcFeedDayCompleteParams) (bool, error)
 	// Feed consumed by a farm on one day per sex (§5.7): the migrated kg, else g × birds at the start of the day / 1000
 	// (DATA03, as v_feed_consumption). Birds at the start of the day = Σ deltas of the section × sex before the day, a
 	// running sum over v_section_sex_delta, so it holds for any day (v_feed_consumption reads the dense
@@ -67,9 +76,20 @@ type Querier interface {
 	// The asked app settings (D19 thresholds and the other numeric settings) as their JSON text; keys that don't exist
 	// are absent.
 	CalcSettings(ctx context.Context, keys []string) ([]CalcSettingsRow, error)
-	// Stock at the end of the day per feed type of a farm (§5.8): the running stock of the latest movement day on or
-	// before it. Feed types with no movement up to that day are absent.
+	// Stock at the end of the day per feed type of a farm (§5.8): Σ deliveries − Σ allocation kg + Σ adjustments dated on
+	// or before it, with the latest movement day. Feed types with no movement up to that day are absent. An allocation's
+	// kg is the migrated kg, else g × birds at the start of its day / 1000 (DATA03), the birds taken once per allocation
+	// from one running sum over the farm's v_section_sex_delta (an allocation sorts before the same day's deltas, so the
+	// sum at its row is the deltas before its day). It reads no dense view (those stop at the last event or the app's
+	// today, so a later allocation would count 0 kg there).
+	// Its leaf/alloc CTEs (birds at the start of each allocation's day) are repeated in CalcStockSeries and
+	// CalcConsumption, only the filters differ: change the three together. calc.RowFeedKg is the kg in Go.
 	CalcStockEnd(ctx context.Context, arg CalcStockEndParams) ([]CalcStockEndRow, error)
+	// The stock of the asked feed types of a farm (§5.8, as CalcStockEnd) at the end of from_day, then at the end of every
+	// movement day in (from_day, to_day], ordered by type, then day. Every asked type has its from_day row (0 when it
+	// has no movement up to then); H5 takes the lowest value of a type's rows.
+	// Its leaf/alloc CTEs are CalcStockEnd's (and CalcConsumption's) with the type filter: change the three together.
+	CalcStockSeries(ctx context.Context, arg CalcStockSeriesParams) ([]CalcStockSeriesRow, error)
 	CopyBirdEvents(ctx context.Context, arg []CopyBirdEventsParams) (int64, error)
 	CopyCycles(ctx context.Context, arg []CopyCyclesParams) (int64, error)
 	CopyEggProductions(ctx context.Context, arg []CopyEggProductionsParams) (int64, error)
@@ -92,6 +112,33 @@ type Querier interface {
 	CopyUsers(ctx context.Context, arg []CopyUsersParams) (int64, error)
 	CopyWeighings(ctx context.Context, arg []CopyWeighingsParams) (int64, error)
 	CountActiveOwners(ctx context.Context) (int32, error)
+	// The live outbox (§4.11, §9): the live_event row and its pg_notify in one statement, inside the save's transaction.
+	// PostgreSQL delivers the notification at commit and drops it on rollback. `at` keeps the database now(): only the
+	// purge, on the real clock, reads it (M3 D3).
+	EmitLiveEvent(ctx context.Context, arg EmitLiveEventParams) (int64, error)
+	// The sections of a farm (retired ones and halls too) with their codes, for the level-1 checks and messages of a
+	// create (§7.0b: "sectionId not a section of this farm", "H1.1 ♀: …"). One row with a null section when the farm has
+	// none; no row when the farm doesn't exist.
+	EntriesFarmSections(ctx context.Context, farmID uuid.UUID) ([]EntriesFarmSectionsRow, error)
+	// Every section × sex of a farm on one day for a Hrană zilnică save (§6.3, M3 D5): whether the section is a hall or
+	// retired, the birds alive at the start of the day (Σ deltas before it: a running sum over v_section_sex_delta, no
+	// dense view, ARC-6), and the allocation holding the (section, day, sex) key with its entry and that entry's
+	// creation time, author and source (the feed_allocation_uq rule: a row not soft-deleted). Read under the farm lock: H3, ALREADY_ENTERED
+	// and the "{n} din {m} rânduri" count; read again on the pool to name the holder of a feed_allocation_uq violation.
+	EntriesFeedDaySlots(ctx context.Context, arg EntriesFeedDaySlotsParams) ([]EntriesFeedDaySlotsRow, error)
+	// The farm context of a Hrană zilnică save (§6.3, M3 D5/D6), read under the farm lock: the farm's name, the cycle
+	// whose [start_date, end_date] contains the day with its series (closed → 409 SERIES_CLOSED, §3.1), the guide's
+	// feed_g per sex for SAPT(day) (null: no guide, no guide row or an empty cell, so no H4), tolerance.feed_pct, and one
+	// row per asked feed type that exists (name, for_sex, active: H2), ordered by name_key. The context columns repeat on
+	// every row; a farm without any asked type gives one row with null type columns; no row = no such farm.
+	EntriesFeedSaveContext(ctx context.Context, arg EntriesFeedSaveContextParams) ([]EntriesFeedSaveContextRow, error)
+	// One Hrană zilnică row (§4.8): kg is never stored for app data, it is g × birds at the start of the day (DATA03).
+	EntriesInsertFeedAllocation(ctx context.Context, arg EntriesInsertFeedAllocationParams) error
+	// The asked feed type ids that exist (active or not): an unknown id is a level-1 issue, an inactive one is H2.
+	EntriesKnownFeedTypes(ctx context.Context, feedTypeIds []uuid.UUID) ([]uuid.UUID, error)
+	// The entry that holds an idempotency key (soft-deleted ones too: the key stays taken), with its author and kind: a
+	// key whose reply was purged answers ALREADY_ENTERED only to its author on a route of its kind (M3 SEC-1).
+	EntryIDByClientRequest(ctx context.Context, clientRequestID uuid.UUID) (EntryIDByClientRequestRow, error)
 	// The active feed types (§7.2), ordered by name_key. for_sex null = both sexes.
 	FarmsActiveFeedTypes(ctx context.Context) ([]FarmsActiveFeedTypesRow, error)
 	// One farm with its own guide (the guide its next cycle copies, B1).
@@ -109,10 +156,28 @@ type Querier interface {
 	// The live transfers between a farm and another farm (§7.3 farm track links), one row per day and direction, with
 	// the birds that arrived per sex (the destination side of each pair). Moves inside one farm are not links.
 	FarmsTransfers(ctx context.Context, farmID uuid.UUID) ([]FarmsTransfersRow, error)
+	// Form states (SPEC §7.8, M3 D8, D14). The save's queries are in entries.sql; these are the reads before editing.
+	// The head of the Hrană zilnică form state of a farm on a day: the farm; the cycle whose [start_date, end_date]
+	// contains the day (an open cycle has no end) with its series (name, closed or not, age parameters) and the guide's
+	// feed_g per sex for SAPT(day) (null without a guide, a guide row or a cell); whether the farm has an open cycle
+	// now (the stock rows are shown only then); and the active feed types in name order, as parallel arrays (for_sex
+	// '' = ambele sexe). No row for an unknown farm.
+	FormsFeedHead(ctx context.Context, arg FormsFeedHeadParams) (FormsFeedHeadRow, error)
+	// Every bird-holding section (a section without children) of a farm × sex on a day, in tree order (hall, then
+	// compartment; ♀ before ♂), retired ones included and flagged, with:
+	//   - birds_start: Σ deltas before the day (§5.3), a running sum over v_section_sex_delta;
+	//   - the hall's (itself when parentless) count at the end of the day and since when it is empty (the last day its
+	//     count went from > 0 to 0, null while it has birds or when it never had any), as CalcEmptySince;
+	//   - yesterday_g: the typed g of yesterday's live allocation (null when none or kg-only);
+	//   - last_type_id: the feed type of the latest live allocation before the day;
+	//   - the day's live allocation, if any: its entry, g, migrated kg and type, with the entry's author, creation
+	//     instant and peer farm (§3.2 actions). The caller computes its kg (the migrated kg, else g × birds_start / 1000).
+	FormsFeedRows(ctx context.Context, arg FormsFeedRowsParams) ([]FormsFeedRowsRow, error)
 	// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active, with the user's
 	// user_farm farms in name_key order (empty for the owner, who has no rows, and for a user without farms): the
 	// session middleware needs one round trip.
 	GetActiveSession(ctx context.Context, arg GetActiveSessionParams) (GetActiveSessionRow, error)
+	GetReplay(ctx context.Context, clientRequestID uuid.UUID) (GetReplayRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserByLogin(ctx context.Context, login string) (GetUserByLoginRow, error)
 	// Failed attempts from an IP after `since`, and the latest of them (= `since` when there are none).
@@ -120,14 +185,27 @@ type Querier interface {
 	// Audit log (SPEC §4.10), append-only: a setup or user row with no entry, farm scope or reason. `at` comes from
 	// the injected clock (plan D5); user_id null = system (create-owner, Q6).
 	InsertAudit(ctx context.Context, arg InsertAuditParams) error
+	// One audit row per save action, every §4.10 column (M3 D1; the name InsertEntryAudit is migratehistory.sql's).
+	// `at` comes from the injected clock (M3 D3); changes is never null ('[]' for a create), old_values/new_values may be.
+	InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error
+	// The header of one form save (§4.7, §12.5). created_at comes from the injected clock (M3 D3), so "today = local
+	// date of created_at" (§3.2) holds under a frozen clock; the version is read back from the row, never formatted
+	// from the Go clock. client_request_id is null for a dry run and for a save without a key.
+	InsertEntry(ctx context.Context, arg InsertEntryParams) (InsertEntryRow, error)
 	// An audit row about an entry (SPEC §4.10). `at` comes from the injected clock (M1-D2); user_id null = migration.
 	InsertEntryAudit(ctx context.Context, arg InsertEntryAuditParams) error
 	InsertLoginAttempt(ctx context.Context, arg InsertLoginAttemptParams) (int64, error)
+	// The exact response bytes of a create that carried a clientRequestId, written in the save's transaction (§4.11,
+	// §12.5). created_at keeps the database now(): only the 7-day purge reads it (M3 D3).
+	InsertReplay(ctx context.Context, arg InsertReplayParams) error
 	InsertSession(ctx context.Context, arg InsertSessionParams) (uuid.UUID, error)
 	InsertUser(ctx context.Context, arg InsertUserParams) (InsertUserRow, error)
 	ListFarms(ctx context.Context) ([]ListFarmsRow, error)
 	// The farms of a vet, viewer or manager (owners have no user_farm rows: use ListFarms).
 	ListUserFarms(ctx context.Context, userID uuid.UUID) ([]ListUserFarmsRow, error)
+	// §6.1 step 0, §12.1: a transaction-level advisory lock on one farm. ledger.LockFarms takes them in ascending id
+	// order. Two farm ids whose 64-bit hashes collide only serialise more than needed.
+	LockFarm(ctx context.Context, farmID uuid.UUID) error
 	// The same per client IP; always taken after LockLoginThrottle (one fixed order, no deadlock).
 	LockIPThrottle(ctx context.Context, ip netip.Addr) error
 	// Serialises "count the failures, then record the attempt" per login until the transaction ends, so concurrent
@@ -139,6 +217,11 @@ type Querier interface {
 	MarkLoginAttemptSucceeded(ctx context.Context, id int64) error
 	// §10.3: the import runs once; a database that holds a migration entry is refused (unless --replace).
 	MigrationEntryExists(ctx context.Context) (bool, error)
+	// The farms of the Stoc report (§7.12, M3 D9): every farm when all_farms, else the listed ids; ordered by name_key.
+	// Each with its latest cycle (by start date, as CalcFarmCycles orders them): has_open_cycle when it has no end
+	// date; otherwise the farm shows one "fără ciclu deschis" row, with the latest cycle's series and end date (null
+	// without any cycle).
+	ReportsFeedFarms(ctx context.Context, arg ReportsFeedFarmsParams) ([]ReportsFeedFarmsRow, error)
 	RevokeSession(ctx context.Context, arg RevokeSessionParams) (int64, error)
 	// Password reset, deactivation, any role or farm change: the user signs in again everywhere (§4.3).
 	RevokeUserSessions(ctx context.Context, arg RevokeUserSessionsParams) (int64, error)

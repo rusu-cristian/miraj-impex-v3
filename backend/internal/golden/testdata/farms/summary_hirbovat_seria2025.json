@@ -6,12 +6,12 @@
       "F": null,
       "M": null,
       "arrivals": {
-        "F": 0,
-        "M": 0
+        "F": null,
+        "M": null
       },
       "sold": {
-        "F": 0,
-        "M": 0
+        "F": null,
+        "M": null
       }
     },
     {
@@ -22,8 +22,8 @@
       "reason": "no_guide",
       "note": "(ghid din intrarea în ouat)",
       "deaths": {
-        "F": 0,
-        "M": 0
+        "F": null,
+        "M": null
       }
     },
     {

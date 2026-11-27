@@ -1,0 +1,226 @@
+{
+  "farm": {
+    "id": "<farm:hirbovat>",
+    "name": "Hîrbovăț",
+    "type": "laying"
+  },
+  "date": "2026-11-18",
+  "sapt": 59,
+  "ageDays": 407,
+  "cycle": {
+    "id": "<cycle:hirbovat/2026>",
+    "series": "Seria 2026",
+    "startDate": "2026-02-22"
+  },
+  "guide": {
+    "F": 157,
+    "M": 156
+  },
+  "lockedReason": null,
+  "rows": [
+    {
+      "sectionId": "<section:hirbovat/H5.1>",
+      "code": "H5.1",
+      "hallCode": "H5",
+      "sex": "F",
+      "birdsStart": 4264,
+      "guideG": 157,
+      "suggestion": {
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>",
+        "kg": 682.2
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H5.1>",
+      "code": "H5.1",
+      "hallCode": "H5",
+      "sex": "M",
+      "birdsStart": 342,
+      "guideG": 156,
+      "suggestion": {
+        "g": 144,
+        "feedTypeId": "<feedType:cocosi>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 144,
+        "feedTypeId": "<feedType:cocosi>",
+        "kg": 49.2
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H5.2>",
+      "code": "H5.2",
+      "hallCode": "H5",
+      "sex": "F",
+      "birdsStart": 4283,
+      "guideG": 157,
+      "suggestion": {
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>",
+        "kg": 685.3
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H5.2>",
+      "code": "H5.2",
+      "hallCode": "H5",
+      "sex": "M",
+      "birdsStart": 323,
+      "guideG": 156,
+      "suggestion": {
+        "g": 143,
+        "feedTypeId": "<feedType:cocosi>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 143,
+        "feedTypeId": "<feedType:cocosi>",
+        "kg": 46.2
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H6.1>",
+      "code": "H6.1",
+      "hallCode": "H6",
+      "sex": "F",
+      "birdsStart": 4218,
+      "guideG": 157,
+      "suggestion": {
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>",
+        "kg": 674.9
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H6.1>",
+      "code": "H6.1",
+      "hallCode": "H6",
+      "sex": "M",
+      "birdsStart": 325,
+      "guideG": 156,
+      "suggestion": {
+        "g": 142,
+        "feedTypeId": "<feedType:cocosi>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 142,
+        "feedTypeId": "<feedType:cocosi>",
+        "kg": 46.2
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H6.2>",
+      "code": "H6.2",
+      "hallCode": "H6",
+      "sex": "F",
+      "birdsStart": 1630,
+      "guideG": 157,
+      "suggestion": {
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 160,
+        "feedTypeId": "<feedType:breeder2>",
+        "kg": 260.8
+      }
+    },
+    {
+      "sectionId": "<section:hirbovat/H6.2>",
+      "code": "H6.2",
+      "hallCode": "H6",
+      "sex": "M",
+      "birdsStart": 93,
+      "guideG": 156,
+      "suggestion": {
+        "g": 141,
+        "feedTypeId": "<feedType:cocosi>"
+      },
+      "existing": {
+        "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+        "g": 141,
+        "feedTypeId": "<feedType:cocosi>",
+        "kg": 13.1
+      }
+    }
+  ],
+  "emptyHalls": [
+    {
+      "hall": "H7",
+      "emptySince": "2026-11-14",
+      "label": "goală din 14.11.2026 · H7.1, H7.2"
+    }
+  ],
+  "existing": [
+    {
+      "entryId": "<entry:hirbovat/feed_daily/2026-11-18>",
+      "author": "Dr. Ceban",
+      "at": "2026-11-18T08:44:00+02:00",
+      "rows": 8,
+      "editable": false,
+      "correctable": true
+    }
+  ],
+  "stock": [
+    {
+      "feedTypeId": "<feedType:breeder2>",
+      "type": "Breeder 2",
+      "forSex": "F",
+      "kg": 31664.9,
+      "avgDaily": 2392.2,
+      "window": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "daysLeft": 13.2367,
+      "runOut": "2026-12-01",
+      "lamp": "in_norma"
+    },
+    {
+      "feedTypeId": "<feedType:cocosi>",
+      "type": "Cocoși",
+      "forSex": "M",
+      "kg": 1781,
+      "avgDaily": 170.9333,
+      "window": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "daysLeft": 10.4193,
+      "runOut": "2026-11-28",
+      "lamp": "in_norma"
+    }
+  ],
+  "feedTypes": [
+    {
+      "id": "<feedType:breeder2>",
+      "name": "Breeder 2",
+      "forSex": "F"
+    },
+    {
+      "id": "<feedType:cocosi>",
+      "name": "Cocoși",
+      "forSex": "M"
+    }
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

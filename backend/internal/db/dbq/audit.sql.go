@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
 
 const insertAudit = `-- name: InsertAudit :exec
@@ -37,6 +38,64 @@ func (q *Queries) InsertAudit(ctx context.Context, arg InsertAuditParams) error 
 		arg.Entity,
 		arg.EntityID,
 		arg.NewValues,
+	)
+	return err
+}
+
+const insertAuditLog = `-- name: InsertAuditLog :exec
+insert into audit_log (at, user_id, action, entity, entity_id, entry_id, entry_kind, record_types, farm_ids,
+                       record_date, reason, same_day_author, summary, changes, old_values, new_values, source,
+                       voice_transcript)
+values ($1, $2, $3, $4, $5,
+        $6, $7, $8::text[], $9::uuid[],
+        $10, $11, $12, $13,
+        $14::jsonb, $15::jsonb, $16::jsonb, $17,
+        $18)
+`
+
+type InsertAuditLogParams struct {
+	At              time.Time
+	UserID          *uuid.UUID
+	Action          AuditAction
+	Entity          string
+	EntityID        uuid.UUID
+	EntryID         *uuid.UUID
+	EntryKind       *EntryKind
+	RecordTypes     []string
+	FarmIds         []uuid.UUID
+	RecordDate      *timex.Day
+	Reason          *string
+	SameDayAuthor   bool
+	Summary         *string
+	Changes         []byte
+	OldValues       []byte
+	NewValues       []byte
+	Source          RecordSource
+	VoiceTranscript *string
+}
+
+// One audit row per save action, every §4.10 column (M3 D1; the name InsertEntryAudit is migratehistory.sql's).
+// `at` comes from the injected clock (M3 D3); changes is never null ('[]' for a create), old_values/new_values may be.
+func (q *Queries) InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error {
+	_, err := q.db.Exec(ctx, insertAuditLog,
+		arg.At,
+		arg.UserID,
+		arg.Action,
+		arg.Entity,
+		arg.EntityID,
+		arg.EntryID,
+		arg.EntryKind,
+		arg.RecordTypes,
+		arg.FarmIds,
+		arg.RecordDate,
+		arg.Reason,
+		arg.SameDayAuthor,
+		arg.Summary,
+		arg.Changes,
+		arg.OldValues,
+		arg.NewValues,
+		arg.Source,
+		arg.VoiceTranscript,
 	)
 	return err
 }

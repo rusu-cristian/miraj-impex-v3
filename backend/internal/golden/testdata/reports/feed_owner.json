@@ -1,0 +1,39 @@
+{
+  "stock": [
+    {
+      "farm": "Hîrbovăț",
+      "type": "Breeder 2",
+      "forSex": "F",
+      "kg": 31664.9,
+      "daysLeft": 13.2367,
+      "avgDaily": 2392.2,
+      "window": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "runOut": "2026-12-01",
+      "lamp": "in_norma"
+    },
+    {
+      "farm": "Hîrbovăț",
+      "type": "Cocoși",
+      "forSex": "M",
+      "kg": 1781,
+      "daysLeft": 10.4193,
+      "avgDaily": 170.9333,
+      "window": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "runOut": "2026-11-28",
+      "lamp": "in_norma"
+    },
+    {
+      "farm": "Telița",
+      "lamp": "oprit",
+      "reason": "fără ciclu deschis",
+      "sub": "ultimul ciclu: Seria 2026, închis pe 28.02.2026"
+    }
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

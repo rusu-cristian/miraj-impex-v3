@@ -7,10 +7,10 @@
 // transaction before it commits (M1-D4, M1-D5). A row whose service does not
 // exist yet has Got == nil and names the milestone that brings it.
 //
-// Got functions call the services (calc; periodtable and farms from M2) and
-// round once, at the precision §11.7 states, into plain values (ints and
-// fixed-point strings), so Want and Got compare exactly. They never copy a
-// formula into SQL.
+// Got functions call the services (calc; periodtable and farms from M2; the
+// Consum table and the stock readers from M3) and round once, at the
+// precision §11.7 states, into plain values (ints and fixed-point strings),
+// so Want and Got compare exactly. They never copy a formula into SQL.
 package golden
 
 import (
@@ -262,13 +262,20 @@ func Rows() []Row {
 		{ID: 25, Name: "load-more label", Milestone: "M2",
 			Want: LoadMore{Label: "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40", SaptFrom: 20, SaptTo: 59, WeeksTotal: 40},
 			Got:  loadMore},
+		// Goldens 26 and 27 are M1's (SPEC §12.6); M3 re-points them (M3 D12):
+		// 26 reads the Consum day row, 27 the stock reader without dense views.
 		{ID: 26, Name: "feed 18.11", Milestone: "M1",
 			Want: FeedDay{Kg: calc.PerSex[string]{F: "2303.2", M: "154.7"}, Total: "2457.9"},
 			Got:  feedDay},
 		{ID: 27, Name: "stock end 18.11", Milestone: "M1",
 			Want: []StockKg{{"Breeder 2", "31664.9"}, {"Cocoși", "1781.0"}},
 			Got:  stockEnd},
-		{ID: 28, Name: "days left, run-out", Milestone: "M3"},
+		{ID: 28, Name: "days left, run-out", Milestone: "M3",
+			Want: StockDaysLeft{From: "2026-11-16", To: "2026-11-18", Items: []TypeDaysLeft{
+				{Type: "Breeder 2", AvgDaily: "2392.2", Days: "13.2", RunOut: "2026-12-01"},
+				{Type: "Cocoși", AvgDaily: "170.9", Days: "10.4", RunOut: "2026-11-28"},
+			}},
+			Got: daysLeft},
 		{ID: 29, Name: "Hîrbovăț deliveries", Milestone: "M4"},
 		{ID: 30, Name: "13.11.2026 delivery price", Milestone: "M4"},
 		{ID: 31, Name: "cost", Milestone: "M4"},
@@ -452,29 +459,14 @@ func layDay(ctx context.Context, env Env) (any, error) {
 	return LayDay{Eggs: l.Eggs, HensStart: l.HensStart, Pct: fixed(l.Pct(), 1)}, nil
 }
 
-// feedDay rounds each sex and the total once, from full precision.
-func feedDay(ctx context.Context, env Env) (any, error) {
-	farm, err := FarmID(ctx, env.DB)
-	if err != nil {
-		return nil, err
-	}
-	kg, err := calc.FeedKg(ctx, env.DB, farm, AsOf)
-	if err != nil {
-		return nil, err
-	}
-	total := kg.F.Add(kg.M)
-	return FeedDay{
-		Kg:    calc.PerSex[string]{F: fixed(&kg.F, 1), M: fixed(&kg.M, 1)},
-		Total: fixed(&total, 1),
-	}, nil
-}
-
+// stockEnd reads the stock per feed type at the end of AsOf (calc.StockAt,
+// running sums without the dense views, M3 D7).
 func stockEnd(ctx context.Context, env Env) (any, error) {
 	farm, err := FarmID(ctx, env.DB)
 	if err != nil {
 		return nil, err
 	}
-	stock, err := calc.StockEnd(ctx, env.DB, farm, AsOf)
+	stock, err := calc.StockAt(ctx, env.DB, farm, AsOf)
 	if err != nil {
 		return nil, err
 	}

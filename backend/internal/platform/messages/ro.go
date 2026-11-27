@@ -151,14 +151,20 @@ func LoadMore(next, loadedFrom, loadedTo, loadedWeeks, totalWeeks int) string {
 // weeksWord is n weeks in Romanian: "o săptămână", "4 săptămâni", and "de"
 // before the noun when the number ends in 00 or 20–99 ("20 de săptămâni",
 // "101 săptămâni").
-func weeksWord(n int) string {
+func weeksWord(n int) string { return countNoun(n, "o săptămână", "săptămâni") }
+
+// countNoun is n with its plural noun, or one for n = 1, with "de" before the
+// noun when the number ends in 00 or 20–99: countNoun(8, "1 rând", "rânduri")
+// = "8 rânduri", countNoun(20, …) = "20 de rânduri", countNoun(101, …) =
+// "101 rânduri".
+func countNoun(n int, one, many string) string {
 	if n == 1 {
-		return "o săptămână"
+		return one
 	}
 	if r := n % 100; n >= 20 && (r == 0 || r >= 20) {
-		return strconv.Itoa(n) + " de săptămâni"
+		return strconv.Itoa(n) + " de " + many
 	}
-	return strconv.Itoa(n) + " săptămâni"
+	return strconv.Itoa(n) + " " + many
 }
 
 // CycleStartNote replaces the load-more row once the cycle's first week is
@@ -239,12 +245,15 @@ func LeafVsGuide() string { return "față de ghid" }
 
 // SexLeaf prefixes a leaf word with the sex sign: SexLeaf("F", LeafActual())
 // = "♀ efectiv". It panics on another sex value (a programming error). (proposed)
-func SexLeaf[S ~string](sex S, word string) string {
+func SexLeaf[S ~string](sex S, word string) string { return sexSign(sex) + " " + word }
+
+// sexSign is the sex sign "♀" or "♂"; it panics on another sex value.
+func sexSign[S ~string](sex S) string {
 	switch sex {
 	case "F":
-		return LeafHens() + " " + word
+		return LeafHens()
 	case "M":
-		return LeafRoosters() + " " + word
+		return LeafRoosters()
 	default:
 		panic("messages: unknown sex " + string(sex))
 	}
@@ -326,4 +335,205 @@ func HallEmptySince(hall string, since timex.Day) string {
 // tiles: "goală din 14.11.2026 · H7.1, H7.2".
 func EmptyHallTile(since timex.Day, sections []string) string {
 	return "goală din " + fmtx.Day(since) + " · " + strings.Join(sections, ", ")
+}
+
+// Writes (SPEC §3.1, §3.2, §7.0; M3).
+
+// FutureDate refuses a date after today, for every role (§3.2): "20.11.2026 e
+// în viitor. Alege o dată până la 18.11.2026." A write answers it as 422
+// REFUSED, a form-state GET as 400 VALIDATION on `date` (M3 D5, D8).
+func FutureDate(date, today timex.Day) string {
+	return fmtx.Day(date) + " e în viitor. Alege o dată până la " + fmtx.Day(today) + "."
+}
+
+// PastDayVet is the 403 PAST_DAY_VET of a vet writing a day other than today
+// (Z1, H6), and the form state's lockedReason on a past day (§3.2).
+func PastDayVet() string { return "Pentru zilele trecute cere managerului." }
+
+// SeriesClosed is the 409 SERIES_CLOSED of a write dated inside a cycle of a
+// closed series, and the form state's lockedReason there (§3.1): "Seria 2025
+// e închisă: nu mai primește înregistrări sau corecții." (proposed)
+func SeriesClosed(series string) string {
+	return series + " e închisă: nu mai primește înregistrări sau corecții."
+}
+
+// Stale is the 409 STALE of a version mismatch or a clientRequestId reused by
+// another user or on another route (§7.0). (proposed)
+func Stale() string {
+	return "Înregistrarea s-a schimbat între timp. Reîncarcă și încearcă din nou."
+}
+
+// EntryAlreadySaved is the 409 ALREADY_ENTERED of a clientRequestId whose
+// stored reply was purged (§7.0): no value collides, the key's entry exists.
+// (proposed: the Q3 alternative sentence)
+func EntryAlreadySaved() string {
+	return "Valorile acestei zile sunt deja introduse. Deschide înregistrarea ca să le modifici."
+}
+
+// Hrană zilnică (SPEC §6.3, M3 D5, D6).
+
+// FeedAlreadyEntered is the 409 ALREADY_ENTERED of a Hrană zilnică row whose
+// (section, day, sex) is live in another entry, named by the first colliding
+// row; at is the owning entry's creation time: "H5.1 ♀ are deja hrana
+// introdusă pe 18.11.2026 la 08:44. Apasă Editează ca să schimbi valorile."
+// (proposed, M3 Q3)
+func FeedAlreadyEntered[S ~string](section string, sex S, date timex.Day, at time.Time) string {
+	return section + " " + sexSign(sex) + " are deja hrana introdusă pe " + fmtx.Day(date) + " la " +
+		fmtx.TimeOfDay(at) + ". Apasă Editează ca să schimbi valorile."
+}
+
+// FeedGOutOfRange is H1, g outside 1–300: "H1.1 ♀: 350 g e peste limită.
+// Scrie o valoare între 1 și 300 g." Below 1 it says "e sub limită"
+// (proposed). g is shown as sent (up to 4 decimals).
+func FeedGOutOfRange[S ~string](section string, sex S, g decimal.Decimal) string {
+	side := "peste"
+	if g.LessThan(decimal.NewFromInt(1)) {
+		side = "sub"
+	}
+	return section + " " + sexSign(sex) + ": " + fmtx.DecUpTo(g, 4) + " g e " + side +
+		" limită. Scrie o valoare între 1 și 300 g."
+}
+
+// FeedTypeWrongSex is H2 for a type whose for_sex is not the row's sex:
+// "Cocoși nu e pentru găini. Alege alt tip." (proposed)
+func FeedTypeWrongSex[S ~string](feedType string, sex S) string {
+	return feedType + " nu e pentru " + fmtx.SexWord(sex) + ". Alege alt tip."
+}
+
+// FeedTypeRetired is H2 for an inactive type: "Breeder 1 e retras. Alege alt
+// tip." (proposed, M3 Q4)
+func FeedTypeRetired(feedType string) string { return feedType + " e retras. Alege alt tip." }
+
+// NoBirdsAtDayStart is H3, a row for a section × sex without birds at the
+// start of the day (also a hall or a retired section): "H7.1 nu are găini la
+// începutul zilei 18.11.2026." (proposed)
+func NoBirdsAtDayStart[S ~string](section string, sex S, date timex.Day) string {
+	return section + " nu are " + fmtx.SexWord(sex) + " la începutul zilei " + fmtx.Day(date) + "."
+}
+
+// FeedGuideDeviation is the H4 warning: "H5.2 ♂: 173 g, cu 11% peste ghidul
+// de 156 g. Verifică gramajul; se poate salva." ("sub ghidul" when below).
+// diffPct = 100 × (g / guide − 1) at full precision; the text shows its
+// absolute value as a whole percent, rounded half away from zero.
+func FeedGuideDeviation[S ~string](section string, sex S, g, guide, diffPct decimal.Decimal) string {
+	side := "peste"
+	if diffPct.Sign() < 0 {
+		side = "sub"
+	}
+	return section + " " + sexSign(sex) + ": " + fmtx.DecUpTo(g, 1) + " g, cu " + fmtx.Dec(diffPct.Abs(), 0) +
+		"% " + side + " ghidul de " + fmtx.DecUpTo(guide, 1) + " g. Verifică gramajul; se poate salva."
+}
+
+// StockWouldGoNegative is the H5 STOCK_NEGATIVE warning with the lowest stock
+// in whole kg: "Stocul de Breeder 2 la Hîrbovăț ar ajunge la −1 240 kg.
+// Verifică livrările."
+func StockWouldGoNegative(feedType, farm string, kg decimal.Decimal) string {
+	return "Stocul de " + feedType + " la " + farm + " ar ajunge la " + fmtx.Dec(kg, 0) + " kg. Verifică livrările."
+}
+
+// FeedDailySaved is the save Toast: "Hrană zilnică salvată · 8 rânduri ·
+// 2 457,9 kg · stoc Breeder 2: 31 665 kg" (kg 1 decimal, stock whole kg;
+// "1 rând" and "20 de rânduri" proposed).
+func FeedDailySaved(rows int, kg decimal.Decimal, stockType string, stock decimal.Decimal) string {
+	return "Hrană zilnică salvată · " + rowsWord(rows) + " · " + fmtx.Dec(kg, 1) + " kg · stoc " + stockType + ": " +
+		fmtx.Dec(stock, 0) + " kg"
+}
+
+// FeedDailySummary is the audit summary and journal name of a save: rows of
+// the save out of the section × sex rows with birds that day: "Hrană zilnică ·
+// 8 din 8 rânduri · 2 457,9 kg" (S4 board).
+func FeedDailySummary(rows, of int, kg decimal.Decimal) string {
+	return "Hrană zilnică · " + strconv.Itoa(rows) + " din " + rowsWord(of) + " · " + fmtx.Dec(kg, 1) + " kg"
+}
+
+func rowsWord(n int) string { return countNoun(n, "1 rând", "rânduri") }
+
+// Stock and days left (SPEC §5.8, §7.12; M3 D7).
+
+// StockBelowZero is the `abatere` reason of a stock below 0.
+func StockBelowZero() string { return "stoc sub 0 · verifică livrările" }
+
+// StockBelowDays is the `abatere` reason of days left under
+// alert.stock_days_min: "sub pragul de 5 zile" ("1 zi", "20 de zile" proposed).
+func StockBelowDays(minDays decimal.Decimal) string { return "sub pragul de " + daysWord(minDays) }
+
+// StockNoConsumption is the `oprit` reason of a type with no consumption over
+// the alert.stock_avg_days window: "– fără consum în ultimele 3 zile"
+// ("… în ultima zi" for a 1-day window, proposed).
+func StockNoConsumption(days int) string {
+	if days == 1 {
+		return "– fără consum în ultima zi"
+	}
+	return "– fără consum în ultimele " + countNoun(days, "1 zi", "zile")
+}
+
+// NoOpenCycle is the `oprit` reason of a farm without an open cycle.
+func NoOpenCycle() string { return "fără ciclu deschis" }
+
+// LastCycleClosed is the sub line of that farm's row: "ultimul ciclu: Seria
+// 2026, închis pe 28.02.2026".
+func LastCycleClosed(series string, closed timex.Day) string {
+	return "ultimul ciclu: " + series + ", închis pe " + fmtx.Day(closed)
+}
+
+// daysWord is a day count: "5 zile", "1 zi", "20 de zile", "2,5 zile".
+func daysWord(d decimal.Decimal) string {
+	if d.IsInteger() && d.Sign() > 0 && d.LessThan(decimal.NewFromInt(1_000_000)) {
+		return countNoun(int(d.IntPart()), "1 zi", "zile")
+	}
+	return fmtx.DecUpTo(d, 1) + " zile"
+}
+
+// Consum (SPEC §7.4, §7.12; M3 D11, Q2, Q8).
+
+// GroupConsumKg is the Consum kg group: "Hrană · kg".
+func GroupConsumKg() string { return "Hrană · kg" }
+
+// GroupConsumG is the Consum g/bird group: "Hrană · g/pasăre". Its leaves are
+// SexLeaf(sex, LeafActual() | LeafGuide() | LeafVsGuide()).
+func GroupConsumG() string { return "Hrană · g/pasăre" }
+
+// LeafState is the Consum state column: "stare".
+func LeafState() string { return "stare" }
+
+// NoteConsumG is the Consum foot note (§7.12) with tolerance.feed_pct:
+// "g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷
+// zile-pasăre (♀ după găini, ♂ după cocoși). Toleranță ±10%."
+func NoteConsumG(tolerancePct decimal.Decimal) string {
+	return "g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre (♀ după găini, " +
+		"♂ după cocoși). Toleranță ±" + fmtx.DecUpTo(tolerancePct, 1) + "%."
+}
+
+// RecordedKgWeek is one week of the D163 note, newest first.
+type RecordedKgWeek struct {
+	Sapt  int
+	Spans []RecordedKgSpan
+}
+
+// RecordedKgSpan is the halls of a week whose rows differ over the same days.
+type RecordedKgSpan struct {
+	Halls    []string
+	From, To timex.Day
+}
+
+// NoteRecordedKg is the D163 Consum note: allocations whose register kg
+// differs from g × birds, per week, hall group and days: "♀ 460
+// kg/compartiment în registru (g × păsări ≈ 690 kg): SAPT 57: H5, H6
+// 03.11–04.11 · H7 03.11–06.11; SAPT 56: H6 02.11." (proposed format, M3 Q8;
+// kg whole).
+func NoteRecordedKg[S ~string](sex S, recordedKg, computedKg decimal.Decimal, weeks []RecordedKgWeek) string {
+	ws := make([]string, 0, len(weeks))
+	for _, w := range weeks {
+		spans := make([]string, 0, len(w.Spans))
+		for _, sp := range w.Spans {
+			days := fmtx.DayMonth(sp.From)
+			if sp.To != sp.From {
+				days = fmtx.RangeNoYear(sp.From, sp.To)
+			}
+			spans = append(spans, strings.Join(sp.Halls, ", ")+" "+days)
+		}
+		ws = append(ws, fmtx.WeekLabel(w.Sapt)+": "+strings.Join(spans, " · "))
+	}
+	return sexSign(sex) + " " + fmtx.Dec(recordedKg, 0) + " kg/compartiment în registru (g × păsări ≈ " +
+		fmtx.Dec(computedKg, 0) + " kg): " + strings.Join(ws, "; ") + "."
 }

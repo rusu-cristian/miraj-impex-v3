@@ -13,6 +13,69 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const calcConsumption = `-- name: CalcConsumption :many
+with leaf as (
+  select x.section_id, x.sex, x.date, x.delta::bigint as delta, 1 as ord,
+         null::uuid as feed_type_id, null::numeric as g_per_bird, null::numeric as kg_recorded
+  from v_section_sex_delta x
+  where x.farm_id = $1::uuid
+    and x.date < $2::date
+  union all
+  select fa.section_id, fa.sex, fa.date, 0, 0, fa.feed_type_id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.farm_id = $1::uuid
+    and fa.deleted_at is null
+    and fa.date between $3::date and $2::date
+), alloc as (
+  select l.feed_type_id, l.ord, l.g_per_bird, l.kg_recorded,
+         sum(l.delta) over (partition by l.section_id, l.sex order by l.date, l.ord
+                            rows between unbounded preceding and current row) as birds_start
+  from leaf l
+)
+select a.feed_type_id::uuid as feed_type_id,
+       sum(coalesce(a.kg_recorded, a.g_per_bird * a.birds_start / 1000.0))::numeric as kg
+from alloc a
+where a.ord = 0
+group by a.feed_type_id
+order by a.feed_type_id
+`
+
+type CalcConsumptionParams struct {
+	FarmID  uuid.UUID
+	ToDay   timex.Day
+	FromDay timex.Day
+}
+
+type CalcConsumptionRow struct {
+	FeedTypeID uuid.UUID
+	Kg         decimal.Decimal
+}
+
+// Feed consumed by a farm per feed type over [from_day, to_day] (§5.7, §5.8): Σ allocation kg (the migrated kg, else
+// g × birds at the start of the day / 1000), the birds from one running sum over v_section_sex_delta as in
+// CalcStockEnd. Types without an allocation in the range are absent.
+// Its leaf/alloc CTEs are CalcStockEnd's (and CalcStockSeries') with the date range filter: change the three together.
+func (q *Queries) CalcConsumption(ctx context.Context, arg CalcConsumptionParams) ([]CalcConsumptionRow, error) {
+	rows, err := q.db.Query(ctx, calcConsumption, arg.FarmID, arg.ToDay, arg.FromDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcConsumptionRow{}
+	for rows.Next() {
+		var i CalcConsumptionRow
+		if err := rows.Scan(&i.FeedTypeID, &i.Kg); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const calcCycleAt = `-- name: CalcCycleAt :one
 select c.id, c.series_id, c.start_date, c.end_date, s.placement_date,
        s.age_at_placement_days::integer as age_at_placement_days
@@ -409,6 +472,46 @@ func (q *Queries) CalcFarmSexDay(ctx context.Context, arg CalcFarmSexDayParams) 
 		&i.SoldM,
 	)
 	return i, err
+}
+
+const calcFeedDayComplete = `-- name: CalcFeedDayComplete :one
+with s as (
+  select x.section_id, x.sex,
+         coalesce(sum(x.delta) filter (where x.date < $1::date), 0) as alive_start,
+         sum(x.delta) as alive_end
+  from v_section_sex_delta x
+  where x.farm_id = $2::uuid
+    and x.date <= $1::date
+  group by x.section_id, x.sex
+)
+select (not exists (
+  select 1
+  from s
+  where s.alive_start > 0
+    and s.alive_end > 0
+    and not exists (select 1
+                    from feed_allocation fa
+                    join entry n on n.id = fa.entry_id and n.deleted_at is null
+                    where fa.section_id = s.section_id
+                      and fa.sex = s.sex
+                      and fa.date = $1::date
+                      and fa.deleted_at is null)
+))::boolean as complete
+`
+
+type CalcFeedDayCompleteParams struct {
+	Day    timex.Day
+	FarmID uuid.UUID
+}
+
+// Whether every section × sex of a farm with birds on the day has a live allocation that day (§5.8 window end).
+// has_birds = alive_start > 0 and alive_end > 0 (§5.11): the sale day that empties a section is not missing. Running
+// sums over v_section_sex_delta, so it holds for any day. A farm without birds that day is complete.
+func (q *Queries) CalcFeedDayComplete(ctx context.Context, arg CalcFeedDayCompleteParams) (bool, error) {
+	row := q.db.QueryRow(ctx, calcFeedDayComplete, arg.Day, arg.FarmID)
+	var complete bool
+	err := row.Scan(&complete)
+	return complete, err
 }
 
 const calcFeedKg = `-- name: CalcFeedKg :one
@@ -901,16 +1004,46 @@ func (q *Queries) CalcSettings(ctx context.Context, keys []string) ([]CalcSettin
 }
 
 const calcStockEnd = `-- name: CalcStockEnd :many
-select t.feed_type_id, t.name, t.date, t.stock_end
-from (
-  select distinct on (v.feed_type_id) v.feed_type_id, ft.name, ft.name_key, v.date, v.stock_end
-  from v_feed_stock v
-  join feed_type ft on ft.id = v.feed_type_id
-  where v.farm_id = $1::uuid
-    and v.date <= $2::date
-  order by v.feed_type_id, v.date desc
-) t
-order by t.name_key, t.feed_type_id
+with leaf as (
+  select x.section_id, x.sex, x.date, x.delta::bigint as delta, 1 as ord,
+         null::uuid as feed_type_id, null::numeric as g_per_bird, null::numeric as kg_recorded
+  from v_section_sex_delta x
+  where x.farm_id = $1::uuid
+    and x.date < $2::date
+  union all
+  select fa.section_id, fa.sex, fa.date, 0, 0, fa.feed_type_id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.farm_id = $1::uuid
+    and fa.deleted_at is null
+    and fa.date <= $2::date
+), alloc as (
+  select l.feed_type_id, l.date, l.ord, l.g_per_bird, l.kg_recorded,
+         sum(l.delta) over (partition by l.section_id, l.sex order by l.date, l.ord
+                            rows between unbounded preceding and current row) as birds_start
+  from leaf l
+), mv as (
+  select fd.feed_type_id, fd.date, fd.qty_kg::numeric as kg
+  from feed_delivery fd
+  join entry n on n.id = fd.entry_id and n.deleted_at is null
+  where fd.farm_id = $1::uuid
+    and fd.deleted_at is null
+    and fd.date <= $2::date
+  union all
+  select a.feed_type_id, a.date, -coalesce(a.kg_recorded, a.g_per_bird * a.birds_start / 1000.0)
+  from alloc a
+  where a.ord = 0
+  union all
+  select sa.feed_type_id, sa.date, sa.qty_kg::numeric
+  from feed_stock_adjustment sa
+  where sa.farm_id = $1::uuid
+    and sa.date <= $2::date
+)
+select ft.id as feed_type_id, ft.name, ft.for_sex, max(mv.date)::date as last_move, sum(mv.kg)::numeric as stock_end
+from mv
+join feed_type ft on ft.id = mv.feed_type_id
+group by ft.id, ft.name, ft.name_key, ft.for_sex
+order by ft.name_key, ft.id
 `
 
 type CalcStockEndParams struct {
@@ -921,12 +1054,19 @@ type CalcStockEndParams struct {
 type CalcStockEndRow struct {
 	FeedTypeID uuid.UUID
 	Name       string
-	Date       timex.Day
+	ForSex     *Sex
+	LastMove   timex.Day
 	StockEnd   decimal.Decimal
 }
 
-// Stock at the end of the day per feed type of a farm (§5.8): the running stock of the latest movement day on or
-// before it. Feed types with no movement up to that day are absent.
+// Stock at the end of the day per feed type of a farm (§5.8): Σ deliveries − Σ allocation kg + Σ adjustments dated on
+// or before it, with the latest movement day. Feed types with no movement up to that day are absent. An allocation's
+// kg is the migrated kg, else g × birds at the start of its day / 1000 (DATA03), the birds taken once per allocation
+// from one running sum over the farm's v_section_sex_delta (an allocation sorts before the same day's deltas, so the
+// sum at its row is the deltas before its day). It reads no dense view (those stop at the last event or the app's
+// today, so a later allocation would count 0 kg there).
+// Its leaf/alloc CTEs (birds at the start of each allocation's day) are repeated in CalcStockSeries and
+// CalcConsumption, only the filters differ: change the three together. calc.RowFeedKg is the kg in Go.
 func (q *Queries) CalcStockEnd(ctx context.Context, arg CalcStockEndParams) ([]CalcStockEndRow, error) {
 	rows, err := q.db.Query(ctx, calcStockEnd, arg.FarmID, arg.Day)
 	if err != nil {
@@ -939,9 +1079,110 @@ func (q *Queries) CalcStockEnd(ctx context.Context, arg CalcStockEndParams) ([]C
 		if err := rows.Scan(
 			&i.FeedTypeID,
 			&i.Name,
-			&i.Date,
+			&i.ForSex,
+			&i.LastMove,
 			&i.StockEnd,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const calcStockSeries = `-- name: CalcStockSeries :many
+with leaf as (
+  select x.section_id, x.sex, x.date, x.delta::bigint as delta, 1 as ord,
+         null::uuid as feed_type_id, null::numeric as g_per_bird, null::numeric as kg_recorded
+  from v_section_sex_delta x
+  where x.farm_id = $1::uuid
+    and x.date < $2::date
+  union all
+  select fa.section_id, fa.sex, fa.date, 0, 0, fa.feed_type_id, fa.g_per_bird, fa.kg_recorded
+  from feed_allocation fa
+  join entry n on n.id = fa.entry_id and n.deleted_at is null
+  where fa.farm_id = $1::uuid
+    and fa.deleted_at is null
+    and fa.feed_type_id = any($3::uuid[])
+    and fa.date <= $2::date
+), alloc as (
+  select l.feed_type_id, l.date, l.ord, l.g_per_bird, l.kg_recorded,
+         sum(l.delta) over (partition by l.section_id, l.sex order by l.date, l.ord
+                            rows between unbounded preceding and current row) as birds_start
+  from leaf l
+), mv as (
+  select fd.feed_type_id, fd.date, fd.qty_kg::numeric as kg
+  from feed_delivery fd
+  join entry n on n.id = fd.entry_id and n.deleted_at is null
+  where fd.farm_id = $1::uuid
+    and fd.deleted_at is null
+    and fd.feed_type_id = any($3::uuid[])
+    and fd.date <= $2::date
+  union all
+  select a.feed_type_id, a.date, -coalesce(a.kg_recorded, a.g_per_bird * a.birds_start / 1000.0)
+  from alloc a
+  where a.ord = 0
+  union all
+  select sa.feed_type_id, sa.date, sa.qty_kg::numeric
+  from feed_stock_adjustment sa
+  where sa.farm_id = $1::uuid
+    and sa.feed_type_id = any($3::uuid[])
+    and sa.date <= $2::date
+), daily as (
+  select mv.feed_type_id, mv.date, sum(mv.kg) as net
+  from mv
+  group by mv.feed_type_id, mv.date
+), run as (
+  select d.feed_type_id, d.date,
+         sum(d.net) over (partition by d.feed_type_id order by d.date rows between unbounded preceding and current row) as stock_end
+  from daily d
+)
+select t.id::uuid as feed_type_id, $4::date as date,
+       coalesce((select sum(d.net) from daily d where d.feed_type_id = t.id and d.date <= $4::date),
+                0)::numeric as stock_end
+from (select distinct u.id from unnest($3::uuid[]) as u(id)) t
+union all
+select r.feed_type_id, r.date, r.stock_end
+from run r
+where r.date > $4::date
+order by 1, 2
+`
+
+type CalcStockSeriesParams struct {
+	FarmID      uuid.UUID
+	ToDay       timex.Day
+	FeedTypeIds []uuid.UUID
+	FromDay     timex.Day
+}
+
+type CalcStockSeriesRow struct {
+	FeedTypeID uuid.UUID
+	Date       timex.Day
+	StockEnd   decimal.Decimal
+}
+
+// The stock of the asked feed types of a farm (§5.8, as CalcStockEnd) at the end of from_day, then at the end of every
+// movement day in (from_day, to_day], ordered by type, then day. Every asked type has its from_day row (0 when it
+// has no movement up to then); H5 takes the lowest value of a type's rows.
+// Its leaf/alloc CTEs are CalcStockEnd's (and CalcConsumption's) with the type filter: change the three together.
+func (q *Queries) CalcStockSeries(ctx context.Context, arg CalcStockSeriesParams) ([]CalcStockSeriesRow, error) {
+	rows, err := q.db.Query(ctx, calcStockSeries,
+		arg.FarmID,
+		arg.ToDay,
+		arg.FeedTypeIds,
+		arg.FromDay,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcStockSeriesRow{}
+	for rows.Next() {
+		var i CalcStockSeriesRow
+		if err := rows.Scan(&i.FeedTypeID, &i.Date, &i.StockEnd); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

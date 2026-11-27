@@ -23,16 +23,19 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/calc"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/golden"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
-// The JSON golden files (SPEC §11.8, M2 T9): the PeriodTable, farm page,
-// summary and bootstrap responses on the dev seed as of 18.11.2026 12:00,
+// The JSON golden files (SPEC §11.8, M2 T9, M3 D12): the PeriodTable
+// (Rezumat and Consum), farm page, summary, bootstrap, Hrană zilnică form
+// state and Stoc report responses on the dev seed as of 18.11.2026 12:00,
 // built by the builders the handlers call (no HTTP: route wiring is
 // cmd/api's), encoded like httpx.JSON and indented. Ids are replaced by
 // stable tokens (M2 D9), because the import's ids are random.
@@ -88,7 +91,10 @@ func cycleID(t *testing.T, db dbq.DBTX, farm uuid.UUID, series string) uuid.UUID
 
 // idTokens maps every id a response can carry to its stable token (M2 D9):
 // <farm:hirbovat>, <series:seria2026>, <cycle:hirbovat/2026>,
-// <section:hirbovat/H5.1>, <guide:…>, <feedType:…>.
+// <section:hirbovat/H5.1>, <guide:…>, <feedType:…>, and an entry that is
+// the only one of its farm, kind and day: <entry:hirbovat/feed_daily/2026-11-18>
+// (an entry sharing its farm, kind and day gets no token: a response naming
+// it fails, as any id without a token).
 func idTokens(t *testing.T, ctx context.Context, db dbq.DBTX) map[uuid.UUID]string {
 	t.Helper()
 	rows, err := db.Query(ctx, `
@@ -98,7 +104,11 @@ union all select c.id, 'cycle:' || f.name_key || '/' || s.year
   from cycle c join farm f on f.id = c.farm_id join series s on s.id = c.series_id
 union all select s.id, 'section:' || f.name_key || '/' || s.code from section s join farm f on f.id = s.farm_id
 union all select id, 'guide:' || name_key from guide
-union all select id, 'feedType:' || name_key from feed_type`)
+union all select id, 'feedType:' || name_key from feed_type
+union all select id, token from (
+  select e.id, 'entry:' || f.name_key || '/' || e.kind::text || '/' || to_char(e.date, 'YYYY-MM-DD') as token,
+         count(*) over (partition by e.farm_id, e.kind, e.date) as n
+  from entry e join farm f on f.id = e.farm_id) e where n = 1`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,6 +236,8 @@ func (f fixture) tableCases() []struct{ file, query string } {
 		{"table_farm_rezumat_grain_week.json", h + "&grain=week"},
 		{"table_farm_rezumat_telita_growth.json", "view=farm&farmId=" + f.telita.String() + "&cycleId=" + f.seria2026Telita.String() + "&period=cycle"},
 		{"table_farm_rezumat_seria2025.json", h + "&cycleId=" + f.seria2025Hirbovat.String()},
+		{"table_report_feed_cycle.json", "view=report-feed&farmId=" + f.hirbovat.String()},
+		{"table_report_feed_before56.json", "view=report-feed&farmId=" + f.hirbovat.String() + "&before=56"},
 	}
 }
 
@@ -268,19 +280,62 @@ func TestJSONGolden(t *testing.T) {
 			compareGolden(t, filepath.Join("farms", tc.file), normalise(t, res, f.tokens))
 		})
 	}
+
+	// M3 (D12): the Hrană zilnică form state and the Stoc report.
+	m3Cases := []struct {
+		file   string
+		build  func() (any, error)
+		viewer bool // a viewer's response: no price field either (D64)
+	}{
+		{"forms/feed_daily_hirbovat_18.json", func() (any, error) {
+			return entries.BuildFeedForm(ctx, f.db, entries.FeedFormInput{
+				Principal: owner, FarmID: f.hirbovat, Date: golden.AsOf, Today: golden.AsOf, Now: golden.Now,
+			})
+		}, false},
+		{"reports/feed_owner.json", func() (any, error) { return f.reportsFeed(ctx, owner) }, false},
+		{"reports/feed_viewer.json", func() (any, error) { return f.reportsFeed(ctx, f.viewer()) }, true},
+	}
+	for _, tc := range m3Cases {
+		t.Run(tc.file, func(t *testing.T) {
+			res, err := tc.build()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p := nullContainers(res); len(p) > 0 {
+				t.Errorf("null lists at %q", p)
+			}
+			got := normalise(t, res, f.tokens)
+			if tc.viewer {
+				keys, err := priceKeys(got)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if len(keys) > 0 {
+					t.Errorf("a viewer response carries price fields %q", keys)
+				}
+			}
+			compareGolden(t, tc.file, got)
+		})
+	}
 }
 
-// TestViewerResponsesHaveNoPricesOrNullLists builds every M2 response as a
-// viewer of Hîrbovăț sees it and walks it: no lei, price or cost field (D64,
+// reportsFeed is GET /api/reports/feed with farmId=all (every farm of p).
+func (f fixture) reportsFeed(ctx context.Context, p auth.Principal) (reports.FeedResponse, error) {
+	return reports.BuildFeed(ctx, f.db, reports.Input{Principal: p, Today: golden.AsOf, Now: golden.Now})
+}
+
+// TestViewerResponsesHaveNoPricesOrNullLists builds every M2 and M3 response a
+// viewer can get, as a viewer of Hîrbovăț sees it, and walks it: no lei, price or cost field (D64,
 // §3.3) and no null list (§7.0a).
 func TestViewerResponsesHaveNoPricesOrNullLists(t *testing.T) {
 	f := newFixture(t)
 	ctx := t.Context()
 	viewer := f.viewer()
 	responses := map[string]func(t *testing.T) (any, error){
-		"page":      func(*testing.T) (any, error) { return farms.BuildPage(ctx, f.db, f.input(viewer, f.hirbovat)) },
-		"summary":   func(*testing.T) (any, error) { return farms.BuildSummary(ctx, f.db, f.input(viewer, f.hirbovat)) },
-		"bootstrap": func(*testing.T) (any, error) { return farms.BuildBootstrap(ctx, f.db, f.input(viewer, uuid.Nil)) },
+		"page":         func(*testing.T) (any, error) { return farms.BuildPage(ctx, f.db, f.input(viewer, f.hirbovat)) },
+		"summary":      func(*testing.T) (any, error) { return farms.BuildSummary(ctx, f.db, f.input(viewer, f.hirbovat)) },
+		"bootstrap":    func(*testing.T) (any, error) { return farms.BuildBootstrap(ctx, f.db, f.input(viewer, uuid.Nil)) },
+		"reports/feed": func(*testing.T) (any, error) { return f.reportsFeed(ctx, viewer) },
 	}
 	for _, tc := range f.tableCases() {
 		if strings.Contains(tc.query, f.telita.String()) {
@@ -650,5 +705,137 @@ func TestNormaliseReplacesIDs(t *testing.T) {
 	want := "{\n  \"farmId\": \"<farm:hirbovat>\",\n  \"list\": [\n    \"<farm:hirbovat>\"\n  ]\n}\n"
 	if string(got) != want {
 		t.Errorf("normalise:\n%s\nwant\n%s", got, want)
+	}
+}
+
+// consumFileRow is a week, day, section week or totals row of a committed
+// table golden file, as the client reads it.
+type consumFileRow struct {
+	Code     string               `json:"code"`
+	Sapt     int                  `json:"sapt"`
+	Date     string               `json:"date"`
+	Label    string               `json:"label"`
+	Cells    map[string]*num.Num  `json:"cells"`
+	Status   map[string]string    `json:"status"`
+	Reasons  map[string]string    `json:"reasons"`
+	Missing  *periodtable.Missing `json:"missing"`
+	Days     []consumFileRow      `json:"days"`
+	Sections []consumFileRow      `json:"sections"`
+}
+
+type consumFile struct {
+	Loaded periodtable.Loaded `json:"loaded"`
+	Weeks  []consumFileRow    `json:"weeks"`
+	Totals consumFileRow      `json:"totals"`
+	Notes  []string           `json:"notes"`
+}
+
+func readTableFile(t *testing.T, name string) consumFile {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join("testdata", "periodtable", name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var f consumFile
+	if err := json.Unmarshal(b, &f); err != nil {
+		t.Fatalf("%s: %v", name, err)
+	}
+	return f
+}
+
+// boardFigures writes a Consum row at the S11 board's precision, as T7's
+// seeded test does: kg and g at 1 decimal, the guide whole, the deviation at
+// 1 decimal, the status of g per sex and the missing keys.
+func (r consumFileRow) boardFigures() string {
+	at := func(key string, places int32) string {
+		v, ok := r.Cells[key]
+		switch {
+		case !ok:
+			return "absent"
+		case v == nil:
+			return "–"
+		}
+		return num.Round(v.Decimal(), places).StringFixed(places)
+	}
+	s := fmt.Sprintf("kg %s · %s, g %s · %s, ghid %s · %s, %s%% · %s%%, %s · %s",
+		at(periodtable.KeyFeedKgF, 1), at(periodtable.KeyFeedKgM, 1), at(periodtable.KeyFeedGF, 1), at(periodtable.KeyFeedGM, 1),
+		at(periodtable.KeyFeedGGuideF, 0), at(periodtable.KeyFeedGGuideM, 0),
+		at(periodtable.KeyFeedGDiffF, 1), at(periodtable.KeyFeedGDiffM, 1),
+		r.Status[periodtable.KeyFeedGF], r.Status[periodtable.KeyFeedGM])
+	if r.Missing != nil {
+		var keys []string
+		for _, k := range r.Missing.Keys {
+			keys = append(keys, k.Code+" "+string(k.Sex)+" "+k.Date.String())
+		}
+		s += fmt.Sprintf(", lipsă %d: %s", r.Missing.Rows, strings.Join(keys, ", "))
+	}
+	return s
+}
+
+// TestConsumGoldenFileMatchesSeededValues (M3 T9 criterion 3): the committed
+// page 1 of Hîrbovăț's Consum (table_report_feed_cycle.json) carries T7's
+// seeded values (M3 T7 criterion 4, at the board's precision), and its kg
+// agree at full precision with the committed Rezumat page 1
+// (table_farm_rezumat_cycle.json): the two views read one §5.7 kg.
+func TestConsumGoldenFileMatchesSeededValues(t *testing.T) {
+	consum := readTableFile(t, "table_report_feed_cycle.json")
+	if consum.Loaded != (periodtable.Loaded{SaptFrom: 56, SaptTo: 59, Weeks: 4}) {
+		t.Fatalf("loaded %+v, want SAPT 56–59", consum.Loaded)
+	}
+	got := map[string]string{"totals": consum.Totals.Label + ": " + consum.Totals.boardFigures()}
+	for _, w := range consum.Weeks {
+		got[fmt.Sprint("SAPT ", w.Sapt)] = w.boardFigures()
+		for _, d := range w.Days {
+			got[d.Date] = d.boardFigures()
+		}
+		for _, s := range w.Sections {
+			got[fmt.Sprint(s.Code, " SAPT ", w.Sapt)] = s.boardFigures()
+		}
+	}
+	for key, want := range map[string]string{
+		"SAPT 59":      "kg 4675.3 · 329.7, g 160.0 · 142.7, ghid 157 · 156, 1.9% · -8.5%, in_norma · in_norma",
+		"2026-11-18":   "kg 2303.2 · 154.7, g 160.0 · 142.8, ghid 157 · 156, 1.9% · -8.4%, in_norma · in_norma",
+		"H5.1 SAPT 59": "kg 1364.4 · 98.4, g 160.0 · 143.9, ghid 157 · 156, 1.9% · -7.8%, in_norma · in_norma",
+		"SAPT 58": "kg 22230.9 · 1682.7, g 155.9 · 142.2, ghid 158 · 155, -1.3% · -8.3%, in_norma · in_norma, " +
+			"lipsă 2: H7.1 F 2026-11-13, H7.2 F 2026-11-13",
+		"SAPT 57": "kg 23284.2 · 1970.6, g 130.5 · 140.8, ghid 158 · 154, -17.4% · -8.6%, abatere · in_norma",
+		"totals": "Total SAPT 56–59: kg 78898.6 · 5996.6, g 148.5 · 141.3, ghid 158 · 154, -6.0% · -8.3%, in_norma · in_norma, " +
+			"lipsă 2: H7.1 F 2026-11-13, H7.2 F 2026-11-13",
+	} {
+		if got[key] != want {
+			t.Errorf("%s:\n got %s\nwant %s", key, got[key], want)
+		}
+	}
+
+	// kg at full precision, row by row, against the Rezumat file.
+	rezumat := readTableFile(t, "table_farm_rezumat_cycle.json")
+	kg := func(r consumFileRow) string {
+		out := make([]string, 0, 2)
+		for _, key := range []string{periodtable.KeyFeedKgF, periodtable.KeyFeedKgM} {
+			v := r.Cells[key]
+			if v == nil || v.Decimal().IsZero() { // Consum "–" is the Rezumat's 0 kg
+				out = append(out, "0")
+				continue
+			}
+			out = append(out, v.Decimal().String())
+		}
+		return strings.Join(out, " · ")
+	}
+	figures := func(f consumFile) map[string]string {
+		out := map[string]string{"totals": kg(f.Totals)}
+		for _, w := range f.Weeks {
+			out[fmt.Sprint("SAPT ", w.Sapt)] = kg(w)
+			for _, d := range w.Days {
+				out[d.Date] = kg(d)
+			}
+		}
+		return out
+	}
+	consumKg, rezumatKg := figures(consum), figures(rezumat)
+	if n := len(consumKg); n != 1+4+7+7+7+2 { // totals, SAPT 56–59, their days (SAPT 59: 17–18.11)
+		t.Errorf("Consum page 1 has %d totals, week and day rows, want 28", n)
+	}
+	if diff := cmp.Diff(rezumatKg, consumKg); diff != "" {
+		t.Errorf("kg of the Consum file vs the Rezumat file (-Rezumat +Consum):\n%s", diff)
 	}
 }

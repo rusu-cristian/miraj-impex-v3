@@ -12,6 +12,7 @@ package periodtable
 import (
 	"github.com/google/uuid"
 
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
@@ -101,6 +102,7 @@ type Cells map[string]*num.Num // nil value = "–"; its reason is in Reasons[ke
 
 // WeekRow is one week (SAPT) row.
 type WeekRow struct {
+	Code      string            `json:"code,omitzero"` // report-feed section rows: the section's (or emptied hall's) code
 	Sapt      int               `json:"sapt"`
 	From      timex.Day         `json:"from"`
 	To        timex.Day         `json:"to"`
@@ -108,10 +110,12 @@ type WeekRow struct {
 	Partial   bool              `json:"partial,omitzero"`
 	Label     string            `json:"label"`
 	Cells     Cells             `json:"cells"`
-	Status    map[string]string `json:"status,omitzero"`  // key → in_norma | abatere
-	Reasons   map[string]string `json:"reasons,omitzero"` // key → missing | empty_since:2026-11-14 | no_guide | …
-	Days      []DayRow          `json:"days,omitzero"`    // grain=day
-	Halls     []WeekRow         `json:"halls,omitzero"`   // report-production: hall week rows
+	Status    map[string]string `json:"status,omitzero"`   // key → in_norma | abatere
+	Reasons   map[string]string `json:"reasons,omitzero"`  // key → missing | empty_since:2026-11-14 | no_guide | …
+	Missing   *Missing          `json:"missing,omitzero"`  // report-feed: rations not entered
+	Days      []DayRow          `json:"days,omitzero"`     // grain=day
+	Sections  []WeekRow         `json:"sections,omitzero"` // report-feed: section week rows
+	Halls     []WeekRow         `json:"halls,omitzero"`    // report-production: hall week rows
 }
 
 // DayRow is one day row inside a week.
@@ -124,6 +128,7 @@ type DayRow struct {
 	Cells   Cells             `json:"cells"`
 	Status  map[string]string `json:"status,omitzero"`
 	Reasons map[string]string `json:"reasons,omitzero"`
+	Missing *Missing          `json:"missing,omitzero"` // report-feed
 }
 
 // Loaded spans the weeks loaded so far.
@@ -151,6 +156,23 @@ type Totals struct {
 	Cells   Cells             `json:"cells"`
 	Status  map[string]string `json:"status,omitzero"`
 	Reasons map[string]string `json:"reasons,omitzero"`
+	Missing *Missing          `json:"missing,omitzero"` // report-feed
+}
+
+// Missing names the section × sex × day rows of a Consum row that have birds
+// (§5.11 has_birds) and no live ration (M3 Q2 (c)): "lipsă · 2 rânduri ·
+// 13.11". The client's "stare" shows "lipsă" when it is present.
+type Missing struct {
+	Rows int          `json:"rows"` // len(Keys)
+	Days []timex.Day  `json:"days"` // the days of Keys, oldest first, once each
+	Keys []MissingKey `json:"keys"` // by day, then tree order, ♀ before ♂
+}
+
+// MissingKey is one row without a ration.
+type MissingKey struct {
+	Code string    `json:"code"`
+	Sex  dbq.Sex   `json:"sex"`
+	Date timex.Day `json:"date"`
 }
 
 // EmptyState is the state of a period with no data (§7.4 States).

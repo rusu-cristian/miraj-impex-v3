@@ -1,0 +1,1261 @@
+{
+  "scope": {
+    "view": "report-feed",
+    "farmId": "<farm:hirbovat>",
+    "cycleId": "<cycle:hirbovat/2026>",
+    "seriesId": "<series:seria2026>",
+    "label": "Total fermă"
+  },
+  "period": {
+    "kind": "cycle",
+    "label": "Ciclul curent",
+    "saptFrom": 20,
+    "saptTo": 59,
+    "from": "2026-02-22",
+    "to": "2026-11-18",
+    "weeksTotal": 40
+  },
+  "chips": [
+    "hrana"
+  ],
+  "groups": [
+    {
+      "id": "hranaKg",
+      "record": "hrana",
+      "label": "Hrană · kg",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "feed.kg.F",
+          "label": "♀",
+          "kind": "count"
+        },
+        {
+          "id": "feed.kg.M",
+          "label": "♂",
+          "kind": "count"
+        }
+      ]
+    },
+    {
+      "id": "gPasare",
+      "record": "hrana",
+      "label": "Hrană · g/pasăre",
+      "scope": "farm",
+      "leaves": [
+        {
+          "id": "feed.g.F",
+          "label": "♀ efectiv",
+          "kind": "rate"
+        },
+        {
+          "id": "feed.g.guide.F",
+          "label": "♀ ghid",
+          "kind": "guide"
+        },
+        {
+          "id": "feed.g.diffPct.F",
+          "label": "♀ față de ghid",
+          "kind": "rate"
+        },
+        {
+          "id": "feed.g.M",
+          "label": "♂ efectiv",
+          "kind": "rate"
+        },
+        {
+          "id": "feed.g.guide.M",
+          "label": "♂ ghid",
+          "kind": "guide"
+        },
+        {
+          "id": "feed.g.diffPct.M",
+          "label": "♂ față de ghid",
+          "kind": "rate"
+        },
+        {
+          "id": "feed.state",
+          "label": "stare",
+          "kind": "status"
+        }
+      ]
+    }
+  ],
+  "weeks": [
+    {
+      "sapt": 59,
+      "from": "2026-11-17",
+      "to": "2026-11-18",
+      "daysInRow": 2,
+      "partial": true,
+      "label": "SAPT 59 · 17.11–18.11 · 2 din 7 zile",
+      "cells": {
+        "feed.g.F": 159.9979,
+        "feed.g.M": 142.7273,
+        "feed.g.diffPct.F": 1.9095,
+        "feed.g.diffPct.M": -8.5082,
+        "feed.g.guide.F": 157,
+        "feed.g.guide.M": 156,
+        "feed.kg.F": 4675.3,
+        "feed.kg.M": 329.7
+      },
+      "status": {
+        "feed.g.F": "in_norma",
+        "feed.g.M": "in_norma"
+      },
+      "days": [
+        {
+          "date": "2026-11-17",
+          "ageDays": 406,
+          "sapt": 59,
+          "weekday": "Ma",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.6272,
+            "feed.g.diffPct.F": 1.9108,
+            "feed.g.diffPct.M": -8.5723,
+            "feed.g.guide.F": 157,
+            "feed.g.guide.M": 156,
+            "feed.kg.F": 2372.1,
+            "feed.kg.M": 175
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-18",
+          "ageDays": 407,
+          "sapt": 59,
+          "weekday": "Mi",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.8435,
+            "feed.g.diffPct.F": 1.9108,
+            "feed.g.diffPct.M": -8.4337,
+            "feed.g.guide.F": 157,
+            "feed.g.guide.M": 156,
+            "feed.kg.F": 2303.2,
+            "feed.kg.M": 154.7
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ],
+      "sections": [
+        {
+          "code": "H5.1",
+          "sapt": 59,
+          "from": "2026-11-17",
+          "to": "2026-11-18",
+          "daysInRow": 2,
+          "partial": true,
+          "label": "H5.1",
+          "cells": {
+            "feed.g.F": 159.9906,
+            "feed.g.M": 143.8596,
+            "feed.g.diffPct.F": 1.9049,
+            "feed.g.diffPct.M": -7.7823,
+            "feed.g.guide.F": 157,
+            "feed.g.guide.M": 156,
+            "feed.kg.F": 1364.4,
+            "feed.kg.M": 98.4
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H5.2",
+          "sapt": 59,
+          "from": "2026-11-17",
+          "to": "2026-11-18",
+          "daysInRow": 2,
+          "partial": true,
+          "label": "H5.2",
+          "cells": {
+            "feed.g.F": 160.007,
+            "feed.g.M": 143.0341,
+            "feed.g.diffPct.F": 1.9153,
+            "feed.g.diffPct.M": -8.3115,
+            "feed.g.guide.F": 157,
+            "feed.g.guide.M": 156,
+            "feed.kg.F": 1371.1,
+            "feed.kg.M": 92.4
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.1",
+          "sapt": 59,
+          "from": "2026-11-17",
+          "to": "2026-11-18",
+          "daysInRow": 2,
+          "partial": true,
+          "label": "H6.1",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.1538,
+            "feed.g.diffPct.F": 1.9108,
+            "feed.g.diffPct.M": -8.8757,
+            "feed.g.guide.F": 157,
+            "feed.g.guide.M": 156,
+            "feed.kg.F": 1350.4,
+            "feed.kg.M": 92.4
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.2",
+          "sapt": 59,
+          "from": "2026-11-17",
+          "to": "2026-11-18",
+          "daysInRow": 2,
+          "partial": true,
+          "label": "H6.2",
+          "cells": {
+            "feed.g.F": 159.9891,
+            "feed.g.M": 140.9091,
+            "feed.g.diffPct.F": 1.9039,
+            "feed.g.diffPct.M": -9.6737,
+            "feed.g.guide.F": 157,
+            "feed.g.guide.M": 156,
+            "feed.kg.F": 589.4,
+            "feed.kg.M": 46.5
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H7",
+          "sapt": 59,
+          "from": "2026-11-17",
+          "to": "2026-11-18",
+          "daysInRow": 2,
+          "partial": true,
+          "label": "goală din 14.11.2026 · H7.1, H7.2",
+          "cells": {},
+          "reasons": {
+            "*": "empty_since:2026-11-14"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 58,
+      "from": "2026-11-10",
+      "to": "2026-11-16",
+      "daysInRow": 7,
+      "label": "SAPT 58 · 10.11–16.11",
+      "cells": {
+        "feed.g.F": 155.9155,
+        "feed.g.M": 142.192,
+        "feed.g.diffPct.F": -1.3193,
+        "feed.g.diffPct.M": -8.2632,
+        "feed.g.guide.F": 158,
+        "feed.g.guide.M": 155,
+        "feed.kg.F": 22230.9,
+        "feed.kg.M": 1682.7
+      },
+      "status": {
+        "feed.g.F": "in_norma",
+        "feed.g.M": "in_norma"
+      },
+      "missing": {
+        "rows": 2,
+        "days": [
+          "2026-11-13"
+        ],
+        "keys": [
+          {
+            "code": "H7.1",
+            "sex": "F",
+            "date": "2026-11-13"
+          },
+          {
+            "code": "H7.2",
+            "sex": "F",
+            "date": "2026-11-13"
+          }
+        ]
+      },
+      "days": [
+        {
+          "date": "2026-11-10",
+          "ageDays": 399,
+          "sapt": 58,
+          "weekday": "Ma",
+          "cells": {
+            "feed.g.F": 153.353,
+            "feed.g.M": 142.0089,
+            "feed.g.diffPct.F": -2.9411,
+            "feed.g.diffPct.M": -8.3813,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 3895.8,
+            "feed.kg.M": 281.7
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-11",
+          "ageDays": 400,
+          "sapt": 58,
+          "weekday": "Mi",
+          "cells": {
+            "feed.g.F": 153.3531,
+            "feed.g.M": 142.0097,
+            "feed.g.diffPct.F": -2.9411,
+            "feed.g.diffPct.M": -8.3809,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 3895.6,
+            "feed.kg.M": 281.5
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-12",
+          "ageDays": 401,
+          "sapt": 58,
+          "weekday": "Jo",
+          "cells": {
+            "feed.g.F": 158.3528,
+            "feed.g.M": 142.009,
+            "feed.g.diffPct.F": 0.2233,
+            "feed.g.diffPct.M": -8.3813,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 4020.4,
+            "feed.kg.M": 281.3
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-13",
+          "ageDays": 402,
+          "sapt": 58,
+          "weekday": "Vi",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.0093,
+            "feed.g.diffPct.F": 1.2658,
+            "feed.g.diffPct.M": -8.3811,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 2723.3,
+            "feed.kg.M": 281.1
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          },
+          "missing": {
+            "rows": 2,
+            "days": [
+              "2026-11-13"
+            ],
+            "keys": [
+              {
+                "code": "H7.1",
+                "sex": "F",
+                "date": "2026-11-13"
+              },
+              {
+                "code": "H7.2",
+                "sex": "F",
+                "date": "2026-11-13"
+              }
+            ]
+          }
+        },
+        {
+          "date": "2026-11-14",
+          "ageDays": 403,
+          "sapt": 58,
+          "weekday": "Sâ",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.4921,
+            "feed.g.diffPct.F": 1.2658,
+            "feed.g.diffPct.M": -8.0696,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 2723,
+            "feed.kg.M": 190.8
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-15",
+          "ageDays": 404,
+          "sapt": 58,
+          "weekday": "Du",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.5535,
+            "feed.g.diffPct.F": 1.2658,
+            "feed.g.diffPct.M": -8.03,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 2471.5,
+            "feed.kg.M": 183.2
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-16",
+          "ageDays": 405,
+          "sapt": 58,
+          "weekday": "Lu",
+          "cells": {
+            "feed.g.F": 160,
+            "feed.g.M": 142.5544,
+            "feed.g.diffPct.F": 1.2658,
+            "feed.g.diffPct.M": -8.0294,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 2501.3,
+            "feed.kg.M": 183.1
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ],
+      "sections": [
+        {
+          "code": "H5.1",
+          "sapt": 58,
+          "from": "2026-11-10",
+          "to": "2026-11-16",
+          "daysInRow": 7,
+          "label": "H5.1",
+          "cells": {
+            "feed.g.F": 158.5649,
+            "feed.g.M": 143.8596,
+            "feed.g.diffPct.F": 0.3575,
+            "feed.g.diffPct.M": -7.1873,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 4735.7,
+            "feed.kg.M": 344.4
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H5.2",
+          "sapt": 58,
+          "from": "2026-11-10",
+          "to": "2026-11-16",
+          "daysInRow": 7,
+          "label": "H5.2",
+          "cells": {
+            "feed.g.F": 158.5526,
+            "feed.g.M": 142.9894,
+            "feed.g.diffPct.F": 0.3497,
+            "feed.g.diffPct.M": -7.7488,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 4760.7,
+            "feed.kg.M": 324.3
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.1",
+          "sapt": 58,
+          "from": "2026-11-10",
+          "to": "2026-11-16",
+          "daysInRow": 7,
+          "label": "H6.1",
+          "cells": {
+            "feed.g.F": 158.5673,
+            "feed.g.M": 142.0983,
+            "feed.g.diffPct.F": 0.359,
+            "feed.g.diffPct.M": -8.3237,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 4688.2,
+            "feed.kg.M": 323.7
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.2",
+          "sapt": 58,
+          "from": "2026-11-10",
+          "to": "2026-11-16",
+          "daysInRow": 7,
+          "label": "H6.2",
+          "cells": {
+            "feed.g.F": 151.2738,
+            "feed.g.M": 141.0906,
+            "feed.g.diffPct.F": -4.2571,
+            "feed.g.diffPct.M": -8.9738,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 4239.6,
+            "feed.kg.M": 328.6
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H7.1",
+          "sapt": 58,
+          "from": "2026-11-10",
+          "to": "2026-11-16",
+          "daysInRow": 7,
+          "label": "H7.1",
+          "cells": {
+            "feed.g.F": 151.6635,
+            "feed.g.M": 141.0256,
+            "feed.g.diffPct.F": -4.0104,
+            "feed.g.diffPct.M": -9.0157,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 1923.7,
+            "feed.kg.M": 176
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          },
+          "missing": {
+            "rows": 1,
+            "days": [
+              "2026-11-13"
+            ],
+            "keys": [
+              {
+                "code": "H7.1",
+                "sex": "F",
+                "date": "2026-11-13"
+              }
+            ]
+          }
+        },
+        {
+          "code": "H7.2",
+          "sapt": 58,
+          "from": "2026-11-10",
+          "to": "2026-11-16",
+          "daysInRow": 7,
+          "label": "H7.2",
+          "cells": {
+            "feed.g.F": 151.6714,
+            "feed.g.M": 141.0023,
+            "feed.g.diffPct.F": -4.0055,
+            "feed.g.diffPct.M": -9.0308,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 155,
+            "feed.kg.F": 1883,
+            "feed.kg.M": 185.7
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          },
+          "missing": {
+            "rows": 1,
+            "days": [
+              "2026-11-13"
+            ],
+            "keys": [
+              {
+                "code": "H7.2",
+                "sex": "F",
+                "date": "2026-11-13"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 57,
+      "from": "2026-11-03",
+      "to": "2026-11-09",
+      "daysInRow": 7,
+      "label": "SAPT 57 · 03.11–09.11",
+      "cells": {
+        "feed.g.F": 130.5139,
+        "feed.g.M": 140.8175,
+        "feed.g.diffPct.F": -17.3963,
+        "feed.g.diffPct.M": -8.5601,
+        "feed.g.guide.F": 158,
+        "feed.g.guide.M": 154,
+        "feed.kg.F": 23284.2,
+        "feed.kg.M": 1970.6
+      },
+      "status": {
+        "feed.g.F": "abatere",
+        "feed.g.M": "in_norma"
+      },
+      "days": [
+        {
+          "date": "2026-11-03",
+          "ageDays": 392,
+          "sapt": 57,
+          "weekday": "Ma",
+          "cells": {
+            "feed.g.F": 161.1617,
+            "feed.g.M": 140.8321,
+            "feed.g.diffPct.F": 2.0011,
+            "feed.g.diffPct.M": -8.5506,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 2760,
+            "feed.kg.M": 284.2
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-04",
+          "ageDays": 393,
+          "sapt": 57,
+          "weekday": "Mi",
+          "cells": {
+            "feed.g.F": 161.1617,
+            "feed.g.M": 140.8326,
+            "feed.g.diffPct.F": 2.0011,
+            "feed.g.diffPct.M": -8.5503,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 2760,
+            "feed.kg.M": 282.7
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "ageDays": 394,
+          "sapt": 57,
+          "weekday": "Jo",
+          "cells": {
+            "feed.g.F": 145.4905,
+            "feed.g.M": 140.8332,
+            "feed.g.diffPct.F": -7.9174,
+            "feed.g.diffPct.M": -8.5499,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3309.9,
+            "feed.kg.M": 281.9
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-06",
+          "ageDays": 395,
+          "sapt": 57,
+          "weekday": "Vi",
+          "cells": {
+            "feed.g.F": 149.2438,
+            "feed.g.M": 140.8346,
+            "feed.g.diffPct.F": -5.5419,
+            "feed.g.diffPct.M": -8.5489,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3394.1,
+            "feed.kg.M": 281.3
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-07",
+          "ageDays": 396,
+          "sapt": 57,
+          "weekday": "Sâ",
+          "cells": {
+            "feed.g.F": 143.3528,
+            "feed.g.M": 140.8351,
+            "feed.g.diffPct.F": -9.2704,
+            "feed.g.diffPct.M": -8.5486,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3646.1,
+            "feed.kg.M": 280.9
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-08",
+          "ageDays": 397,
+          "sapt": 57,
+          "weekday": "Du",
+          "cells": {
+            "feed.g.F": 143.353,
+            "feed.g.M": 140.8368,
+            "feed.g.diffPct.F": -9.2702,
+            "feed.g.diffPct.M": -8.5475,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3643.9,
+            "feed.kg.M": 280.1
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-09",
+          "ageDays": 398,
+          "sapt": 57,
+          "weekday": "Lu",
+          "cells": {
+            "feed.g.F": 148.3532,
+            "feed.g.M": 140.8372,
+            "feed.g.diffPct.F": -6.1056,
+            "feed.g.diffPct.M": -8.5473,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3770.2,
+            "feed.kg.M": 279.5
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ],
+      "sections": [
+        {
+          "code": "H5.1",
+          "sapt": 57,
+          "from": "2026-11-03",
+          "to": "2026-11-09",
+          "daysInRow": 7,
+          "label": "H5.1",
+          "cells": {
+            "feed.g.F": 134.0986,
+            "feed.g.M": 141.902,
+            "feed.g.diffPct.F": -15.1275,
+            "feed.g.diffPct.M": -7.8558,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 4018.8,
+            "feed.kg.M": 341.7
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H5.2",
+          "sapt": 57,
+          "from": "2026-11-03",
+          "to": "2026-11-09",
+          "daysInRow": 7,
+          "label": "H5.2",
+          "cells": {
+            "feed.g.F": 134.1189,
+            "feed.g.M": 142.0385,
+            "feed.g.diffPct.F": -15.1146,
+            "feed.g.diffPct.M": -7.7672,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 4034.7,
+            "feed.kg.M": 324.7
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.1",
+          "sapt": 57,
+          "from": "2026-11-03",
+          "to": "2026-11-09",
+          "daysInRow": 7,
+          "label": "H6.1",
+          "cells": {
+            "feed.g.F": 134.4106,
+            "feed.g.M": 141.048,
+            "feed.g.diffPct.F": -14.93,
+            "feed.g.diffPct.M": -8.4104,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3988.5,
+            "feed.kg.M": 323
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.2",
+          "sapt": 57,
+          "from": "2026-11-03",
+          "to": "2026-11-09",
+          "daysInRow": 7,
+          "label": "H6.2",
+          "cells": {
+            "feed.g.F": 134.259,
+            "feed.g.M": 139.9674,
+            "feed.g.diffPct.F": -15.026,
+            "feed.g.diffPct.M": -9.1121,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 4003.2,
+            "feed.kg.M": 343.9
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H7.1",
+          "sapt": 57,
+          "from": "2026-11-03",
+          "to": "2026-11-09",
+          "daysInRow": 7,
+          "label": "H7.1",
+          "cells": {
+            "feed.g.F": 122.2846,
+            "feed.g.M": 139.9639,
+            "feed.g.diffPct.F": -22.6047,
+            "feed.g.diffPct.M": -9.1143,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3638.7,
+            "feed.kg.M": 310.3
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H7.2",
+          "sapt": 57,
+          "from": "2026-11-03",
+          "to": "2026-11-09",
+          "daysInRow": 7,
+          "label": "H7.2",
+          "cells": {
+            "feed.g.F": 123.7004,
+            "feed.g.M": 139.9829,
+            "feed.g.diffPct.F": -21.7086,
+            "feed.g.diffPct.M": -9.102,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 154,
+            "feed.kg.F": 3600.3,
+            "feed.kg.M": 327
+          },
+          "status": {
+            "feed.g.F": "abatere",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ]
+    },
+    {
+      "sapt": 56,
+      "from": "2026-10-27",
+      "to": "2026-11-02",
+      "daysInRow": 7,
+      "label": "SAPT 56 · 27.10–02.11",
+      "cells": {
+        "feed.g.F": 158.6132,
+        "feed.g.M": 140.8604,
+        "feed.g.diffPct.F": 0.3881,
+        "feed.g.diffPct.M": -7.9344,
+        "feed.g.guide.F": 158,
+        "feed.g.guide.M": 153,
+        "feed.kg.F": 28708.2,
+        "feed.kg.M": 2013.6
+      },
+      "status": {
+        "feed.g.F": "in_norma",
+        "feed.g.M": "in_norma"
+      },
+      "days": [
+        {
+          "date": "2026-10-27",
+          "ageDays": 385,
+          "sapt": 56,
+          "weekday": "Ma",
+          "cells": {
+            "feed.g.F": 161.1587,
+            "feed.g.M": 140.8328,
+            "feed.g.diffPct.F": 1.9991,
+            "feed.g.diffPct.M": -7.9524,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4173.3,
+            "feed.kg.M": 289.3
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-10-28",
+          "ageDays": 386,
+          "sapt": 56,
+          "weekday": "Mi",
+          "cells": {
+            "feed.g.F": 161.1587,
+            "feed.g.M": 140.8328,
+            "feed.g.diffPct.F": 1.9992,
+            "feed.g.diffPct.M": -7.9524,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4172.3,
+            "feed.kg.M": 288.6
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-10-29",
+          "ageDays": 387,
+          "sapt": 56,
+          "weekday": "Jo",
+          "cells": {
+            "feed.g.F": 161.1587,
+            "feed.g.M": 140.8337,
+            "feed.g.diffPct.F": 1.9992,
+            "feed.g.diffPct.M": -7.9519,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4171.5,
+            "feed.kg.M": 288.3
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-10-30",
+          "ageDays": 388,
+          "sapt": 56,
+          "weekday": "Vi",
+          "cells": {
+            "feed.g.F": 161.1587,
+            "feed.g.M": 140.8328,
+            "feed.g.diffPct.F": 1.9992,
+            "feed.g.diffPct.M": -7.9525,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4170.3,
+            "feed.kg.M": 287.9
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-10-31",
+          "ageDays": 389,
+          "sapt": 56,
+          "weekday": "Sâ",
+          "cells": {
+            "feed.g.F": 161.159,
+            "feed.g.M": 140.8317,
+            "feed.g.diffPct.F": 1.9994,
+            "feed.g.diffPct.M": -7.9531,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4166.8,
+            "feed.kg.M": 287.3
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-01",
+          "ageDays": 390,
+          "sapt": 56,
+          "weekday": "Du",
+          "cells": {
+            "feed.g.F": 161.1591,
+            "feed.g.M": 140.8328,
+            "feed.g.diffPct.F": 1.9994,
+            "feed.g.diffPct.M": -7.9524,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4162.3,
+            "feed.kg.M": 286.7
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "date": "2026-11-02",
+          "ageDays": 391,
+          "sapt": 56,
+          "weekday": "Lu",
+          "cells": {
+            "feed.g.F": 161.2423,
+            "feed.g.M": 140.8328,
+            "feed.g.diffPct.F": 2.0521,
+            "feed.g.diffPct.M": -7.9524,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 3691.7,
+            "feed.kg.M": 285.5
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ],
+      "sections": [
+        {
+          "code": "H5.1",
+          "sapt": 56,
+          "from": "2026-10-27",
+          "to": "2026-11-02",
+          "daysInRow": 7,
+          "label": "H5.1",
+          "cells": {
+            "feed.g.F": 160.9999,
+            "feed.g.M": 141.9935,
+            "feed.g.diffPct.F": 1.8987,
+            "feed.g.diffPct.M": -7.1938,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4875.4,
+            "feed.kg.M": 347.6
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H5.2",
+          "sapt": 56,
+          "from": "2026-10-27",
+          "to": "2026-11-02",
+          "daysInRow": 7,
+          "label": "H5.2",
+          "cells": {
+            "feed.g.F": 161.003,
+            "feed.g.M": 142.0489,
+            "feed.g.diffPct.F": 1.9006,
+            "feed.g.diffPct.M": -7.1576,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4873.4,
+            "feed.kg.M": 331.4
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.1",
+          "sapt": 56,
+          "from": "2026-10-27",
+          "to": "2026-11-02",
+          "daysInRow": 7,
+          "label": "H6.1",
+          "cells": {
+            "feed.g.F": 153.3574,
+            "feed.g.M": 141.076,
+            "feed.g.diffPct.F": -2.9384,
+            "feed.g.diffPct.M": -7.7935,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4636.3,
+            "feed.kg.M": 330.4
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H6.2",
+          "sapt": 56,
+          "from": "2026-10-27",
+          "to": "2026-11-02",
+          "daysInRow": 7,
+          "label": "H6.2",
+          "cells": {
+            "feed.g.F": 152.4309,
+            "feed.g.M": 139.976,
+            "feed.g.diffPct.F": -3.5248,
+            "feed.g.diffPct.M": -8.5124,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4624.6,
+            "feed.kg.M": 350.5
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H7.1",
+          "sapt": 56,
+          "from": "2026-10-27",
+          "to": "2026-11-02",
+          "daysInRow": 7,
+          "label": "H7.1",
+          "cells": {
+            "feed.g.F": 160.9973,
+            "feed.g.M": 140.0175,
+            "feed.g.diffPct.F": 1.897,
+            "feed.g.diffPct.M": -8.4853,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4881.6,
+            "feed.kg.M": 320.5
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        },
+        {
+          "code": "H7.2",
+          "sapt": 56,
+          "from": "2026-10-27",
+          "to": "2026-11-02",
+          "daysInRow": 7,
+          "label": "H7.2",
+          "cells": {
+            "feed.g.F": 162.9974,
+            "feed.g.M": 140.0588,
+            "feed.g.diffPct.F": 3.1629,
+            "feed.g.diffPct.M": -8.4583,
+            "feed.g.guide.F": 158,
+            "feed.g.guide.M": 153,
+            "feed.kg.F": 4816.9,
+            "feed.kg.M": 333.2
+          },
+          "status": {
+            "feed.g.F": "in_norma",
+            "feed.g.M": "in_norma"
+          }
+        }
+      ]
+    }
+  ],
+  "loaded": {
+    "saptFrom": 56,
+    "saptTo": 59,
+    "weeks": 4
+  },
+  "more": {
+    "before": 56,
+    "remaining": 36,
+    "label": "Încarcă încă 4 săptămâni · SAPT 56–59 · 4 din 40"
+  },
+  "start": null,
+  "totals": {
+    "label": "Total SAPT 56–59",
+    "cells": {
+      "feed.g.F": 148.5282,
+      "feed.g.M": 141.3193,
+      "feed.g.diffPct.F": -5.9621,
+      "feed.g.diffPct.M": -8.2646,
+      "feed.g.guide.F": 157.945,
+      "feed.g.guide.M": 154.0509,
+      "feed.kg.F": 78898.6,
+      "feed.kg.M": 5996.6
+    },
+    "status": {
+      "feed.g.F": "in_norma",
+      "feed.g.M": "in_norma"
+    },
+    "missing": {
+      "rows": 2,
+      "days": [
+        "2026-11-13"
+      ],
+      "keys": [
+        {
+          "code": "H7.1",
+          "sex": "F",
+          "date": "2026-11-13"
+        },
+        {
+          "code": "H7.2",
+          "sex": "F",
+          "date": "2026-11-13"
+        }
+      ]
+    }
+  },
+  "notes": [
+    "g/pasăre: zi = g din registru; săptămână, secțiune și perioadă = kg ÷ zile-pasăre (♀ după găini, ♂ după cocoși). Toleranță ±10%.",
+    "♀ 460 kg/compartiment în registru (g × păsări ≈ 690 kg): SAPT 57: H5, H6 03.11–04.11 · H7 03.11–06.11; SAPT 56: H6 02.11."
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

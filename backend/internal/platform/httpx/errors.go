@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
+
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/pgerr"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
 )
@@ -47,6 +49,12 @@ const (
 	IssueTooLong        = "too_long"
 	IssueMalformed      = "malformed"
 	IssueBadContentType = "bad_content_type"
+)
+
+// Warning codes (SPEC §6, §7.0 warnings[].code) used by M3's feed save.
+const (
+	WarnFeedGuide     = "FEED_GUIDE"     // H4: g vs guide beyond tolerance.feed_pct
+	WarnStockNegative = "STOCK_NEGATIVE" // H5: a type's stock would go below 0
 )
 
 // HTTPError is an error that knows its status and envelope. *Error implements
@@ -129,6 +137,50 @@ func RateLimited(message string, retryAfterSeconds int) *Error {
 func Refused(message string, refusals []Refusal, warnings []Warning) *Error {
 	e := NewError(http.StatusUnprocessableEntity, CodeRefused, message)
 	e.Refusals, e.Warnings = refusals, warnings
+	return e
+}
+
+// RefusedWith is 422 REFUSED whose message is the first refusal's (SPEC §6:
+// every refusal of one save is returned together, in document order). With
+// no refusal (a programming error) the message is the generic one. Nil
+// refusals or warnings become empty slices.
+func RefusedWith(refusals []Refusal, warnings []Warning) *Error {
+	msg := messages.InvalidData()
+	if len(refusals) > 0 && refusals[0].Message != "" {
+		msg = refusals[0].Message
+	}
+	if refusals == nil {
+		refusals = []Refusal{}
+	}
+	if warnings == nil {
+		warnings = []Warning{}
+	}
+	return Refused(msg, refusals, warnings)
+}
+
+// PastDayVet is 403 PAST_DAY_VET "Pentru zilele trecute cere managerului.":
+// a vet writing a day other than today (Z1, H6, §3.2).
+func PastDayVet() *Error {
+	return NewError(http.StatusForbidden, CodePastDayVet, messages.PastDayVet())
+}
+
+// SeriesClosed is 409 SERIES_CLOSED for a write dated inside a cycle of the
+// closed series named (§3.1): "Seria 2025 e închisă: …".
+func SeriesClosed(series string) *Error {
+	return NewError(http.StatusConflict, CodeSeriesClosed, messages.SeriesClosed(series))
+}
+
+// Stale is 409 STALE: a version mismatch, or a clientRequestId reused by
+// another user or on another route (§7.0).
+func Stale() *Error {
+	return NewError(http.StatusConflict, CodeStale, messages.Stale())
+}
+
+// AlreadyEntered is 409 ALREADY_ENTERED with the entryId that holds the value
+// (or the reused clientRequestId) and the form's sentence (§7.0, Z9, §6.3).
+func AlreadyEntered(entryID uuid.UUID, message string) *Error {
+	e := NewError(http.StatusConflict, CodeAlreadyEntered, message)
+	e.EntryID = &entryID
 	return e
 }
 

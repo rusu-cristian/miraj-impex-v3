@@ -14,8 +14,13 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/calc"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/golden"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
@@ -26,9 +31,13 @@ var m1Rows = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 27}
 // the per-hall part of golden 14 (M2 Q2; M8 adds its "since").
 var m2Rows = []int{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 38}
 
+// m3Rows are the goldens of M3: SPEC §12.6 "28" (M3 re-points 26 and 27,
+// which stay M1's).
+var m3Rows = []int{28}
+
 // implementedMilestones are the milestones done so far: each of their rows
 // must have Got.
-var implementedMilestones = map[string]bool{"M1": true, "M2": true}
+var implementedMilestones = map[string]bool{"M1": true, "M2": true, "M3": true}
 
 // TestGolden runs every implemented row of §11.7 against the dev seed
 // (§11.9) and skips the others with the milestone that implements them.
@@ -61,7 +70,7 @@ func seededDB(t *testing.T) *testdb.DB {
 
 // checkRegistry lists what is wrong with a registry: ids not exactly 1–38
 // once each, a row without a name or a valid milestone, a row of an
-// implemented milestone (M1, M2) without Got, or a Got without a Want.
+// implemented milestone (M1–M3) without Got, or a Got without a Want.
 func checkRegistry(rows []golden.Row) []string {
 	var problems []string
 	seen := map[int]int{}
@@ -100,7 +109,7 @@ func TestRegistry(t *testing.T) {
 	if problems := checkRegistry(rows); len(problems) > 0 {
 		t.Fatalf("registry problems:\n%s", strings.Join(problems, "\n"))
 	}
-	var m1, m2, implemented []int
+	var m1, m2, m3, implemented []int
 	for i, r := range rows {
 		if r.ID != i+1 {
 			t.Errorf("row %d has id %d: rows are in id order", i, r.ID)
@@ -110,6 +119,8 @@ func TestRegistry(t *testing.T) {
 			m1 = append(m1, r.ID)
 		case "M2":
 			m2 = append(m2, r.ID)
+		case "M3":
+			m3 = append(m3, r.ID)
 		}
 		if r.Got != nil {
 			implemented = append(implemented, r.ID)
@@ -121,8 +132,13 @@ func TestRegistry(t *testing.T) {
 	if diff := cmp.Diff(m2Rows, m2); diff != "" {
 		t.Errorf("M2 rows differ from SPEC §12.6 and the M2 plan (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff(slices.Sorted(slices.Values(append(slices.Clone(m1Rows), m2Rows...))), implemented); diff != "" {
-		t.Errorf("implemented rows at M2 (-want +got):\n%s", diff)
+	if diff := cmp.Diff(m3Rows, m3); diff != "" {
+		t.Errorf("M3 rows differ from SPEC §12.6 (-want +got):\n%s", diff)
+	}
+	// Rows 1–28 and 38 (M3 Goal): 29 goldens.
+	want := slices.Sorted(slices.Values(slices.Concat(m1Rows, m2Rows, m3Rows)))
+	if diff := cmp.Diff(want, implemented); diff != "" || len(implemented) != 29 {
+		t.Errorf("implemented rows at M3 (%d, want 29; -want +got):\n%s", len(implemented), diff)
 	}
 }
 
@@ -150,6 +166,11 @@ func TestCheckRegistryCatchesProblems(t *testing.T) {
 			rows[19].Got = nil
 			return rows
 		}(), "golden 20 is M2 but has no Got"},
+		{"M3 row without Got", func() []golden.Row {
+			rows := golden.Rows()
+			rows[27].Got = nil
+			return rows
+		}(), "golden 28 is M3 but has no Got"},
 		{"bad milestone", func() []golden.Row {
 			rows := golden.Rows()
 			rows[20].Milestone = "M13"
@@ -247,6 +268,9 @@ func TestCheck(t *testing.T) {
 //	sold in the cycle ♀ 1 + 5 + 10 = 16 · ♂ 2; sold 12–18.11 ♀ 15 · ♂ 2
 //	feed 12.11: ♀ H5.1 150 g × 67 = 10,05 kg + H5.2 160 g × 19 = 3,04 kg = 13,09; ♂ H5.1 140 g × 7 = 0,98
 //	stock 18.11: Breeder 2 100 − 13,09 − 12,73 = 74,18 → 74,2; Cocoși 10 − 0,98 − 1,05 = 7,97 → 8,0
+//	days left 18.11 (28): every section × sex with birds today has a ration, so the window is 16–18.11;
+//	            Breeder 2 12,73 ÷ 3 = 4,2433 → 4,2 kg/zi, 74,18 ÷ 4,2433 = 17,48 → 17,5 zile, 18.11 + 17 = 05.12.2026;
+//	            Cocoși 1,05 ÷ 3 = 0,35 → 0,4 kg/zi, 7,97 ÷ 0,35 = 22,77 → 22,8 zile, 18.11 + 22 = 10.12.2026
 //
 // Eggs, all at hall H5 (Cat. 1 · 2 · 3 + incubabile = total; jos apart; mean
 // egg weight), and the hens of H5 at the start of the day:
@@ -433,6 +457,10 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 		12: golden.LayDay{Eggs: 41, HensStart: 80, Pct: "51.3"},
 		26: golden.FeedDay{Kg: calc.PerSex[string]{F: "12.7", M: "1.1"}, Total: "13.8"},
 		27: []golden.StockKg{{Name: "Breeder 2", Kg: "74.2"}, {Name: "Cocoși", Kg: "8.0"}},
+		28: golden.StockDaysLeft{From: "2026-11-16", To: "2026-11-18", Items: []golden.TypeDaysLeft{
+			{Type: "Breeder 2", AvgDaily: "4.2", Days: "17.5", RunOut: "2026-12-05"},
+			{Type: "Cocoși", AvgDaily: "0.4", Days: "22.8", RunOut: "2026-12-10"},
+		}},
 
 		13: golden.GuideLay{Guide59: "45.0", DiffToday: "6.3", StatusToday: calc.Abatere, Guide53: "70.0", Guide56: "60.0"},
 		14: []golden.HallLay{{Hall: "H5", Pct: "51.3", DiffPts: "6.3"}},
@@ -498,4 +526,158 @@ func TestGoldenRowsWithoutTheFarm(t *testing.T) {
 			t.Errorf("golden %d on an empty database: err = %v", r.ID, err)
 		}
 	}
+}
+
+// TestFeedDayAgreesWithCalc (M3 D12): golden 26 reads the Consum day row;
+// calc.FeedKg, M1's reader of the same day, gives the same kg per sex at
+// full precision.
+func TestFeedDayAgreesWithCalc(t *testing.T) {
+	f := newFixture(t)
+	ctx := t.Context()
+	res := f.table(t, "view=report-feed&farmId="+f.hirbovat.String())
+	var cells map[string]string
+	for _, w := range res.Weeks {
+		for _, d := range w.Days {
+			if d.Date == golden.AsOf {
+				cells = map[string]string{}
+				for _, key := range []string{periodtable.KeyFeedKgF, periodtable.KeyFeedKgM} {
+					if v := d.Cells[key]; v != nil {
+						cells[key] = v.Decimal().String()
+					}
+				}
+			}
+		}
+	}
+	if cells == nil {
+		t.Fatalf("the Consum first page has no day %s", golden.AsOf)
+	}
+	kg, err := calc.FeedKg(ctx, f.db, f.hirbovat, golden.AsOf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]string{periodtable.KeyFeedKgF: kg.F.String(), periodtable.KeyFeedKgM: kg.M.String()}
+	if diff := cmp.Diff(want, cells); diff != "" {
+		t.Errorf("Consum day %s vs calc.FeedKg (-calc +Consum):\n%s", golden.AsOf, diff)
+	}
+}
+
+// stockFigures is one feed type's stock row as a builder shows it, at full
+// precision. A builder that doesn't carry a field leaves it "".
+type stockFigures struct {
+	Type, Kg, AvgDaily, Window, Days, RunOut string
+	Lamp                                     calc.Status
+	Reason                                   string
+}
+
+func numString(n *num.Num) string {
+	if n == nil {
+		return "null"
+	}
+	return n.Decimal().String()
+}
+
+func dayString(d *timex.Day) string {
+	if d == nil {
+		return "null"
+	}
+	return d.String()
+}
+
+// TestStockAgreesAcrossBuilders (M3 D12): the Stoc report, the summary's
+// feedDaysLeft and the Hrană zilnică form state show Hîrbovăț's stock as of
+// 18.11 with the figures of calc.ReadStockDays, the reader golden 28 rounds,
+// at full precision: kg, average, window, days left, run-out and lamp.
+func TestStockAgreesAcrossBuilders(t *testing.T) {
+	f := newFixture(t)
+	ctx := t.Context()
+	settings, err := calc.ReadAppSettings(ctx, f.db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sd, err := calc.ReadStockDays(ctx, f.db, f.hirbovat, golden.AsOf, settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	window := sd.Window.From.String() + "–" + sd.Window.To.String()
+	var fromCalc, fromCalcNoAvg []stockFigures
+	for _, it := range sd.Items {
+		var days *num.Num
+		if it.Left.Days != nil {
+			d := num.Of(*it.Left.Days)
+			days = &d
+		}
+		row := stockFigures{Type: it.Name, Kg: it.Kg.String(), AvgDaily: it.AvgDaily.String(), Window: window,
+			Days: numString(days), RunOut: dayString(it.Left.RunOut), Lamp: it.Left.Lamp}
+		fromCalc = append(fromCalc, row)
+		row.AvgDaily, row.Window = "", ""
+		fromCalcNoAvg = append(fromCalcNoAvg, row)
+	}
+	if len(fromCalc) != 2 {
+		t.Fatalf("calc.ReadStockDays has %d types, want Breeder 2 and Cocoși", len(fromCalc))
+	}
+
+	t.Run("reports", func(t *testing.T) {
+		res, err := reports.BuildFeed(ctx, f.db, reports.Input{Principal: owner, FarmID: &f.hirbovat, Today: golden.AsOf, Now: golden.Now})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got []stockFigures
+		for _, r := range res.Stock {
+			s, ok := r.(reports.TypeStock)
+			if !ok {
+				t.Fatalf("stock row %T, want reports.TypeStock", r)
+			}
+			kg, avg := s.Kg, s.AvgDaily
+			got = append(got, stockFigures{Type: s.Type, Kg: numString(&kg), AvgDaily: numString(&avg),
+				Window: s.Window[0].String() + "–" + s.Window[1].String(), Days: numString(s.DaysLeft),
+				RunOut: dayString(s.RunOut), Lamp: s.Lamp, Reason: s.Reason})
+		}
+		if diff := cmp.Diff(fromCalc, got); diff != "" {
+			t.Errorf("reports/feed vs calc (-calc +reports):\n%s", diff)
+		}
+	})
+	t.Run("summary", func(t *testing.T) {
+		res, err := farms.BuildSummary(ctx, f.db, f.input(owner, f.hirbovat))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got []stockFigures
+		found := false
+		for _, st := range res.Stats {
+			s, ok := st.(farms.FeedDaysLeftStat)
+			if !ok {
+				continue
+			}
+			found = true
+			for _, it := range s.Items {
+				kg := it.Kg
+				got = append(got, stockFigures{Type: it.Type, Kg: numString(&kg), Days: numString(it.Days),
+					RunOut: dayString(it.RunOut), Lamp: it.Lamp, Reason: it.Reason})
+			}
+		}
+		if !found {
+			t.Fatalf("the summary has no %s stat", farms.StatFeedDaysLeft)
+		}
+		if diff := cmp.Diff(fromCalcNoAvg, got); diff != "" {
+			t.Errorf("summary feedDaysLeft vs calc (-calc +summary):\n%s", diff)
+		}
+	})
+	t.Run("form state", func(t *testing.T) {
+		res, err := entries.BuildFeedForm(ctx, f.db, entries.FeedFormInput{
+			Principal: owner, FarmID: f.hirbovat, Date: golden.AsOf, Today: golden.AsOf, Now: golden.Now,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got []stockFigures
+		for _, s := range res.Stock {
+			kg, avg := s.Kg, s.AvgDaily
+			got = append(got, stockFigures{Type: s.Type, Kg: numString(&kg), AvgDaily: numString(&avg),
+				Window: s.Window[0].String() + "–" + s.Window[1].String(), Days: numString(s.DaysLeft),
+				RunOut: dayString(s.RunOut), Lamp: s.Lamp, Reason: s.Reason})
+		}
+		if diff := cmp.Diff(fromCalc, got); diff != "" {
+			t.Errorf("form stock vs calc (-calc +form):\n%s", diff)
+		}
+	})
 }

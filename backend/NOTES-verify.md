@@ -487,3 +487,127 @@ Entry format:
   the 40-week `WeekSeries`) is the slowest at about a fifth of its budget. §11.6's table target names detail
   "Compartimente", which arrives in M6: rerun the benchmark then (and on production-sized data, ≤ 5 years). Under
   `-race` the times are several times higher and are not a gate.
+
+## M3
+
+### pg_notify inside a transaction                     status: verified (2026-11-27, M3 T3)
+- SPEC: §4.11, §9, §12.5 (M3 D1)
+- Library / version: PostgreSQL 16.16 (testcontainers), pgx v5.13.0 `(*pgx.Conn).WaitForNotification`
+- Checked: `internal/live` `TestEmitCommit` / `TestEmitRollback`: a separate connection runs `LISTEN live_event`;
+  `live.Emit` in an open il_app transaction; `WaitForNotification` with a 300 ms timeout before the commit, 5 s after.
+  pgx source (`pgconn.peekMessage`): a timeout ends the wait without closing the connection, so the same listener
+  waits again.
+- Finding: no notification (and no visible row) before the commit; one notification whose payload is the new
+  `live_event.id` right after it; none after a rollback. `insert … returning id` and `pg_notify` run as one statement
+  (`EmitLiveEvent`: a CTE with `cross join lateral pg_notify(…)`), which sqlc v1.31.1 accepts (`:one`, `int64`).
+- Consequence: `live.Emit` writes one statement per event; the M11 Listener can rely on "notified ⇒ committed".
+
+### A 23505 inside pgx.BeginTxFunc                     status: verified (2026-11-27, M3 T3)
+- SPEC: §12.5 (M3 D2)
+- Library / version: PostgreSQL 16.16, pgx v5.13.0, `internal/db.InTx`
+- Checked: psql on PostgreSQL 16.16 (a duplicate insert, then `select 1` in the same transaction);
+  `internal/entries` `TestCreateOnConflict` and `TestCreateKeyConstraint`.
+- Finding: after a unique violation PostgreSQL answers every further statement of the transaction with
+  `25P02 current transaction is aborted`, so no lookup can run inside it. `BeginTxFunc` rolls back and returns the
+  callback's error unwrapped (`*pgconn.PgError`); `InTx` turns it into `*pgerr.ConstraintError` (`Constraint` = the
+  index name, e.g. `entry_client_request_uq`, `farm_name_uq`), still `errors.As`-able to `*pgconn.PgError`.
+- Consequence: `entries.Runner.Create` maps the key constraints (`entry_client_request_uq`, `request_replay_pkey`)
+  and the form's own (`Create.OnConflict`, e.g. `feed_allocation_uq`) after `InTx` returns, on the pool.
+
+### hashtextextended for the farm locks                status: verified (2026-11-27, M3 T3)
+- SPEC: §12.1, §12.5 (`LockFarm`)
+- Library / version: PostgreSQL 16.16
+- Checked: `select hashtextextended(…, 0)` in psql and in `internal/ledger` `TestLockFarms` (asserts the two test
+  ids differ); `pg_locks` for the advisory locks held.
+- Finding: `hashtextextended(text, bigint) → bigint` exists in PostgreSQL 16; `LockFarms(b, a, b)` holds exactly two
+  advisory locks, taken a then b; a second transaction locking `a` waits until the first commits.
+- Consequence: the 64-bit key per farm id stays. Two farm ids whose hashes collide would only serialise more than
+  needed (never a missed lock).
+
+### request_replay.body and entry.created_at round trips   status: verified (2026-11-27, M3 T3)
+- SPEC: §4.11, §7.0, §12.5 (M3 D3)
+- Library / version: sqlc v1.31.1 (pgx/v5), pgx v5.13.0
+- Checked: the generated `dbq` types; `internal/entries` `TestCreateSaves`, `TestCreateReplay`,
+  `TestCreateConcurrentSameKey`.
+- Finding: `bytea` maps to `[]byte` and comes back byte-exact (the stored body equals the 201 body, trailing newline
+  of `httpx.Marshal` included, and a replay one minute later on the clock is the same bytes). `entry.created_at`
+  from the frozen clock reads back equal; the version string is `2026-11-18T10:00:00.000000Z`, the same from the
+  row's `coalesce(updated_at, created_at)`. The new queries' types: `uuid[]` → `[]uuid.UUID`, `jsonb` params →
+  `[]byte` (nil = SQL null), `client_request_id` → `*uuid.UUID` in `InsertEntry`, `uuid.UUID` where cast `::uuid`,
+  nullable `entry_kind` → `*dbq.EntryKind`, `status smallint` → `int16`.
+- Consequence: the replay stores `httpx.Marshal` output and `WriteRaw` sends it unchanged. `entries.version`
+  formats the version (fixed width, microseconds, UTC), as the SPEC §12.5 sketch and its "Version" note name it.
+
+### numeric(6,1) rounds g silently (Q9)               status: verified (2026-11-27, M3 T4)
+- SPEC: §5.15, §6.3 H1; M3 Q9
+- Library / version: PostgreSQL 16.16 (`postgres:16.16-bookworm`)
+- Checked: `insert into t values (160.25), (160.35), (300.04)` into a `numeric(6,1) check (g between 1 and 300)`
+  column, then `300.05`.
+- Finding: the cast rounds half away from zero before the check: 160.25 → 160.3, 160.35 → 160.4, 300.04 → 300.0
+  (accepted), 300.05 → 300.1 (refused by the check). Nothing tells the client its value changed.
+- Consequence: `FeedDailyCreateRequest.Validate` refuses a g with more than one decimal (`rows[i].g`, `out_of_range`,
+  "Datele trimise nu sunt valide.") and checks 1–300 on the value as sent, so the stored g always equals the typed
+  one (`TestFeedDailyValidate`).
+
+### Embedded WriteMeta in a create body under encoding/json/v2   status: verified (2026-11-27, M3 T4)
+- SPEC: §7.0a (WriteMeta "fields are promoted in JSON"), §7.8
+- Library / version: Go 1.27.4 `encoding/json/v2` with `json.DefaultOptionsV1()` (`httpx.Decode`)
+- Checked: `TestFeedDailyHandler` and `TestCreateFeedDailySeeded` decode `{"farmId", "date", "clientRequestId",
+  "rows"}` into `FeedDailyCreateRequest` (which embeds `httpx.WriteMeta` without a tag) and replay on the key;
+  `{"rows":[{"grams":160}]}` gives `unknown_field` on `rows[0].grams`.
+- Finding: an untagged embedded struct is inlined (its members are top-level JSON members), and
+  `RejectUnknownMembers` still applies inside slices of structs with the full path.
+- Consequence: every create request embeds `httpx.WriteMeta` as §7.8 shows; no `inline` tag is needed.
+
+### Stock reader plan on the seeded data (D7 shape)       status: verified (2026-11-27, M3 T1; recorded in T8)
+- SPEC: §5.8, §11.6; plan M3 D7, ARC-6
+- Library / version: PostgreSQL 16.16 (testcontainers), seeded template (history import + dev seed)
+- Checked (T1): `EXPLAIN ANALYZE` of `CalcStockEnd` (db/queries/calc.sql) for Hîrbovăț on 18.11.2026; the timings of
+  `calc.ReadStockDays` (stock + window + consumption + days left) and `calc.StockSeries` over 01.01–18.11.2026.
+- Finding: the D7 shape (Σ deliveries − Σ allocation kg + Σ adjustments with an explicit day; alive_start computed
+  once per allocation as a window over the leaf deltas, not a per-row lateral sum; no `v_feed_stock`,
+  `v_feed_consumption`, `v_section_sex_day`, no `app_today()`) runs over the farm's whole history in about 28.8 ms
+  execution for `CalcStockEnd`; `ReadStockDays` takes about 32–40 ms; `StockSeries` 01.01–18.11 about 14 ms.
+  `grep -nE "app_today|v_section_sex_day|v_farm_sex_day|v_egg_day|v_feed_consumption|v_feed_stock"` over the M3
+  query files (`entries`, `forms`, `ledger`, `audit`, `live`, `replay`, `reports`) and `periodtable/feedsql.go`
+  prints nothing.
+- Consequence: H5 (the lowest stock from the save's date to today) and the stock rows of the form state, the summary
+  and `reports/feed` read the whole history on every call and stay well inside §11.6 on the seeded data (latency
+  below). A per-type `from` bound is the next step if production data makes them slow.
+
+### Consum (view=report-feed) on the seeded data          status: verified (2026-11-27, M3 T7; recorded in T8)
+- SPEC: §7.4 report-feed, §7.12, §5.7, §11.6; plan M3 D11, Q2, Q8
+- Library / version: PostgreSQL 16.16, pgx v5.13.0 `QueryTracer`
+- Checked: `internal/periodtable` `TestConsumStatements` (statement count per page), `TestConsumSeeded` (the board
+  figures of SAPT 56–59), `BenchmarkFarmReads/consum-*` (below).
+- Finding: a page is the cycle read, one Consum day statement (`feedsql.go`: per farm-day and per leaf section ×
+  day the kg ♀ · ♂, the bird-days on fed days, the birds at the start and the missing keys), the guide weeks (only with a guide) and the settings: at most 4 statements
+  (`CalcFarmCycles`, `PeriodTableFeedDays`, `CalcGuideWeeks`, `CalcSettings`). The farm day g is the register's g (Σ kg ÷ Σ kg/g, user answer to T7's question, §5.7), week,
+  section and period g are kg ÷ bird-days. "lipsă" is computed on every day of the period, today's only from
+  `missing.from_hour`; the D163 line is derived from the loaded days only, so it appears on the pages whose weeks
+  hold those days (SAPT 56–57 for Hîrbovăț).
+- Consequence: Consum costs about what the Rezumat page costs (below). `notes[]` varies with the loaded weeks, so the
+  client shows the notes of the latest response.
+
+### M3 latency vs §11.6                                   status: verified (2026-11-27, M3 T8)
+- SPEC: §11.6 (p95: table page ≤ 300 ms, load-more ≤ 200 ms, summary/home ≤ 400 ms, any save ≤ 300 ms)
+- Library / version: `BenchmarkFarmReads` (cmd/api), PostgreSQL 16.16 in testcontainers (Docker Desktop), seeded data
+- Checked: `go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api` (no `-race`), Apple M5 Max, the owner,
+  200 requests each over a socket through the whole chain, 18.11.2026. The save is a real save of Hîrbovăț's 8 rows
+  of 18.11 (§7.8's example); before each request, outside the timed part, the day's live entry is soft-deleted (so
+  soft-deleted rows pile up over the run, a slight pessimisation). The dry run is the same save rolled back.
+  Other test binaries were running on the machine at the same time, so the p95s are noisy.
+- Finding (p50 / p95 per request):
+  | request | p50 | p95 | §11.6 target |
+  |---|---|---|---|
+  | `GET /api/forms/feed-daily` Hîrbovăț 18.11 (8 rows, stock) | 62.7 ms | 75.6 ms | – |
+  | `POST /api/entries/feed-daily` 8 rows (lock, H2–H5, inserts, audit, live, replay) | 32.5 ms | 35.8 ms | ≤ 300 ms |
+  | the same as a dry run (rolled back) | 31.3 ms | 37.5 ms | ≤ 300 ms |
+  | `GET /api/reports/feed` owner, every farm | 40.4 ms | 61.5 ms | – |
+  | `GET /api/table?view=report-feed` Hîrbovăț page 1 (SAPT 56–59) | 34.1 ms | 56.8 ms | ≤ 300 ms |
+  | Consum load-more `before=56` | 34.5 ms | 53.1 ms | ≤ 200 ms |
+  | `GET /api/farms/{id}/summary` Hîrbovăț (now with `feedDaysLeft`) | 105.0 ms | 130.4 ms | ≤ 400 ms |
+  | `GET /api/table?view=farm` page 1 (M2, for comparison) | 20.6 ms | 32.3 ms | ≤ 300 ms |
+- Consequence: every M3 route is well inside §11.6 on the seeded data. The laying summary grew from 65 ms (M2) to
+  about 105 ms p50 with the stock and days-left reads; the form state is the heaviest M3 read (the section × sex
+  rows plus the stock over the whole history). Rerun on production-sized data (≤ 5 years) before M6.

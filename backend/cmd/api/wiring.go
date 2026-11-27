@@ -8,11 +8,13 @@ import (
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
 )
 
 // app is `api serve` wired by hand: config → slog → pools (done by runServe)
@@ -43,9 +45,11 @@ func newApp(cfg config.Config, log *slog.Logger, clock timex.Clock, pools *db.Po
 	h := newHealth(pools.App, latest, log)
 	rec := newRouteRecorder()
 	registerRoutes(rec, h, authService, handlers{
-		auth:  auth.NewHandler(authService),
-		table: periodtable.NewHandler(periodtable.NewService(store, clock)),
-		farms: farms.NewHandler(farms.NewService(store, clock)),
+		auth:    auth.NewHandler(authService),
+		table:   periodtable.NewHandler(periodtable.NewService(store, clock)),
+		farms:   farms.NewHandler(farms.NewService(store, clock)),
+		entries: entries.NewHandler(entries.NewService(store, clock)),
+		reports: reports.NewHandler(reports.NewService(store, clock)),
 	})
 
 	return &app{

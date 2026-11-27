@@ -1,7 +1,6 @@
 package farms
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"slices"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/calc"
-	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
 )
@@ -110,7 +108,7 @@ func (h *Handler) bootstrap(w http.ResponseWriter, r *http.Request) {
 // farm route. Every problem is a 400 VALIDATION issue (the §7.0a codes, M2
 // D2/D4): an unknown parameter → unknown_field, a repeated one or a malformed
 // uuid → bad_type; `period` is read by the PeriodTable's own rules (§5.2,
-// periodtable.ParseQuery), so both routes accept the same values.
+// calc.ParsePeriod), so both routes accept the same values.
 func parsePageQuery(id string, values url.Values, allowed ...string) (pageQuery, error) {
 	var v httpx.Validator
 	var q pageQuery
@@ -125,18 +123,9 @@ func parsePageQuery(id string, values url.Values, allowed ...string) (pageQuery,
 			q.cycleID = &cycleID
 		}
 	}
-	if raw, ok := values[paramPeriod]; ok && slices.Contains(allowed, paramPeriod) {
-		tq, err := periodtable.ParseQuery(url.Values{paramPeriod: raw})
-		var he *httpx.Error
-		switch {
-		case errors.As(err, &he):
-			for _, is := range he.Issues {
-				v.Add(is.Path, is.Code, is.Message)
-			}
-		case err != nil:
-			return q, err
-		default:
-			q.period = calc.Period(tq.Period)
+	if slices.Contains(allowed, paramPeriod) {
+		if s, ok := single(&v, values, paramPeriod); ok {
+			q.period = calc.ParsePeriod(&v, paramPeriod, s)
 		}
 	}
 	return q, v.Err()

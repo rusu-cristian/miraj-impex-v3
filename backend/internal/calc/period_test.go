@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
 
@@ -338,5 +339,43 @@ func TestPaginateEmptyPeriod(t *testing.T) {
 	}
 	if p.Weeks == nil || len(p.Weeks) != 0 || p.Loaded != nil || p.More != nil || p.Start != "" || p.TotalsLabel != "" {
 		t.Errorf("empty period page = %+v, want weeks [] and nothing else", p)
+	}
+}
+
+// M3 ARC-5: the one `period` parser of GET /api/table, the farm routes and
+// GET /api/reports/feed (periodtable's TestParseQuery covers every case
+// through the route).
+func TestParsePeriod(t *testing.T) {
+	for _, tc := range []struct {
+		in   string
+		want Period
+		code string // "" = valid
+	}{
+		{"cycle", Period{Kind: PeriodCycle}, ""},
+		{"weeks:13", Period{Kind: PeriodWeeks, Weeks: 13}, ""},
+		{"interval:2026-11-01,2026-11-15", Period{Kind: PeriodInterval, From: day(2026, time.November, 1), To: day(2026, time.November, 15)}, ""},
+		{"interval:2026-11-15,2026-11-15", Period{Kind: PeriodInterval, From: day(2026, time.November, 15), To: day(2026, time.November, 15)}, ""},
+		{"weeks:0", Period{}, httpx.IssueOutOfRange},
+		{"weeks:99999999999", Period{}, httpx.IssueOutOfRange},
+		{"weeks:four", Period{}, httpx.IssueBadType},
+		{"cycle:2", Period{}, httpx.IssueBadType},
+		{"interval:2026-02-30,2026-03-01", Period{}, httpx.IssueBadDate},
+		{"interval:2026-11-15,2026-11-01", Period{}, httpx.IssueOutOfRange},
+		{"month", Period{}, httpx.IssueOutOfRange},
+	} {
+		var v httpx.Validator
+		got := ParsePeriod(&v, "period", tc.in)
+		if got != tc.want {
+			t.Errorf("%q: period = %+v, want %+v", tc.in, got, tc.want)
+		}
+		var code string
+		if is := v.Issues(); len(is) == 1 && is[0].Path == "period" && is[0].Message == "Datele trimise nu sunt valide." {
+			code = is[0].Code
+		} else if len(is) > 0 {
+			t.Errorf("%q: issues = %+v, want one on period", tc.in, is)
+		}
+		if code != tc.code {
+			t.Errorf("%q: code = %q, want %q", tc.in, code, tc.code)
+		}
 	}
 }

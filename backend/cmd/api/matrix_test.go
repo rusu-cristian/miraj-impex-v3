@@ -48,9 +48,14 @@ type matrixRow struct {
 	path func(matrixFarms) string
 	// signIn: the body is the caller's own credentials (login, password).
 	signIn bool
+	// body builds the request body from the run-time fixture; nil = none.
+	body func(matrixFarms) string
 	// account: a 200 body is the caller's account (user, farms).
 	account bool
-	want    map[caller]int
+	// stockFarms: a 200 body's stock[].farm are exactly the caller's farms, in
+	// name order (GET /api/reports/feed: a viewer sees only their farms).
+	stockFarms bool
+	want       map[caller]int
 	// code is the error.code a caller's refusal must carry, where the status
 	// alone can't tell (403 FORBIDDEN vs FARM_FORBIDDEN).
 	code map[caller]string
@@ -64,14 +69,18 @@ type matrixRow struct {
 type matrixCase struct {
 	name string // the target, in the subtest name ("Telița")
 	path func(matrixFarms) string
+	body func(matrixFarms) string // nil = none
 	want map[caller]int
 	code map[caller]string
 }
 
 // matrixFarms are the farms TestAuthMatrix creates; their ids exist only at
-// run time, so farm-scoped rows build their paths from them.
+// run time, so farm-scoped rows build their paths and bodies from them.
+// section (a compartment of Hîrbovăț, no birds) and feedType (active, ♀) let
+// a Hrană zilnică body pass level 1 and reach the service (M3 T8).
 type matrixFarms struct {
 	hirb, tel, cojusna uuid.UUID
+	section, feedType  uuid.UUID
 }
 
 // unknownFarm is a farm id that no farm has.
@@ -110,7 +119,13 @@ var authMatrix = []matrixRow{
 	// farms they may see. Vets never reach them (403 FORBIDDEN); the viewer
 	// of Telița is refused Hîrbovăț and Cojușna (403 FARM_FORBIDDEN), and so
 	// is anyone but the owner on an unknown id, which the owner gets as 404.
-	farmRow("GET /api/table", func(id uuid.UUID) string { return "/api/table?view=farm&farmId=" + id.String() }),
+	// GET /api/table carries every view's cases in its one row: Rezumat
+	// (view=farm) and, from M3, Consum (view=report-feed), with the same
+	// statuses (M3 T8).
+	withCases(farmRow("GET /api/table", func(id uuid.UUID) string { return "/api/table?view=farm&farmId=" + id.String() }),
+		"report-feed", farmRow("GET /api/table", func(id uuid.UUID) string {
+			return "/api/table?view=report-feed&farmId=" + id.String()
+		})),
 	farmRow("GET /api/farms/{id}/page", func(id uuid.UUID) string { return "/api/farms/" + id.String() + "/page" }),
 	farmRow("GET /api/farms/{id}/summary", func(id uuid.UUID) string { return "/api/farms/" + id.String() + "/summary" }),
 
@@ -119,6 +134,94 @@ var authMatrix = []matrixRow{
 		anonymous: 401, vet: 200, viewer: 200, manager: 200, owner: 200,
 		revoked: 401, expired: 401, deactivated: 401,
 	}},
+
+	// Hrană zilnică (§7.8, M3 D5, D8): vet, manager and owner on their farms;
+	// the viewer never (403 FORBIDDEN). The form state of the matrix farm (no
+	// cycle, no birds) is 200 with rows []; the save passes level 1 and is
+	// refused by the service, 422 REFUSED (H3: the section has no birds).
+	writerRow("GET /api/forms/feed-daily", http.StatusOK, http.StatusOK,
+		func(id uuid.UUID) string { return "/api/forms/feed-daily?farmId=" + id.String() + "&date=2026-11-18" }, nil),
+	writerRow("POST /api/entries/feed-daily", http.StatusUnprocessableEntity, http.StatusBadRequest,
+		func(uuid.UUID) string { return "/api/entries/feed-daily" }, feedDailyBody),
+
+	// Rapoarte › Hrană (§7.12, M3 D9): viewer, manager and owner; vets never
+	// reach Rapoarte. farmId=all (the default) is the caller's farms only.
+	{route: "GET /api/reports/feed", stockFarms: true, want: map[caller]int{
+		anonymous: 401, vet: 403, viewer: 200, manager: 200, owner: 200,
+		revoked: 401, expired: 401, deactivated: 401,
+	}, code: map[caller]string{vet: httpx.CodeForbidden},
+		also: []matrixCase{{name: "Hîrbovăț",
+			path: func(f matrixFarms) string { return "/api/reports/feed?farmId=" + f.hirb.String() },
+			want: map[caller]int{
+				anonymous: 401, vet: 403, viewer: 403, manager: 200, owner: 200,
+				revoked: 401, expired: 401, deactivated: 401,
+			},
+			code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden}}}},
+}
+
+// withCases adds other's targets (its main one and its also) to row's also,
+// their names prefixed: one route, several query shapes, one row.
+func withCases(row matrixRow, prefix string, other matrixRow) matrixRow {
+	row.also = append(row.also, matrixCase{name: prefix + " Hîrbovăț", path: other.path, body: other.body, want: other.want, code: other.code})
+	for _, a := range other.also {
+		a.name = prefix + " " + a.name
+		row.also = append(row.also, a)
+	}
+	return row
+}
+
+// writerRow is the row of a Hrană zilnică route (form state or save): path
+// and body build the request for a farm id. Vets, managers and owners reach
+// the service on their farms: reached on Hîrbovăț (the vet's farm), onTelita
+// for the manager and the owner on Telița, which has no section (the
+// Hîrbovăț section in the save's body is not one of its sections: 400). The
+// viewer is refused by role first, everywhere (403 FORBIDDEN); the vet on
+// Telița and anyone but the owner on an unknown id get 403 FARM_FORBIDDEN,
+// the owner 404.
+func writerRow(route string, reached, onTelita int, path func(uuid.UUID) string, body func(matrixFarms, uuid.UUID) string) matrixRow {
+	at := func(pick func(matrixFarms) uuid.UUID) (func(matrixFarms) string, func(matrixFarms) string) {
+		p := func(f matrixFarms) string { return path(pick(f)) }
+		if body == nil {
+			return p, nil
+		}
+		return p, func(f matrixFarms) string { return body(f, pick(f)) }
+	}
+	scoped := func(vetStatus, managerStatus, ownerStatus int) map[caller]int {
+		return map[caller]int{
+			anonymous: 401, vet: vetStatus, viewer: 403, manager: managerStatus, owner: ownerStatus,
+			revoked: 401, expired: 401, deactivated: 401,
+		}
+	}
+	hirbPath, hirbBody := at(func(f matrixFarms) uuid.UUID { return f.hirb })
+	telPath, telBody := at(func(f matrixFarms) uuid.UUID { return f.tel })
+	unknownPath, unknownBody := at(func(matrixFarms) uuid.UUID { return unknownFarm })
+	reachedCode := map[caller]string{viewer: httpx.CodeForbidden}
+	if reached == http.StatusUnprocessableEntity {
+		for _, c := range []caller{vet, manager, owner} {
+			reachedCode[c] = httpx.CodeRefused
+		}
+	}
+	return matrixRow{
+		route: route, path: hirbPath, body: hirbBody,
+		want: scoped(reached, reached, reached),
+		code: reachedCode,
+		also: []matrixCase{
+			{name: "Telița", path: telPath, body: telBody,
+				want: scoped(403, onTelita, onTelita),
+				code: map[caller]string{vet: httpx.CodeFarmForbidden, viewer: httpx.CodeForbidden}},
+			{name: "unknown farm", path: unknownPath, body: unknownBody,
+				want: scoped(403, 403, 404),
+				code: map[caller]string{vet: httpx.CodeFarmForbidden, viewer: httpx.CodeForbidden,
+					manager: httpx.CodeFarmForbidden, owner: httpx.CodeNotFound}},
+		},
+	}
+}
+
+// feedDailyBody is a Hrană zilnică save of farm that passes level 1 (M3 D5):
+// one row of the matrix section, an existing feed type, g within 1–300.
+func feedDailyBody(f matrixFarms, farm uuid.UUID) string {
+	return `{"farmId":"` + farm.String() + `","date":"2026-11-18","rows":[{"sectionId":"` + f.section.String() +
+		`","sex":"F","feedTypeId":"` + f.feedType.String() + `","g":160}]}`
 }
 
 // farmRow is the row of a farm-scoped read: path builds the request for a
@@ -226,6 +329,14 @@ func TestAuthMatrix(t *testing.T) {
 	hirb := s.farm(t, "Hîrbovăț", "hirbovat")
 	tel := s.farm(t, "Telița", "telita")
 	ids := matrixFarms{hirb: hirb, tel: tel, cojusna: s.farm(t, "Cojușna", "cojusna")}
+	if err := s.d.App.QueryRow(t.Context(), `insert into section (farm_id, code) values ($1, 'H1') returning id`, hirb).
+		Scan(&ids.section); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.d.App.QueryRow(t.Context(), `insert into feed_type (name, name_key, for_sex) values ('Breeder 2', 'breeder 2', 'F')
+		returning id`).Scan(&ids.feedType); err != nil {
+		t.Fatal(err)
+	}
 	accounts := map[caller]account{}
 	add := func(c caller, login, name string, role dbq.UserRole, active bool, farms []uuid.UUID, names ...string) {
 		accounts[c] = account{id: s.user(t, login, name, role, active, farms...), login: login, role: string(role), farms: names}
@@ -261,12 +372,13 @@ func TestAuthMatrix(t *testing.T) {
 		}
 		type target struct {
 			name, path string
+			body       func(matrixFarms) string
 			want       map[caller]int
 			code       map[caller]string
 		}
-		cases := []target{{path: path, want: row.want, code: row.code}}
+		cases := []target{{path: path, body: row.body, want: row.want, code: row.code}}
 		for _, a := range row.also {
-			cases = append(cases, target{name: a.name, path: a.path(ids), want: a.want, code: a.code})
+			cases = append(cases, target{name: a.name, path: a.path(ids), body: a.body, want: a.want, code: a.code})
 		}
 		for _, mc := range cases {
 			name := row.route
@@ -284,6 +396,9 @@ func TestAuthMatrix(t *testing.T) {
 					if row.signIn {
 						req.body = loginBody(accounts[c].login, testPassword)
 					}
+					if mc.body != nil {
+						req.body = mc.body(ids)
+					}
 					r := s.do(t, req)
 					if r.status != want {
 						t.Fatalf("%s as %s: %s, want %d", name, c, r, want)
@@ -295,6 +410,9 @@ func TestAuthMatrix(t *testing.T) {
 					}
 					if row.account && r.status == http.StatusOK {
 						checkAccount(t, accounts[c], r)
+					}
+					if row.stockFarms && mc.name == "" && r.status == http.StatusOK {
+						checkStockFarms(t, accounts[c], r)
 					}
 				})
 			}
@@ -335,6 +453,28 @@ func checkAccount(t *testing.T, a account, r response) {
 	}
 	if b.Today != testdb.Today.String() {
 		t.Errorf("today %q, want %s", b.Today, testdb.Today)
+	}
+}
+
+// checkStockFarms fails unless the stock rows of a reports/feed body name
+// exactly a's farms, in name order. The matrix farms have no cycle, so each
+// has one "fără ciclu deschis" row (M3 D7).
+func checkStockFarms(t *testing.T, a account, r response) {
+	t.Helper()
+	var b struct {
+		Stock []struct {
+			Farm string `json:"farm"`
+		} `json:"stock"`
+	}
+	if err := json.Unmarshal([]byte(r.body), &b); err != nil {
+		t.Fatalf("body %q: %v", r.body, err)
+	}
+	var farms []string
+	for _, s := range b.Stock {
+		farms = append(farms, s.Farm)
+	}
+	if !slices.Equal(farms, a.farms) {
+		t.Errorf("stock farms %q, want the caller's %q", farms, a.farms)
 	}
 }
 

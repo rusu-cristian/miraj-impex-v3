@@ -76,3 +76,12 @@ func Pct(part, whole decimal.Decimal) *decimal.Decimal {
 func CumMortalityPct(deaths, base int) *decimal.Decimal {
 	return Pct(decimal.NewFromInt(int64(deaths)), decimal.NewFromInt(int64(base)))
 }
+
+// RowFeedKg is the kg of a typed Hrană zilnică row (§5.7, DATA03): g/pasăre ×
+// the birds at the start of the day ÷ 1000, exact. Nothing stores it for app
+// data; the SQL readers compute the same figure (coalesce(kg_recorded,
+// g_per_bird * birds_start / 1000.0)), and the Hrană zilnică save and form
+// state take it from here.
+func RowFeedKg(g decimal.Decimal, birdsStart int32) decimal.Decimal {
+	return g.Mul(decimal.NewFromInt32(birdsStart)).Shift(-3)
+}

@@ -12,7 +12,6 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/calc"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
-	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
 
 // Query parameter names of GET /api/table, in §7.4 order.
@@ -71,7 +70,7 @@ func ParseQuery(values url.Values) (TableQuery, error) {
 	q.CycleID = p.uuid(paramCycleID)
 	q.Tab, _ = p.single(paramTab)
 	if s, ok := p.single(paramPeriod); ok {
-		q.Period = p.period(s)
+		q.Period = Period(calc.ParsePeriod(p.v, paramPeriod, s))
 	}
 	q.Detail, _ = p.single(paramDetail)
 	if s, ok := p.single(paramTypes); ok {
@@ -87,13 +86,14 @@ func ParseQuery(values url.Values) (TableQuery, error) {
 	return q, v.Err()
 }
 
-// Validate checks the parsed query against what M2 serves (M2 D2) and how
-// the parameters combine. Everything outside that is out_of_range on its
-// parameter; a missing view or farmId is required:
-//   - view must be farm (the other views come in M6), with a farmId and no
-//     sectionId or seriesId;
-//   - tab must be rezumat (or absent), detail farm (or absent): Rezumat has
-//     no detail groups;
+// Validate checks the parsed query against what is served (M2 D2, M3 D11)
+// and how the parameters combine. Everything outside that is out_of_range on
+// its parameter; a missing view or farmId is required:
+//   - view must be farm (Rezumat) or report-feed (Consum; the other views
+//     come in M6), with a farmId and no sectionId or seriesId;
+//   - on the farm view, tab must be rezumat (or absent) and detail farm (or
+//     absent): Rezumat has no detail groups;
+//   - report-feed ignores tab (§7.4) and takes neither detail nor types;
 //   - grain must be day or week;
 //   - sapt opens one week, so it goes with neither before nor fromSapt.
 func (q TableQuery) Validate(v *httpx.Validator) {
@@ -101,15 +101,20 @@ func (q TableQuery) Validate(v *httpx.Validator) {
 	if q.View == "" {
 		v.Add(paramView, httpx.IssueRequired, invalid)
 	} else {
-		v.Check(q.View == viewFarm, paramView, httpx.IssueOutOfRange, invalid)
+		v.Check(q.View == viewFarm || q.View == viewReportFeed, paramView, httpx.IssueOutOfRange, invalid)
 	}
-	if q.View == viewFarm {
+	if q.View == viewFarm || q.View == viewReportFeed {
 		v.Check(q.FarmID != nil, paramFarmID, httpx.IssueRequired, invalid)
 		v.Check(q.SectionID == nil, paramSectionID, httpx.IssueOutOfRange, invalid)
 		v.Check(q.SeriesID == nil, paramSeriesID, httpx.IssueOutOfRange, invalid)
 	}
-	v.Check(q.Tab == "" || q.Tab == tabRezumat, paramTab, httpx.IssueOutOfRange, invalid)
-	v.Check(q.Detail == "" || q.Detail == detailFarm, paramDetail, httpx.IssueOutOfRange, invalid)
+	if q.View == viewReportFeed {
+		v.Check(q.Detail == "", paramDetail, httpx.IssueOutOfRange, invalid)
+		v.Check(q.Types == nil, paramTypes, httpx.IssueOutOfRange, invalid)
+	} else {
+		v.Check(q.Tab == "" || q.Tab == tabRezumat, paramTab, httpx.IssueOutOfRange, invalid)
+		v.Check(q.Detail == "" || q.Detail == detailFarm, paramDetail, httpx.IssueOutOfRange, invalid)
+	}
 	v.Check(q.Grain == "" || q.Grain == grainDay || q.Grain == grainWeek, paramGrain, httpx.IssueOutOfRange, invalid)
 	v.Check(q.Sapt == nil || (q.Before == nil && q.FromSapt == nil), paramSapt, httpx.IssueOutOfRange, invalid)
 }
@@ -173,43 +178,6 @@ func (p queryParser) int(name, s string) (int, bool) {
 		return 0, false
 	}
 	return int(n), true
-}
-
-// period reads "cycle", "weeks:n" (any n ≥ 1; the FilterBar offers 4, 8
-// and 13, load-more widens it) or "interval:from,to" (§5.2). The future end
-// of an interval needs today, so Build reports it (calc.ErrIntervalFuture).
-func (p queryParser) period(s string) Period {
-	invalid := messages.InvalidData()
-	kind, arg, hasArg := strings.Cut(s, ":")
-	switch kind {
-	case calc.PeriodCycle:
-		if p.v.Check(!hasArg, paramPeriod, httpx.IssueBadType, invalid) {
-			return Period{Kind: calc.PeriodCycle}
-		}
-	case calc.PeriodWeeks:
-		if !p.v.Check(hasArg, paramPeriod, httpx.IssueBadType, invalid) {
-			return Period{}
-		}
-		if n, ok := p.int(paramPeriod, arg); ok {
-			return Period{Kind: calc.PeriodWeeks, Weeks: n}
-		}
-	case calc.PeriodInterval:
-		a, b, ok := strings.Cut(arg, ",")
-		if !p.v.Check(hasArg && ok, paramPeriod, httpx.IssueBadType, invalid) {
-			return Period{}
-		}
-		from, errFrom := timex.ParseDay(a)
-		to, errTo := timex.ParseDay(b)
-		if !p.v.Check(errFrom == nil && errTo == nil, paramPeriod, httpx.IssueBadDate, invalid) {
-			return Period{}
-		}
-		if p.v.Check(!from.After(to), paramPeriod, httpx.IssueOutOfRange, invalid) {
-			return Period{Kind: calc.PeriodInterval, From: from, To: to}
-		}
-	default:
-		p.v.Add(paramPeriod, httpx.IssueOutOfRange, invalid)
-	}
-	return Period{}
 }
 
 // types reads the comma list of chips; each must be a §7.4 chip.

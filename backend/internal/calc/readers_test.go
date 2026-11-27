@@ -489,46 +489,6 @@ func TestFeedKg(t *testing.T) {
 	}
 }
 
-func TestStockEnd(t *testing.T) {
-	f := newFixture(t)
-	f.feed()
-	type want struct {
-		name, kg string
-		last     timex.Day
-	}
-	for _, tc := range []struct {
-		name string
-		farm uuid.UUID
-		d    timex.Day
-		want []want
-	}{
-		{"after an adjustment and a consumption day", f.farmA, jan(12),
-			[]want{{"Breeder T", "685.836", jan(12)}, {"Cocoși T", "198.5", jan(12)}}},
-		{"latest movement day on or before", f.farmA, jan(20),
-			[]want{{"Breeder T", "1180.336", jan(13)}, {"Cocoși T", "197.15", jan(13)}}},
-		{"the adjustment day", f.farmA, jan(11),
-			[]want{{"Breeder T", "700", jan(11)}, {"Cocoși T", "200", jan(10)}}},
-		{"before any movement", f.farmA, jan(9), nil},
-		{"another farm's stock is its own", f.farmB, jan(12), []want{{"Breeder T", "50", jan(10)}}},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			got, err := StockEnd(t.Context(), f.d.App, tc.farm, tc.d)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(got) != len(tc.want) {
-				t.Fatalf("got %+v, want %+v", got, tc.want)
-			}
-			for i, w := range tc.want {
-				g := got[i]
-				if g.Name != w.name || !g.Kg.Equal(decimal.RequireFromString(w.kg)) || g.LastMove != w.last {
-					t.Errorf("row %d = %s %s kg (last %s), want %s %s kg (last %s)", i, g.Name, g.Kg, g.LastMove, w.name, w.kg, w.last)
-				}
-			}
-		})
-	}
-}
-
 func TestCycleAt(t *testing.T) {
 	f := newFixture(t)
 	ctx := t.Context()
@@ -593,8 +553,8 @@ func TestReadersFailWithTheContext(t *testing.T) {
 	if _, err := ReadFarmDay(ctx, f.d.App, f.farmA, jan(12)); !errors.Is(err, context.Canceled) {
 		t.Errorf("ReadFarmDay: err = %v, want context.Canceled", err)
 	}
-	if _, err := StockEnd(ctx, f.d.App, f.farmA, jan(12)); !errors.Is(err, context.Canceled) {
-		t.Errorf("StockEnd: err = %v, want context.Canceled", err)
+	if _, err := StockAt(ctx, f.d.App, f.farmA, jan(12)); !errors.Is(err, context.Canceled) {
+		t.Errorf("StockAt: err = %v, want context.Canceled", err)
 	}
 }
 

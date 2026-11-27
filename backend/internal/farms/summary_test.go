@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -24,9 +25,13 @@ import (
 //	17.11 eggs H5 38, H6 3; 18.11 eggs H5 40 (hens 50 + 35), H6 3 (hens 5).
 //	18.11 mortality H5.1 ♀ 1, cull H5.1 ♀ 1; 0 rows for H5.1 ♂, H6.1 ♀ ♂; none for H5.2 ♀ (lipsă).
 //	18.11 feed H5.1 ♀ 160 g · ♂ 144 g, H5.2 ♀ 160 g, H6.1 ♀ 200 g (+27 %, abatere) · ♂ 140 g.
+//	01.11 deliveries Breeder 1 50 kg (never fed), Breeder 2 100 kg, Cocoși 6 kg.
 //	Guide "Ross 308 ouat" SAPT 58–59: ♀ feed 157, lay 58,8 / 57,6, mortality 7,10 / 7,25; ♂ feed 156.
 //
 // At the end of 18.11: H5.1 ♀ 48 · ♂ 10, H5.2 ♀ 35, H6.1 ♀ 5 · ♂ 10, farm ♀ 88 · ♂ 20.
+// Stock (every row with birds is fed today, so the window is 16–18.11):
+// Breeder 1 50 kg, no consumption; Breeder 2 100 − 14,6 = 85,4 kg, avg
+// 4,8667 kg/zi, 17,55 days; Cocoși 6 − 2,84 = 3,16 kg, avg 0,9467, 3,34 days.
 func (f *fixture) summaryData() {
 	f.t.Helper()
 	H := f.hirbovat
@@ -63,8 +68,15 @@ func (f *fixture) summaryData() {
 	f.exec(`insert into bird_event (entry_id, farm_id, section_id, date, sex, type, qty, cull_reason)
 		values ($1, $2, $3, $4, 'F', 'cull', -1, 'boala')`, e, H, f.sec["H5.1"], today)
 
+	breeder1 := f.id(`insert into feed_type (name, name_key, for_sex) values ('Breeder 1', 'breeder 1', 'F')`)
 	breeder := f.id(`insert into feed_type (name, name_key, for_sex) values ('Breeder 2', 'breeder 2', 'F')`)
 	roosters := f.id(`insert into feed_type (name, name_key, for_sex) values ('Cocoși', 'cocosi', 'M')`)
+	d = day(2026, time.November, 1)
+	e = f.entry("delivery", H, nil, d)
+	delivery := `insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg) values ($1, $2, $3, $4, $5)`
+	f.exec(delivery, e, H, breeder1, d, "50")
+	f.exec(delivery, e, H, breeder, d, "100")
+	f.exec(delivery, e, H, roosters, d, "6")
 	e = f.entry("feed_daily", H, nil, today)
 	alloc := `insert into feed_allocation (entry_id, farm_id, section_id, date, sex, feed_type_id, g_per_bird)
 		values ($1, $2, $3, $4, $5, $6, $7)`
@@ -123,6 +135,14 @@ func TestBuildSummaryLayingFarm(t *testing.T) {
 		`{"id":"feedToday","F":162.2222,"M":142,"guideF":157,"guideM":156,"status":"in_norma","note":"H7 goală din 14.11"}`,
 		// 43 eggs ÷ 90 hens.
 		`{"id":"layToday","value":47.7778,"guide":57.6,"diffPts":-9.8222,"status":"abatere","eggs":43,"halls":2}`,
+		// The stock as of today between feedToday and layToday (M3 D10, Q7), in type name order: Breeder 1
+		// never fed; Breeder 2 85,4 ÷ (14,6 ÷ 3) = 17,55 days → 18.11 + 17; Cocoși 3,16 ÷ (2,84 ÷ 3) = 3,34
+		// days, under 5 → 18.11 + 3.
+		`"note":"H7 goală din 14.11"},{"id":"feedDaysLeft","items":[`+
+			`{"type":"Breeder 1","forSex":"F","days":null,"runOut":null,"kg":50,"lamp":"oprit","reason":"– fără consum în ultimele 3 zile"},`+
+			`{"type":"Breeder 2","forSex":"F","days":17.5479,"runOut":"2026-12-05","kg":85.4,"lamp":"in_norma"},`+
+			`{"type":"Cocoși","forSex":"M","days":3.338,"runOut":"2026-11-21","kg":3.16,"lamp":"abatere","reason":"sub pragul de 5 zile"}]},`+
+			`{"id":"layToday"`,
 	)
 	// Tiles: H5 below the guide (47,06 %), H6 above it (60 %) but H6.1 ♀ eats 27 % over; H5.2 lacks its
 	// mortality row after 12:00; H7 is one empty line.
@@ -176,12 +196,15 @@ func summarize(t *testing.T, res SummaryResponse) periodSummary {
 	for _, st := range res.Stats {
 		switch st := st.(type) {
 		case AliveStat:
-			if st.F == nil || st.M == nil {
+			if st.F == nil || st.M == nil || st.Sold.F == nil {
 				t.Fatalf("alive = %+v", st)
 			}
-			out.AliveF, out.AliveM, out.SoldF = *st.F, *st.M, st.Sold.F
+			out.AliveF, out.AliveM, out.SoldF = *st.F, *st.M, *st.Sold.F
 		case CumMortalityStat:
-			out.DeathsF = st.Deaths.F
+			if st.Deaths.F == nil {
+				t.Fatalf("cumMortality = %+v", st)
+			}
+			out.DeathsF = *st.Deaths.F
 		case LayTodayStat:
 			out.LayValue, out.LayEggs = "null", st.Eggs
 			if st.Value != nil {
@@ -204,6 +227,77 @@ func summarize(t *testing.T, res SummaryResponse) periodSummary {
 		}
 	}
 	return out
+}
+
+// TestBuildSummaryFeedDaysLeft: the feed days left are shown only for the
+// open cycle with a period that ends today (M3 D10); a stock below 0 shows
+// 0 days, running out at the window end.
+func TestBuildSummaryFeedDaysLeft(t *testing.T) {
+	f := newFixture(t)
+	f.summaryData()
+	shown := func(t *testing.T, in Input) *FeedDaysLeftStat {
+		t.Helper()
+		res, err := BuildSummary(t.Context(), f.d.App, in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out *FeedDaysLeftStat
+		for i, st := range res.Stats {
+			if st, ok := st.(FeedDaysLeftStat); ok {
+				out = &st
+				if _, isFeedToday := res.Stats[i-1].(FeedTodayStat); !isFeedToday {
+					t.Errorf("feedDaysLeft follows %T, want feedToday", res.Stats[i-1])
+				}
+			}
+		}
+		return out
+	}
+	period := func(p calc.Period) Input {
+		in := f.input(owner(), f.hirbovat, nil)
+		in.Period = p
+		return in
+	}
+	for _, tc := range []struct {
+		name  string
+		in    Input
+		shown bool
+	}{
+		{"open cycle, whole cycle", f.input(owner(), f.hirbovat, nil), true},
+		{"open cycle asked by id, weeks:4", func() Input {
+			in := period(calc.Period{Kind: calc.PeriodWeeks, Weeks: 4})
+			in.CycleID = &f.cycleH26
+			return in
+		}(), true},
+		{"interval ending today", period(calc.Period{Kind: calc.PeriodInterval, From: day(2026, time.November, 1), To: today}), true},
+		{"interval ending yesterday", period(calc.Period{Kind: calc.PeriodInterval, From: day(2026, time.November, 1), To: day(2026, time.November, 17)}), false},
+		{"past cycle", f.input(owner(), f.hirbovat, &f.cycleH25), false},
+		{"farm without an open cycle", f.input(owner(), f.telita, nil), false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := shown(t, tc.in); (got != nil) != tc.shown {
+				t.Errorf("feedDaysLeft = %+v, want shown %v", got, tc.shown)
+			}
+		})
+	}
+
+	// Consumption past the deliveries: 0 days, running out at the window end.
+	e := f.entry("feed_daily", f.hirbovat, nil, day(2026, time.November, 17))
+	f.exec(`insert into feed_allocation (entry_id, farm_id, section_id, date, sex, feed_type_id, kg_recorded)
+		select $1, $2, $3, $4, 'M', id, 10 from feed_type where name_key = 'cocosi'`,
+		e, f.hirbovat, f.sec["H5.1"], day(2026, time.November, 17))
+	st := shown(t, f.input(owner(), f.hirbovat, nil))
+	if st == nil || len(st.Items) != 3 {
+		t.Fatalf("feedDaysLeft = %+v, want 3 items", st)
+	}
+	b, err := json.Marshal(st.Items[2])
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 6 − 2,84 − 10 = −6,84 kg.
+	const want = `{"type":"Cocoși","forSex":"M","days":0,"runOut":"2026-11-18","kg":-6.84,"lamp":"abatere","reason":"stoc sub 0 · verifică livrările"}`
+	if string(b) != want {
+		t.Errorf("Cocoși = %s, want %s", b, want)
+	}
 }
 
 // TestBuildSummaryPeriods: the period sets the readout series and the day
@@ -273,6 +367,8 @@ func TestBuildSummaryWithoutGuide(t *testing.T) {
 		// No guide, no abatere; the gap still shows.
 		`"lamps":["lipsa"],"layHall":47.0588}`,
 	)
+	// The feed days left compare no guide: their own lamps are left out here.
+	got = regexp.MustCompile(`\{"id":"feedDaysLeft".*?\]\}`).ReplaceAllString(got, "")
 	if strings.Contains(got, `"abatere"`) || strings.Contains(got, `"status"`) {
 		t.Errorf("no guide, no comparison: %s", got)
 	}

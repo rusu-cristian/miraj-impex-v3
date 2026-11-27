@@ -40,6 +40,17 @@ func Dec(d decimal.Decimal, places int32) string {
 	return formatDec(d, places, false)
 }
 
+// DecUpTo is Dec without trailing zero decimals, for values shown with "at
+// most" places decimals (g/pasăre, §5.15: "160", "160,5"): DecUpTo(160.0, 1)
+// = "160", DecUpTo(160.25, 1) = "160,3", DecUpTo(1500, 1) = "1 500".
+func DecUpTo(d decimal.Decimal, places int32) string {
+	s := Dec(d, places)
+	if strings.Contains(s, ",") {
+		s = strings.TrimRight(strings.TrimRight(s, "0"), ",")
+	}
+	return s
+}
+
 // Signed is Dec with a "+" on positive values, for differences: "+7,7".
 // Zero (after rounding) has no sign.
 func Signed(d decimal.Decimal, places int32) string {
@@ -114,6 +125,9 @@ func DateTime(t time.Time) string {
 	local := t.In(timex.Chisinau)
 	return Day(timex.DayOf(local)) + ", " + local.Format("15:04")
 }
+
+// TimeOfDay formats an instant's Europe/Chisinau wall-clock time: "08:44".
+func TimeOfDay(t time.Time) string { return t.In(timex.Chisinau).Format("15:04") }
 
 // Range formats a day range with an en dash and no spaces; the start drops
 // its year only when the end has the same year: "10.11–16.11.2026",

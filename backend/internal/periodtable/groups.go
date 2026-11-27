@@ -39,6 +39,9 @@ const (
 	KindLevel = "level"
 	KindRate  = "rate"
 	KindGuide = "guide"
+	// KindStatus is a lamp column the client fills from the row's status and
+	// missing (Consum "stare", M3 Q2); it has no cell.
+	KindStatus = "status"
 )
 
 // Cell keys of the Rezumat farm group.
@@ -66,6 +69,12 @@ const (
 	KeyWeightF      = "weight.F"
 	KeyWeightGuideF = "weight.guide.F"
 	KeyWeightDiffF  = "weight.diffPct.F"
+
+	// Consum (view=report-feed, M3 Q2 (b)): the g/pasăre difference from the
+	// guide in %, and the "stare" leaf (no cell).
+	KeyFeedGDiffF = "feed.g.diffPct.F"
+	KeyFeedGDiffM = "feed.g.diffPct.M"
+	KeyFeedState  = "feed.state"
 )
 
 // Reasons of a null cell (§7.4).
@@ -74,6 +83,12 @@ const (
 	ReasonNoGuide    = "no_guide"
 	ReasonNoWeighing = "no_weighing"
 	ReasonEmptying   = "emptying" // "– golire, nu mortalitate" (M2 Q6 e, proposed)
+
+	// ReasonEmptySince prefixes the day an emptied hall's Consum line is
+	// empty since: "empty_since:2026-11-14" (M3 Q2 (a)), under ReasonAllCells.
+	ReasonEmptySince = "empty_since:"
+	// ReasonAllCells is the reasons key of a row whose every cell is "–".
+	ReasonAllCells = "*"
 )
 
 // scopeFarm is Group.Scope of the farm group.
@@ -194,6 +209,31 @@ func legacyRezumatGroups(periodChips, types []string) []Group {
 		}
 	}
 	return groups
+}
+
+// consumGroups are the Consum groups (§7.4 report-feed, S11, M3 Q2):
+// "Hrană · kg" ♀ · ♂, then "Hrană · g/pasăre" with per sex efectiv · ghid ·
+// față de ghid, and the "stare" lamp. Without a guide the ghid and față de
+// ghid leaves are left out.
+func consumGroups(noGuide bool) []Group {
+	leaves := []Leaf{
+		{ID: KeyFeedGF, Label: messages.SexLeaf("F", messages.LeafActual()), Kind: KindRate},
+		{ID: KeyFeedGGuideF, Label: messages.SexLeaf("F", messages.LeafGuide()), Kind: KindGuide},
+		{ID: KeyFeedGDiffF, Label: messages.SexLeaf("F", messages.LeafVsGuide()), Kind: KindRate},
+		{ID: KeyFeedGM, Label: messages.SexLeaf("M", messages.LeafActual()), Kind: KindRate},
+		{ID: KeyFeedGGuideM, Label: messages.SexLeaf("M", messages.LeafGuide()), Kind: KindGuide},
+		{ID: KeyFeedGDiffM, Label: messages.SexLeaf("M", messages.LeafVsGuide()), Kind: KindRate},
+		{ID: KeyFeedState, Label: messages.LeafState(), Kind: KindStatus},
+	}
+	if noGuide {
+		leaves = slices.DeleteFunc(leaves, func(l Leaf) bool {
+			return l.Kind == KindGuide || l.ID == KeyFeedGDiffF || l.ID == KeyFeedGDiffM
+		})
+	}
+	return []Group{
+		{ID: GroupFeedKg, Record: ChipFeed, Label: messages.GroupConsumKg(), Scope: scopeFarm, Leaves: sexed("feed.kg", KindCount)},
+		{ID: GroupFeedG, Record: ChipFeed, Label: messages.GroupConsumG(), Scope: scopeFarm, Leaves: leaves},
+	}
 }
 
 // leafSet is the set of leaf ids of groups: a row writes only these cells.

@@ -102,7 +102,8 @@ func TestRoutesRecorded(t *testing.T) {
 	t.Parallel()
 	a, _, _ := newTestApp(t)
 	want := []string{"GET /healthz", "GET /readyz", "POST /api/auth/login", "POST /api/auth/logout", "GET /api/auth/me",
-		"GET /api/table", "GET /api/farms/{id}/page", "GET /api/farms/{id}/summary", "GET /api/bootstrap"}
+		"GET /api/table", "GET /api/farms/{id}/page", "GET /api/farms/{id}/summary", "GET /api/bootstrap",
+		"GET /api/forms/feed-daily", "POST /api/entries/feed-daily", "GET /api/reports/feed"}
 	if !slices.Equal(a.routes, want) {
 		t.Fatalf("routes = %v, want %v", a.routes, want)
 	}

@@ -164,3 +164,22 @@ func TestRangeStartsAfterEnd(t *testing.T) {
 		t.Errorf("SectionsRemovals: err = %v, want errRange", err)
 	}
 }
+
+// M3 ARC-2: the kg of a typed Hrană zilnică row, as the save and the form
+// state compute it (spec C2 sample: 14 395 × 160 g = 2 303,2 kg).
+func TestRowFeedKg(t *testing.T) {
+	for _, tc := range []struct {
+		g     string
+		birds int32
+		want  string
+	}{
+		{"160", 14395, "2303.2"},
+		{"142.8", 1083, "154.6524"},
+		{"160.5", 0, "0"},
+		{"0.1", 1, "0.0001"},
+	} {
+		if got := RowFeedKg(decimal.RequireFromString(tc.g), tc.birds); !got.Equal(decimal.RequireFromString(tc.want)) {
+			t.Errorf("RowFeedKg(%s, %d) = %s, want %s", tc.g, tc.birds, got, tc.want)
+		}
+	}
+}

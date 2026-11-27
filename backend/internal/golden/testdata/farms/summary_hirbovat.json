@@ -253,6 +253,27 @@
       "note": "H7 goală din 14.11"
     },
     {
+      "id": "feedDaysLeft",
+      "items": [
+        {
+          "type": "Breeder 2",
+          "forSex": "F",
+          "days": 13.2367,
+          "runOut": "2026-12-01",
+          "kg": 31664.9,
+          "lamp": "in_norma"
+        },
+        {
+          "type": "Cocoși",
+          "forSex": "M",
+          "days": 10.4193,
+          "runOut": "2026-11-28",
+          "kg": 1781,
+          "lamp": "in_norma"
+        }
+      ]
+    },
+    {
       "id": "layToday",
       "value": 41.0837,
       "guide": 57.6,
