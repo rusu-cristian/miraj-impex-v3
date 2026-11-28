@@ -32,15 +32,23 @@ type Result struct {
 	Body   []byte
 }
 
-// Runner runs every entry create on the §12.5 skeleton.
+// Runner runs every entry create (Create) and every change of a saved entry
+// (Change) on the §12.5 skeleton.
 type Runner struct {
 	store *db.Store
 	clock timex.Clock
+
+	// Test seams of §11.8 (plan M5-D8), set only from export_test.go:
+	// lock takes the farm locks (ledger.LockFarms); beforeCheck, when not
+	// nil, runs in Tx.CheckCounts just before the §6.1 check (a barrier that
+	// holds two saves there). Production code never changes them.
+	lock        func(ctx context.Context, q *dbq.Queries, ids ...uuid.UUID) error
+	beforeCheck func()
 }
 
 // NewRunner builds the save runner on the app pool's store.
 func NewRunner(store *db.Store, clock timex.Clock) *Runner {
-	return &Runner{store: store, clock: clock}
+	return &Runner{store: store, clock: clock, lock: ledger.LockFarms}
 }
 
 // Create describes one create request to the runner.
@@ -74,6 +82,11 @@ type Saved struct {
 	// (the caller), Source and VoiceTranscript.
 	Audit  audit.Row
 	Events []live.Event
+	// Restored are the child rows a change un-deletes (an undo of an update,
+	// a restore). A plan whose write fails returns them with the error, so
+	// that Runner.Change hands them to ChangeSpec.OnConflict (ARC-5) to name
+	// the entry that took a key meanwhile. Create ignores it.
+	Restored Snapshot
 }
 
 // Tx is a create's transaction as a Plan sees it.
@@ -85,9 +98,23 @@ type Tx struct {
 	DryRun    bool
 	Source    dbq.RecordSource
 
-	kind dbq.EntryKind
-	key  *uuid.UUID // the clientRequestId to store; nil for a dry run
-	out  *Result
+	kind        dbq.EntryKind
+	key         *uuid.UUID // the clientRequestId to store; nil for a dry run
+	out         *Result
+	beforeCheck func() // Runner.beforeCheck (test seam, M5-D8)
+}
+
+// CheckCounts is §6.1 steps 2–3 for this write (plan M5-D4, D8): after the
+// write's bird rows have changed, every (section, sex) of affected whose
+// count at the end of a day from `from` to today would be below 0, in
+// affected order (empty = every count stays ≥ 0). It runs on the write's
+// transaction, so it sees the write and, behind the farm locks, no
+// concurrent one.
+func (t *Tx) CheckCounts(ctx context.Context, affected []ledger.SectionSex, from timex.Day) ([]ledger.Negative, error) {
+	if t.beforeCheck != nil {
+		t.beforeCheck()
+	}
+	return ledger.CheckCounts(ctx, t.Tx, affected, from, t.Today)
 }
 
 // Header is the entry row of a save, beside what the runner fills (kind,
@@ -221,7 +248,7 @@ func (r *Runner) Create(ctx context.Context, p auth.Principal, c Create, plan Pl
 
 	var out Result
 	err := r.store.InTx(ctx, func(dtx db.Tx) error {
-		if err := ledger.LockFarms(ctx, dtx.Q, c.FarmIDs...); err != nil {
+		if err := r.lock(ctx, dtx.Q, c.FarmIDs...); err != nil {
 			return err
 		}
 		// The clock is read once the locks are held (M3 COR-3): a save that
@@ -239,7 +266,7 @@ func (r *Runner) Create(ctx context.Context, p auth.Principal, c Create, plan Pl
 		}
 		t := &Tx{
 			Tx: dtx, Principal: p, Today: timex.DayOf(now), Now: now, DryRun: c.Meta.DryRun, Source: src,
-			kind: c.Kind, key: key, out: &out,
+			kind: c.Kind, key: key, out: &out, beforeCheck: r.beforeCheck,
 		}
 		saved, err := plan(ctx, t)
 		if err != nil {

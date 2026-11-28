@@ -30,8 +30,10 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
@@ -314,6 +316,65 @@ var nullableFields = map[string]bool{
 	"placement.placed":      true,
 	"farms[].cycle":         true,
 	"farms[].cycle.endDate": true,
+
+	// GET /api/forms/daily (§7.8, M5 Q2): no cycle on the date and nothing
+	// locked (above); a section without a hall (its own egg unit); an egg
+	// unit at a growth farm, without a guide, without saved eggs or with some
+	// of its counts empty; a section without saved values, or a sex without.
+	"halls[].hall":                           true,
+	"halls[].eggs":                           true,
+	"halls[].eggs.guideLayPct":               true,
+	"halls[].eggs.saved":                     true,
+	"halls[].eggs.saved.floor":               true,
+	"halls[].eggs.saved.cat1":                true,
+	"halls[].eggs.saved.cat2":                true,
+	"halls[].eggs.saved.cat3":                true,
+	"halls[].eggs.saved.hatching":            true,
+	"halls[].eggs.saved.avgWeightG":          true,
+	"halls[].sections[].saved":               true,
+	"halls[].sections[].saved.F":             true,
+	"halls[].sections[].saved.M":             true,
+	"halls[].sections[].saved.F.mortality":   true,
+	"halls[].sections[].saved.F.cull":        true,
+	"halls[].sections[].saved.F.cullReason":  true,
+	"halls[].sections[].saved.F.sexingError": true,
+	"halls[].sections[].saved.M.mortality":   true,
+	"halls[].sections[].saved.M.cull":        true,
+	"halls[].sections[].saved.M.cullReason":  true,
+	"halls[].sections[].saved.M.sexingError": true,
+
+	// GET /api/entries/{id} (§7.8, M5 Q6): no cycle on the date, a migrated
+	// entry has no author, an entry never corrected; values in the create
+	// shape of the kind, where an empty field is null (§4.7): a Zilnic sex
+	// or value left empty, an egg count left empty, a migrated feed row
+	// without g, a delivery without a note; a feed type for both sexes.
+	"entry.sapt":                      true,
+	"entry.ageDays":                   true,
+	"entry.author":                    true,
+	"entry.corrected":                 true,
+	"values.sections[].F":             true,
+	"values.sections[].M":             true,
+	"values.sections[].F.mortality":   true,
+	"values.sections[].F.cull":        true,
+	"values.sections[].F.cullReason":  true,
+	"values.sections[].F.sexingError": true,
+	"values.sections[].M.mortality":   true,
+	"values.sections[].M.cull":        true,
+	"values.sections[].M.cullReason":  true,
+	"values.sections[].M.sexingError": true,
+	"values.eggs[].floor":             true,
+	"values.eggs[].cat1":              true,
+	"values.eggs[].cat2":              true,
+	"values.eggs[].cat3":              true,
+	"values.eggs[].hatching":          true,
+	"values.eggs[].avgWeightG":        true,
+	"values.rows[].g":                 true,
+	"values.note":                     true,
+
+	// The correction and delete preview (§7.8, M5 Q7, Q12): a change from
+	// or to an empty field.
+	"changes[].old": true,
+	"changes[].new": true,
 }
 
 // init allows under the series page's farms[].stats[] every null
@@ -1108,6 +1169,8 @@ func TestEveryWriteRouteChecksContentType(t *testing.T) {
 	for _, want := range []string{
 		"POST /api/auth/login", "POST /api/auth/logout", "POST /api/entries/feed-daily", "POST /api/entries/delivery",
 		"POST /api/deliveries/prices", "POST /api/deliveries/prices/undo", "PATCH /api/deliveries/{id}/price",
+		"POST /api/entries/daily", "PUT /api/entries/{id}", "DELETE /api/entries/{id}", "POST /api/entries/{id}/undo",
+		"POST /api/entries/{id}/restore",
 	} {
 		if !slices.Contains(checked, want) {
 			t.Errorf("checked %q; the walk missed %s", checked, want)
@@ -1223,11 +1286,16 @@ func seededSession(t testing.TB, s *stack, login string) seededReader {
 // Livrare hrană form (manager, owner; the viewer is refused) and the S12
 // list (the owner only); the vet is refused all of them. No response to the
 // viewer or the vet carries a price (noPrices, M4 D2).
+//
+// M5: every caller but the viewer reads the Zilnic form state of both farms
+// (today, yesterday, a day of Telița's closed cycle); everyone reads a seeded
+// Zilnic, Hrană zilnică and delivery entry (the viewer without prices).
 func TestFarmReadsOnSeededData(t *testing.T) {
 	t.Parallel()
 	s := newSeededStack(t)
 	hirb, tel := seededFarm(t, s, "hirbovat"), seededFarm(t, s, "telita")
 	series := seededSeries(t, s)
+	saved := seededEntries(t, s, hirb)
 	get := func(t *testing.T, u seededReader, path string, want int) response {
 		t.Helper()
 		r := s.do(t, call{method: http.MethodGet, path: path, cookie: u.token})
@@ -1334,11 +1402,35 @@ func TestFarmReadsOnSeededData(t *testing.T) {
 			} else {
 				refused(t, u, "/api/deliveries?priced=false", httpx.CodeForbidden)
 			}
+
+			// M5: the Zilnic form state of both farms (the viewer is refused)
+			// and the entry read of a saved Zilnic, Hrană zilnică and delivery.
+			for _, farm := range []uuid.UUID{hirb, tel} {
+				for _, day := range []string{"2026-11-18", "2026-11-17", "2026-02-20"} {
+					form := "/api/forms/daily?farmId=" + farm.String() + "&date=" + day
+					if login == "observator" {
+						refused(t, u, form, httpx.CodeForbidden)
+					} else {
+						get(t, u, form, http.StatusOK)
+					}
+				}
+			}
+			for _, id := range saved {
+				get(t, u, "/api/entries/"+id.String(), http.StatusOK)
+			}
 		})
 	}
 
 	vet := seededSession(t, s, "dr.ceban")
 	get(t, vet, "/api/bootstrap", http.StatusOK)
+	// M5: the vet's Zilnic form (today, a past day: locked) and the entry
+	// reads on his farm; Telița's form is not his.
+	get(t, vet, "/api/forms/daily?farmId="+hirb.String()+"&date=2026-11-18", http.StatusOK)
+	get(t, vet, "/api/forms/daily?farmId="+hirb.String()+"&date=2026-11-17", http.StatusOK)
+	refused(t, vet, "/api/forms/daily?farmId="+tel.String()+"&date=2026-11-18", httpx.CodeFarmForbidden)
+	for _, id := range saved {
+		get(t, vet, "/api/entries/"+id.String(), http.StatusOK)
+	}
 	for _, path := range []string{
 		"/api/farms/" + hirb.String() + "/page", "/api/farms/" + hirb.String() + "/summary",
 		"/api/table?view=farm&farmId=" + hirb.String(),
@@ -1362,6 +1454,23 @@ func TestFarmReadsOnSeededData(t *testing.T) {
 	} {
 		refused(t, vet, path, httpx.CodeForbidden)
 	}
+}
+
+// seededEntries are farm's latest live entry of each kind M5 serves: the
+// corrected Zilnic of 17.11, a Hrană zilnică and a delivery.
+func seededEntries(t testing.TB, s *stack, farm uuid.UUID) []uuid.UUID {
+	t.Helper()
+	rows, err := s.d.App.Query(context.Background(), `select distinct on (kind) id from entry
+		where farm_id = $1 and kind in ('daily', 'feed_daily', 'delivery') and deleted_at is null
+		order by kind, corrected desc, date desc, created_at desc`, farm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if err != nil || len(ids) != 3 {
+		t.Fatalf("seeded entries: %v, %v; want one of each served kind", ids, err)
+	}
+	return ids
 }
 
 // seededSeries are the ids of the seeded series, oldest first (Seria 2025,
@@ -1433,8 +1542,13 @@ func cycleDay(t *testing.T, s *stack, cycleID uuid.UUID) timex.Day {
 // timed request) the day's live entry is soft-deleted. The delivery save adds
 // a new 9 000 kg delivery each time (two of one day are legal); the price
 // save prices the seeded 12.11 delivery, whose price is cleared before each
-// one (outside the timed request). The writes run last, so the reads see the
-// seed as it is.
+// one (outside the timed request). M5: the Zilnic form state; a Zilnic save
+// of Hîrbovăț's 18.11 mortality values by the owner (before each one the
+// day's live Zilnic bird rows are soft-deleted); a Corectează save of the
+// corrected 17.11 save, H5.2 ♀ 3 → 4 → 3 … (its body, with the version just
+// read, built before each one); the delete of that save as a dry run (the
+// whole delete path, rolled back), its delete (restored before each one) and
+// its restore (deleted before each one). The writes run last, so the reads see the seed as it is.
 // Run it without -race:
 //
 //	go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api
@@ -1466,10 +1580,58 @@ func BenchmarkFarmReads(b *testing.B) {
 		s.exec(b, `update feed_delivery set price_per_kg = null, total_lei = null, price_input = null, priced_by = null,
 			priced_at = null where id = $1`, unpriced)
 	}
+	// M5.
+	dailySave, clearDaily := seededZilnicDay(b, s, hirbID)
+	var corrected uuid.UUID
+	if err := s.d.App.QueryRow(ctx, `select id from entry where kind = 'daily' and date = '2026-11-17' and corrected`).
+		Scan(&corrected); err != nil {
+		b.Fatal(err)
+	}
+	correctedPath := "/api/entries/" + corrected.String()
+	var putBody string
+	h52F := int64(3)
+	nextCorrection := func() { // H5.2 ♀ 3 → 4 → 3 …, at the version just read
+		e := decodeBody[entryAnswer](b, s.do(b, call{method: http.MethodGet, path: correctedPath, cookie: owner.token}))
+		var v entries.DailyValues
+		if err := json.Unmarshal(e.Values, &v); err != nil {
+			b.Fatal(err)
+		}
+		h52F = 7 - h52F
+		for i, sec := range v.Sections {
+			for _, ref := range e.Sections {
+				if ref.ID == sec.SectionID && ref.Code == "H5.2" {
+					f := *sec.F
+					n := num.FromInt(h52F)
+					f.Mortality = &n
+					v.Sections[i].F = &f
+				}
+			}
+		}
+		putBody = entryBody(b, map[string]any{"ifVersion": e.Entry.Version, "values": v, "reason": "Numărătoare refăcută."})
+	}
+	ensureLive := func() { // restores the 17.11 save when the previous request deleted it
+		var deleted bool
+		if err := s.d.App.QueryRow(ctx, `select deleted_at is not null from entry where id = $1`, corrected).Scan(&deleted); err != nil {
+			b.Fatal(err)
+		}
+		if deleted {
+			if r := s.do(b, call{method: http.MethodPost, path: correctedPath + "/restore", body: `{}`, cookie: owner.token}); r.status != http.StatusOK {
+				b.Fatalf("restore before the delete: %s", r)
+			}
+		}
+	}
+	const deleteBody = `{"reason":"Salvare dublă."}`
+	deleteCorrected := func() {
+		ensureLive()
+		if r := s.do(b, call{method: http.MethodDelete, path: correctedPath, body: deleteBody, cookie: owner.token}); r.status != http.StatusOK {
+			b.Fatalf("delete before the restore: %s", r)
+		}
+	}
 
 	for _, bc := range []struct {
 		name, method, path, body string
-		before                   func() // untimed, before each request
+		mkBody                   func() string // the body, when built by before
+		before                   func()        // untimed, before each request
 		status                   int
 	}{
 		{name: "table-page", path: "/api/table?view=farm&farmId=" + hirb},
@@ -1498,6 +1660,15 @@ func BenchmarkFarmReads(b *testing.B) {
 			body: `{"farmId":"` + hirb + `","date":"2026-11-18","feedTypeId":"` + breeder2 + `","qtyKg":9000}`},
 		{name: "price-save", method: http.MethodPost, path: "/api/deliveries/prices", before: unprice,
 			body: `{"items":[{"id":"` + unpriced.String() + `","pricePerKg":7.74}]}`},
+		// M5.
+		{name: "daily-form", path: "/api/forms/daily?farmId=" + hirb + "&date=2026-11-18"},
+		{name: "daily-save", method: http.MethodPost, path: dailyPath, body: dailySave, before: clearDaily,
+			status: http.StatusCreated},
+		{name: "correction-save", method: http.MethodPut, path: correctedPath, before: nextCorrection,
+			mkBody: func() string { return putBody }},
+		{name: "delete-dry-run", method: http.MethodDelete, path: correctedPath, body: `{"dryRun":true}`},
+		{name: "delete", method: http.MethodDelete, path: correctedPath, body: deleteBody, before: ensureLive},
+		{name: "restore", method: http.MethodPost, path: correctedPath + "/restore", body: `{}`, before: deleteCorrected},
 	} {
 		b.Run(bc.name, func(b *testing.B) {
 			method, status := cmp.Or(bc.method, http.MethodGet), cmp.Or(bc.status, http.StatusOK)
@@ -1511,12 +1682,15 @@ func BenchmarkFarmReads(b *testing.B) {
 				if bc.body != "" {
 					body = strings.NewReader(bc.body)
 				}
+				if bc.mkBody != nil {
+					body = strings.NewReader(bc.mkBody())
+				}
 				req, err := http.NewRequest(method, s.srv.URL+bc.path, body)
 				if err != nil {
 					b.Fatal(err)
 				}
 				req.AddCookie(&http.Cookie{Name: auth.CookieName, Value: owner.token})
-				if method == http.MethodPost {
+				if method != http.MethodGet {
 					req.Header.Set("Origin", testOrigin)
 					req.Header.Set("Content-Type", "application/json")
 				}
@@ -1566,6 +1740,12 @@ func TestNullLists(t *testing.T) {
 		{`{"weeks":[{"cells":{"alive.F":null,"egg.layPct":null}}],"totals":{"cells":{"alive.F":null}}}`, nil},
 		{`{"weeks":[{"cells":null,"days":null}]}`, []string{"weeks[0].cells", "weeks[0].days"}},
 		{`{"chips":null,"groups":[{"leaves":null}]}`, []string{"chips", "groups[0].leaves"}},
+		// M5: a change's old/new and an empty Zilnic field may be null, the
+		// preview's and the form state's lists may not.
+		{`{"changes":[{"key":"H5.2 · găini moarte","old":null,"new":3}],"effects":null,"refusals":null}`, []string{"effects", "refusals"}},
+		{`{"halls":[{"hall":null,"sections":[{"saved":{"F":{"mortality":null},"M":null}}],"eggs":null}],"emptyHalls":null}`,
+			[]string{"emptyHalls"}},
+		{`{"values":{"sections":[{"F":null,"M":{"cull":null}}],"eggs":null}}`, []string{"values.eggs"}},
 	} {
 		got, err := nullLists(tc.body)
 		if err != nil {

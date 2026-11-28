@@ -1,0 +1,234 @@
+{
+  "farm": {
+    "id": "<farm:hirbovat>",
+    "name": "Hîrbovăț",
+    "type": "laying"
+  },
+  "date": "2026-11-17",
+  "sapt": 59,
+  "ageDays": 406,
+  "cycle": {
+    "id": "<cycle:hirbovat/2026>",
+    "series": "Seria 2026",
+    "startDate": "2026-02-22"
+  },
+  "lockedReason": "Pentru zilele trecute cere managerului.",
+  "halls": [
+    {
+      "hall": {
+        "id": "<section:hirbovat/H5>",
+        "code": "H5"
+      },
+      "sections": [
+        {
+          "sectionId": "<section:hirbovat/H5.1>",
+          "code": "H5.1",
+          "sexes": [
+            "F",
+            "M"
+          ],
+          "aliveStart": {
+            "F": 4264,
+            "M": 342
+          },
+          "yesterday": {
+            "F": 0,
+            "M": 0
+          },
+          "mean7": {
+            "F": 0.7143,
+            "M": 0
+          },
+          "saved": {
+            "F": {
+              "mortality": 0,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            },
+            "M": {
+              "mortality": 0,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            }
+          }
+        },
+        {
+          "sectionId": "<section:hirbovat/H5.2>",
+          "code": "H5.2",
+          "sexes": [
+            "F",
+            "M"
+          ],
+          "aliveStart": {
+            "F": 4286,
+            "M": 323
+          },
+          "yesterday": {
+            "F": 0,
+            "M": 0
+          },
+          "mean7": {
+            "F": 1.1429,
+            "M": 0.2857
+          },
+          "saved": {
+            "F": {
+              "mortality": 3,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            },
+            "M": {
+              "mortality": 0,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            }
+          }
+        }
+      ],
+      "eggs": {
+        "sectionId": "<section:hirbovat/H5>",
+        "code": "H5",
+        "hensStart": 8550,
+        "guideLayPct": 57.6,
+        "saved": {
+          "floor": 98,
+          "cat1": 5,
+          "cat2": 97,
+          "cat3": 31,
+          "hatching": 3630,
+          "avgWeightG": 66.13
+        }
+      }
+    },
+    {
+      "hall": {
+        "id": "<section:hirbovat/H6>",
+        "code": "H6"
+      },
+      "sections": [
+        {
+          "sectionId": "<section:hirbovat/H6.1>",
+          "code": "H6.1",
+          "sexes": [
+            "F",
+            "M"
+          ],
+          "aliveStart": {
+            "F": 4222,
+            "M": 325
+          },
+          "yesterday": {
+            "F": 0,
+            "M": 0
+          },
+          "mean7": {
+            "F": 0.8571,
+            "M": 0.1429
+          },
+          "saved": {
+            "F": {
+              "mortality": 4,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            },
+            "M": {
+              "mortality": 0,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            }
+          }
+        },
+        {
+          "sectionId": "<section:hirbovat/H6.2>",
+          "code": "H6.2",
+          "sexes": [
+            "F",
+            "M"
+          ],
+          "aliveStart": {
+            "F": 2054,
+            "M": 237
+          },
+          "yesterday": {
+            "F": 0,
+            "M": 0
+          },
+          "mean7": {
+            "F": 0.8571,
+            "M": 0.1429
+          },
+          "saved": {
+            "F": {
+              "mortality": 0,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            },
+            "M": {
+              "mortality": 0,
+              "cull": null,
+              "cullReason": null,
+              "sexingError": null
+            }
+          }
+        }
+      ],
+      "eggs": {
+        "sectionId": "<section:hirbovat/H6>",
+        "code": "H6",
+        "hensStart": 6276,
+        "guideLayPct": 57.6,
+        "saved": {
+          "floor": 55,
+          "cat1": 7,
+          "cat2": 104,
+          "cat3": 38,
+          "hatching": 1980,
+          "avgWeightG": 65.18
+        }
+      }
+    }
+  ],
+  "emptyHalls": [
+    {
+      "hall": "H7",
+      "emptySince": "2026-11-14",
+      "label": "goală din 14.11.2026 · H7.1, H7.2"
+    }
+  ],
+  "existing": [
+    {
+      "entryId": "<entry:hirbovat/daily/2026-11-17/08:07>",
+      "author": "Dr. Ceban",
+      "at": "<at>",
+      "sections": [
+        "H5.1",
+        "H5.2",
+        "H6.1",
+        "H6.2"
+      ],
+      "eggs": [],
+      "editable": false,
+      "correctable": false
+    },
+    {
+      "entryId": "<entry:hirbovat/daily/2026-11-17/08:19>",
+      "author": "Dr. Ceban",
+      "at": "<at>",
+      "sections": [],
+      "eggs": [
+        "H5",
+        "H6"
+      ],
+      "editable": false,
+      "correctable": false
+    }
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

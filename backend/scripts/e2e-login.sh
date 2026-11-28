@@ -91,6 +91,15 @@ jq -e '.user.role == "owner" and (.today | type == "string" and length > 0)' "$t
   || fail "me: want user.role owner and today; body: $(head -c 300 "$tmp/body")"
 ok "me 200, role owner, today $(jq -r .today "$tmp/body")"
 
+# --- 3b. A DELETE with a JSON body reaches the API through the proxy (M5: DELETE /api/entries/{id} takes a body) -----
+# The handler decodes the body before it looks the entry up, so an unknown member answers 400 naming it.
+status="$(req DELETE /api/entries/0b9e4b8e-6f0a-4c51-9d3e-2f7a1c5d8e90 -H "@$tmp/cookie" -H "Origin: $ORIGIN" \
+  -H 'Content-Type: application/json' --data-binary '{"dryRun":true,"e2e":1}')"
+expect_status 400 "$status" "DELETE with a body"
+jq -e '.error.issues[0].path == "e2e" and .error.issues[0].code == "unknown_field"' "$tmp/body" >/dev/null \
+  || fail "DELETE with a body: want an unknown_field issue on e2e; body: $(head -c 300 "$tmp/body")"
+ok "DELETE body passed by the proxy (400 unknown_field e2e)"
+
 # --- 4. Wrong Origin -----------------------------------------------------------------------------------------------------
 status="$(req POST /api/auth/login -H 'Origin: https://evil.example' -H 'Content-Type: application/json' \
   --data-binary "@$tmp/login.json")"

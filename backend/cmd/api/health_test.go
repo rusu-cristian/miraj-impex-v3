@@ -108,7 +108,10 @@ func TestRoutesRecorded(t *testing.T) {
 	a, _, _ := newTestApp(t)
 	want := []string{"GET /healthz", "GET /readyz", "POST /api/auth/login", "POST /api/auth/logout", "GET /api/auth/me",
 		"GET /api/table", "GET /api/farms/{id}/page", "GET /api/farms/{id}/summary", "GET /api/bootstrap",
-		"GET /api/forms/feed-daily", "GET /api/forms/delivery", "POST /api/entries/feed-daily", "POST /api/entries/delivery",
+		"GET /api/forms/feed-daily", "GET /api/forms/delivery", "GET /api/forms/daily",
+		"POST /api/entries/feed-daily", "POST /api/entries/delivery", "POST /api/entries/daily",
+		"GET /api/entries/{id}", "PUT /api/entries/{id}", "DELETE /api/entries/{id}",
+		"POST /api/entries/{id}/undo", "POST /api/entries/{id}/restore",
 		"GET /api/reports/feed", "GET /api/series/{id}/page",
 		"GET /api/deliveries", "POST /api/deliveries/prices", "POST /api/deliveries/prices/undo", "PATCH /api/deliveries/{id}/price"}
 	if !slices.Equal(a.routes, want) {

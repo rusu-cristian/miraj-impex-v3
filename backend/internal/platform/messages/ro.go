@@ -715,3 +715,854 @@ func CostNoEggs() string { return "fără ouă în perioadă" }
 
 // CostSeriesTotal is the Cost total row's label: "Total Seria 2026".
 func CostSeriesTotal(series string) string { return "Total " + series }
+
+// Zilnic (SPEC §6.2, S6; M5 Q3, Q5, Q15).
+
+// DailyField is a bird field of a Zilnic section × sex, named as in the JSON
+// body (§7.8 DailySex).
+type DailyField string
+
+// The Zilnic bird fields.
+const (
+	FieldMortality   DailyField = "mortality"
+	FieldCull        DailyField = "cull"
+	FieldCullReason  DailyField = "cullReason"
+	FieldSexingError DailyField = "sexingError"
+)
+
+// EggField is a field of a Zilnic egg row, named as in the JSON body (§7.8
+// DailyEggs).
+type EggField string
+
+// The Zilnic egg fields.
+const (
+	FieldFloor      EggField = "floor"
+	FieldCat1       EggField = "cat1"
+	FieldCat2       EggField = "cat2"
+	FieldCat3       EggField = "cat3"
+	FieldHatching   EggField = "hatching"
+	FieldAvgWeightG EggField = "avgWeightG"
+)
+
+// FeedField is a field of a Hrană zilnică row, named as in the JSON body.
+type FeedField string
+
+// The Hrană zilnică fields.
+const (
+	FieldG          FeedField = "g"
+	FieldFeedTypeID FeedField = "feedTypeId"
+)
+
+// DeliveryField is an editable field of a Livrare hrană, named as in the JSON
+// body (M5 Q11).
+type DeliveryField string
+
+// The editable Livrare hrană fields.
+const (
+	FieldQtyKg              DeliveryField = "qtyKg"
+	FieldDeliveryFeedTypeID DeliveryField = "feedTypeId"
+	FieldNote               DeliveryField = "note"
+)
+
+// NotAnInteger is Z2, a count that is not an integer ≥ 0 (a sexing error
+// that is not an integer): "H5.1 ♀: scrie un număr întreg." (proposed)
+func NotAnInteger[S ~string](section string, sex S) string {
+	return section + " " + sexSign(sex) + ": scrie un număr întreg."
+}
+
+// EggCountNotAnInteger is Z8 for an egg count that is not an integer ≥ 0:
+// "H5: scrie un număr întreg." (proposed, the Z2 form)
+func EggCountNotAnInteger(hall string) string { return hall + ": scrie un număr întreg." }
+
+// NoBirdsOnDay is Z3, a value for a section × sex without birds that day (also
+// a hall or a retired section), and eggs on a unit without hens at the start
+// of the day: "H7.1 nu are găini pe 18.11.2026." (proposed)
+func NoBirdsOnDay[S ~string](section string, sex S, date timex.Day) string {
+	return section + " nu are " + fmtx.SexWord(sex) + " pe " + fmtx.Day(date) + "."
+}
+
+// CullReasonMissing is Z4, a cull without its reason: "H5.1 ♀: Motiv lipsă
+// pentru 2 găini sacrificate pe 18.11.2026. Alege motivul: boală, șchiopătare
+// sau altul." ("1 găină sacrificată", "1 cocoș sacrificat", "20 de cocoși
+// sacrificați" proposed.)
+func CullReasonMissing[S ~string](section string, sex S, culls int, date timex.Day) string {
+	return section + " " + sexSign(sex) + ": Motiv lipsă pentru " + birdsWith(culls, sex, "sacrificată", "sacrificate", "sacrificat", "sacrificați") +
+		" pe " + fmtx.Day(date) + ". Alege motivul: boală, șchiopătare sau altul."
+}
+
+// DayBoundExceeded is Z5, the §6.1 per-day bound: total = Mortalitate +
+// Sacrificare + Eroare sexare (removals), available = the birds alive at the
+// start of the day plus that day's inflows, field = the field the bound names
+// and most its largest value: "H5.2 ♂: Mortalitate + Sacrificare + Eroare
+// sexare = 3 230, peste cei 323 cocoși în viață pe 18.11.2026. La Mortalitate
+// scrie cel mult 323." The bird count has no "de" (as SPEC writes "cei 323
+// cocoși"); one bird is "cea 1 găină" / "cel 1 cocoș" (proposed).
+func DayBoundExceeded[S ~string](section string, sex S, total, available int, date timex.Day, field DailyField, most int) string {
+	return section + " " + sexSign(sex) + ": Mortalitate + Sacrificare + Eroare sexare = " + fmtx.Int(int64(total)) +
+		", peste " + aliveArticle(available, sex) + " în viață pe " + fmtx.Day(date) + ". La " + dailyFieldName(field) +
+		" scrie cel mult " + fmtx.Int(int64(most)) + "."
+}
+
+// DayBoundBanner is the Z5 SaveBar text: "refuzat · H5.2 ♂ 3 230 · cel mult 323".
+func DayBoundBanner[S ~string](section string, sex S, total, most int) string {
+	return "refuzat · " + section + " " + sexSign(sex) + " " + fmtx.Int(int64(total)) + " · cel mult " + fmtx.Int(int64(most))
+}
+
+// MortalitySpike is the Z6 MORTALITY_SPIKE warning: deaths typed, mean7 the
+// 7-day mean (shown with one decimal) and factor alert.mortality_factor:
+// "H6.1: 4 găini moarte, de peste 3 ori media pe 7 zile (0,9). Verifică
+// numărătoarea; poți salva." ("1 găină moartă", "1 cocoș mort", "20 de cocoși
+// morți" proposed.)
+func MortalitySpike[S ~string](section string, sex S, deaths int, mean7, factor decimal.Decimal) string {
+	return section + ": " + birdsWith(deaths, sex, "moartă", "moarte", "mort", "morți") + ", de peste " +
+		fmtx.DecUpTo(factor, 1) + " ori media pe 7 zile (" + fmtx.Dec(mean7, 1) + "). Verifică numărătoarea; poți salva."
+}
+
+// EggsOnHall is Z7, eggs on a section that isn't its egg unit: "Ouăle se scriu
+// pe hală: H5." (proposed)
+func EggsOnHall(hall string) string { return "Ouăle se scriu pe hală: " + hall + "." }
+
+// EggsGrowthFarm is Z7 at a growth farm: "Telița e fermă de creștere; ouăle se
+// scriu doar la fermele de ouat." (proposed)
+func EggsGrowthFarm(farm string) string {
+	return farm + " e fermă de creștere; ouăle se scriu doar la fermele de ouat."
+}
+
+// EggWeightOutOfRange is Z8, Masa medie outside 20–120 g, shown as sent (up to
+// 2 decimals): "H5: masa medie 130 g e în afara limitei. Scrie o valoare între
+// 20 și 120 g." (proposed)
+func EggWeightOutOfRange(hall string, g decimal.Decimal) string {
+	return hall + ": masa medie " + fmtx.DecUpTo(g, 2) + " g e în afara limitei. Scrie o valoare între 20 și 120 g."
+}
+
+// DailyAlreadyEntered is Z9 for a bird value whose key is live in another
+// entry, created at at: "H5.1 ♀ are deja valori introduse pe 18.11.2026 la
+// 08:15. Apasă Editează ca să schimbi valorile." (proposed)
+func DailyAlreadyEntered[S ~string](section string, sex S, date timex.Day, at time.Time) string {
+	return section + " " + sexSign(sex) + " are deja valori introduse pe " + fmtx.Day(date) + " la " +
+		fmtx.TimeOfDay(at) + ". Apasă Editează ca să schimbi valorile."
+}
+
+// EggsAlreadyEntered is Z9 for an egg row: "H5 are deja ouăle introduse pe
+// 18.11.2026 la 08:15. Apasă Editează ca să schimbi valorile." (proposed)
+func EggsAlreadyEntered(hall string, date timex.Day, at time.Time) string {
+	return hall + " are deja ouăle introduse pe " + fmtx.Day(date) + " la " + fmtx.TimeOfDay(at) +
+		". Apasă Editează ca să schimbi valorile."
+}
+
+// DailySaved is the Zilnic save Toast with bird values: sections with a bird
+// value and Σ signed qty per sex: "Zilnic salvat · 4 secțiuni · ♀ −3 · ♂ 0".
+func DailySaved(sections, f, m int) string {
+	return "Zilnic salvat · " + sectionsWord(sections) + " · " + LeafHens() + " " + signedInt(f) + " · " +
+		LeafRoosters() + " " + signedInt(m)
+}
+
+// DailyEggsSaved is the Toast of an egg-only Zilnic save: "Zilnic salvat · 2
+// hale · 5 914 ouă". (proposed)
+func DailyEggsSaved(halls, eggs int) string {
+	return "Zilnic salvat · " + hallsWord(halls) + " · " + fmtx.Int(int64(eggs)) + " ouă"
+}
+
+// DailySummary is the audit summary and Jurnal name of a Zilnic save:
+// "Mortalitate · 4 secțiuni" (D178), "Ouă · 2 hale" (proposed) or both,
+// "Mortalitate · 4 secțiuni · Ouă · 2 hale" (proposed). A zero count leaves
+// its part out.
+func DailySummary(sections, halls int) string {
+	var parts []string
+	if sections > 0 {
+		parts = append(parts, "Mortalitate · "+sectionsWord(sections))
+	}
+	if halls > 0 {
+		parts = append(parts, "Ouă · "+hallsWord(halls))
+	}
+	return strings.Join(parts, " · ")
+}
+
+// MortalitySectionSummary is the audit summary of a per-section delete of a
+// section's Zilnic bird values: "Mortalitate · H5.2". (proposed)
+func MortalitySectionSummary(section string) string { return "Mortalitate · " + section }
+
+// EggsHallSummary is the audit summary of a per-hall delete of its eggs: "Ouă
+// · H5". (proposed)
+func EggsHallSummary(hall string) string { return "Ouă · " + hall }
+
+// Counts never below 0 (SPEC §6.1; M5 D4, Q4).
+
+// CountAction is the write whose §6.1 check failed; it names the banner's
+// subject.
+type CountAction int
+
+// The §6.1 banner subjects (Q4).
+const (
+	ActionSave       CountAction = iota // a create or a same-day author edit: "Salvarea" (proposed)
+	ActionCorrection                    // a correction: "Corecția"
+	ActionDelete                        // a delete or an undo: "Ștergerea" (proposed)
+	ActionRestore                       // a restore: "Restaurarea" (proposed)
+)
+
+func (a CountAction) subject() string {
+	switch a {
+	case ActionSave:
+		return "Salvarea"
+	case ActionCorrection:
+		return "Corecția"
+	case ActionDelete:
+		return "Ștergerea"
+	case ActionRestore:
+		return "Restaurarea"
+	default:
+		panic("messages: unknown count action " + strconv.Itoa(int(a)))
+	}
+}
+
+// NegativeBanner is the §6.1 banner (error.message) of the first section × sex
+// a write would take below 0: first = its first negative day and
+// firstAliveEnd the birds at its end; todayAliveEnd = the birds at the end of
+// today while still negative today, else nil.
+//   - negative on earlier days only: "Corecția ar lăsa H6 cu −4 găini pe
+//     16.02.2026. Nicio secțiune nu poate scădea sub 0."
+//   - from an earlier day to today: "Corecția ar lăsa H5.2 cu −6 găini pe
+//     17.11.2026 și cu −8 găini azi, 18.11.2026. Nicio secțiune nu poate
+//     scădea sub 0."
+//   - today only: "Corecția ar lăsa H5.2 cu −8 găini azi, 18.11.2026. Nicio
+//     secțiune nu poate scădea sub 0."
+func NegativeBanner[S ~string](a CountAction, section string, sex S, first timex.Day, firstAliveEnd int,
+	todayAliveEnd *int, today timex.Day) string {
+	var when string
+	switch {
+	case first == today:
+		n := firstAliveEnd
+		if todayAliveEnd != nil {
+			n = *todayAliveEnd
+		}
+		when = "cu " + birds(n, sex) + " " + todayText(today)
+	case todayAliveEnd == nil:
+		when = "cu " + birds(firstAliveEnd, sex) + " pe " + fmtx.Day(first)
+	default:
+		when = "cu " + birds(firstAliveEnd, sex) + " pe " + fmtx.Day(first) + " și cu " + birds(*todayAliveEnd, sex) +
+			" " + todayText(today)
+	}
+	return a.subject() + " ar lăsa " + section + " " + when + ". Nicio secțiune nu poate scădea sub 0."
+}
+
+// RemovalBound is the §6.1 field message of a removal raised too far: typed =
+// the typed value, last = the last negative day, minAliveEnd the lowest end of
+// day and most = typed + minAliveEnd: "H5.2 ♀ 4 292: ar lăsa −8 găini azi,
+// 18.11.2026. Scrie cel mult 4 284." ("… pe 16.02.2026. …" when last is not
+// today.)
+func RemovalBound[S ~string](section string, sex S, typed int, last timex.Day, minAliveEnd int, today timex.Day, most int) string {
+	return boundHead(section, sex, typed, last, minAliveEnd, today) + " Scrie cel mult " + fmtx.Int(int64(most)) + "."
+}
+
+// InflowBound is the §6.1 field message of an inflow lowered too far, least =
+// typed − minAliveEnd: "H5.2 ♂ 4: ar lăsa −3 cocoși azi, 18.11.2026. Scrie cel
+// puțin 7." (proposed, the Corectează removal form)
+func InflowBound[S ~string](section string, sex S, typed int, last timex.Day, minAliveEnd int, today timex.Day, least int) string {
+	return boundHead(section, sex, typed, last, minAliveEnd, today) + " Scrie cel puțin " + fmtx.Int(int64(least)) + "."
+}
+
+func boundHead[S ~string](section string, sex S, typed int, last timex.Day, minAliveEnd int, today timex.Day) string {
+	day := "pe " + fmtx.Day(last)
+	if last == today {
+		day = todayText(today)
+	}
+	return section + " " + sexSign(sex) + " " + fmtx.Int(int64(typed)) + ": ar lăsa " + birds(minAliveEnd, sex) + " " + day + "."
+}
+
+func todayText(today timex.Day) string { return "azi, " + fmtx.Day(today) }
+
+// Edit, Corectează, delete, undo, restore (SPEC §6.15, §7.8, S15, S16; M5 Q7–Q9, Q12, Q15).
+
+// OwnEntryPastDay is the 403 FORBIDDEN of a vet changing or deleting their own
+// entry after its creation day (S16 board).
+func OwnEntryPastDay() string {
+	return "Poți modifica sau șterge ce ai introdus doar în aceeași zi, până la 23:59. Pentru o corecție, spune-i " +
+		"managerului; el o salvează cu motiv."
+}
+
+// AuditKeyDaily is the `changes[].key` of a Zilnic bird value: "H5.2 · găini
+// moarte" (§4.10), "H5.2 · cocoși morți", "H5.2 · găini sacrificate", "H5.2 ·
+// cocoși sacrificați", "H5.2 · motiv sacrificare găini", "H5.2 · eroare sexare
+// cocoși". (proposed, M5 Q12, except the §4.10 example)
+func AuditKeyDaily[S ~string](section string, sex S, field DailyField) string {
+	female := sexIsF(sex)
+	var what string
+	switch field {
+	case FieldMortality:
+		what = pick(female, "găini moarte", "cocoși morți")
+	case FieldCull:
+		what = pick(female, "găini sacrificate", "cocoși sacrificați")
+	case FieldCullReason:
+		what = "motiv sacrificare " + fmtx.SexWord(sex)
+	case FieldSexingError:
+		what = "eroare sexare " + fmtx.SexWord(sex)
+	default:
+		panic("messages: unknown daily field " + string(field))
+	}
+	return section + " · " + what
+}
+
+// AuditKeyEggs is the `changes[].key` of a Zilnic egg value: "H5 · ouă jos",
+// "H5 · Cat. 1", "H5 · incubabile", "H5 · masa medie g". (proposed, M5 Q12)
+func AuditKeyEggs(hall string, field EggField) string {
+	w := eggFieldWord(field)
+	if field == FieldAvgWeightG {
+		w += " g"
+	}
+	return hall + " · " + w
+}
+
+// AuditKeyFeed is the `changes[].key` of a Hrană zilnică value: "H5.1 · g
+// găini", "H5.1 · tip hrană cocoși". (proposed, M5 Q12)
+func AuditKeyFeed[S ~string](section string, sex S, field FeedField) string {
+	switch field {
+	case FieldG:
+		return section + " · g " + fmtx.SexWord(sex)
+	case FieldFeedTypeID:
+		return section + " · tip hrană " + fmtx.SexWord(sex)
+	default:
+		panic("messages: unknown feed field " + string(field))
+	}
+}
+
+// AuditKeyDelivery is the `changes[].key` of a Livrare hrană value: "Livrare ·
+// kg", "Livrare · tip", "Livrare · notă". (proposed, M5 Q12)
+func AuditKeyDelivery(field DeliveryField) string {
+	switch field {
+	case FieldQtyKg:
+		return "Livrare · kg"
+	case FieldDeliveryFeedTypeID:
+		return "Livrare · tip"
+	case FieldNote:
+		return "Livrare · notă"
+	default:
+		panic("messages: unknown delivery field " + string(field))
+	}
+}
+
+// Shown is a value as a sentence shows it (§11.3); build it with ShownInt,
+// ShownDec, ShownText, ShownCullReason or ShownEmpty.
+type Shown struct{ s string }
+
+// ShownInt is a count: "4 292", "−2".
+func ShownInt(n int) Shown { return Shown{fmtx.Int(int64(n))} }
+
+// ShownDec is a decimal with at most places decimals: "160", "67,04".
+func ShownDec(d decimal.Decimal, places int32) Shown { return Shown{fmtx.DecUpTo(d, places)} }
+
+// ShownText is a name as stored: a feed type ("Breeder 2") or a note.
+func ShownText(s string) Shown { return Shown{s} }
+
+// ShownEmpty is an empty value (null): "–".
+func ShownEmpty() Shown { return Shown{"–"} }
+
+// ShownCullReason is a cull reason's word: boala → "boală", schiopatare →
+// "șchiopătare", altul → "altul". It panics on another value.
+func ShownCullReason[R ~string](reason R) Shown { return Shown{CullReasonWord(reason)} }
+
+// CullReasonWord is a cull reason as shown and as audit `changes` text values
+// carry it (M5 Q12): "boală", "șchiopătare", "altul". It panics on another
+// value (reasons are checked at the boundary).
+func CullReasonWord[R ~string](reason R) string {
+	switch reason {
+	case "boala":
+		return "boală"
+	case "schiopatare":
+		return "șchiopătare"
+	case "altul":
+		return "altul"
+	default:
+		panic("messages: unknown cull reason " + string(reason))
+	}
+}
+
+// Label names one value of a save in the correction Toasts and the Motiv
+// sentence; build it with BirdLabel, EggLabel, FeedLabel or DeliveryLabel.
+type Label struct {
+	subject string // in a Toast: "H5.2 ♀", "H5 Cat. 1", "Livrare"
+	motiv   string // in "Motiv lipsă. Scrie de ce se schimbă {motiv} din …": "H5.2 ♀", "livrarea"
+	unit    string // after the new value: "g", "kg"; "" for counts and text
+}
+
+// BirdLabel is a Zilnic bird value: "H5.2 ♀" (mortality, §6.15), "H5.2 ♀
+// sacrificare", "H5.2 ♀ motiv sacrificare", "H5.2 ♀ eroare sexare". (proposed
+// except mortality)
+func BirdLabel[S ~string](section string, sex S, field DailyField) Label {
+	s := section + " " + sexSign(sex)
+	switch field {
+	case FieldMortality:
+	case FieldCull:
+		s += " sacrificare"
+	case FieldCullReason:
+		s += " motiv sacrificare"
+	case FieldSexingError:
+		s += " eroare sexare"
+	default:
+		panic("messages: unknown daily field " + string(field))
+	}
+	return Label{subject: s, motiv: s}
+}
+
+// EggLabel is a Zilnic egg value: "H5 Cat. 1", "H5 ouă jos", "H5 masa medie"
+// (in g). (proposed)
+func EggLabel(hall string, field EggField) Label {
+	s := hall + " " + eggFieldWord(field)
+	l := Label{subject: s, motiv: s}
+	if field == FieldAvgWeightG {
+		l.unit = "g"
+	}
+	return l
+}
+
+// FeedLabel is a Hrană zilnică value: "H5.1 ♀" (g) or "H5.1 ♀ tip hrană".
+// (proposed)
+func FeedLabel[S ~string](section string, sex S, field FeedField) Label {
+	s := section + " " + sexSign(sex)
+	switch field {
+	case FieldG:
+		return Label{subject: s, motiv: s, unit: "g"}
+	case FieldFeedTypeID:
+		s += " tip hrană"
+		return Label{subject: s, motiv: s}
+	default:
+		panic("messages: unknown feed field " + string(field))
+	}
+}
+
+// DeliveryLabel is a Livrare hrană value: kg ("Livrare" in a Toast, "livrarea"
+// in the Motiv sentence), type, note. (proposed)
+func DeliveryLabel(field DeliveryField) Label {
+	switch field {
+	case FieldQtyKg:
+		return Label{subject: "Livrare", motiv: "livrarea", unit: "kg"}
+	case FieldDeliveryFeedTypeID:
+		return Label{subject: "Livrare tip", motiv: "tipul livrării"}
+	case FieldNote:
+		return Label{subject: "Livrare notă", motiv: "nota livrării"}
+	default:
+		panic("messages: unknown delivery field " + string(field))
+	}
+}
+
+// ReasonMissingChange is the §6.15 400 on `reason` of a correction of one
+// value: "Motiv lipsă. Scrie de ce se schimbă H5.2 ♀ din 1 în 3; fără motiv
+// corecția nu se salvează." (eggs "… H5 Cat. 1 din 13 în 15; …", feed "… H5.1
+// ♀ din 160 în 158 g; …", delivery "… livrarea din 9 000 în 8 000 kg; …"
+// proposed).
+func ReasonMissingChange(l Label, from, to Shown) string {
+	return "Motiv lipsă. Scrie de ce se schimbă " + l.motiv + " din " + from.s + " în " + to.s + l.withUnit() +
+		"; fără motiv corecția nu se salvează."
+}
+
+// ReasonMissingChanges is the §6.15 400 on `reason` of a correction of several
+// values: "Motiv lipsă. Scrie de ce se schimbă 3 valori; fără motiv corecția
+// nu se salvează." (proposed)
+func ReasonMissingChanges(n int) string {
+	return "Motiv lipsă. Scrie de ce se schimbă " + valuesWord(n) + "; fără motiv corecția nu se salvează."
+}
+
+// DeleteReasonMissing is the 400 on `reason` of a delete that needs a Motiv:
+// "Motiv lipsă. Scrie de ce ștergi salvarea; fără motiv nu se șterge."
+// (proposed, M5 Q9)
+func DeleteReasonMissing() string {
+	return "Motiv lipsă. Scrie de ce ștergi salvarea; fără motiv nu se șterge."
+}
+
+func (l Label) withUnit() string {
+	if l.unit == "" {
+		return ""
+	}
+	return " " + l.unit
+}
+
+func (l Label) change(from, to Shown) string {
+	return l.subject + " " + from.s + " → " + to.s + l.withUnit()
+}
+
+// CorrectionSavedAlive is the Toast of a correction of one bird value, alive =
+// the section's birds of sex at the end of today: "Corecție salvată · H5.2 ♀
+// 1 → 3 · în viață ♀ 4 281".
+func CorrectionSavedAlive[S ~string](l Label, from, to Shown, sex S, alive int) string {
+	return "Corecție salvată · " + l.change(from, to) + " · în viață " + sexSign(sex) + " " + fmtx.Int(int64(alive))
+}
+
+// CorrectionSaved is the Toast of a correction of one value that moves no
+// bird: "Corecție salvată · H5 Cat. 1 13 → 15". (proposed)
+func CorrectionSaved(l Label, from, to Shown) string {
+	return "Corecție salvată · " + l.change(from, to)
+}
+
+// CorrectionsSavedAlive is the Toast of a correction of several values that
+// moves birds, with the farm alive at the end of today: "Corecție salvată · 3
+// valori · în viață azi ♀ 12 561 · ♂ 794". (proposed)
+func CorrectionsSavedAlive(n, aliveF, aliveM int) string {
+	return "Corecție salvată · " + valuesWord(n) + " · în viață azi " + LeafHens() + " " + fmtx.Int(int64(aliveF)) +
+		" · " + LeafRoosters() + " " + fmtx.Int(int64(aliveM))
+}
+
+// CorrectionsSaved is the Toast of a correction of several values that moves
+// no bird: "Corecție salvată · 3 valori". (proposed)
+func CorrectionsSaved(n int) string { return "Corecție salvată · " + valuesWord(n) }
+
+// CorrectionUndone is the Toast of an undone correction of one value, from →
+// to as the undo sets them: "Corecție anulată · H5.2 ♀ 3 → 1". (proposed)
+func CorrectionUndone(l Label, from, to Shown) string {
+	return "Corecție anulată · " + l.change(from, to)
+}
+
+// CorrectionsUndone is the Toast of an undone correction of several values:
+// "Corecție anulată · 3 valori". (proposed)
+func CorrectionsUndone(n int) string { return "Corecție anulată · " + valuesWord(n) }
+
+// DeliverySaved is the Toast of a same-day author edit of a delivery, kg as
+// typed and the type's stock at the end of the delivery date: "Livrare
+// salvată · 9 000 kg Breeder 2 · stoc Hîrbovăț: 21 119 kg". (proposed)
+func DeliverySaved(kg decimal.Decimal, feedType, farm string, stock decimal.Decimal) string {
+	return "Livrare salvată · " + fmtx.DecUpTo(kg, 1) + " kg " + feedType + " · stoc " + farm + ": " + fmtx.Dec(stock, 0) + " kg"
+}
+
+// EffectAliveFrom is a correction preview line per changed section × sex
+// (§7.8): "H5.2 · găini în viață de pe 17.11.2026 se schimbă cu −2." ("+12"
+// for a rise, §6.15).
+func EffectAliveFrom[S ~string](section string, sex S, from timex.Day, delta int) string {
+	return section + " · " + fmtx.SexWord(sex) + " în viață de pe " + fmtx.Day(from) + " se schimbă cu " + signedInt(delta) + "."
+}
+
+// EffectDeaths is a correction preview line per changed sex, the save's Σ
+// signed bird qty before and after: "Mortalitate · morți ♀ −5 → −7" (§7.8).
+func EffectDeaths[S ~string](sex S, before, after int) string {
+	return "Mortalitate · morți " + sexSign(sex) + " " + signedInt(before) + " → " + signedInt(after)
+}
+
+// EffectFarmAliveToday is a correction preview line per changed sex, the
+// farm's birds at the end of today: "Hîrbovăț · ♀ azi 12 563 → 12 561" (§7.8).
+func EffectFarmAliveToday[S ~string](farm string, sex S, before, after int) string {
+	return farm + " · " + sexSign(sex) + " azi " + fmtx.Int(int64(before)) + " → " + fmtx.Int(int64(after))
+}
+
+// CheckedDays is the S16 line under the preview: days from the entry date to
+// today, none below 0: "Verificat pe 2 zile, până azi: nicio zi sub 0." ("1
+// zi", "20 de zile" proposed.)
+func CheckedDays(days int) string {
+	return "Verificat pe " + countNoun(days, "1 zi", "zile") + ", până azi: nicio zi sub 0."
+}
+
+// AliveMove is a bird count before and after a change.
+type AliveMove struct{ Before, After int }
+
+// Corrected names who corrected a save and on which day, for the delete
+// Dialog: "… și corectată de Ion Rusu pe 18.11.2026".
+type Corrected struct {
+	By string
+	On timex.Day
+}
+
+// DailyDelete is what the Zilnic whole-save delete Dialog says.
+type DailyDelete struct {
+	Author    string     // "Dr. Ceban"
+	At        time.Time  // the save's creation instant
+	Corrected *Corrected // nil = never corrected
+	Sections  int        // sections with a bird value (0 = egg-only save)
+	F, M      int        // the save's Σ signed bird qty per sex: −5, 0
+	Halls     int        // halls with an egg row
+	Eggs      int        // Σ eggs of those rows
+	Farm      string
+	AliveF    *AliveMove // the farm's ♀ today; nil = unchanged, not named
+	AliveM    *AliveMove // the farm's ♂ today; nil = unchanged, not named
+}
+
+// DailyDeleteEffect is the whole-save delete Dialog (dry-run effects[0]):
+// "Se șterge salvarea Zilnic introdusă de Dr. Ceban la 08:07: 4 secțiuni · ♀
+// −5 · ♂ 0. Găini în viață azi în Hîrbovăț: ♀ 12 563 → ♀ 12 568. Ștergerea
+// rămâne în Istoric modificări." (§6.15); a corrected save adds "… la 08:07 și
+// corectată de Ion Rusu pe 18.11.2026: …" (S16 board). (proposed: "Păsări în
+// viață azi …: ♀ … · ♂ …" when ♂ changes too, "Cocoși …" when only ♂ does,
+// "2 hale · 5 914 ouă" for the eggs.)
+func DailyDeleteEffect(d DailyDelete) string {
+	var what []string
+	if d.Sections > 0 {
+		what = append(what, sectionsWord(d.Sections)+" · "+sexTotals(d.F, d.M))
+	}
+	if d.Halls > 0 {
+		what = append(what, hallsWord(d.Halls)+" · "+fmtx.Int(int64(d.Eggs))+" ouă")
+	}
+	s := "Se șterge salvarea Zilnic " + introduced(d.Author, d.At, d.Corrected) + ": " + strings.Join(what, " · ") + "."
+	if moves := farmMoves(d.AliveF, d.AliveM); moves != "" {
+		s += " " + aliveNoun(d.AliveF, d.AliveM) + " în viață azi în " + d.Farm + ": " + moves + "."
+	}
+	return s + deleteStays
+}
+
+// SectionDeleteEffect is the per-section delete Dialog of a compartment's
+// Zilnic bird values (S15): "Se șterge rândul salvat la 08:15: ♀ −2 · ♂ 0. În
+// viață în H5.2: ♀ 4 281 → 4 283. Ștergerea rămâne în Istoric modificări."
+// f, m = the row's Σ signed qty; aliveF/aliveM = the section's birds today
+// (nil = unchanged, not named).
+func SectionDeleteEffect(at time.Time, section string, f, m int, aliveF, aliveM *AliveMove) string {
+	s := "Se șterge rândul salvat la " + fmtx.TimeOfDay(at) + ": " + sexTotals(f, m) + "."
+	var moves []string
+	if aliveF != nil {
+		moves = append(moves, LeafHens()+" "+fmtx.Int(int64(aliveF.Before))+" → "+fmtx.Int(int64(aliveF.After)))
+	}
+	if aliveM != nil {
+		moves = append(moves, LeafRoosters()+" "+fmtx.Int(int64(aliveM.Before))+" → "+fmtx.Int(int64(aliveM.After)))
+	}
+	if len(moves) > 0 {
+		s += " În viață în " + section + ": " + strings.Join(moves, " · ") + "."
+	}
+	return s + deleteStays
+}
+
+// HallEggsDeleteEffect is the per-hall delete Dialog of its eggs: "Se șterge
+// rândul salvat la 08:27: 3 872 ouă. Ștergerea rămâne în Istoric modificări."
+// (proposed)
+func HallEggsDeleteEffect(at time.Time, eggs int) string {
+	return "Se șterge rândul salvat la " + fmtx.TimeOfDay(at) + ": " + fmtx.Int(int64(eggs)) + " ouă." + deleteStays
+}
+
+// FeedDailyDeleteEffect is the Hrană zilnică delete Dialog: "Se șterge
+// salvarea Hrană zilnică introdusă de Dr. Ceban la 08:44: 8 rânduri · 2 457,9
+// kg. Ștergerea rămâne în Istoric modificări." (proposed)
+func FeedDailyDeleteEffect(author string, at time.Time, corrected *Corrected, rows int, kg decimal.Decimal) string {
+	return "Se șterge salvarea Hrană zilnică " + introduced(author, at, corrected) + ": " + rowsWord(rows) + " · " +
+		fmtx.Dec(kg, 1) + " kg." + deleteStays
+}
+
+// DeliveryDeleteEffect is the Livrare hrană delete Dialog: "Se șterge livrarea
+// introdusă de Ion Rusu la 10:30: 9 000 kg Breeder 2. Ștergerea rămâne în
+// Istoric modificări." (proposed)
+func DeliveryDeleteEffect(author string, at time.Time, corrected *Corrected, kg decimal.Decimal, feedType string) string {
+	return "Se șterge livrarea " + introduced(author, at, corrected) + ": " + fmtx.DecUpTo(kg, 1) + " kg " + feedType +
+		"." + deleteStays
+}
+
+const deleteStays = " Ștergerea rămâne în Istoric modificări."
+
+func introduced(author string, at time.Time, c *Corrected) string {
+	s := "introdusă de " + author + " la " + fmtx.TimeOfDay(at)
+	if c != nil {
+		s += " și corectată de " + c.By + " pe " + fmtx.Day(c.On)
+	}
+	return s
+}
+
+// MortalityDeleted is the Toast of a whole Zilnic save delete with bird
+// values, the farm's birds at the end of today (nil = unchanged, not named):
+// "Mortalitate ștearsă · 17.11.2026 · 4 secțiuni · în viață azi ♀ 12 568".
+func MortalityDeleted(date timex.Day, sections int, aliveF, aliveM *int) string {
+	return "Mortalitate ștearsă · " + fmtx.Day(date) + " · " + sectionsWord(sections) + " · în viață azi " + aliveList(aliveF, aliveM)
+}
+
+// MortalitySectionDeleted is the Toast of a per-section delete, the section's
+// birds at the end of today: "Mortalitate ștearsă · H5.2 · în viață ♀ 4 283".
+func MortalitySectionDeleted(section string, aliveF, aliveM *int) string {
+	return "Mortalitate ștearsă · " + section + " · în viață " + aliveList(aliveF, aliveM)
+}
+
+// EggsDeleted is the Toast of an egg-only Zilnic delete or a per-hall delete:
+// "Ouă șterse · 18.11.2026 · H5". (proposed)
+func EggsDeleted(date timex.Day, halls []string) string {
+	return "Ouă șterse · " + fmtx.Day(date) + " · " + strings.Join(halls, ", ")
+}
+
+// FeedDailyDeleted is the Hrană zilnică delete Toast: "Hrană zilnică ștearsă ·
+// 18.11.2026 · 8 rânduri · stoc Breeder 2: 33 968 kg". (proposed)
+func FeedDailyDeleted(date timex.Day, rows int, stockType string, stock decimal.Decimal) string {
+	return "Hrană zilnică ștearsă · " + fmtx.Day(date) + " · " + rowsWord(rows) + " · stoc " + stockType + ": " +
+		fmtx.Dec(stock, 0) + " kg"
+}
+
+// DeliveryDeleted is the Livrare hrană delete Toast: "Livrare ștearsă · 9 000
+// kg Breeder 2 · stoc Hîrbovăț: 22 665 kg". (proposed)
+func DeliveryDeleted(kg decimal.Decimal, feedType, farm string, stock decimal.Decimal) string {
+	return "Livrare ștearsă · " + fmtx.DecUpTo(kg, 1) + " kg " + feedType + " · stoc " + farm + ": " + fmtx.Dec(stock, 0) + " kg"
+}
+
+// DailyUndone is the Toast of an undone Zilnic save: "Zilnic anulat ·
+// 18.11.2026". (proposed)
+func DailyUndone(date timex.Day) string { return "Zilnic anulat · " + fmtx.Day(date) }
+
+// FeedDailyUndone is the Toast of an undone Hrană zilnică save: "Hrană zilnică
+// anulată · 18.11.2026". (proposed)
+func FeedDailyUndone(date timex.Day) string { return "Hrană zilnică anulată · " + fmtx.Day(date) }
+
+// DeliveryUndone is the Toast of an undone delivery: "Livrare anulată · 9 000
+// kg Breeder 2". (proposed)
+func DeliveryUndone(kg decimal.Decimal, feedType string) string {
+	return "Livrare anulată · " + fmtx.DecUpTo(kg, 1) + " kg " + feedType
+}
+
+// MortalityRestored is the Toast of a restored whole Zilnic save: "Mortalitate
+// restaurată · 17.11.2026 · 4 secțiuni · în viață azi ♀ 12 561". (proposed)
+func MortalityRestored(date timex.Day, sections int, aliveF, aliveM *int) string {
+	return "Mortalitate restaurată · " + fmtx.Day(date) + " · " + sectionsWord(sections) + " · în viață azi " +
+		aliveList(aliveF, aliveM)
+}
+
+// MortalitySectionRestored is the Toast of a restored per-section delete:
+// "Mortalitate restaurată · H5.2 · în viață ♀ 4 281". (proposed)
+func MortalitySectionRestored(section string, aliveF, aliveM *int) string {
+	return "Mortalitate restaurată · " + section + " · în viață " + aliveList(aliveF, aliveM)
+}
+
+// EggsRestored is the Toast of restored eggs: "Ouă restaurate · 18.11.2026 ·
+// H5". (proposed)
+func EggsRestored(date timex.Day, halls []string) string {
+	return "Ouă restaurate · " + fmtx.Day(date) + " · " + strings.Join(halls, ", ")
+}
+
+// FeedDailyRestored is the Toast of a restored Hrană zilnică save: "Hrană
+// zilnică restaurată · 18.11.2026 · 8 rânduri · stoc Breeder 2: 31 665 kg".
+// (proposed)
+func FeedDailyRestored(date timex.Day, rows int, stockType string, stock decimal.Decimal) string {
+	return "Hrană zilnică restaurată · " + fmtx.Day(date) + " · " + rowsWord(rows) + " · stoc " + stockType + ": " +
+		fmtx.Dec(stock, 0) + " kg"
+}
+
+// DeliveryRestored is the Toast of a restored delivery: "Livrare restaurată ·
+// 9 000 kg Breeder 2 · stoc Hîrbovăț: 25 140 kg". (proposed)
+func DeliveryRestored(kg decimal.Decimal, feedType, farm string, stock decimal.Decimal) string {
+	return "Livrare restaurată · " + fmtx.DecUpTo(kg, 1) + " kg " + feedType + " · stoc " + farm + ": " +
+		fmtx.Dec(stock, 0) + " kg"
+}
+
+// Helpers for the M5 copy.
+
+// sectionsWord: "1 secțiune", "4 secțiuni", "20 de secțiuni".
+func sectionsWord(n int) string { return countNoun(n, "1 secțiune", "secțiuni") }
+
+// hallsWord: "1 hală", "2 hale", "20 de hale".
+func hallsWord(n int) string { return countNoun(n, "1 hală", "hale") }
+
+// valuesWord: "1 valoare", "3 valori", "20 de valori".
+func valuesWord(n int) string { return countNoun(n, "1 valoare", "valori") }
+
+// birds is a signed bird count with its noun: "−8 găini", "−1 găină", "−20 de
+// cocoși", "4 283 de găini" (U+202F, U+2212).
+func birds[S ~string](n int, sex S) string {
+	return countGrouped(n, pick(sexIsF(sex), "găină", "cocoș"), fmtx.SexWord(sex))
+}
+
+// birdsWith is a bird count with an agreeing participle: birdsWith(4, "F",
+// "moartă", "moarte", "mort", "morți") = "4 găini moarte"; 1 → "1 găină
+// moartă"; 20 ♂ → "20 de cocoși morți".
+func birdsWith[S ~string](n int, sex S, oneF, manyF, oneM, manyM string) string {
+	if sexIsF(sex) {
+		return countGrouped(n, "găină "+oneF, "găini "+manyF)
+	}
+	return countGrouped(n, "cocoș "+oneM, "cocoși "+manyM)
+}
+
+// aliveArticle is the Z5 "peste …" phrase: "cele 4 283 găini", "cei 323
+// cocoși", "cea 1 găină", "cel 1 cocoș" (no "de", as SPEC writes it).
+func aliveArticle[S ~string](n int, sex S) string {
+	female := sexIsF(sex)
+	if n == 1 {
+		return pick(female, "cea 1 găină", "cel 1 cocoș")
+	}
+	return pick(female, "cele ", "cei ") + fmtx.Int(int64(n)) + " " + fmtx.SexWord(sex)
+}
+
+// countGrouped is countNoun for any signed n, thousands grouped with U+202F
+// and the minus U+2212; "de" follows the absolute value's last two digits.
+func countGrouped(n int, one, many string) string {
+	abs := n
+	if abs < 0 {
+		abs = -abs
+	}
+	noun := many
+	switch r := abs % 100; {
+	case abs == 1:
+		noun = one
+	case abs >= 20 && (r == 0 || r >= 20):
+		noun = "de " + many
+	}
+	return fmtx.Int(int64(n)) + " " + noun
+}
+
+// signedInt is a difference or a signed sum: "−3", "+2", "0".
+func signedInt(n int) string { return fmtx.Signed(decimal.NewFromInt(int64(n)), 0) }
+
+// sexTotals is "♀ −5 · ♂ 0".
+func sexTotals(f, m int) string {
+	return LeafHens() + " " + signedInt(f) + " · " + LeafRoosters() + " " + signedInt(m)
+}
+
+// aliveList names the given sexes' counts: "♀ 12 568", "♀ 12 568 · ♂ 794".
+func aliveList(f, m *int) string {
+	var parts []string
+	if f != nil {
+		parts = append(parts, LeafHens()+" "+fmtx.Int(int64(*f)))
+	}
+	if m != nil {
+		parts = append(parts, LeafRoosters()+" "+fmtx.Int(int64(*m)))
+	}
+	return strings.Join(parts, " · ")
+}
+
+// farmMoves is "♀ 12 563 → ♀ 12 568" (· "♂ 794 → ♂ 796"), the sign repeated
+// as on the §6.15 Dialog.
+func farmMoves(f, m *AliveMove) string {
+	var parts []string
+	if f != nil {
+		parts = append(parts, LeafHens()+" "+fmtx.Int(int64(f.Before))+" → "+LeafHens()+" "+fmtx.Int(int64(f.After)))
+	}
+	if m != nil {
+		parts = append(parts, LeafRoosters()+" "+fmtx.Int(int64(m.Before))+" → "+LeafRoosters()+" "+fmtx.Int(int64(m.After)))
+	}
+	return strings.Join(parts, " · ")
+}
+
+// aliveNoun is the Dialog's subject: "Găini", "Cocoși" or "Păsări".
+func aliveNoun(f, m *AliveMove) string {
+	switch {
+	case f != nil && m != nil:
+		return "Păsări"
+	case m != nil:
+		return "Cocoși"
+	default:
+		return "Găini"
+	}
+}
+
+func dailyFieldName(f DailyField) string {
+	switch f {
+	case FieldMortality:
+		return "Mortalitate"
+	case FieldCull:
+		return "Sacrificare"
+	case FieldSexingError:
+		return "Eroare sexare"
+	default:
+		panic("messages: no Z5 name for field " + string(f))
+	}
+}
+
+func eggFieldWord(f EggField) string {
+	switch f {
+	case FieldFloor:
+		return "ouă jos"
+	case FieldCat1:
+		return "Cat. 1"
+	case FieldCat2:
+		return "Cat. 2"
+	case FieldCat3:
+		return "Cat. 3"
+	case FieldHatching:
+		return "incubabile"
+	case FieldAvgWeightG:
+		return "masa medie"
+	default:
+		panic("messages: unknown egg field " + string(f))
+	}
+}
+
+// sexIsF reports whether sex is "F"; it panics on a value other than F or M.
+func sexIsF[S ~string](sex S) bool { return sexSign(sex) == LeafHens() }
+
+func pick(cond bool, a, b string) string {
+	if cond {
+		return a
+	}
+	return b
+}

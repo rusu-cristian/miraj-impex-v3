@@ -13,7 +13,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/audit"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/calc"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/golden"
@@ -39,12 +41,15 @@ var m3Rows = []int{28}
 // (the series page's placement, labelled M4 in the registry; M4 cleanup).
 var m4Rows = []int{29, 30, 31, 35}
 
+// m5Rows are the goldens of M5: SPEC §12.6 "33, 37" (plan M5-D11).
+var m5Rows = []int{33, 37}
+
 // implementedMilestones are the milestones done so far: each of their rows
 // must have Got, except the deferred ones.
-var implementedMilestones = map[string]bool{"M1": true, "M2": true, "M3": true, "M4": true}
+var implementedMilestones = map[string]bool{"M1": true, "M2": true, "M3": true, "M4": true, "M5": true}
 
 // deferredRows are rows of an implemented milestone that may still lack Got,
-// with the reason. None at M4.
+// with the reason. None at M5.
 var deferredRows = map[int]string{}
 
 // TestGolden runs every implemented row of §11.7 against the dev seed
@@ -78,7 +83,7 @@ func seededDB(t *testing.T) *testdb.DB {
 
 // checkRegistry lists what is wrong with a registry: ids not exactly 1–38
 // once each, a row without a name or a valid milestone, a row of an
-// implemented milestone (M1–M4) without Got (deferredRows excepted), or a Got
+// implemented milestone (M1–M5) without Got (deferredRows excepted), or a Got
 // without a Want.
 func checkRegistry(rows []golden.Row) []string {
 	var problems []string
@@ -118,7 +123,7 @@ func TestRegistry(t *testing.T) {
 	if problems := checkRegistry(rows); len(problems) > 0 {
 		t.Fatalf("registry problems:\n%s", strings.Join(problems, "\n"))
 	}
-	var m1, m2, m3, m4, implemented []int
+	var m1, m2, m3, m4, m5, implemented []int
 	for i, r := range rows {
 		if r.ID != i+1 {
 			t.Errorf("row %d has id %d: rows are in id order", i, r.ID)
@@ -134,6 +139,8 @@ func TestRegistry(t *testing.T) {
 			if _, deferred := deferredRows[r.ID]; !deferred {
 				m4 = append(m4, r.ID)
 			}
+		case "M5":
+			m5 = append(m5, r.ID)
 		}
 		if r.Got != nil {
 			implemented = append(implemented, r.ID)
@@ -151,11 +158,14 @@ func TestRegistry(t *testing.T) {
 	if diff := cmp.Diff(m4Rows, m4); diff != "" {
 		t.Errorf("M4 rows differ from SPEC §12.6 (-want +got):\n%s", diff)
 	}
-	// Rows 1–31, 35 and 38 (M4 and its cleanup): 33 goldens; 32–34, 36 and 37
-	// are skipped.
-	want := slices.Sorted(slices.Values(slices.Concat(m1Rows, m2Rows, m3Rows, m4Rows)))
-	if diff := cmp.Diff(want, implemented); diff != "" || len(implemented) != 33 {
-		t.Errorf("implemented rows at M4 (%d, want 33; -want +got):\n%s", len(implemented), diff)
+	if diff := cmp.Diff(m5Rows, m5); diff != "" {
+		t.Errorf("M5 rows differ from SPEC §12.6 (-want +got):\n%s", diff)
+	}
+	// Rows 1–31, 33, 35, 37 and 38 (M5): 35 goldens; 32, 34 and 36 are
+	// skipped (M9, M8, M10).
+	want := slices.Sorted(slices.Values(slices.Concat(m1Rows, m2Rows, m3Rows, m4Rows, m5Rows)))
+	if diff := cmp.Diff(want, implemented); diff != "" || len(implemented) != 35 {
+		t.Errorf("implemented rows at M5 (%d, want 35; -want +got):\n%s", len(implemented), diff)
 	}
 }
 
@@ -193,6 +203,11 @@ func TestCheckRegistryCatchesProblems(t *testing.T) {
 			rows[30].Got = nil
 			return rows
 		}(), "golden 31 is M4 but has no Got"},
+		{"M5 row without Got", func() []golden.Row {
+			rows := golden.Rows()
+			rows[36].Got = nil
+			return rows
+		}(), "golden 37 is M5 but has no Got"},
 		{"bad milestone", func() []golden.Row {
 			rows := golden.Rows()
 			rows[20].Milestone = "M13"
@@ -339,6 +354,11 @@ func TestCheck(t *testing.T) {
 //	    = 51,16 → 51,2; deaths ♀ 3 · ♂ 0; sold ♀ 16 · ♂ 2; incub. 224 ÷ 235 = 95,3; kg ♀ 25,82 → 25,8 · ♂ 2,03 → 2,0
 //	25: depends only on the cycle (SAPT 20–59): the real golden value
 //	38: no hall emptied in the cycle: []
+//
+// and the M5 rows read the Zilnic values of 17.11.2026 (H5.1 ♀ mortality 1):
+//
+//	33: H5.1 ♀ 1 death; its deaths 10–16.11 are the 12.11 zero → mean 0,0, and a 0 mean warns on any death (D53)
+//	37: H5.2 has no mortality saved on 17.11: an error (TestCorrectionRowOnHandBuiltLedger adds one)
 type ledger struct {
 	t    *testing.T
 	d    *testdb.DB
@@ -548,6 +568,13 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 			Total: golden.CostTotal{Lei: "711", PerBird: "5.78", PerEgg: "2.26", ExcludedKg: "110"},
 		},
 		35: golden.SeriesPlacement{Farm: "Telița", Placed: ps(110, 13), CycleSAPT: [2]int{1, 21}},
+
+		33: []golden.Spike{{Section: "H5.1", Sex: "F", Deaths: 1, Mean7: "0.0",
+			Message: "H5.1: 1 găină moartă, de peste 3 ori media pe 7 zile (0,0). Verifică numărătoarea; poți salva."}},
+	}
+	// Rows that must fail on the miniature ledger, with their error.
+	wantErr := map[int]string{
+		37: "golden 37 correction 17.11 H5.2: H5.2 ♀ has no mortality saved on 2026-11-17",
 	}
 	for _, r := range golden.Rows() {
 		if r.Got == nil {
@@ -558,6 +585,12 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 			if cycleOnly[r.ID] {
 				if err := r.Check(ctx, env); err != nil {
 					t.Fatal(err)
+				}
+				return
+			}
+			if msg, ok := wantErr[r.ID]; ok {
+				if err := r.Check(ctx, env); err == nil || err.Error() != msg {
+					t.Errorf("Check = %v, want the error %q", err, msg)
 				}
 				return
 			}
@@ -595,6 +628,77 @@ func TestPriceRowRefusesAStoredPriceOffTheDerivation(t *testing.T) {
 	if err == nil || err.Error() != want {
 		t.Errorf("err = %v, want %s", err, want)
 	}
+}
+
+// TestCorrectionRowOnHandBuiltLedger runs golden 37 on the miniature ledger
+// with a Zilnic entry holding H5.2 ♀ mortality 3 on 17.11.2026. H5.2 ♀:
+// placed 20, cull 1 (01.06), sales 1 + 5 (11.11, 12.11) against the +1
+// adjustment, these 3 deaths → 11 at the end of 17.11; the 18.11 sale of 10
+// → 1. The old value comes from where the entry says: the illustrative 1 for
+// a value without an author (the register), the latest update audit row's
+// `old` for an authored entry, and an error for an authored entry without
+// one.
+func TestCorrectionRowOnHandBuiltLedger(t *testing.T) {
+	row := golden.Rows()[36]
+	if row.ID != 37 {
+		t.Fatalf("row %d, want golden 37", row.ID)
+	}
+	withEntry := func(t *testing.T) (*ledger, uuid.UUID) {
+		l := newLedger(t)
+		e := l.entry("daily", day17, nil)
+		l.bird(e, "H5.2", day17, "F", "mortality", -3)
+		return l, e
+	}
+	author := func(t *testing.T, l *ledger, entry uuid.UUID) uuid.UUID {
+		user := l.id(`insert into app_user (name, login, password_hash, role) values ('Dr. Ceban', 'dr.ceban', 'x', 'vet')`)
+		if _, err := l.d.App.Exec(t.Context(), `update entry set created_by = $2 where id = $1`, entry, user); err != nil {
+			t.Fatal(err)
+		}
+		return user
+	}
+	want := func(old int) golden.Correction {
+		return golden.Correction{Section: "H5.2", Sex: "F", AliveEnd17: 11, AliveEnd18: 1, Negative: 0,
+			Change: golden.ValueChange{Key: "H5.2 · găini moarte", Old: old, New: 3}}
+	}
+
+	t.Run("a register value takes the illustrative old value 1", func(t *testing.T) {
+		l, _ := withEntry(t)
+		got, err := row.Got(t.Context(), golden.Env{DB: l.d.App})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if diff := cmp.Diff(want(1), got); diff != "" {
+			t.Errorf("(-want +got):\n%s", diff)
+		}
+	})
+	t.Run("an authored entry takes the old value of its update audit row", func(t *testing.T) {
+		l, e := withEntry(t)
+		user := author(t, l, e)
+		kind := dbq.EntryKindDaily
+		if err := audit.Write(t.Context(), dbq.New(l.d.App), audit.Row{
+			At: golden.Now, UserID: &user, Action: dbq.AuditActionUpdate, Entity: "entry", EntityID: e, EntryID: &e,
+			EntryKind: &kind, FarmIDs: []uuid.UUID{l.farm}, RecordDate: &day17, Source: dbq.RecordSourceManual,
+			Changes: []audit.Change{{Key: "H5.2 · găini moarte", Section: "H5.2", Sex: dbq.SexF, Field: "mortality",
+				Old: audit.Int(2), New: audit.Int(3)}},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		got, err := row.Got(t.Context(), golden.Env{DB: l.d.App})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if diff := cmp.Diff(want(2), got); diff != "" {
+			t.Errorf("(-want +got):\n%s", diff)
+		}
+	})
+	t.Run("an authored entry without an audit row is an error", func(t *testing.T) {
+		l, e := withEntry(t)
+		author(t, l, e)
+		_, err := row.Got(t.Context(), golden.Env{DB: l.d.App})
+		if err == nil || !strings.Contains(err.Error(), "has no audit row") {
+			t.Errorf("err = %v, want the entry has no audit row", err)
+		}
+	})
 }
 
 // TestGoldenRowsWithoutTheFarm shows a database without the golden farm is an

@@ -564,3 +564,47 @@ where c.series_id = sqlc.arg(series_id)::uuid
   and e.type = 'placement'
   and e.deleted_at is null
   and (n.series_id is null or n.series_id = sqlc.arg(series_id)::uuid);
+
+-- name: CalcDeathsWindow :many
+-- Per bird-holding section (a section without children) × sex: the deaths (mortality + culls, D165, plan M5 Q3) of
+-- the day before the day and of the 7 days before it (day − 7 … day − 1), the inputs of the Zilnic form's Ieri and
+-- media 7 zile and of Z6 (§6.2). Every such section of the farm, 0 when it has none, in tree order (hall, then
+-- compartment). A running sum over v_section_sex_delta, not the dense view (ARC-6).
+select s.id as section_id, s.code,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'F' and x.date = sqlc.arg(day)::date - 1), 0)::integer
+         as yesterday_f,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'M' and x.date = sqlc.arg(day)::date - 1), 0)::integer
+         as yesterday_m,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'F'), 0)::integer as week_f,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'M'), 0)::integer as week_m
+from section s
+left join section p on p.id = s.parent_id
+left join v_section_sex_delta x on x.section_id = s.id
+     and x.farm_id = sqlc.arg(farm_id)::uuid
+     and x.date between sqlc.arg(day)::date - 7 and sqlc.arg(day)::date - 1
+where s.farm_id = sqlc.arg(farm_id)::uuid
+  and not exists (select 1 from section c where c.parent_id = s.id)
+group by s.id, s.code, s.sort_order, p.code, p.sort_order
+order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code;
+
+-- name: CalcHensStart :many
+-- Hens at the start of the day per egg unit of the farm (§5.6, D156): Σ ♀ deltas before the day over the unit's
+-- bird-holding sections (v_egg_unit: a hall's compartments, or a section without parent and children itself).
+-- Every egg unit of the farm (a section without parent), 0 when it has no hens, in tree order. A running sum over
+-- v_section_sex_delta like CalcLayDay, so it holds for any day (ARC-6).
+with h as (
+  select u.egg_unit_id, sum(x.delta) as hens
+  from v_egg_unit u
+  join v_section_sex_delta x on x.section_id = u.section_id
+  where u.farm_id = sqlc.arg(farm_id)::uuid
+    and x.farm_id = sqlc.arg(farm_id)::uuid
+    and x.sex = 'F'
+    and x.date < sqlc.arg(day)::date
+  group by u.egg_unit_id
+)
+select s.id as egg_unit_id, s.code, coalesce(h.hens, 0)::integer as hens_start
+from section s
+left join h on h.egg_unit_id = s.id
+where s.farm_id = sqlc.arg(farm_id)::uuid
+  and s.parent_id is null
+order by s.sort_order, s.code;

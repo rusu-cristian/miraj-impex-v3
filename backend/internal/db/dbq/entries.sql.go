@@ -198,8 +198,7 @@ func (q *Queries) EntriesFeedDaySlots(ctx context.Context, arg EntriesFeedDaySlo
 
 const entriesFeedSaveContext = `-- name: EntriesFeedSaveContext :many
 select f.name as farm_name,
-       s.name as series_name,
-       coalesce(s.status = 'closed', false)::boolean as series_closed,
+       coalesce(closed_series_on(f.id, $1::date), '')::text as closed_series,
        gf.feed_g as guide_feed_g_f,
        gm.feed_g as guide_feed_g_m,
        (select a.value #>> '{}' from app_setting a where a.key = 'tolerance.feed_pct')::numeric as tolerance_feed_pct,
@@ -211,7 +210,6 @@ from farm f
 left join cycle cy on cy.farm_id = f.id
      and cy.start_date <= $1::date
      and (cy.end_date is null or cy.end_date >= $1::date)
-left join series s on s.id = cy.series_id
 left join guide_week gf on gf.guide_id = cy.guide_id and gf.sex = 'F' and gf.week = sapt(cy.series_id, $1::date)
 left join guide_week gm on gm.guide_id = cy.guide_id and gm.sex = 'M' and gm.week = sapt(cy.series_id, $1::date)
 left join feed_type ft on ft.id = any($2::uuid[])
@@ -227,8 +225,7 @@ type EntriesFeedSaveContextParams struct {
 
 type EntriesFeedSaveContextRow struct {
 	FarmName         string
-	SeriesName       *string
-	SeriesClosed     bool
+	ClosedSeries     string
 	GuideFeedGF      decimal.NullDecimal
 	GuideFeedGM      decimal.NullDecimal
 	ToleranceFeedPct decimal.Decimal
@@ -238,11 +235,12 @@ type EntriesFeedSaveContextRow struct {
 	FeedTypeActive   *bool
 }
 
-// The farm context of a Hrană zilnică save (§6.3, M3 D5/D6), read under the farm lock: the farm's name, the cycle
-// whose [start_date, end_date] contains the day with its series (closed → 409 SERIES_CLOSED, §3.1), the guide's
-// feed_g per sex for SAPT(day) (null: no guide, no guide row or an empty cell, so no H4), tolerance.feed_pct, and one
-// row per asked feed type that exists (name, for_sex, active: H2), ordered by name_key. The context columns repeat on
-// every row; a farm without any asked type gives one row with null type columns; no row = no such farm.
+// The farm context of a Hrană zilnică save (§6.3, M3 D5/D6), read under the farm lock: the farm's name, the closed
+// series whose cycle contains the day (closed_series_on, 0003; ” when none; closed → 409 SERIES_CLOSED, §3.1, M5
+// D12), the guide's feed_g per sex for SAPT(day) of the cycle that contains the day (null: no cycle, no guide, no
+// guide row or an empty cell, so no H4), tolerance.feed_pct, and one row per asked feed type that exists (name,
+// for_sex, active: H2), ordered by name_key. The context columns repeat on every row; a farm without any asked type
+// gives one row with null type columns; no row = no such farm.
 func (q *Queries) EntriesFeedSaveContext(ctx context.Context, arg EntriesFeedSaveContextParams) ([]EntriesFeedSaveContextRow, error) {
 	rows, err := q.db.Query(ctx, entriesFeedSaveContext, arg.Day, arg.FeedTypeIds, arg.FarmID)
 	if err != nil {
@@ -254,8 +252,7 @@ func (q *Queries) EntriesFeedSaveContext(ctx context.Context, arg EntriesFeedSav
 		var i EntriesFeedSaveContextRow
 		if err := rows.Scan(
 			&i.FarmName,
-			&i.SeriesName,
-			&i.SeriesClosed,
+			&i.ClosedSeries,
 			&i.GuideFeedGF,
 			&i.GuideFeedGM,
 			&i.ToleranceFeedPct,

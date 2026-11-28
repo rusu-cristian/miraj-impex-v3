@@ -15,8 +15,6 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
-func TestMain(m *testing.M) { testdb.Main(m) }
-
 // recorder is a dbq.DBTX that records the farm id of every LockFarm it runs.
 type recorder struct {
 	pgx.Tx

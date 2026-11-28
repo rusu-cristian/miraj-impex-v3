@@ -1,0 +1,21 @@
+{
+  "farm": {
+    "id": "<farm:telita>",
+    "name": "Telița",
+    "type": "growth"
+  },
+  "date": "2026-11-18",
+  "sapt": null,
+  "ageDays": null,
+  "cycle": null,
+  "lockedReason": null,
+  "empty": {
+    "since": "2026-02-28",
+    "label": "Ferma e goală din 28.02.2026. Ultimul ciclu: Seria 2026, SAPT 1–21.",
+    "hint": "Ciclul pornește la prima populare sau transfer."
+  },
+  "halls": [],
+  "emptyHalls": [],
+  "existing": [],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

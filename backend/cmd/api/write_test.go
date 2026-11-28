@@ -15,7 +15,9 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
@@ -851,5 +853,368 @@ func TestM4WritesContract(t *testing.T) {
 	if err := s.d.App.QueryRow(context.Background(), `select (select count(*) from entry) + (select count(*) from feed_delivery)
 		+ (select count(*) from audit_log) + (select count(*) from live_event)`).Scan(&n); err != nil || n != 0 {
 		t.Errorf("rows written: %d (%v), want 0", n, err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// M5: Zilnic, the entry read, Corectează, undo, delete and restore over HTTP
+// (plan T9)
+// ---------------------------------------------------------------------------
+
+// entryAnswer is the part of GET /api/entries/{id} the chain reads; values
+// stay raw (the create shape of the kind, sent back as PUT values).
+type entryAnswer struct {
+	Entry struct {
+		ID        uuid.UUID              `json:"id"`
+		Version   string                 `json:"version"`
+		Author    *struct{ Name string } `json:"author"`
+		Corrected *struct {
+			By string `json:"by"`
+			At string `json:"at"`
+		} `json:"corrected"`
+	} `json:"entry"`
+	Values   json.RawMessage          `json:"values"`
+	Sections []entries.EntrySection   `json:"sections"`
+	Actions  entries.EntryReadActions `json:"actions"`
+}
+
+// writeAnswer is the part of an EntryWriteResponse (201 create, 200 change)
+// the chain reads.
+type writeAnswer struct {
+	Entry struct {
+		ID uuid.UUID `json:"id"`
+	} `json:"entry"`
+	Toast    string              `json:"toast"`
+	Alive    *httpx.SexPair[int] `json:"alive"`
+	Warnings []httpx.Warning     `json:"warnings"`
+}
+
+// seededZilnicDay is a Zilnic save body of farm's seeded 18.11.2026 bird
+// values (Dr. Ceban's 08:15 mortality, 4 sections), without a key, and a
+// func that soft-deletes the day's live Zilnic bird rows and the entries
+// left without a live row, so the body can be saved again.
+func seededZilnicDay(t testing.TB, s *stack, farm uuid.UUID) (body string, clear func()) {
+	t.Helper()
+	rs, err := s.d.App.Query(context.Background(), `select b.section_id, b.sex::text, -b.qty from bird_event b
+		join section s on s.id = b.section_id
+		where b.farm_id = $1 and b.date = $2 and b.type = 'mortality' and b.deleted_at is null order by s.code, b.sex`,
+		farm, testdb.Today)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rs.Close()
+	var sections []entries.DailySection
+	for rs.Next() {
+		var (
+			id   uuid.UUID
+			sex  string
+			dead int64
+		)
+		if err := rs.Scan(&id, &sex, &dead); err != nil {
+			t.Fatal(err)
+		}
+		if len(sections) == 0 || sections[len(sections)-1].SectionID != id {
+			sections = append(sections, entries.DailySection{SectionID: id})
+		}
+		n := num.FromInt(dead)
+		sec := &sections[len(sections)-1]
+		if sex == string(dbq.SexF) {
+			sec.F = &entries.DailySex{Mortality: &n}
+		} else {
+			sec.M = &entries.DailySex{Mortality: &n}
+		}
+	}
+	if err := rs.Err(); err != nil || len(sections) != 4 {
+		t.Fatalf("seeded 18.11 mortality: %d sections, %v; want 4", len(sections), err)
+	}
+	body = entryBody(t, map[string]any{"farmId": farm, "date": testdb.Today, "sections": sections})
+	return body, func() {
+		var owner uuid.UUID
+		if err := s.d.App.QueryRow(context.Background(), `select id from app_user where login = 'proprietar'`).Scan(&owner); err != nil {
+			t.Fatal(err)
+		}
+		s.exec(t, `update bird_event set deleted_at = $3 where farm_id = $1 and date = $2 and deleted_at is null
+			and type in ('mortality', 'cull', 'sexing_error')`, farm, testdb.Today, testdb.Now())
+		s.exec(t, `update entry e set deleted_at = $3, deleted_by = $4
+			where e.farm_id = $1 and e.kind = 'daily' and e.date = $2 and e.deleted_at is null
+			  and not exists (select 1 from bird_event b where b.entry_id = e.id and b.deleted_at is null)
+			  and not exists (select 1 from egg_production g where g.entry_id = e.id and g.deleted_at is null)`,
+			farm, testdb.Today, testdb.Now(), owner)
+	}
+}
+
+// entryBody marshals a request body.
+func entryBody(t testing.TB, v any) string {
+	t.Helper()
+	b, err := json.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}
+
+// T9 criterion 3: on the dev seed, through the whole server.
+//
+//  1. Ion Rusu's Zilnic form state of Hîrbovăț, 18.11 (T4's figures).
+//  2. Dr. Ceban reads his 18.11 mortality save (his to edit today), deletes
+//     it (the author, same day: no Motiv) and saves the same values again:
+//     dry run, then 201 with §6.2's Toast and the farm ♀ 12 561 · ♂ 794
+//     (golden 5, T5); the same key again replays the 201 byte for byte. He
+//     undoes the new save ("Zilnic anulat · 18.11.2026") and saves it once
+//     more, so the 17.11 figures below meet the seed's 18.11.
+//  3. On the corrected 17.11 save (T6, golden 37): the owner reads it, puts
+//     H5.2 ♀ back to 1; Ion Rusu's dry run 1 → 3 answers §7.8's preview, his
+//     save the Toast "Corecție salvată · H5.2 ♀ 1 → 3 · în viață ♀ 4 281";
+//     he undoes it ("Corecție anulată · H5.2 ♀ 3 → 1").
+//  4. He deletes the save with a Motiv (dry run, then ♀ 12 563 → 12 568, the
+//     S16 Dialog's figures, T7) and restores it (♀ 12 563).
+func TestZilnicChainSeeded(t *testing.T) {
+	t.Parallel()
+	s := newSeededStack(t)
+	hirb := seededFarm(t, s, "hirbovat")
+	vet, manager, owner := seededSession(t, s, "dr.ceban"), seededSession(t, s, "ion.rusu"), seededSession(t, s, "proprietar")
+	send := func(u seededReader, method, path, body string, want int) response {
+		t.Helper()
+		r := s.do(t, call{method: method, path: path, body: body, cookie: u.token})
+		if r.status != want {
+			t.Fatalf("%s %s as %s: %s, want %d", method, path, u.login, r, want)
+		}
+		return r
+	}
+	entryPath := func(id uuid.UUID) string { return "/api/entries/" + id.String() }
+
+	// 1. The form state.
+	form := decodeBody[entries.DailyFormResponse](t, send(manager, http.MethodGet,
+		"/api/forms/daily?farmId="+hirb.String()+"&date=2026-11-18", "", http.StatusOK))
+	var h52 uuid.UUID
+	for _, h := range form.Halls {
+		for _, sec := range h.Sections {
+			if sec.Code == "H5.2" {
+				h52 = sec.SectionID
+				if sec.AliveStart != (httpx.SexPair[int]{F: 4283, M: 323}) {
+					t.Errorf("form H5.2 aliveStart %+v, want ♀ 4 283 · ♂ 323", sec.AliveStart)
+				}
+			}
+		}
+	}
+	if h52 == uuid.Nil || form.SAPT == nil || *form.SAPT != 59 || len(form.Existing) != 2 {
+		t.Fatalf("form: H5.2 %s, sapt %v, existing %+v", h52, form.SAPT, form.Existing)
+	}
+	var mortality uuid.UUID // Dr. Ceban's 08:15 save, the one with bird values
+	for _, e := range form.Existing {
+		if e.Editable || !e.Correctable {
+			t.Errorf("existing %+v as Ion Rusu: want correctable only", e)
+		}
+		if len(e.Sections) == 4 {
+			mortality = e.EntryID
+		}
+	}
+
+	// 2. Dr. Ceban's 18.11 save: read, delete, save again.
+	mine := decodeBody[entryAnswer](t, send(vet, http.MethodGet, entryPath(mortality), "", http.StatusOK))
+	if !mine.Actions.Edit || !mine.Actions.Delete || mine.Actions.Correct {
+		t.Errorf("Dr. Ceban's own save of today: actions %+v, want edit and delete", mine.Actions)
+	}
+	var values entries.DailyValues
+	if err := json.Unmarshal(mine.Values, &values); err != nil || len(values.Sections) != 4 {
+		t.Fatalf("values %s: %v", mine.Values, err)
+	}
+	gone := decodeBody[writeAnswer](t, send(vet, http.MethodDelete, entryPath(mortality), `{}`, http.StatusOK))
+	if gone.Alive == nil || *gone.Alive != (httpx.SexPair[int]{F: 12564, M: 794}) {
+		t.Errorf("delete of the 18.11 save: %+v, want ♀ 12 564 · ♂ 794", gone)
+	}
+	send(vet, http.MethodGet, entryPath(mortality), "", http.StatusNotFound)
+
+	create := func(key uuid.UUID, dryRun bool) string {
+		return entryBody(t, map[string]any{"farmId": values.FarmID, "date": values.Date, "sections": values.Sections,
+			"clientRequestId": key, "dryRun": dryRun})
+	}
+	saveAgain := func() uuid.UUID {
+		t.Helper()
+		key := uuid.New()
+		dry := decodeBody[entries.DryRunResponse](t, send(vet, http.MethodPost, dailyPath, create(key, true), http.StatusOK))
+		if len(dry.Refusals) != 0 {
+			t.Errorf("dry run refusals %+v", dry.Refusals)
+		}
+		first := send(vet, http.MethodPost, dailyPath, create(key, false), http.StatusCreated)
+		saved := decodeBody[writeAnswer](t, first)
+		if saved.Toast != "Zilnic salvat · 4 secțiuni · ♀ −3 · ♂ 0" || saved.Alive == nil ||
+			*saved.Alive != (httpx.SexPair[int]{F: 12561, M: 794}) {
+			t.Errorf("save: %s", first)
+		}
+		if again := send(vet, http.MethodPost, dailyPath, create(key, false), http.StatusOK); again.body != first.body {
+			t.Errorf("replay body %s, want the 201's %s", again.body, first.body)
+		}
+		return saved.Entry.ID
+	}
+	created := saveAgain()
+	undone := decodeBody[writeAnswer](t, send(vet, http.MethodPost, entryPath(created)+"/undo", `{}`, http.StatusOK))
+	if undone.Toast != "Zilnic anulat · 18.11.2026" {
+		t.Errorf("undo of the create: %+v", undone)
+	}
+	send(vet, http.MethodGet, entryPath(created), "", http.StatusNotFound)
+	saveAgain()
+
+	// 3. The corrected 17.11 save.
+	var corrected uuid.UUID
+	if err := s.d.App.QueryRow(t.Context(), `select id from entry where kind = 'daily' and date = '2026-11-17' and corrected`).
+		Scan(&corrected); err != nil {
+		t.Fatal(err)
+	}
+	read := func(u seededReader) entryAnswer {
+		t.Helper()
+		return decodeBody[entryAnswer](t, send(u, http.MethodGet, entryPath(corrected), "", http.StatusOK))
+	}
+	e := read(owner)
+	if e.Entry.Author == nil || e.Entry.Author.Name != "Dr. Ceban" || e.Entry.Corrected == nil ||
+		e.Entry.Corrected.By != "Ion Rusu" || e.Entry.Corrected.At != "2026-11-18T10:12:00+02:00" ||
+		e.Actions != (entries.EntryReadActions{Correct: true, Delete: true}) {
+		t.Errorf("17.11 as the owner: %+v", e)
+	}
+	put := func(u seededReader, h52F int64, reason string, dryRun bool, want int) response {
+		t.Helper()
+		cur := read(u)
+		var v entries.DailyValues
+		if err := json.Unmarshal(cur.Values, &v); err != nil {
+			t.Fatal(err)
+		}
+		for i, sec := range v.Sections {
+			if sec.SectionID == h52 {
+				f := *sec.F
+				n := num.FromInt(h52F)
+				f.Mortality = &n
+				v.Sections[i].F = &f
+			}
+		}
+		return send(u, http.MethodPut, entryPath(corrected), entryBody(t, map[string]any{
+			"ifVersion": cur.Entry.Version, "values": v, "reason": reason, "dryRun": dryRun}), want)
+	}
+	put(owner, 1, "Înapoi la registru.", false, http.StatusOK)
+	preview := decodeBody[entries.CorrectionPreview](t, put(manager, 3, "", true, http.StatusOK))
+	if len(preview.Changes) != 1 || preview.Changes[0].Key != "H5.2 · găini moarte" ||
+		!slices.Equal(preview.Effects, []string{"H5.2 · găini în viață de pe 17.11.2026 se schimbă cu −2.",
+			"Mortalitate · morți ♀ −5 → −7", "Hîrbovăț · ♀ azi 12 563 → 12 561"}) ||
+		preview.CheckedDays != 2 || len(preview.Refusals) != 0 || len(preview.Warnings) != 1 {
+		t.Errorf("correction preview %+v", preview)
+	}
+	saved := decodeBody[writeAnswer](t, put(manager, 3, "Numărătoare refăcută: 2 găini găsite moarte sub hrănitoare.", false, http.StatusOK))
+	if saved.Toast != "Corecție salvată · H5.2 ♀ 1 → 3 · în viață ♀ 4 281" {
+		t.Errorf("correction: %+v", saved)
+	}
+	// Without a Motiv the correction is refused (400 on reason).
+	if r := put(manager, 4, "", false, http.StatusBadRequest); !strings.Contains(r.body, `"path":"reason"`) {
+		t.Errorf("correction without a Motiv: %s", r)
+	}
+	undone = decodeBody[writeAnswer](t, send(manager, http.MethodPost, entryPath(corrected)+"/undo", `{}`, http.StatusOK))
+	if undone.Toast != "Corecție anulată · H5.2 ♀ 3 → 1" {
+		t.Errorf("undo of the correction: %+v", undone)
+	}
+
+	// 4. Delete with a Motiv, then restore.
+	dry := decodeBody[entries.CorrectionPreview](t, send(manager, http.MethodDelete, entryPath(corrected), `{"dryRun":true}`, http.StatusOK))
+	if len(dry.Effects) != 1 || !strings.HasSuffix(dry.Effects[0],
+		"4 secțiuni · ♀ −5 · ♂ 0. Găini în viață azi în Hîrbovăț: ♀ 12 563 → ♀ 12 568. Ștergerea rămâne în Istoric modificări.") {
+		t.Errorf("delete preview %+v", dry)
+	}
+	gone = decodeBody[writeAnswer](t, send(manager, http.MethodDelete, entryPath(corrected), `{"reason":"Salvare dublă."}`, http.StatusOK))
+	if gone.Toast != "Mortalitate ștearsă · 17.11.2026 · 4 secțiuni · în viață azi ♀ 12 568" ||
+		gone.Alive == nil || *gone.Alive != (httpx.SexPair[int]{F: 12568, M: 794}) {
+		t.Errorf("delete: %+v", gone)
+	}
+	back := decodeBody[writeAnswer](t, send(manager, http.MethodPost, entryPath(corrected)+"/restore", `{}`, http.StatusOK))
+	if back.Toast != "Mortalitate restaurată · 17.11.2026 · 4 secțiuni · în viață azi ♀ 12 563" {
+		t.Errorf("restore: %+v", back)
+	}
+	if e := read(manager); e.Actions.Restore || !e.Actions.Correct {
+		t.Errorf("17.11 after the restore as Ion Rusu: actions %+v", e.Actions)
+	}
+}
+
+// The HTTP contract of the M5 writes (§7.0a, §11.4) on the matrix fixture,
+// the owner calling: an unknown member is named by its path (inside PUT's
+// values too; undo and restore take {} only), a body over 64 KiB is 413
+// (DELETE's body included), and a cross-site request is refused before the
+// handler. A valid request reaches the service: the dry runs answer 200,
+// undo (Telița's delivery, no action) and restore (the live entry, whose
+// latest action is a create) 409 STALE. Nothing is written.
+func TestM5WritesContract(t *testing.T) {
+	t.Parallel()
+	s := newStack(t)
+	f := matrixFarms{hirb: s.farm(t, "Hîrbovăț", "hirbovat"), tel: s.farm(t, "Telița", "telita")}
+	if err := s.d.App.QueryRow(t.Context(), `insert into feed_type (name, name_key, for_sex) values ('Breeder 2', 'breeder 2', 'F')
+		returning id`).Scan(&f.feedType); err != nil {
+		t.Fatal(err)
+	}
+	m5MatrixFixture(t, s, &f)
+	token := s.session(t, s.user(t, "proprietar", "Proprietar", dbq.UserRoleOwner, true), sessionOpen)
+	counts := func() string {
+		t.Helper()
+		var n string
+		if err := s.d.App.QueryRow(t.Context(), `select concat_ws(' ', (select count(*) from entry), (select count(*) from bird_event),
+			(select count(*) from bird_event where deleted_at is null), (select max(coalesce(updated_at, created_at)) from entry),
+			(select count(*) from audit_log), (select count(*) from live_event))`).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	before := counts()
+
+	pad := `"pad":"` + strings.Repeat("a", 65<<10) + `"`
+	entry := "/api/entries/" + f.entry.String()
+	daily := func(extra string) string {
+		return `{"farmId":"` + f.hirb.String() + `","date":"2026-11-18","sections":[{"sectionId":"` + f.birds.String() +
+			`","F":{"mortality":1` + extra + `}}],"dryRun":true}`
+	}
+	correction := func(extra string) string {
+		return `{"ifVersion":"` + f.entryVersion + `","values":{"farmId":"` + f.hirb.String() + `","date":"2026-11-17",` +
+			`"sections":[{"sectionId":"` + f.birds.String() + `","F":{"mortality":2` + extra + `}}]},"reason":"Recount","dryRun":true}`
+	}
+	for _, tc := range []struct {
+		method, path       string
+		unknown, unknownAt string
+		big                string
+		valid              string
+		validStatus        int
+	}{
+		{http.MethodPost, dailyPath, daily(`,"deaths":1`), "sections[0].F.deaths", daily(`},"x":{` + pad), daily(""), http.StatusOK},
+		{http.MethodPut, entry, correction(`,"deaths":1`), "values.sections[0].F.deaths", correction(`},"x":{` + pad),
+			correction(""), http.StatusOK},
+		{http.MethodDelete, entry, `{"dryRun":true,"motiv":"x"}`, "motiv", `{"dryRun":true,` + pad + `}`, `{"dryRun":true}`, http.StatusOK},
+		{http.MethodPost, "/api/entries/" + f.telEntry.String() + "/undo", `{"dryRun":true}`, "dryRun", `{` + pad + `}`, `{}`,
+			http.StatusConflict},
+		{http.MethodPost, entry + "/restore", `{"reason":"x"}`, "reason", `{` + pad + `}`, `{}`, http.StatusConflict},
+	} {
+		what := tc.method + " " + tc.path
+		send := func(b string, header map[string]string) response {
+			return s.do(t, call{method: tc.method, path: tc.path, body: b, cookie: token, header: header})
+		}
+		wantBody(t, what+" unknown member", send(tc.unknown, nil), http.StatusBadRequest,
+			`{"error":{"code":"VALIDATION","message":"Datele trimise nu sunt valide.",`+
+				`"issues":[{"path":"`+tc.unknownAt+`","code":"unknown_field","message":"Datele trimise nu sunt valide."}]}}`)
+		wantBody(t, what+" 65 KiB", send(tc.big, nil), http.StatusRequestEntityTooLarge, bodyTooLarge)
+		for _, h := range []map[string]string{
+			{"Origin": "https://evil.example"},
+			{"Origin": "", "Sec-Fetch-Site": "cross-site"},
+			{"Origin": ""},
+			{"Content-Type": "text/plain"},
+		} {
+			wantBody(t, fmt.Sprintf("%s with %v", what, h), send(tc.valid, h), http.StatusForbidden, bodyForbidden)
+		}
+		for _, h := range []map[string]string{nil, {"Origin": "", "Sec-Fetch-Site": "same-origin"}} {
+			if r := send(tc.valid, h); r.status != tc.validStatus {
+				t.Errorf("%s with %v: %s, want %d", what, h, r, tc.validStatus)
+			}
+		}
+	}
+	// The entry read takes no query parameter and a well-formed id.
+	get := func(path string) response {
+		return s.do(t, call{method: http.MethodGet, path: path, cookie: token})
+	}
+	wantBody(t, "entry read with a parameter", get(entry+"?x=1"), http.StatusBadRequest, bodyUnknownParam("x"))
+	if r := get("/api/entries/nu-e-un-id"); r.status != http.StatusBadRequest || !strings.Contains(r.body, `"path":"id"`) {
+		t.Errorf("entry read of a malformed id: %s, want 400 on id", r)
+	}
+	if after := counts(); after != before {
+		t.Errorf("rows written: %s → %s, want none", before, after)
 	}
 }

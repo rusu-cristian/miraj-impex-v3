@@ -15,6 +15,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
@@ -304,6 +305,134 @@ func TestEmitM4Events(t *testing.T) {
 		t.Fatal(err)
 	}
 	if want := []string{"delivery.created", "price.set", "price.changed"}; !slices.Equal(types, want) {
+		t.Errorf("types = %v, want %v", types, want)
+	}
+}
+
+// TestM5EntryEvents: entry.updated / deleted / restored carry the
+// entry.created payload (§9) under their own type, for the payload's farms,
+// with nil lists sent as [].
+func TestM5EntryEvents(t *testing.T) {
+	author := "Ion Rusu"
+	p := EntryPayload{
+		EntryID: uuid.MustParse("22222222-2222-2222-2222-222222222222"), Kind: dbq.EntryKindDaily,
+		FarmIDs: []uuid.UUID{farm}, Dates: []timex.Day{timex.MustDay(2026, 11, 17)}, Sections: []string{"H5.1", "H5.2", "H6.1", "H6.2"},
+		RecordTypes: []string{"mortalitate"}, Author: &author, At: timex.At(testdb.Now()),
+		Summary: "Mortalitate · 4 secțiuni", Corrected: true,
+	}
+	const want = `{"entryId":"22222222-2222-2222-2222-222222222222","kind":"daily","farmIds":["11111111-1111-1111-1111-111111111111"],` +
+		`"dates":["2026-11-17"],"sections":["H5.1","H5.2","H6.1","H6.2"],"recordTypes":["mortalitate"],"author":"Ion Rusu",` +
+		`"at":"2026-11-18T12:00:00+02:00","summary":"Mortalitate · 4 secțiuni","corrected":true}`
+	for _, tc := range []struct {
+		ctor func(EntryPayload) Event
+		typ  string
+	}{
+		{EntryCreated, "entry.created"},
+		{EntryUpdated, "entry.updated"},
+		{EntryDeleted, "entry.deleted"},
+		{EntryRestored, "entry.restored"},
+	} {
+		t.Run(tc.typ, func(t *testing.T) {
+			ev := tc.ctor(p)
+			b, err := json.Marshal(ev.Payload)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(b) != want {
+				t.Errorf("payload = %s\nwant      %s", b, want)
+			}
+			if ev.Type != tc.typ || !slices.Equal(ev.FarmIDs, []uuid.UUID{farm}) {
+				t.Errorf("event = %s %v", ev.Type, ev.FarmIDs)
+			}
+
+			empty := tc.ctor(EntryPayload{Kind: dbq.EntryKindDelivery})
+			b, err = json.Marshal(empty.Payload)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got map[string]json.RawMessage
+			if err := json.Unmarshal(b, &got); err != nil {
+				t.Fatal(err)
+			}
+			for _, k := range []string{"farmIds", "dates", "sections", "recordTypes"} {
+				if string(got[k]) != "[]" {
+					t.Errorf("nil %s = %s, want []", k, got[k])
+				}
+			}
+			if empty.FarmIDs == nil || len(empty.FarmIDs) != 0 {
+				t.Errorf("nil farms: event farms %v", empty.FarmIDs)
+			}
+		})
+	}
+}
+
+// TestCountsChanged: the §9 counts.changed payload, for its farm only.
+func TestCountsChanged(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		sections []string
+		want     string
+	}{
+		{"sections", []string{"H5.2"},
+			`{"farmId":"11111111-1111-1111-1111-111111111111","fromDate":"2026-11-17","sections":["H5.2"],"alive":{"F":12561,"M":794}}`},
+		{"nil sections", nil,
+			`{"farmId":"11111111-1111-1111-1111-111111111111","fromDate":"2026-11-17","sections":[],"alive":{"F":12561,"M":794}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ev := CountsChanged(farm, timex.MustDay(2026, 11, 17), tc.sections, httpx.SexPair[int]{F: 12561, M: 794})
+			b, err := json.Marshal(ev.Payload)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(b) != tc.want {
+				t.Errorf("payload = %s\nwant      %s", b, tc.want)
+			}
+			if ev.Type != "counts.changed" || !slices.Equal(ev.FarmIDs, []uuid.UUID{farm}) {
+				t.Errorf("event = %s %v", ev.Type, ev.FarmIDs)
+			}
+		})
+	}
+}
+
+// TestEmitM5Events: the M5 events go through the outbox in order, with their
+// farms and payloads.
+func TestEmitM5Events(t *testing.T) {
+	ctx := context.Background()
+	d := testdb.New(t)
+	p := EntryPayload{EntryID: uuid.New(), Kind: dbq.EntryKindDaily, FarmIDs: []uuid.UUID{farm}, At: timex.At(testdb.Now())}
+	evs := []Event{
+		EntryUpdated(p), EntryDeleted(p), EntryRestored(p),
+		CountsChanged(farm, testdb.Today, []string{"H5.2"}, httpx.SexPair[int]{F: 4281, M: 323}),
+	}
+	if err := Emit(ctx, dbq.New(d.App), evs...); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := d.App.Query(ctx, `select type, farm_ids, payload->>'fromDate' from live_event order by id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var types []string
+	for rows.Next() {
+		var (
+			typ   string
+			farms []uuid.UUID
+			from  *string
+		)
+		if err := rows.Scan(&typ, &farms, &from); err != nil {
+			t.Fatal(err)
+		}
+		types = append(types, typ)
+		if !slices.Equal(farms, []uuid.UUID{farm}) {
+			t.Errorf("%s: farm_ids %v", typ, farms)
+		}
+		if typ == TypeCountsChanged && (from == nil || *from != "2026-11-18") {
+			t.Errorf("counts.changed fromDate = %v", from)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"entry.updated", "entry.deleted", "entry.restored", "counts.changed"}; !slices.Equal(types, want) {
 		t.Errorf("types = %v, want %v", types, want)
 	}
 }

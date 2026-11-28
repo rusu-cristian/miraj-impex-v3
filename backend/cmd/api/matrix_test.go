@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -81,10 +82,20 @@ type matrixCase struct {
 // a Hrană zilnică or a Livrare hrană body pass level 1 and reach the service
 // (M3 T8, M4 T7). series has a closed cycle on Telița (the viewer's farm),
 // cojusnaSeries one on Cojușna only (the owner's), for the series page.
+//
+// M5: birds is a section of Hîrbovăț with birds (♀ 100 · ♂ 10 from 1.11),
+// for the Zilnic dry runs. entry is a Zilnic entry of 17.11 by another vet
+// (Dr. Autor: ♀ 1 death there, its create in audit_log) at entryVersion;
+// telEntry a priced delivery of Telița without an audit row; deleted a
+// Zilnic entry of 16.11 Dr. Autor deleted today (his create and delete in
+// audit_log).
 type matrixFarms struct {
-	hirb, tel, cojusna    uuid.UUID
-	section, feedType     uuid.UUID
-	series, cojusnaSeries uuid.UUID
+	hirb, tel, cojusna       uuid.UUID
+	section, feedType        uuid.UUID
+	series, cojusnaSeries    uuid.UUID
+	birds                    uuid.UUID
+	entry, telEntry, deleted uuid.UUID
+	entryVersion             string
 }
 
 // unknownFarm is a farm id that no farm has.
@@ -215,6 +226,137 @@ var authMatrix = []matrixRow{
 		`{"undoToken":"nu-e-un-token"}`, http.StatusBadRequest, httpx.CodeValidation),
 	priceWriteRow("PATCH /api/deliveries/{id}/price", "/api/deliveries/"+unknownFarm.String()+"/price",
 		`{"pricePerKg":7.74,"reason":"Factura corectată"}`, http.StatusNotFound, httpx.CodeNotFound),
+
+	// Zilnic (§7.8, M5-D13): vet, manager and owner on their farms, as
+	// Hrană zilnică; the viewer never (403 FORBIDDEN). The form state of the
+	// matrix farm is 200; the save is a dry run of today on the section with
+	// birds (200, nothing written). A vet's save of another day is 403
+	// PAST_DAY_VET (Z1); a manager's or the owner's is a dry run like today's.
+	writerRow("GET /api/forms/daily", http.StatusOK, http.StatusOK,
+		func(id uuid.UUID) string { return "/api/forms/daily?farmId=" + id.String() + "&date=2026-11-18" }, nil),
+	withPastDay(writerRow("POST /api/entries/daily", http.StatusOK, http.StatusBadRequest,
+		func(uuid.UUID) string { return dailyPath }, func(f matrixFarms, farm uuid.UUID) string {
+			return dailyDryRun(f, farm, "2026-11-18")
+		})),
+
+	// One saved entry (§7.8, M5 Q10). The read: any role that sees every farm
+	// of the entry, the viewer included; another farm's entry is 403
+	// FARM_FORBIDDEN, an unknown one 404 for everyone.
+	entryRow("GET /api/entries/{id}", func(f matrixFarms) uuid.UUID { return f.entry }, nil,
+		map[caller]int{vet: 200, viewer: 403, manager: 200, owner: 200},
+		map[caller]string{viewer: httpx.CodeFarmForbidden},
+		matrixCase{name: "Telița's entry", path: entryPath(func(f matrixFarms) uuid.UUID { return f.telEntry }, ""),
+			want: withSessions(map[caller]int{vet: 403, viewer: 200, manager: 200, owner: 200}),
+			code: map[caller]string{vet: httpx.CodeFarmForbidden}}),
+	// The writes on the entry of 17.11 by another vet (Dr. Autor): the viewer
+	// is refused (403), the vet too (another's entry, 403 FORBIDDEN); the
+	// manager and the owner reach the service. PUT and DELETE are corrections
+	// with a Motiv in dry run (200, nothing written), PUT with an old
+	// ifVersion 409 STALE.
+	entryRow("PUT /api/entries/{id}", func(f matrixFarms) uuid.UUID { return f.entry },
+		func(f matrixFarms) string { return correctionDryRun(f, f.entryVersion) },
+		map[caller]int{vet: 403, viewer: 403, manager: 200, owner: 200},
+		map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeForbidden},
+		matrixCase{name: "old ifVersion", path: entryPath(func(f matrixFarms) uuid.UUID { return f.entry }, ""),
+			body: func(f matrixFarms) string { return correctionDryRun(f, "2026-11-16T06:00:00.000000Z") },
+			want: withSessions(map[caller]int{vet: 403, viewer: 403, manager: 409, owner: 409}),
+			code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeForbidden,
+				manager: httpx.CodeStale, owner: httpx.CodeStale}}),
+	entryRow("DELETE /api/entries/{id}", func(f matrixFarms) uuid.UUID { return f.entry },
+		func(matrixFarms) string { return `{"reason":"Introdusă de două ori","dryRun":true}` },
+		map[caller]int{vet: 403, viewer: 403, manager: 200, owner: 200},
+		map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden}),
+	// Undo and restore act only on the caller's own latest action of today
+	// (Q8): on Dr. Autor's create (the entry of 17.11) and his delete of
+	// today (the deleted entry) every writer is refused, 403 FORBIDDEN; on
+	// an entry without an action of that kind (Telița's delivery for undo,
+	// the live entry for restore) the manager and the owner get 409 STALE.
+	entryRow("POST /api/entries/{id}/undo", func(f matrixFarms) uuid.UUID { return f.entry },
+		func(matrixFarms) string { return `{}` },
+		map[caller]int{vet: 403, viewer: 403, manager: 403, owner: 403},
+		map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden,
+			manager: httpx.CodeForbidden, owner: httpx.CodeForbidden},
+		matrixCase{name: "Telița's entry", path: entryPath(func(f matrixFarms) uuid.UUID { return f.telEntry }, "/undo"),
+			body: func(matrixFarms) string { return `{}` },
+			want: withSessions(map[caller]int{vet: 403, viewer: 403, manager: 409, owner: 409}),
+			code: map[caller]string{vet: httpx.CodeFarmForbidden, viewer: httpx.CodeForbidden,
+				manager: httpx.CodeStale, owner: httpx.CodeStale}}),
+	entryRow("POST /api/entries/{id}/restore", func(f matrixFarms) uuid.UUID { return f.deleted },
+		func(matrixFarms) string { return `{}` },
+		map[caller]int{vet: 403, viewer: 403, manager: 403, owner: 403},
+		map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden,
+			manager: httpx.CodeForbidden, owner: httpx.CodeForbidden},
+		matrixCase{name: "live entry", path: entryPath(func(f matrixFarms) uuid.UUID { return f.entry }, "/restore"),
+			body: func(matrixFarms) string { return `{}` },
+			want: withSessions(map[caller]int{vet: 409, viewer: 403, manager: 409, owner: 409}),
+			code: map[caller]string{vet: httpx.CodeStale, viewer: httpx.CodeFarmForbidden,
+				manager: httpx.CodeStale, owner: httpx.CodeStale}}),
+}
+
+const dailyPath = "/api/entries/daily"
+
+// withSessions completes want with 401 for every caller without an open
+// session of an active account.
+func withSessions(want map[caller]int) map[caller]int {
+	m := map[caller]int{anonymous: 401, revoked: 401, expired: 401, deactivated: 401}
+	maps.Copy(m, want)
+	return m
+}
+
+// entryPath is the path of an entry route on the entry pick names, with
+// suffix ("/undo") after the id.
+func entryPath(pick func(matrixFarms) uuid.UUID, suffix string) func(matrixFarms) string {
+	return func(f matrixFarms) string { return "/api/entries/" + pick(f).String() + suffix }
+}
+
+// entryRow is the row of a route on one saved entry (M5): the main target is
+// the entry pick names, with body (nil = none) and the statuses and codes of
+// the four session callers; extra are other targets. Every row also gets an
+// unknown entry: 404 NOT_FOUND for everyone with a session, except a viewer
+// on PUT, refused by role before the entry is read.
+func entryRow(route string, pick func(matrixFarms) uuid.UUID, body func(matrixFarms) string,
+	want map[caller]int, code map[caller]string, extra ...matrixCase) matrixRow {
+	_, pattern, _ := strings.Cut(route, " ")
+	suffix := strings.TrimPrefix(pattern, "/api/entries/{id}")
+	unknown := map[caller]int{vet: 404, viewer: 404, manager: 404, owner: 404}
+	unknownCode := map[caller]string{vet: httpx.CodeNotFound, viewer: httpx.CodeNotFound,
+		manager: httpx.CodeNotFound, owner: httpx.CodeNotFound}
+	if strings.HasPrefix(route, "PUT ") {
+		unknown[viewer], unknownCode[viewer] = 403, httpx.CodeForbidden
+	}
+	return matrixRow{
+		route: route, path: entryPath(pick, suffix), body: body,
+		want: withSessions(want), code: code,
+		also: append(extra, matrixCase{name: "unknown entry",
+			path: entryPath(func(matrixFarms) uuid.UUID { return unknownFarm }, suffix), body: body,
+			want: withSessions(unknown), code: unknownCode}),
+	}
+}
+
+// withPastDay adds the Zilnic dry run of 16.11 on Hîrbovăț: the vet is
+// refused (403 PAST_DAY_VET, Z1), the manager and the owner reach the dry run
+// (200); the viewer is refused by role first.
+func withPastDay(row matrixRow) matrixRow {
+	row.also = append(row.also, matrixCase{name: "16.11",
+		path: func(matrixFarms) string { return dailyPath },
+		body: func(f matrixFarms) string { return dailyDryRun(f, f.hirb, "2026-11-16") },
+		want: withSessions(map[caller]int{vet: 403, viewer: 403, manager: 200, owner: 200}),
+		code: map[caller]string{vet: httpx.CodePastDayVet, viewer: httpx.CodeForbidden}})
+	return row
+}
+
+// dailyDryRun is a Zilnic dry run on farm and day that passes level 1: one
+// ♀ death in the matrix section with birds.
+func dailyDryRun(f matrixFarms, farm uuid.UUID, day string) string {
+	return `{"farmId":"` + farm.String() + `","date":"` + day + `","sections":[{"sectionId":"` + f.birds.String() +
+		`","F":{"mortality":1}}],"dryRun":true}`
+}
+
+// correctionDryRun is a Corectează dry run of the matrix entry (♀ deaths
+// 1 → 2 on 17.11) at version ifVersion, with a Motiv.
+func correctionDryRun(f matrixFarms, ifVersion string) string {
+	return `{"ifVersion":"` + ifVersion + `","values":{"farmId":"` + f.hirb.String() + `","date":"2026-11-17","sections":[` +
+		`{"sectionId":"` + f.birds.String() + `","F":{"mortality":2}}]},"reason":"Numărătoare refăcută","dryRun":true}`
 }
 
 func seriesPagePath(id uuid.UUID) string { return "/api/series/" + id.String() + "/page" }
@@ -494,6 +636,7 @@ func TestAuthMatrix(t *testing.T) {
 	}
 	ids.series = cycleSeries("Seria M", 2026, tel, "2026-01-05", "2026-02-28")
 	ids.cojusnaSeries = cycleSeries("Seria C", 2027, ids.cojusna, "2026-03-02", "2026-04-30")
+	m5MatrixFixture(t, s, &ids)
 	accounts := map[caller]account{}
 	add := func(c caller, login, name string, role dbq.UserRole, active bool, farms []uuid.UUID, names ...string) {
 		accounts[c] = account{id: s.user(t, login, name, role, active, farms...), login: login, role: string(role), farms: names}
@@ -578,6 +721,59 @@ func TestAuthMatrix(t *testing.T) {
 			}
 		}
 	}
+}
+
+// m5MatrixFixture adds the M5 rows' data to f (see matrixFarms): the section
+// with birds (placed by a migration entry), Dr. Autor (a vet of Hîrbovăț who
+// is none of the callers), his entry of 17.11 and his deleted entry of 16.11
+// with their audit rows, and Telița's delivery.
+func m5MatrixFixture(t *testing.T, s *stack, f *matrixFarms) {
+	t.Helper()
+	ctx := t.Context()
+	id := func(sql string, args ...any) uuid.UUID {
+		t.Helper()
+		var v uuid.UUID
+		if err := s.d.App.QueryRow(ctx, sql, args...).Scan(&v); err != nil {
+			t.Fatal(err)
+		}
+		return v
+	}
+	author := s.user(t, "autor", "Dr. Autor", dbq.UserRoleVet, true, f.hirb)
+	f.birds = id(`insert into section (farm_id, code) values ($1, 'H2') returning id`, f.hirb)
+	placed := id(`insert into entry (kind, farm_id, date, source) values ('migration', $1, '2026-11-01', 'migration') returning id`, f.hirb)
+	s.exec(t, `insert into bird_event (entry_id, farm_id, section_id, date, sex, type, qty)
+		values ($1, $2, $3, '2026-11-01', 'F', 'placement', 100), ($1, $2, $3, '2026-11-01', 'M', 'placement', 10)`, placed, f.hirb, f.birds)
+
+	zilnic := func(day, at string, sex string) uuid.UUID {
+		e := id(`insert into entry (kind, farm_id, date, created_by, created_at) values ('daily', $1, $2, $3, $4) returning id`,
+			f.hirb, day, author, at)
+		s.exec(t, `insert into bird_event (entry_id, farm_id, section_id, date, sex, type, qty) values ($1, $2, $3, $4, $5, 'mortality', -1)`,
+			e, f.hirb, f.birds, day, sex)
+		s.exec(t, `insert into audit_log (at, user_id, action, entity, entity_id, entry_id, entry_kind, farm_ids, record_date, same_day_author)
+			values ($1, $2, 'create', 'entry', $3, $3, 'daily', array[$4::uuid], $5, false)`, at, author, e, f.hirb, day)
+		return e
+	}
+	created := "2026-11-17T08:00:00+02:00"
+	f.entry = zilnic("2026-11-17", created, "F")
+	at, err := time.Parse(time.RFC3339, created)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.entryVersion = at.UTC().Format("2006-01-02T15:04:05.000000Z07:00") // entries' version format
+	f.deleted = zilnic("2026-11-16", "2026-11-16T08:00:00+02:00", "M")
+	deletedAt := "2026-11-18T09:00:00+02:00"
+	s.exec(t, `update bird_event set deleted_at = $2 where entry_id = $1`, f.deleted, deletedAt)
+	s.exec(t, `update entry set deleted_at = $2, deleted_by = $3 where id = $1`, f.deleted, deletedAt, author)
+	s.exec(t, `insert into audit_log (at, user_id, action, entity, entity_id, entry_id, entry_kind, farm_ids, record_date, same_day_author)
+		values ($1, $2, 'delete', 'entry', $3, $3, 'daily', array[$4::uuid], '2026-11-16', true)`, deletedAt, author, f.deleted, f.hirb)
+
+	f.telEntry = id(`insert into entry (kind, farm_id, date, created_at) values ('delivery', $1, '2026-11-10', '2026-11-10T10:30:00+02:00')
+		returning id`, f.tel)
+	// Priced in Prețuri (M5 SEC-1): its entry read, which the viewer may
+	// make, still carries no price (entries.TestEntryReadPricedDeliveryHasNoPrice).
+	s.exec(t, `insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg, price_per_kg, total_lei, price_input,
+		priced_at) values ($1, $2, $3, '2026-11-10', 9000, 7.74, 69660, 'per_kg', '2026-11-12T09:00:00+02:00')`,
+		f.telEntry, f.tel, f.feedType)
 }
 
 // errorCode is the error.code of an error envelope ("" for another body).

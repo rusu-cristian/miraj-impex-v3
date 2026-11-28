@@ -608,3 +608,20 @@ func TestFeedFormHandler(t *testing.T) {
 		t.Errorf("no session: %d %s", w.Code, w.Body)
 	}
 }
+
+// M5 T4 follow-up (Q1): an entry of a kind the change routes don't serve
+// (the import's migration entry) offers no action, even to a manager who may
+// correct the day's feed_daily entry next to it.
+func TestBuildFeedFormUnservedKind(t *testing.T) {
+	f := newFormFixture(t)
+	past := f.build(f.mgr, f.hirbovat, fday(time.November, 17))
+	if n := len(past.Existing); n != 2 {
+		t.Fatalf("17.11 existing = %+v, want the migration entry and the feed_daily one", past.Existing)
+	}
+	if m := past.Existing[0]; m.Author != nil || m.Editable || m.Correctable {
+		t.Errorf("migration entry = %+v, want no author and no action", m)
+	}
+	if fd := past.Existing[1]; !fd.Correctable {
+		t.Errorf("feed_daily entry = %+v, want correctable by the manager", fd)
+	}
+}

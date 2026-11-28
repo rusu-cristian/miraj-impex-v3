@@ -76,8 +76,7 @@ type feedType struct {
 // feedContext is the farm context of a feed save (EntriesFeedSaveContext).
 type feedContext struct {
 	FarmName     string
-	SeriesName   *string
-	SeriesClosed bool
+	ClosedSeries string                          // closed_series_on(farm, date); "" for none (M5 D12)
 	GuideG       map[dbq.Sex]decimal.NullDecimal // feed_g of SAPT(date); invalid = no H4
 	TolerancePct decimal.Decimal
 	Types        map[uuid.UUID]feedType
@@ -105,7 +104,7 @@ func loadFeedContext(ctx context.Context, q *dbq.Queries, req FeedDailyCreateReq
 	}
 	first := rows[0]
 	fc := feedContext{
-		FarmName: first.FarmName, SeriesName: first.SeriesName, SeriesClosed: first.SeriesClosed,
+		FarmName: first.FarmName, ClosedSeries: first.ClosedSeries,
 		GuideG:       map[dbq.Sex]decimal.NullDecimal{dbq.SexF: first.GuideFeedGF, dbq.SexM: first.GuideFeedGM},
 		TolerancePct: first.ToleranceFeedPct,
 		Types:        make(map[uuid.UUID]feedType, len(rows)),
@@ -192,8 +191,8 @@ func planFeedDaily(ctx context.Context, tx *Tx, req FeedDailyCreateRequest) (Sav
 	if !ok {
 		return Saved{}, httpx.NotFound()
 	}
-	if fc.SeriesClosed && fc.SeriesName != nil {
-		return Saved{}, httpx.SeriesClosed(*fc.SeriesName)
+	if fc.ClosedSeries != "" {
+		return Saved{}, httpx.SeriesClosed(fc.ClosedSeries)
 	}
 	slots, err := loadFeedSlots(ctx, tx.Q, req.FarmID, req.Date)
 	if err != nil {

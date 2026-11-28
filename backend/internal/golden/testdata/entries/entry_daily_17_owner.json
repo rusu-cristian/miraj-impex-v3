@@ -1,0 +1,128 @@
+{
+  "entry": {
+    "id": "<entry:hirbovat/daily/2026-11-17/08:07>",
+    "kind": "daily",
+    "version": "<version>",
+    "farm": {
+      "id": "<farm:hirbovat>",
+      "name": "Hîrbovăț"
+    },
+    "date": "2026-11-17",
+    "sapt": 59,
+    "ageDays": 406,
+    "author": {
+      "name": "Dr. Ceban"
+    },
+    "createdAt": "2026-11-17T08:07:00+02:00",
+    "source": "manual",
+    "corrected": {
+      "by": "Ion Rusu",
+      "at": "<at>"
+    }
+  },
+  "values": {
+    "farmId": "<farm:hirbovat>",
+    "date": "2026-11-17",
+    "sections": [
+      {
+        "sectionId": "<section:hirbovat/H5.1>",
+        "noLosses": false,
+        "F": {
+          "mortality": 0,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        },
+        "M": {
+          "mortality": 0,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        }
+      },
+      {
+        "sectionId": "<section:hirbovat/H5.2>",
+        "noLosses": false,
+        "F": {
+          "mortality": 3,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        },
+        "M": {
+          "mortality": 0,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        }
+      },
+      {
+        "sectionId": "<section:hirbovat/H6.1>",
+        "noLosses": false,
+        "F": {
+          "mortality": 4,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        },
+        "M": {
+          "mortality": 0,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        }
+      },
+      {
+        "sectionId": "<section:hirbovat/H6.2>",
+        "noLosses": false,
+        "F": {
+          "mortality": 0,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        },
+        "M": {
+          "mortality": 0,
+          "cull": null,
+          "cullReason": null,
+          "sexingError": null
+        }
+      }
+    ],
+    "eggs": []
+  },
+  "sections": [
+    {
+      "id": "<section:hirbovat/H5.1>",
+      "code": "H5.1",
+      "hallCode": "H5",
+      "retired": false
+    },
+    {
+      "id": "<section:hirbovat/H5.2>",
+      "code": "H5.2",
+      "hallCode": "H5",
+      "retired": false
+    },
+    {
+      "id": "<section:hirbovat/H6.1>",
+      "code": "H6.1",
+      "hallCode": "H6",
+      "retired": false
+    },
+    {
+      "id": "<section:hirbovat/H6.2>",
+      "code": "H6.2",
+      "hallCode": "H6",
+      "retired": false
+    }
+  ],
+  "actions": {
+    "edit": false,
+    "correct": true,
+    "delete": true,
+    "undo": false,
+    "restore": false
+  },
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

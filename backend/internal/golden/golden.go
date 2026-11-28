@@ -9,7 +9,8 @@
 //
 // Got functions call the services (calc; periodtable and farms from M2; the
 // Consum table and the stock readers from M3; the deliveries, price and
-// cost readers, reports.BuildCost and series.BuildPage from M4) and round once, at the
+// cost readers, reports.BuildCost and series.BuildPage from M4; the Zilnic
+// warning, diff and §6.1 check from M5) and round once, at the
 // precision §11.7 states, into plain values (ints and fixed-point strings),
 // so Want and Got compare exactly. They never copy a formula into SQL.
 package golden
@@ -298,13 +299,19 @@ func Rows() []Row {
 			},
 			Got: cost},
 		{ID: 32, Name: "weighing Telița H1 vs guide", Milestone: "M9"},
-		{ID: 33, Name: "3× warning H6.1", Milestone: "M5"},
+		{ID: 33, Name: "3× warning H6.1", Milestone: "M5",
+			Want: []Spike{{Section: "H6.1", Sex: "F", Deaths: 4, Mean7: "0.9",
+				Message: "H6.1: 4 găini moarte, de peste 3 ori media pe 7 zile (0,9). Verifică numărătoarea; poți salva."}},
+			Got: mortalitySpikes},
 		{ID: 34, Name: "missing Hrană zilnică H7.1, H7.2", Milestone: "M8"},
 		{ID: 35, Name: "placement Seria 2026, Telița cycle", Milestone: "M4",
 			Want: SeriesPlacement{Farm: "Telița", Placed: calc.PerSex[int]{F: 28080, M: 3510}, CycleSAPT: [2]int{1, 21}},
 			Got:  seriesPlacement},
 		{ID: 36, Name: "guide spans", Milestone: "M10"},
-		{ID: 37, Name: "correction 17.11 H5.2", Milestone: "M5"},
+		{ID: 37, Name: "correction 17.11 H5.2", Milestone: "M5",
+			Want: Correction{Section: "H5.2", Sex: "F", AliveEnd17: 4283, AliveEnd18: 4281, Negative: 0,
+				Change: ValueChange{Key: "H5.2 · găini moarte", Old: 1, New: 3}},
+			Got: correction},
 		{ID: 38, Name: "H7 empty since 14.11.2026", Milestone: "M2",
 			Want: []EmptyHall{{Hall: "H7", Since: "2026-11-14", Tile: "goală din 14.11.2026 · H7.1, H7.2", Note: "H7 goală din 14.11"}},
 			Got:  emptyHalls},

@@ -21,12 +21,20 @@ func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 // the creates do it after decoding (M3 D5: decode → role → farm → codes →
 // Validate → service).
 func (h *Handler) Routes(mux httpx.Router, authed httpx.Chain) {
-	// Form states (§7.8, feedform.go).
+	// Form states (§7.8, feedform.go, dailyform.go).
 	mux.Handle("GET /api/forms/feed-daily", authed.ThenFunc(h.feedForm))
 	mux.Handle("GET /api/forms/delivery", authed.ThenFunc(h.deliveryForm))
+	h.dailyFormRoutes(mux, authed) // GET /api/forms/daily
 	// Creates.
 	mux.Handle(routeFeedDaily, authed.ThenFunc(h.createFeedDaily))
 	mux.Handle(routeDelivery, authed.ThenFunc(h.createDelivery))
+	h.dailySaveRoutes(mux, authed) // POST /api/entries/daily
+	// One saved entry (M5: read, edit or correct, delete, undo, restore).
+	h.entryReadRoutes(mux, authed) // GET /api/entries/{id}
+	h.updateRoutes(mux, authed)    // PUT /api/entries/{id}
+	h.deleteRoutes(mux, authed)    // DELETE /api/entries/{id}
+	h.undoRoutes(mux, authed)      // POST /api/entries/{id}/undo
+	h.restoreRoutes(mux, authed)   // POST /api/entries/{id}/restore
 }
 
 // createFeedDaily is POST /api/entries/feed-daily (§7.8, M3 D5). The answer

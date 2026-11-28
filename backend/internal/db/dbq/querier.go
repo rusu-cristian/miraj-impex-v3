@@ -7,6 +7,7 @@ package dbq
 import (
 	"context"
 	"net/netip"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -23,6 +24,11 @@ type Querier interface {
 	// One cycle of a farm (§4.6) with its series, its guide and whether it has any live bird event (a past cycle without
 	// one has no flock count, D52/D54). No row when the cycle belongs to another farm.
 	CalcCycleByID(ctx context.Context, arg CalcCycleByIDParams) (CalcCycleByIDRow, error)
+	// Per bird-holding section (a section without children) × sex: the deaths (mortality + culls, D165, plan M5 Q3) of
+	// the day before the day and of the 7 days before it (day − 7 … day − 1), the inputs of the Zilnic form's Ieri and
+	// media 7 zile and of Z6 (§6.2). Every such section of the farm, 0 when it has none, in tree order (hall, then
+	// compartment). A running sum over v_section_sex_delta, not the dense view (ARC-6).
+	CalcDeathsWindow(ctx context.Context, arg CalcDeathsWindowParams) ([]CalcDeathsWindowRow, error)
 	// The live deliveries of each asked farm over its day range (§5.9, §7.12): one row per asked range, in the order
 	// asked (ord, from 1), 0 and empty arrays when the range has none. A range runs from from_day (only when has_from;
 	// else from the farm's first delivery) to to_day, both included. kg per the feed type's for_sex (F, M, null =
@@ -63,6 +69,11 @@ type Querier interface {
 	// The rows of a guide over [from_week, to_week] (age weeks SAPT, D151), one per week × sex present. A null cell is
 	// "– fără date în ghid" (D29); a week × sex outside the guide span has no row.
 	CalcGuideWeeks(ctx context.Context, arg CalcGuideWeeksParams) ([]CalcGuideWeeksRow, error)
+	// Hens at the start of the day per egg unit of the farm (§5.6, D156): Σ ♀ deltas before the day over the unit's
+	// bird-holding sections (v_egg_unit: a hall's compartments, or a section without parent and children itself).
+	// Every egg unit of the farm (a section without parent), 0 when it has no hens, in tree order. A running sum over
+	// v_section_sex_delta like CalcLayDay, so it holds for any day (ARC-6).
+	CalcHensStart(ctx context.Context, arg CalcHensStartParams) ([]CalcHensStartRow, error)
 	// The latest live weighing per section × sex of a farm in [from_day, to_day] (§5.10, §5.13), with the birds of the
 	// section × sex at the end of the weighing day (for a bird-weighted mean, §5.10). Ordered by sex, then newest
 	// first, then the farm's tree (hall, then compartment): the first row of a sex is the farm's latest weighing.
@@ -131,6 +142,54 @@ type Querier interface {
 	CopyUsers(ctx context.Context, arg []CopyUsersParams) (int64, error)
 	CopyWeighings(ctx context.Context, arg []CopyWeighingsParams) (int64, error)
 	CountActiveOwners(ctx context.Context) (int32, error)
+	// The day's live egg_production rows of a farm (one per egg unit, egg_production_uq), of live entries. total_eggs is
+	// generated and not read: the client sums the categories as the save does (§5.6).
+	DailyFormEggs(ctx context.Context, arg DailyFormEggsParams) ([]DailyFormEggsRow, error)
+	// The live entries holding the day's Zilnic values at a farm (bird_event mortality, cull, sexing_error; egg_production),
+	// one row per entry × section holding a value (egg = the section is an egg unit's eggs), oldest entry first (by
+	// creation instant, then id), then in tree order: the form's `existing` list with its author, creation instant and
+	// kind (§3.2 actions; only served kinds may be changed, Q1).
+	DailyFormEntries(ctx context.Context, arg DailyFormEntriesParams) ([]DailyFormEntriesRow, error)
+	// The Zilnic form state (SPEC §6.2, §7.8 GET /api/forms/daily, plan M5 T4, Q2). Owned by entries/dailyform.go; the
+	// deaths window and the hens at the start of the day are calc's readers (CalcDeathsWindow, CalcHensStart).
+	// The head of the Zilnic form state of a farm on a day: the farm; the cycle whose [start_date, end_date] contains the
+	// day (an open cycle has no end) with its series (name, age parameters) and the guide's lay % ♀ for SAPT(day) (null
+	// without a guide, a guide row or a cell, §5.6 guide_lay); the closed series whose cycle holds the day
+	// (closed_series_on, 0003; empty when none, §3.1); and the farm's latest cycle that ended before the day, with its series
+	// (the empty-farm state, M2 Q4 b). No row for an unknown farm.
+	DailyFormHead(ctx context.Context, arg DailyFormHeadParams) (DailyFormHeadRow, error)
+	// Every bird-holding section (a section without children) of a farm × sex on a day, in tree order (hall, then
+	// compartment; ♀ before ♂), retired ones included and flagged, with:
+	//   - parent_id (null for a parentless section, its own egg unit) and the hall (itself when parentless), retired or not;
+	//   - alive_start: Σ deltas before the day (§5.3), a running sum over v_section_sex_delta (ARC-6);
+	//   - inflow: a placement or a transfer in on the day (the sexes present, §5.3; Z3, plan M5 Q3);
+	//   - the hall's count at the end of the day and since when it is empty (as FormsFeedRows, the summary's tiles);
+	//   - the day's live Zilnic values (bird_event mortality, cull, sexing_error of live entries): has_* = a row exists,
+	//     mortality and cull as positive counts (−qty), the sexing error signed as recorded, the cull reason (empty when none).
+	DailyFormSections(ctx context.Context, arg DailyFormSectionsParams) ([]DailyFormSectionsRow, error)
+	// The bird values of one Zilnic save (§4.7, §4.8) in one statement: rows is a JSON array of
+	// {section_id, sex, type, qty, cull_reason} (qty the signed delta: mortality and cull ≤ 0, a sexing error as typed;
+	// cull_reason null except on a cull). A key already live in another entry violates bird_event_daily_uq (23505,
+	// mapped after the transaction to 409 ALREADY_ENTERED, M3 D2).
+	DailyInsertBirdEvents(ctx context.Context, arg DailyInsertBirdEventsParams) error
+	// The egg rows of one Zilnic save (one per egg unit, §4.8) in one statement: rows is a JSON array of
+	// {section_id, floor, cat1, cat2, cat3, hatching, avg_weight_g}, null for a field left empty (D53). total_eggs is
+	// generated and never set. A unit already live in another entry violates egg_production_uq (mapped after the
+	// transaction).
+	DailyInsertEggProduction(ctx context.Context, arg DailyInsertEggProductionParams) error
+	// The Zilnic save POST /api/entries/daily (SPEC §6.2, §7.8, §12.5; plan M5-D13). Owned by entries/daily.go.
+	// Every section × sex of a farm on one day for a Zilnic save, read under the farm lock (§12.5 loadDailyState). The
+	// farm columns repeat on every row: its name and type (Z7 at a growth farm), the closed series whose cycle holds the
+	// day (empty when none: §3.1 → 409 SERIES_CLOSED) and alert.mortality_factor (Z6). Per section: its code, its hall
+	// (parent id and code; null for a parentless section, its own egg unit), whether it is a hall or retired (Z3, Z7).
+	// Per section × sex: the birds alive at the start of the day and the inflows saved that day (placements and
+	// transfers in: the §6.1 per-day bound of Z5, D53), both running sums over v_section_sex_delta (no dense view,
+	// ARC-6); the entry holding each live Zilnic key of the day (bird_event_daily_uq: mortality, cull, sexing error;
+	// egg_production_uq: the section's eggs, repeated on both sex rows) with that entry's creation time, author and
+	// source (Z9). Ordered as the farm's tree (hall, then compartment), ♀ before ♂. A farm without sections gives two
+	// rows with null section columns; no row = no such farm. Read again on the pool to name the holder of a
+	// bird_event_daily_uq / egg_production_uq violation (M3 D2).
+	DailySaveSlots(ctx context.Context, arg DailySaveSlotsParams) ([]DailySaveSlotsRow, error)
 	// The live outbox (§4.11, §9): the live_event row and its pg_notify in one statement, inside the save's transaction.
 	// PostgreSQL delivers the notification at commit and drops it on rollback. `at` keeps the database now(): only the
 	// purge, on the real clock, reads it (M3 D3).
@@ -153,11 +212,12 @@ type Querier interface {
 	// creation time, author and source (the feed_allocation_uq rule: a row not soft-deleted). Read under the farm lock: H3, ALREADY_ENTERED
 	// and the "{n} din {m} rânduri" count; read again on the pool to name the holder of a feed_allocation_uq violation.
 	EntriesFeedDaySlots(ctx context.Context, arg EntriesFeedDaySlotsParams) ([]EntriesFeedDaySlotsRow, error)
-	// The farm context of a Hrană zilnică save (§6.3, M3 D5/D6), read under the farm lock: the farm's name, the cycle
-	// whose [start_date, end_date] contains the day with its series (closed → 409 SERIES_CLOSED, §3.1), the guide's
-	// feed_g per sex for SAPT(day) (null: no guide, no guide row or an empty cell, so no H4), tolerance.feed_pct, and one
-	// row per asked feed type that exists (name, for_sex, active: H2), ordered by name_key. The context columns repeat on
-	// every row; a farm without any asked type gives one row with null type columns; no row = no such farm.
+	// The farm context of a Hrană zilnică save (§6.3, M3 D5/D6), read under the farm lock: the farm's name, the closed
+	// series whose cycle contains the day (closed_series_on, 0003; '' when none; closed → 409 SERIES_CLOSED, §3.1, M5
+	// D12), the guide's feed_g per sex for SAPT(day) of the cycle that contains the day (null: no cycle, no guide, no
+	// guide row or an empty cell, so no H4), tolerance.feed_pct, and one row per asked feed type that exists (name,
+	// for_sex, active: H2), ordered by name_key. The context columns repeat on every row; a farm without any asked type
+	// gives one row with null type columns; no row = no such farm.
 	EntriesFeedSaveContext(ctx context.Context, arg EntriesFeedSaveContextParams) ([]EntriesFeedSaveContextRow, error)
 	// One Hrană zilnică row (§4.8): kg is never stored for app data, it is g × birds at the start of the day (DATA03).
 	EntriesInsertFeedAllocation(ctx context.Context, arg EntriesInsertFeedAllocationParams) error
@@ -165,9 +225,94 @@ type Querier interface {
 	EntriesInsertFeedDelivery(ctx context.Context, arg EntriesInsertFeedDeliveryParams) error
 	// The asked feed type ids that exist (active or not): an unknown id is a level-1 issue, an inactive one is H2.
 	EntriesKnownFeedTypes(ctx context.Context, feedTypeIds []uuid.UUID) ([]uuid.UUID, error)
+	// The live bird_event rows of an entry (§4.7, §4.8) with their section's code, hall code (its own for a parentless
+	// section) and retired flag, in tree order (hall, then compartment), ♀ before ♂, then by type. qty is the signed
+	// stored delta (mortality and cull ≤ 0).
+	EntryBirdRows(ctx context.Context, entryID uuid.UUID) ([]EntryBirdRowsRow, error)
+	// Entry changes and the entry read (SPEC §7.8 "Read, edit, correct, delete, undo, restore", plan M5-D2, D3, D7, D10).
+	// Owned by entries.Runner.Change (change.go), the kind adapters (kinds.go) and GET /api/entries/{id} (entryread.go).
+	// An entry's kind, farms, date and whether it is deleted, read without a lock (plan M5-D2, M5 ARC-4): by the change
+	// runner before its farm locks (farm_id and peer_farm_id never change, so the locks taken from this read are the
+	// right ones; everything else is re-read under the locks, EntryChangeLock) and by PUT before it decodes `values`
+	// (§7.8: the kind picks the create type, the farm and date are what `values` must repeat; kind and date never
+	// change either). No row = no such entry.
+	EntryChangeHeader(ctx context.Context, id uuid.UUID) (EntryChangeHeaderRow, error)
+	// The entry row of a change, locked (select … for update) after the farm advisory locks (plan M5-D2): its version
+	// (coalesce(updated_at, created_at), §12.5), author and creation instant (§3.2 windows), the corrected flag, whether
+	// it is deleted, and the closed series whose cycle holds its date at either farm (closed_series_on, 0003; '' when
+	// none: §3.1 → 409 SERIES_CLOSED).
+	EntryChangeLock(ctx context.Context, id uuid.UUID) (EntryChangeLockRow, error)
+	// Delete, undo of a create, restore (SPEC §7.8, §6.15; plan M5-D7, Q8, Q9).
+	// Owned by entries/delete.go and entries/restore.go. Soft delete is an UPDATE (il_app has no DELETE on these tables).
+	// What the delete Dialog and the Toasts name (§6.15, M5 Q9): the farm's name, the author's name, and who made the
+	// entry's latest correction and when ("… și corectată de Ion Rusu pe 18.11.2026"; as EntryReadHead, M5 COR-1: an
+	// update not by the author in the creation-day window and not undone; null when none). No row = no such entry.
+	EntryDeleteContext(ctx context.Context, id uuid.UUID) (EntryDeleteContextRow, error)
+	// Marks a live entry deleted (§4.7 soft delete): deleted_at = the injected clock's instant, deleted_by = the caller,
+	// delete_reason = the Motiv (null for an author's same-day delete or an undo). 0 rows = already deleted.
+	EntryDeleteHeader(ctx context.Context, arg EntryDeleteHeaderParams) (int64, error)
+	// The live feed_delivery row of an entry (one per delivery entry) with its feed type and its price columns (a
+	// delete's snapshot keeps the price, M5 Q9).
+	EntryDeliveryRows(ctx context.Context, entryID uuid.UUID) ([]EntryDeliveryRowsRow, error)
+	// The live egg_production rows of an entry (one per egg unit), with the unit's code and retired flag, in tree order.
+	EntryEggRows(ctx context.Context, entryID uuid.UUID) ([]EntryEggRowsRow, error)
+	// The live feed_allocation rows of an entry with their section (code, hall code, retired) and feed type (name,
+	// for_sex, active), in tree order, ♀ before ♂. kg_recorded is set only on imported rows (D163).
+	EntryFeedRows(ctx context.Context, entryID uuid.UUID) ([]EntryFeedRowsRow, error)
 	// The entry that holds an idempotency key (soft-deleted ones too: the key stays taken), with its author and kind: a
 	// key whose reply was purged answers ALREADY_ENTERED only to its author on a route of its kind (M3 SEC-1).
 	EntryIDByClientRequest(ctx context.Context, clientRequestID uuid.UUID) (EntryIDByClientRequestRow, error)
+	// The rows a Hrană zilnică correction adds (§4.8) in one statement: rows is a JSON array of
+	// {section_id, sex, feed_type_id, g}. A key already live in another entry violates feed_allocation_uq (23505, mapped
+	// after the transaction to 409 ALREADY_ENTERED, M3 D2).
+	EntryInsertFeedRows(ctx context.Context, arg EntryInsertFeedRowsParams) error
+	// The latest audit row of an entry (ties on `at`, as under a frozen clock, go to the later row): undo and restore
+	// act only on the caller's own latest action of the same day (M5 Q8), which the caller's current rights must still
+	// allow (same_day_author: an author's action needs the author's window, else a correction right; M5 SEC-2).
+	EntryLatestAudit(ctx context.Context, entryID uuid.UUID) (EntryLatestAuditRow, error)
+	// The head of GET /api/entries/{id} (M5 Q6): the entry with its farm's name, the age parameters of the series whose
+	// cycle holds the entry's date (null without a cycle; SAPT and age are calc's, §5.1), the author's name, the latest
+	// correction's author and instant (lc below, M5 COR-1: null when none), the closed series of its date
+	// (as EntryChangeLock) and its latest audit row as undo and restore read it (EntryLatestAudit: action, user, instant,
+	// same_day_author, old_values; null without any audit row, M5 Q8). No row = no such entry.
+	EntryReadHead(ctx context.Context, id uuid.UUID) (EntryReadHeadRow, error)
+	// Un-deletes an entry (restore of a whole-save delete, M5 Q8). 0 rows = it was not deleted.
+	EntryRestoreHeader(ctx context.Context, id uuid.UUID) (int64, error)
+	// After a restore failed on a unique key (M3 D2, plan M5-D2): the first listed row of the entry whose key another
+	// live row holds now, with that row's entry, its creation time, author and source, the section's code and the row's
+	// sex ('' for an egg row) and table (bird | eggs | feed), in that table order. No row = nothing collides any more.
+	EntryRestoreHolder(ctx context.Context, arg EntryRestoreHolderParams) (EntryRestoreHolderRow, error)
+	// Un-deletes exactly the listed child rows of one entry (a delete's audit snapshot, plan M5-D7): rows soft-deleted
+	// earlier by an edit are not listed, so they stay deleted. A row whose key another entry took meanwhile fails the
+	// partial unique index (23505), mapped after the transaction to 409 ALREADY_ENTERED (EntryRestoreHolder). Returns how
+	// many rows changed.
+	EntryRestoreRows(ctx context.Context, arg EntryRestoreRowsParams) (int32, error)
+	// Soft-deletes the asked live child rows of one entry (plan M5-D7): deleted_at = the injected clock's instant on each
+	// row whose id is listed for its table. One statement over the four child tables; returns how many rows changed (the
+	// caller checks it is every row it asked for, so a row deleted meanwhile is not silently skipped).
+	EntrySoftDeleteRows(ctx context.Context, arg EntrySoftDeleteRowsParams) (int32, error)
+	// Edit / Corectează PUT /api/entries/{id} and the undo of an update (SPEC §7.8, §6.15; plan M5-D5, D6, Q8).
+	// Owned by entries/update.go, entries/daily_update.go, entries/feed_update.go, entries/delivery_update.go and
+	// entries/undo.go.
+	// Soft delete and un-delete of child rows reuse EntrySoftDeleteRows / EntryRestoreRows (entrydelete.sql); new
+	// Zilnic rows reuse the create's inserts (daily.sql).
+	// Changes live bird_event rows of one entry in place (plan M5-D6: a changed value keeps its row, so the partial
+	// unique index entry stays): rows is a JSON array of {id, qty, cull_reason} (qty the signed delta, cull_reason null
+	// except on a cull). Returns how many rows changed (the caller checks it is every row it asked for).
+	EntryUpdateBirdRows(ctx context.Context, arg EntryUpdateBirdRowsParams) (int64, error)
+	// Changes the live feed_delivery row of one entry in place (M5 Q11): type, kg, note and, for a priced delivery, the
+	// price pair re-derived from the typed input (calc.DerivePrice; both null for an unpriced one). priced_by, priced_at,
+	// price_input and price_from_register are not touched. Returns how many rows changed (0: the row is gone).
+	EntryUpdateDeliveryRow(ctx context.Context, arg EntryUpdateDeliveryRowParams) (int64, error)
+	// Changes live egg_production rows of one entry in place: rows is a JSON array of {id, floor, cat1, cat2, cat3,
+	// hatching, avg_weight_g}, null for a field left empty. total_eggs is generated and never set. Returns how many rows
+	// changed.
+	EntryUpdateEggRows(ctx context.Context, arg EntryUpdateEggRowsParams) (int64, error)
+	// Changes live feed_allocation rows of one entry in place (plan M5-D6, Q11: the row keeps its (section, day, sex)
+	// key and its unique index entry): rows is a JSON array of {id, feed_type_id, g, kg_recorded}. kg_recorded is null
+	// unless the row is put back as it was (the undo of an update): a row whose g is corrected is charged g × birds.
+	// Returns how many rows changed.
+	EntryUpdateFeedRows(ctx context.Context, arg EntryUpdateFeedRowsParams) (int64, error)
 	// The active feed types (§7.2), ordered by name_key. for_sex null = both sexes.
 	FarmsActiveFeedTypes(ctx context.Context) ([]FarmsActiveFeedTypesRow, error)
 	// One farm with its own guide (the guide its next cycle copies, B1).
@@ -191,8 +336,9 @@ type Querier interface {
 	FormsDeliveryHead(ctx context.Context, farmID uuid.UUID) (FormsDeliveryHeadRow, error)
 	// Form states (SPEC §7.8, M3 D8, D14). The save's queries are in entries.sql; these are the reads before editing.
 	// The head of the Hrană zilnică form state of a farm on a day: the farm; the cycle whose [start_date, end_date]
-	// contains the day (an open cycle has no end) with its series (name, closed or not, age parameters) and the guide's
-	// feed_g per sex for SAPT(day) (null without a guide, a guide row or a cell); whether the farm has an open cycle
+	// contains the day (an open cycle has no end) with its series (name, age parameters) and the guide's feed_g per sex
+	// for SAPT(day) (null without a guide, a guide row or a cell); the closed series whose cycle contains the day
+	// (closed_series_on, 0003; '' when none, M5 D12, as the save reads it); whether the farm has an open cycle
 	// now (the stock rows are shown only then); and the active feed types in name order, as parallel arrays (for_sex
 	// '' = ambele sexe). No row for an unknown farm.
 	FormsFeedHead(ctx context.Context, arg FormsFeedHeadParams) (FormsFeedHeadRow, error)
@@ -203,8 +349,9 @@ type Querier interface {
 	//     count went from > 0 to 0, null while it has birds or when it never had any), as CalcEmptySince;
 	//   - yesterday_g: the typed g of yesterday's live allocation (null when none or kg-only);
 	//   - last_type_id: the feed type of the latest live allocation before the day;
-	//   - the day's live allocation, if any: its entry, g, migrated kg and type, with the entry's author, creation
-	//     instant and peer farm (§3.2 actions). The caller computes its kg (the migrated kg, else g × birds_start / 1000).
+	//   - the day's live allocation, if any: its entry, g, migrated kg and type, with the entry's kind, author, creation
+	//     instant and peer farm (§3.2 actions; a kind the change routes don't serve, M5 Q1, has none). The caller
+	//     computes its kg (the migrated kg, else g × birds_start / 1000).
 	FormsFeedRows(ctx context.Context, arg FormsFeedRowsParams) ([]FormsFeedRowsRow, error)
 	// The session of a cookie, only while it is unrevoked, unexpired at `now`, and its user is active, with the user's
 	// user_farm farms in name_key order (empty for the owner, who has no rows, and for a user without farms): the
@@ -255,6 +402,16 @@ type Querier interface {
 	MarkLoginAttemptSucceeded(ctx context.Context, id int64) error
 	// §10.3: the import runs once; a database that holds a migration entry is refused (unless --replace).
 	MigrationEntryExists(ctx context.Context) (bool, error)
+	// §6.1 steps 2–3 (plan M5-D4): the asked (section, sex) pairs whose birds alive at the end of a day are below 0 on a
+	// day in [from_day, greatest(last event, today)], one row per such pair in the order asked (the arrays are parallel:
+	// section_ids[i] goes with sexes[i]). A running sum over v_section_sex_delta, which has rows on event days only:
+	// the count of an event day holds until the day before the next event, and the last event's until
+	// greatest(its day, today), as the dense per-day view shows it (TestCheckCountsMatchesView). today is the caller's
+	// (ARC-6), never the database's business day. first_* is the first negative day on or after from_day and its count,
+	// last_negative_date the last negative day (today while still negative), min_alive_end the lowest count,
+	// negative_today whether today is negative and today_alive_end today's count then (0 otherwise). Live rows of live
+	// entries only (v_bird_event).
+	NegativeCounts(ctx context.Context, arg NegativeCountsParams) ([]NegativeCountsRow, error)
 	// The price_set audit row a price undo token names (M4 D4): its instant, author, action and new_values (the
 	// deliveries of the batch). No row = no such audit row.
 	PricesAuditRow(ctx context.Context, id int64) (PricesAuditRowRow, error)
@@ -324,6 +481,12 @@ type Querier interface {
 	SetLastLogin(ctx context.Context, arg SetLastLoginParams) error
 	// Moves expires_at forward at most once per `seen_before` window (§11.4: hourly); 1 row = slid (Q2: resend the cookie).
 	SlideSession(ctx context.Context, arg SlideSessionParams) (int64, error)
+	// Moves an entry's version (plan M5-D3): updated_at = the injected clock's instant, but always at least 1 µs after
+	// the current version, so two changes at the same frozen instant still give two versions and ifVersion keeps
+	// guarding. The row changes only while its version is if_version: no row back = the version moved (409 STALE).
+	// updated_by = the caller; corrected = the flag after the change (true after a Corectează, back to the old flag after
+	// an undone update).
+	UpdateEntryHeader(ctx context.Context, arg UpdateEntryHeaderParams) (time.Time, error)
 	// Re-hash with new argon2id parameters after a successful login (§11.4); not a user change.
 	UpdatePasswordHash(ctx context.Context, arg UpdatePasswordHashParams) error
 	// §10.3 check: Σ total_eggs of a farm over [from_day, to_day].

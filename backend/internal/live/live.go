@@ -13,6 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
@@ -23,6 +24,10 @@ const (
 	TypeDeliveryCreated = "delivery.created"
 	TypePriceSet        = "price.set"
 	TypePriceChanged    = "price.changed"
+	TypeEntryUpdated    = "entry.updated"
+	TypeEntryDeleted    = "entry.deleted"
+	TypeEntryRestored   = "entry.restored"
+	TypeCountsChanged   = "counts.changed"
 )
 
 // Event is one live_event row before it is written.
@@ -70,12 +75,50 @@ type EntryPayload struct {
 
 // EntryCreated is the entry.created event of a new save, for every farm in
 // p.FarmIDs. Nil lists in p are sent as [].
-func EntryCreated(p EntryPayload) Event {
+func EntryCreated(p EntryPayload) Event { return entryEvent(TypeEntryCreated, p) }
+
+// EntryUpdated is the entry.updated event of an edit, a correction or an
+// undone update (p.Corrected = the entry's flag after it), for every farm in
+// p.FarmIDs. Nil lists in p are sent as [].
+func EntryUpdated(p EntryPayload) Event { return entryEvent(TypeEntryUpdated, p) }
+
+// EntryDeleted is the entry.deleted event of a delete (whole save or one
+// section's values) or an undone create, for every farm in p.FarmIDs. Nil
+// lists in p are sent as [].
+func EntryDeleted(p EntryPayload) Event { return entryEvent(TypeEntryDeleted, p) }
+
+// EntryRestored is the entry.restored event of a restore, for every farm in
+// p.FarmIDs. Nil lists in p are sent as [].
+func EntryRestored(p EntryPayload) Event { return entryEvent(TypeEntryRestored, p) }
+
+func entryEvent(typ string, p EntryPayload) Event {
 	p.FarmIDs = nonNil(p.FarmIDs)
 	p.Dates = nonNil(p.Dates)
 	p.Sections = nonNil(p.Sections)
 	p.RecordTypes = nonNil(p.RecordTypes)
-	return Event{FarmIDs: p.FarmIDs, Type: TypeEntryCreated, Payload: p}
+	return Event{FarmIDs: p.FarmIDs, Type: typ, Payload: p}
+}
+
+// CountsPayload is the data of counts.changed (§9): the farm whose bird counts
+// changed, the earliest changed day, the sections changed (codes) and the
+// farm's birds at the end of today after the write (the header counts swap,
+// D197).
+type CountsPayload struct {
+	FarmID   uuid.UUID          `json:"farmId"`
+	FromDate timex.Day          `json:"fromDate"`
+	Sections []string           `json:"sections"` // section codes: ["H5.2"]
+	Alive    httpx.SexPair[int] `json:"alive"`
+}
+
+// CountsChanged is the counts.changed event of a write that moved birds on
+// farmID from fromDate (one event per farm), for that farm. Nil sections are
+// sent as [].
+func CountsChanged(farmID uuid.UUID, fromDate timex.Day, sections []string, alive httpx.SexPair[int]) Event {
+	return Event{
+		FarmIDs: []uuid.UUID{farmID},
+		Type:    TypeCountsChanged,
+		Payload: CountsPayload{FarmID: farmID, FromDate: fromDate, Sections: nonNil(sections), Alive: alive},
+	}
 }
 
 // DeliveryPayload is the data of delivery.created (§9): the new delivery's

@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/audit"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
@@ -424,14 +425,13 @@ func (s *seeder) move(entry uuid.UUID, match func(table string, farm uuid.UUID, 
 	return n
 }
 
-// auditChange is one `changes` item of an audit row (§4.10).
-type auditChange struct {
-	Key     string  `json:"key"`
-	Section string  `json:"section"`
-	Sex     dbq.Sex `json:"sex"`
-	Field   string  `json:"field"`
-	Old     int32   `json:"old"`
-	New     int32   `json:"new"`
+// correctionChanges is the `changes` of the seeded correction's update row
+// (§4.10, plan M5-D9): the one changed ♀ mortality, as audit.Change.
+func correctionChanges(section string, sex dbq.Sex, old, new int32) []audit.Change {
+	return []audit.Change{{
+		Key: messages.AuditKeyHensDead(section), Section: section, Sex: sex, Field: "mortality",
+		Old: audit.Int(int64(old)), New: audit.Int(int64(new)),
+	}}
 }
 
 // correction applies the shared illustrative correction (RF08, D158a): the
@@ -477,10 +477,7 @@ func (s *seeder) correction(ev *eventsFile) error {
 			return fmt.Errorf("migratehistory: seed: correction %s: the row's entry is not %s's Zilnic of %s", c.At, c.EntryUser, c.EntryAt)
 		}
 		entry.Corrected, entry.UpdatedBy, entry.UpdatedAt = true, corrector, &updated
-		changes, err := json.Marshal([]auditChange{{
-			Key: messages.AuditKeyHensDead(c.Row.Section), Section: c.Row.Section, Sex: c.Row.Sex,
-			Field: "mortality", Old: c.Old.Qty, New: c.New.Qty,
-		}})
+		changes, err := json.Marshal(correctionChanges(c.Row.Section, c.Row.Sex, c.Old.Qty, c.New.Qty))
 		if err != nil {
 			return err
 		}

@@ -59,12 +59,12 @@ func TestLoad(t *testing.T) {
 		}
 	}
 	// The committed data passes Verify again outside the transaction: goldens
-	// 1–31, 35 and 38 (M1–M4), the §10.3 checks and alive_end ≥ 0.
+	// 1–31, 33, 35, 37 and 38 (M1–M5), the §10.3 checks and alive_end ≥ 0.
 	if err := migratehistory.Verify(ctx, d.App); err != nil {
 		t.Fatal(err)
 	}
-	if n := len(migratehistory.Checks()); n != 33+3 {
-		t.Errorf("Verify runs %d checks, want 36 (14 M1, 14 M2, 1 M3 and 4 M4 goldens, 2 §10.3, alive ≥ 0)", n)
+	if n := len(migratehistory.Checks()); n != 35+3 {
+		t.Errorf("Verify runs %d checks, want 38 (14 M1, 14 M2, 1 M3, 4 M4 and 2 M5 goldens, 2 §10.3, alive ≥ 0)", n)
 	}
 
 	// M1-D2: timestamps from the clock, no author.

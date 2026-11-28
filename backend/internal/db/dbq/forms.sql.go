@@ -67,7 +67,8 @@ const formsFeedHead = `-- name: FormsFeedHead :one
 
 select f.id, f.name, f.type,
        c.id as cycle_id, c.start_date as cycle_start, s.name as series_name,
-       coalesce(s.status = 'closed', false)::boolean as series_closed, s.placement_date, s.age_at_placement_days,
+       coalesce(closed_series_on(f.id, $1::date), '')::text as closed_series, s.placement_date,
+       s.age_at_placement_days,
        c.guide_id, gf.feed_g as guide_f, gm.feed_g as guide_m,
        exists (select 1 from cycle o where o.farm_id = f.id and o.end_date is null)::boolean as open_cycle,
        array(select ft.id from feed_type ft where ft.active order by ft.name_key, ft.id)::uuid[] as type_ids,
@@ -96,7 +97,7 @@ type FormsFeedHeadRow struct {
 	CycleID            *uuid.UUID
 	CycleStart         *timex.Day
 	SeriesName         *string
-	SeriesClosed       bool
+	ClosedSeries       string
 	PlacementDate      *timex.Day
 	AgeAtPlacementDays *int16
 	GuideID            *uuid.UUID
@@ -110,8 +111,9 @@ type FormsFeedHeadRow struct {
 
 // Form states (SPEC §7.8, M3 D8, D14). The save's queries are in entries.sql; these are the reads before editing.
 // The head of the Hrană zilnică form state of a farm on a day: the farm; the cycle whose [start_date, end_date]
-// contains the day (an open cycle has no end) with its series (name, closed or not, age parameters) and the guide's
-// feed_g per sex for SAPT(day) (null without a guide, a guide row or a cell); whether the farm has an open cycle
+// contains the day (an open cycle has no end) with its series (name, age parameters) and the guide's feed_g per sex
+// for SAPT(day) (null without a guide, a guide row or a cell); the closed series whose cycle contains the day
+// (closed_series_on, 0003; ” when none, M5 D12, as the save reads it); whether the farm has an open cycle
 // now (the stock rows are shown only then); and the active feed types in name order, as parallel arrays (for_sex
 // ” = ambele sexe). No row for an unknown farm.
 func (q *Queries) FormsFeedHead(ctx context.Context, arg FormsFeedHeadParams) (FormsFeedHeadRow, error) {
@@ -124,7 +126,7 @@ func (q *Queries) FormsFeedHead(ctx context.Context, arg FormsFeedHeadParams) (F
 		&i.CycleID,
 		&i.CycleStart,
 		&i.SeriesName,
-		&i.SeriesClosed,
+		&i.ClosedSeries,
 		&i.PlacementDate,
 		&i.AgeAtPlacementDays,
 		&i.GuideID,
@@ -179,7 +181,7 @@ with leaf as (
   from hall_scope
 ), live_alloc as (
   select fa.section_id, fa.sex, fa.date, fa.entry_id, fa.g_per_bird, fa.kg_recorded, fa.feed_type_id,
-         n.created_by, n.created_at, n.peer_farm_id
+         n.kind, n.created_by, n.created_at, n.peer_farm_id
   from feed_allocation fa
   join entry n on n.id = fa.entry_id and n.deleted_at is null
   where fa.farm_id = $1::uuid
@@ -195,8 +197,8 @@ with leaf as (
   where date < $2::date
   order by section_id, sex, date desc
 ), today as (
-  select a.section_id, a.sex, a.entry_id, a.g_per_bird, a.kg_recorded, a.feed_type_id, a.created_by, a.created_at,
-         a.peer_farm_id, u.name as author
+  select a.section_id, a.sex, a.entry_id, a.g_per_bird, a.kg_recorded, a.feed_type_id, a.kind, a.created_by,
+         a.created_at, a.peer_farm_id, u.name as author
   from live_alloc a
   left join app_user u on u.id = a.created_by
   where a.date = $2::date
@@ -211,6 +213,7 @@ select l.id as section_id, l.code, l.hall_id, l.hall_code, (l.retired_at is not 
        e.g_per_bird as existing_g,
        e.kg_recorded as existing_kg_recorded,
        e.feed_type_id as existing_type_id,
+       e.kind as existing_kind,
        e.created_by as existing_created_by,
        e.created_at as existing_created_at,
        e.peer_farm_id as existing_peer_farm_id,
@@ -245,6 +248,7 @@ type FormsFeedRowsRow struct {
 	ExistingG          decimal.NullDecimal
 	ExistingKgRecorded decimal.NullDecimal
 	ExistingTypeID     *uuid.UUID
+	ExistingKind       *EntryKind
 	ExistingCreatedBy  *uuid.UUID
 	ExistingCreatedAt  *time.Time
 	ExistingPeerFarmID *uuid.UUID
@@ -258,8 +262,9 @@ type FormsFeedRowsRow struct {
 //     count went from > 0 to 0, null while it has birds or when it never had any), as CalcEmptySince;
 //   - yesterday_g: the typed g of yesterday's live allocation (null when none or kg-only);
 //   - last_type_id: the feed type of the latest live allocation before the day;
-//   - the day's live allocation, if any: its entry, g, migrated kg and type, with the entry's author, creation
-//     instant and peer farm (§3.2 actions). The caller computes its kg (the migrated kg, else g × birds_start / 1000).
+//   - the day's live allocation, if any: its entry, g, migrated kg and type, with the entry's kind, author, creation
+//     instant and peer farm (§3.2 actions; a kind the change routes don't serve, M5 Q1, has none). The caller
+//     computes its kg (the migrated kg, else g × birds_start / 1000).
 func (q *Queries) FormsFeedRows(ctx context.Context, arg FormsFeedRowsParams) ([]FormsFeedRowsRow, error) {
 	rows, err := q.db.Query(ctx, formsFeedRows, arg.FarmID, arg.Day)
 	if err != nil {
@@ -285,6 +290,7 @@ func (q *Queries) FormsFeedRows(ctx context.Context, arg FormsFeedRowsParams) ([
 			&i.ExistingG,
 			&i.ExistingKgRecorded,
 			&i.ExistingTypeID,
+			&i.ExistingKind,
 			&i.ExistingCreatedBy,
 			&i.ExistingCreatedAt,
 			&i.ExistingPeerFarmID,

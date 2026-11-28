@@ -196,8 +196,8 @@ func lockedReason(in FeedFormInput, head dbq.FormsFeedHeadRow) *string {
 	switch {
 	case in.Principal.Role == auth.Vet && in.Date != in.Today:
 		msg = messages.PastDayVet()
-	case head.SeriesClosed && head.SeriesName != nil:
-		msg = messages.SeriesClosed(*head.SeriesName)
+	case head.ClosedSeries != "":
+		msg = messages.SeriesClosed(head.ClosedSeries)
 	default:
 		return nil
 	}
@@ -299,7 +299,9 @@ func emptyHalls(rows []dbq.FormsFeedRowsRow, cycle *FormCycle) []FormEmptyHall {
 }
 
 // formEntries are the entries holding the day's allocations, oldest first,
-// with the caller's actions on them (§3.2, entries.Actions).
+// with the caller's actions on them (§3.2, entries.Actions). An entry of a
+// kind the change routes don't serve (Q1: the import's migration entry) has
+// no action, as in the Zilnic form.
 func formEntries(in FeedFormInput, head dbq.FormsFeedHeadRow, rows []dbq.FormsFeedRowsRow) []FormEntry {
 	out := []FormEntry{}
 	at := map[uuid.UUID]int{}
@@ -313,20 +315,21 @@ func formEntries(in FeedFormInput, head dbq.FormsFeedHeadRow, rows []dbq.FormsFe
 			out[i].Rows++
 			continue
 		}
-		meta := EntryMeta{
-			FarmIDs: []uuid.UUID{in.FarmID}, CreatedBy: r.ExistingCreatedBy, CreatedAt: *r.ExistingCreatedAt,
-			SeriesClosed: head.SeriesClosed,
+		e := FormEntry{EntryID: id, Author: r.ExistingAuthor, At: timex.At(*r.ExistingCreatedAt), Rows: 1}
+		if r.ExistingKind != nil && Served(*r.ExistingKind) {
+			meta := EntryMeta{
+				FarmIDs: []uuid.UUID{in.FarmID}, CreatedBy: r.ExistingCreatedBy, CreatedAt: *r.ExistingCreatedAt,
+				SeriesClosed: head.ClosedSeries != "",
+			}
+			if r.ExistingPeerFarmID != nil {
+				meta.FarmIDs = append(meta.FarmIDs, *r.ExistingPeerFarmID)
+			}
+			acts := Actions(in.Principal, meta, in.Today)
+			e.Editable, e.Correctable = acts.Editable, acts.Correctable
 		}
-		if r.ExistingPeerFarmID != nil {
-			meta.FarmIDs = append(meta.FarmIDs, *r.ExistingPeerFarmID)
-		}
-		acts := Actions(in.Principal, meta, in.Today)
 		at[id] = len(out)
 		created[id] = *r.ExistingCreatedAt
-		out = append(out, FormEntry{
-			EntryID: id, Author: r.ExistingAuthor, At: timex.At(*r.ExistingCreatedAt), Rows: 1,
-			Editable: acts.Editable, Correctable: acts.Correctable,
-		})
+		out = append(out, e)
 	}
 	slices.SortStableFunc(out, func(a, b FormEntry) int {
 		if c := created[a.EntryID].Compare(created[b.EntryID]); c != 0 {

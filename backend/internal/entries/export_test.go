@@ -36,3 +36,18 @@ func FormRowKeys(res FeedFormResponse) []string {
 	slices.Sort(out)
 	return out
 }
+
+// Test seams of §11.8 (plan M5-D8). Production code never sets them.
+
+// SetLock replaces the runner's farm lock (default ledger.LockFarms), e.g.
+// with a no-op to prove that a missing lock breaks §6.1 (concurrency test 3).
+func (r *Runner) SetLock(fn func(ctx context.Context, q *dbq.Queries, ids ...uuid.UUID) error) {
+	r.lock = fn
+}
+
+// SetBeforeCheck sets a function Tx.CheckCounts runs just before the §6.1
+// check (default nil), e.g. a barrier that holds two saves there.
+func (r *Runner) SetBeforeCheck(fn func()) { r.beforeCheck = fn }
+
+// Runner is the service's save runner, for the seams above.
+func (s *Service) Runner() *Runner { return s.runner }

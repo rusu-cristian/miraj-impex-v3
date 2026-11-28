@@ -54,7 +54,7 @@ func registerRoutes(r httpx.Router, h *health, authService *auth.Service, hs han
 	hs.auth.Routes(r, public, authed) // POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me
 	hs.table.Routes(r, authed)        // GET /api/table
 	hs.farms.Routes(r, authed)        // GET /api/farms/{id}/page, GET /api/farms/{id}/summary, GET /api/bootstrap
-	hs.entries.Routes(r, authed)      // GET /api/forms/feed-daily, GET /api/forms/delivery, POST /api/entries/feed-daily, POST /api/entries/delivery
+	hs.entries.Routes(r, authed)      // GET /api/forms/{feed-daily,delivery,daily}, POST /api/entries/{feed-daily,delivery,daily}, GET/PUT/DELETE /api/entries/{id}, POST /api/entries/{id}/{undo,restore}
 	hs.reports.Routes(r, authed)      // GET /api/reports/feed
 	hs.series.Routes(r, authed)       // GET /api/series/{id}/page
 	hs.prices.Routes(r, authed)       // GET /api/deliveries, POST /api/deliveries/prices, POST /api/deliveries/prices/undo, PATCH /api/deliveries/{id}/price

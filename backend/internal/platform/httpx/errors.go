@@ -51,10 +51,12 @@ const (
 	IssueBadContentType = "bad_content_type"
 )
 
-// Warning codes (SPEC §6, §7.0 warnings[].code) used by M3's feed save.
+// Warning codes (SPEC §6, §7.0 warnings[].code): M3's feed save, M5's
+// Zilnic save.
 const (
-	WarnFeedGuide     = "FEED_GUIDE"     // H4: g vs guide beyond tolerance.feed_pct
-	WarnStockNegative = "STOCK_NEGATIVE" // H5: a type's stock would go below 0
+	WarnFeedGuide      = "FEED_GUIDE"      // H4: g vs guide beyond tolerance.feed_pct
+	WarnStockNegative  = "STOCK_NEGATIVE"  // H5: a type's stock would go below 0
+	WarnMortalitySpike = "MORTALITY_SPIKE" // Z6: deaths > 3 × the 7-day mean
 )
 
 // HTTPError is an error that knows its status and envelope. *Error implements

@@ -14,8 +14,6 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
-func TestMain(m *testing.M) { testdb.Main(m) }
-
 // fixture is a small hand-built ledger (all days in January 2026):
 //
 //	Farm B (growth): section T1. Placement 05.01 ♀ 100 · ♂ 20, cycle 05.01–10.01.

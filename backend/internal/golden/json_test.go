@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/calc"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
@@ -32,21 +34,23 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/prices"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/series"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
-// The JSON golden files (SPEC §11.8, M2 T9, M3 D12, M4 D8): the PeriodTable
-// (Rezumat and Consum), farm page, summary, bootstrap, Hrană zilnică and
-// Livrare hrană form states, Rapoarte › Hrană (Stoc, Livrări, Cost), the
-// Prețuri list and series page responses on the dev seed as of 18.11.2026
-// 12:00, built by the builders the handlers call (no HTTP: route wiring is
-// cmd/api's), encoded like httpx.JSON and indented. Ids are replaced by
-// stable tokens (M2 D9), because the import's ids are random; so are the
-// Livrări cursors, which carry an id, and undo tokens, which carry a
-// signature.
+// The JSON golden files (SPEC §11.8, M2 T9, M3 D12, M4 D8, M5 D11): the
+// PeriodTable (Rezumat and Consum), farm page, summary, bootstrap, Hrană
+// zilnică, Livrare hrană and Zilnic form states, Rapoarte › Hrană (Stoc,
+// Livrări, Cost), the Prețuri list, series page, entry read and correction
+// preview responses on the dev seed as of 18.11.2026 12:00, built by the
+// builders the handlers call (no HTTP: route wiring is cmd/api's), encoded
+// like httpx.JSON and indented. Ids are replaced by stable tokens (M2 D9),
+// because the import's ids are random; so are the Livrări cursors, which
+// carry an id, and undo tokens, which carry a signature. In the M5 files
+// entry versions and instants "at" are replaced too (normaliseWrites).
 //
 // Regenerate with: go test ./internal/golden -run TestJSONGolden -update
 
@@ -113,7 +117,9 @@ func cycleID(t *testing.T, db dbq.DBTX, farm uuid.UUID, series string) uuid.UUID
 // idTokens maps every id a response can carry to its stable token (M2 D9):
 // <farm:hirbovat>, <series:seria2026>, <cycle:hirbovat/2026>,
 // <section:hirbovat/H5.1>, <guide:…>, <feedType:…>, an entry that is
-// the only one of its farm, kind and day: <entry:hirbovat/feed_daily/2026-11-18>
+// the only one of its farm, kind and day: <entry:hirbovat/feed_daily/2026-11-18>,
+// or else the only one of them created at its local minute (M5: the seed's
+// Zilnic mortality and eggs of one day): <entry:hirbovat/daily/2026-11-17/08:07>,
 // and a delivery that is the only one of its farm, day and feed type:
 // <delivery:hirbovat/2026-11-13/breeder2> (an entry or a delivery sharing
 // them gets no token: a response naming it fails, as any id without a
@@ -129,9 +135,11 @@ union all select s.id, 'section:' || f.name_key || '/' || s.code from section s 
 union all select id, 'guide:' || name_key from guide
 union all select id, 'feedType:' || name_key from feed_type
 union all select id, token from (
-  select e.id, 'entry:' || f.name_key || '/' || e.kind::text || '/' || to_char(e.date, 'YYYY-MM-DD') as token,
-         count(*) over (partition by e.farm_id, e.kind, e.date) as n
-  from entry e join farm f on f.id = e.farm_id) e where n = 1
+  select id, token, count(*) over (partition by token) as n from (
+    select e.id, 'entry:' || f.name_key || '/' || e.kind::text || '/' || to_char(e.date, 'YYYY-MM-DD') ||
+           case when count(*) over (partition by e.farm_id, e.kind, e.date) > 1
+                then '/' || to_char(e.created_at at time zone 'Europe/Chisinau', 'HH24:MI') else '' end as token
+    from entry e join farm f on f.id = e.farm_id) e) e where n = 1
 union all select id, token from (
   select d.id, 'delivery:' || f.name_key || '/' || to_char(d.date, 'YYYY-MM-DD') || '/' || ft.name_key as token,
          count(*) over (partition by d.farm_id, d.date, d.feed_type_id) as n
@@ -212,6 +220,43 @@ func normalise(t *testing.T, v any, tokens map[uuid.UUID]string) []byte {
 	})
 	if len(unknown) > 0 {
 		t.Fatalf("ids without a token (add their table to idTokens): %v", unknown)
+	}
+	return []byte(text)
+}
+
+var (
+	versionText = regexp.MustCompile(`"version": "([^"]*)"`)
+	atText      = regexp.MustCompile(`"at": "([^"]*)"`)
+	// versionForm is an entry version as the server writes it (§7.0, §12.5):
+	// RFC 3339 in UTC with exactly six fractional digits.
+	versionForm = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$`)
+)
+
+// normaliseWrites replaces, in a normalised M5 response, every entry version
+// with <version> and every instant "at" with <at> (plan M5 T10), after
+// checking each one's form: a version as the server writes it, an instant
+// RFC 3339. The seeded tests check the instants themselves (08:15, 10:12).
+func normaliseWrites(t *testing.T, b []byte) []byte {
+	t.Helper()
+	var bad []string
+	text := versionText.ReplaceAllStringFunc(string(b), func(s string) string {
+		v := versionText.FindStringSubmatch(s)[1]
+		if _, err := entries.ParseVersion(v); err != nil || !versionForm.MatchString(v) {
+			bad = append(bad, "version "+v)
+			return s
+		}
+		return `"version": "<version>"`
+	})
+	text = atText.ReplaceAllStringFunc(text, func(s string) string {
+		v := atText.FindStringSubmatch(s)[1]
+		if _, err := time.Parse(time.RFC3339, v); err != nil {
+			bad = append(bad, "at "+v)
+			return s
+		}
+		return `"at": "<at>"`
+	})
+	if len(bad) > 0 {
+		t.Fatalf("not normalisable: %q", bad)
 	}
 	return []byte(text)
 }
@@ -392,6 +437,126 @@ func TestJSONGolden(t *testing.T) {
 			compareGolden(t, tc.file, got)
 		})
 	}
+
+	// M5 (D11): the Zilnic form state of Ion Rusu on 18.11, of Dr. Ceban on
+	// 17.11 (a past day: locked) and of the empty Telița, and the owner's read
+	// of Dr. Ceban's corrected 17.11 save, as the seeded users.
+	ion, vet, proprietar := seededPrincipal(t, f.db, "ion.rusu"), seededPrincipal(t, f.db, "dr.ceban"), seededPrincipal(t, f.db, "proprietar")
+	dailyForm := func(p auth.Principal, farm uuid.UUID, d timex.Day) func() (any, error) {
+		return func() (any, error) {
+			return entries.BuildDailyForm(ctx, f.db, entries.DailyFormInput{Principal: p, FarmID: farm, Date: d, Today: golden.AsOf, Now: golden.Now})
+		}
+	}
+	m5Cases := []struct {
+		file  string
+		build func() (any, error)
+	}{
+		{"forms/daily_hirbovat_18_manager.json", dailyForm(ion, f.hirbovat, golden.AsOf)},
+		{"forms/daily_hirbovat_17_vet.json", dailyForm(vet, f.hirbovat, day17)},
+		{"forms/daily_telita.json", dailyForm(ion, f.telita, golden.AsOf)},
+		{"entries/entry_daily_17_owner.json", func() (any, error) {
+			return entries.BuildEntryRead(ctx, f.db, entries.EntryReadInput{
+				Principal: proprietar, EntryID: correctedEntry(t, f.db), Today: golden.AsOf, Now: golden.Now,
+			})
+		}},
+	}
+	for _, tc := range m5Cases {
+		t.Run(tc.file, func(t *testing.T) {
+			res, err := tc.build()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p := nullContainers(res); len(p) > 0 {
+				t.Errorf("null lists at %q", p)
+			}
+			compareGolden(t, tc.file, normaliseWrites(t, normalise(t, res, f.tokens)))
+		})
+	}
+}
+
+// day17 is the day of the corrected Zilnic save (goldens 33, 37).
+var day17 = day(2026, time.November, 17)
+
+// seededPrincipal is the dev seed's user with login as a principal.
+func seededPrincipal(t *testing.T, q dbq.DBTX, login string) auth.Principal {
+	t.Helper()
+	var (
+		p    auth.Principal
+		role string
+	)
+	if err := q.QueryRow(t.Context(), `select u.id, u.name, u.role,
+		coalesce(array(select uf.farm_id from user_farm uf where uf.user_id = u.id), '{}')
+		from app_user u where u.login = $1`, login).Scan(&p.UserID, &p.Name, &role, &p.FarmIDs); err != nil {
+		t.Fatalf("user %q: %v", login, err)
+	}
+	p.Role = auth.Role(role)
+	return p
+}
+
+// correctedEntry is Dr. Ceban's Zilnic mortality of 17.11.2026 that Ion
+// Rusu corrected (H5.2 ♀ 1 → 3) in the seed.
+func correctedEntry(t *testing.T, q dbq.DBTX) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := q.QueryRow(t.Context(), `select id from entry where kind = 'daily' and date = $1 and corrected
+		and deleted_at is null`, day17).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	return id
+}
+
+// TestJSONGoldenCorrectionPreview is the §7.8 correction preview file (plan
+// M5-D11): on its own seeded database, the owner puts H5.2 ♀ of the 17.11
+// save back to 1, then Ion Rusu's dry run 1 → 3 answers the preview
+// (golden 37's change, golden 33's warning). The file holds the 200 body as
+// sent.
+func TestJSONGoldenCorrectionPreview(t *testing.T) {
+	d := testdb.NewSeeded(t)
+	ctx := t.Context()
+	tokens := idTokens(t, ctx, d.App)
+	svc := entries.NewService(db.NewStore(d.App), d.Clock)
+	entry := correctedEntry(t, d.App)
+	correct := func(p auth.Principal, mortality int64, reason string, dryRun bool) entries.Result {
+		t.Helper()
+		read, err := svc.ReadEntry(ctx, p, entry)
+		if err != nil {
+			t.Fatal(err)
+		}
+		v, ok := read.Values.(entries.DailyValues)
+		if !ok {
+			t.Fatalf("entry values %T, want entries.DailyValues", read.Values)
+		}
+		h52 := slices.IndexFunc(read.Sections, func(s entries.EntrySection) bool { return s.Code == "H5.2" })
+		v.Sections = slices.Clone(v.Sections)
+		i := slices.IndexFunc(v.Sections, func(s entries.DailySection) bool { return h52 >= 0 && s.SectionID == read.Sections[h52].ID })
+		if i < 0 || v.Sections[i].F == nil {
+			t.Fatalf("the 17.11 save has no H5.2 ♀ values")
+		}
+		sex := *v.Sections[i].F
+		n := num.FromInt(mortality)
+		sex.Mortality = &n
+		v.Sections[i].F = &sex
+		res, err := svc.UpdateDaily(ctx, p, entry, entries.DailyUpdateRequest{
+			IfVersion: read.Entry.Version, Values: v, Reason: &reason, DryRun: dryRun,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res
+	}
+	correct(seededPrincipal(t, d.App, "proprietar"), 1, "Înapoi la valoarea inițială.", false)
+	res := correct(seededPrincipal(t, d.App, "ion.rusu"), 3, "", true)
+	if res.Status != http.StatusOK {
+		t.Fatalf("dry run %d %s, want 200", res.Status, res.Body)
+	}
+	var preview entries.CorrectionPreview
+	if err := json.Unmarshal(res.Body, &preview); err != nil {
+		t.Fatal(err)
+	}
+	if p := nullContainers(preview); len(p) > 0 {
+		t.Errorf("null lists at %q", p)
+	}
+	compareGolden(t, "entries/correction_preview_17.json", normaliseWrites(t, normalise(t, json.RawMessage(res.Body), tokens)))
 }
 
 // reportsFeed is GET /api/reports/feed with farmId=all (every farm of p) as
@@ -848,6 +1013,34 @@ func TestNormaliseReplacesIDs(t *testing.T) {
 `
 	if string(got) != want {
 		t.Errorf("normalise:\n%s\nwant\n%s", got, want)
+	}
+}
+
+// TestNormaliseWritesReplacesVersionsAndInstants shows a version and an
+// instant "at" become placeholders and every other field stays.
+func TestNormaliseWritesReplacesVersionsAndInstants(t *testing.T) {
+	in := `{
+  "entry": {
+    "version": "2026-11-18T08:12:00.000001Z",
+    "createdAt": "2026-11-17T08:07:00+02:00",
+    "corrected": {
+      "at": "2026-11-18T10:12:00+02:00"
+    }
+  },
+  "versions": "x"
+}`
+	want := `{
+  "entry": {
+    "version": "<version>",
+    "createdAt": "2026-11-17T08:07:00+02:00",
+    "corrected": {
+      "at": "<at>"
+    }
+  },
+  "versions": "x"
+}`
+	if got := string(normaliseWrites(t, []byte(in))); got != want {
+		t.Errorf("normaliseWrites:\n%s\nwant\n%s", got, want)
 	}
 }
 

@@ -181,6 +181,70 @@ func (q *Queries) CalcCycleByID(ctx context.Context, arg CalcCycleByIDParams) (C
 	return i, err
 }
 
+const calcDeathsWindow = `-- name: CalcDeathsWindow :many
+select s.id as section_id, s.code,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'F' and x.date = $1::date - 1), 0)::integer
+         as yesterday_f,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'M' and x.date = $1::date - 1), 0)::integer
+         as yesterday_m,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'F'), 0)::integer as week_f,
+       coalesce(sum(x.deaths + x.culls) filter (where x.sex = 'M'), 0)::integer as week_m
+from section s
+left join section p on p.id = s.parent_id
+left join v_section_sex_delta x on x.section_id = s.id
+     and x.farm_id = $2::uuid
+     and x.date between $1::date - 7 and $1::date - 1
+where s.farm_id = $2::uuid
+  and not exists (select 1 from section c where c.parent_id = s.id)
+group by s.id, s.code, s.sort_order, p.code, p.sort_order
+order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), s.sort_order, s.code
+`
+
+type CalcDeathsWindowParams struct {
+	Day    timex.Day
+	FarmID uuid.UUID
+}
+
+type CalcDeathsWindowRow struct {
+	SectionID  uuid.UUID
+	Code       string
+	YesterdayF int32
+	YesterdayM int32
+	WeekF      int32
+	WeekM      int32
+}
+
+// Per bird-holding section (a section without children) × sex: the deaths (mortality + culls, D165, plan M5 Q3) of
+// the day before the day and of the 7 days before it (day − 7 … day − 1), the inputs of the Zilnic form's Ieri and
+// media 7 zile and of Z6 (§6.2). Every such section of the farm, 0 when it has none, in tree order (hall, then
+// compartment). A running sum over v_section_sex_delta, not the dense view (ARC-6).
+func (q *Queries) CalcDeathsWindow(ctx context.Context, arg CalcDeathsWindowParams) ([]CalcDeathsWindowRow, error) {
+	rows, err := q.db.Query(ctx, calcDeathsWindow, arg.Day, arg.FarmID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcDeathsWindowRow{}
+	for rows.Next() {
+		var i CalcDeathsWindowRow
+		if err := rows.Scan(
+			&i.SectionID,
+			&i.Code,
+			&i.YesterdayF,
+			&i.YesterdayM,
+			&i.WeekF,
+			&i.WeekM,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const calcDeliveries = `-- name: CalcDeliveries :many
 with r as (
   select g.i as ord,
@@ -744,6 +808,60 @@ func (q *Queries) CalcGuideWeeks(ctx context.Context, arg CalcGuideWeeksParams) 
 			&i.HatchingPct,
 			&i.EggWeightG,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const calcHensStart = `-- name: CalcHensStart :many
+with h as (
+  select u.egg_unit_id, sum(x.delta) as hens
+  from v_egg_unit u
+  join v_section_sex_delta x on x.section_id = u.section_id
+  where u.farm_id = $1::uuid
+    and x.farm_id = $1::uuid
+    and x.sex = 'F'
+    and x.date < $2::date
+  group by u.egg_unit_id
+)
+select s.id as egg_unit_id, s.code, coalesce(h.hens, 0)::integer as hens_start
+from section s
+left join h on h.egg_unit_id = s.id
+where s.farm_id = $1::uuid
+  and s.parent_id is null
+order by s.sort_order, s.code
+`
+
+type CalcHensStartParams struct {
+	FarmID uuid.UUID
+	Day    timex.Day
+}
+
+type CalcHensStartRow struct {
+	EggUnitID uuid.UUID
+	Code      string
+	HensStart int32
+}
+
+// Hens at the start of the day per egg unit of the farm (§5.6, D156): Σ ♀ deltas before the day over the unit's
+// bird-holding sections (v_egg_unit: a hall's compartments, or a section without parent and children itself).
+// Every egg unit of the farm (a section without parent), 0 when it has no hens, in tree order. A running sum over
+// v_section_sex_delta like CalcLayDay, so it holds for any day (ARC-6).
+func (q *Queries) CalcHensStart(ctx context.Context, arg CalcHensStartParams) ([]CalcHensStartRow, error) {
+	rows, err := q.db.Query(ctx, calcHensStart, arg.FarmID, arg.Day)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcHensStartRow{}
+	for rows.Next() {
+		var i CalcHensStartRow
+		if err := rows.Scan(&i.EggUnitID, &i.Code, &i.HensStart); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

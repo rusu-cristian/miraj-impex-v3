@@ -15,12 +15,18 @@ on:
       - ".github/workflows/backend.yml"
       # Workbook extracts: input of the migrate-history and golden tests (M1).
       - "design/data/extracts/**"
+  # Nightly: the SPEC §11.8 concurrency tests, repeated (M5 T9). GitHub runs schedules on the default branch only;
+  # workflow_dispatch runs the same job on any branch by hand.
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: backend-${{ github.ref }}
+  # The event is in the group so a nightly run and a push to the same branch never cancel each other.
+  group: backend-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 env:
@@ -36,6 +42,7 @@ defaults:
 
 jobs:
   lint:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -61,6 +68,7 @@ jobs:
         run: make lint
 
   test:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -76,6 +84,7 @@ jobs:
         run: make test
 
   docker:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -97,3 +106,22 @@ jobs:
       # The one-off history loader ships in the same image (M1, D7).
       - name: migrate-history is in the image
         run: docker run --rm --entrypoint /usr/local/bin/migrate-history impex-api:ci --help
+
+  # SPEC §11.8 concurrency (M5 plan Q13): two concurrent Zilnic saves on one section × sex, and the same without the
+  # farm lock, 20 times each under the race detector, so a rare interleaving shows up. -run 'Concurrent' matches the
+  # TestConcurrent… tests and the package's older *Concurrent* ones.
+  concurrency-nightly:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+      # testcontainers starts postgres:16 on the runner's Docker, as in the test job.
+      - name: Concurrency tests x20
+        run: go test -race -count=20 -run 'Concurrent' ./internal/entries/...
