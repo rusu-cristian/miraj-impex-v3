@@ -1,2 +1,4 @@
 - [Backend Go conventions](backend-go-conventions.md) — inferred layering rules and known M0 leaks to compare later milestones against
 - [Backend architecture conventions](project_backend_conventions.md) — builder/service/runner patterns, import direction, recurring duplication smells
+- [Backend Go conventions](project_backend_conventions.md) — module layout, builder/service split, role-typed DTOs, known duplications
+- [Backend conventions M4](backend_go_conventions_m4.md) — M4 additions: role-typed DTOs, batched SQL, closed-series predicate drift

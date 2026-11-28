@@ -1,2 +1,5 @@
 - [Trust boundaries](trust_boundaries.md) — proxy/XFF, CSRF + per-route ContentType, session, throttle, DB roles, secrets, migrate-history guards (M0, M1); farm-scoped reads, cycleId, period bounds (M2)
 - [Write-path trust boundaries](trust_boundaries_write_path.md) — M3 create access order, replay user+route scoping, append-only, reports roles; base map lives in repo-root agent memory
+- [Trust boundaries](trust_boundaries.md) — price visibility by role, farm scoping, undo token kinds, audit/live price data later routes must filter
+- [Past findings](past_findings.md) — security findings per milestone review and their outcome (M4: SEC-1 minor)
+- [Trust boundaries M4](trust_boundaries_m4.md) — M4 additions: prices, undo token, cursor, series scoping

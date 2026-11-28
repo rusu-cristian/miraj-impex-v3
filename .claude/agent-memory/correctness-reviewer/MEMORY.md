@@ -1,1 +1,2 @@
 - [Bug patterns](bug-patterns.md) — check-then-act races, NUL bytes in text params, read-only probe limits, test gaps in Impex backend
+- [M4 review patterns](project_m4_review_patterns.md) — what held up in M4 and where to re-check scope, undo-token and cost-total logic
