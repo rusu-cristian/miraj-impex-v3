@@ -1,3 +1,4 @@
 - [Backend build vs SPEC drift](project_backend_build_gaps.md) — M0: tests solid; gaps are SPEC.md not updated for build-time decisions, CI criteria unprovable pre-push
 - [Recurring spec gaps](feedback_recurring_gaps.md) — small repeat gaps in milestone reviews + read-only review mechanics
 - [Review patterns](project_review_patterns.md) — where spec gaps hide in Impex Line milestones (scope drift in refactors, ledger drift)
+- [M5 review patterns](project_m5_review_patterns.md) — M5 matched its brief; deviations were small, documented scope widenings

@@ -3,3 +3,6 @@
 - [Trust boundaries](trust_boundaries.md) — price visibility by role, farm scoping, undo token kinds, audit/live price data later routes must filter
 - [Past findings](past_findings.md) — security findings per milestone review and their outcome (M4: SEC-1 minor)
 - [Trust boundaries M4](trust_boundaries_m4.md) — M4 additions: prices, undo token, cursor, series scoping
+- [Trust boundaries](trust_boundaries.md) — where CSRF, role/farm, edit-vs-correction, undo/restore and price controls live
+- [Review findings log](review_findings_log.md) — SEC findings per milestone and plan-accepted items not to re-raise
+- [trust_boundaries M5](trust_boundaries_m5.md) — M5 additions
