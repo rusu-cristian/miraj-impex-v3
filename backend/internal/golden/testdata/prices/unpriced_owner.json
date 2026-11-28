@@ -1,0 +1,42 @@
+{
+  "items": [
+    {
+      "id": "<delivery:hirbovat/2026-02-17/breeder2>",
+      "date": "2026-02-17",
+      "farm": "Hîrbovăț",
+      "type": "Breeder 2",
+      "forSex": "F",
+      "kg": 2000
+    },
+    {
+      "id": "<delivery:hirbovat/2026-02-17/cocosi>",
+      "date": "2026-02-17",
+      "farm": "Hîrbovăț",
+      "type": "Cocoși",
+      "forSex": "M",
+      "kg": 1000
+    },
+    {
+      "id": "<delivery:hirbovat/2026-03-14/cocosi>",
+      "date": "2026-03-14",
+      "farm": "Hîrbovăț",
+      "type": "Cocoși",
+      "forSex": "M",
+      "kg": 6160
+    },
+    {
+      "id": "<delivery:hirbovat/2026-11-12/breeder2>",
+      "date": "2026-11-12",
+      "farm": "Hîrbovăț",
+      "type": "Breeder 2",
+      "forSex": "F",
+      "kg": 9000
+    }
+  ],
+  "count": 4,
+  "kg": 18160,
+  "farms": [
+    "Hîrbovăț"
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

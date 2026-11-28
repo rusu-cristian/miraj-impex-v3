@@ -126,3 +126,77 @@ func TestWriteDefaults(t *testing.T) {
 		t.Fatalf("rows = %+v, want 2 × %+v", got, want)
 	}
 }
+
+// TestWriteID: WriteID returns the inserted row's bigserial id, the row reads
+// back by it with the columns as given, and later rows get larger ids.
+func TestWriteID(t *testing.T) {
+	ctx := context.Background()
+	d := testdb.New(t)
+	q := dbq.New(d.App)
+	farm := id(t, d, `insert into farm (name, name_key, type) values ('Hîrbovăț', 'hirbovat', 'laying') returning id`)
+	delivery := uuid.MustParse("33333333-3333-3333-3333-333333333333")
+
+	// A row written by Write first, so the ids below are not trivially 1.
+	if err := Write(ctx, q, Row{At: testdb.Now(), Action: dbq.AuditActionSetupChange, Entity: "farm", EntityID: farm}); err != nil {
+		t.Fatal(err)
+	}
+	var ids []int64
+	for _, summary := range []string{"Prețuri · 4 livrări · 18 160 kg", "Prețuri · 1 livrare · 9 000 kg"} {
+		got, err := WriteID(ctx, q, Row{
+			At: testdb.Now(), Action: dbq.AuditActionPriceSet, Entity: "feed_delivery", EntityID: delivery,
+			RecordTypes: []string{"pret"}, FarmIDs: []uuid.UUID{farm}, Summary: ptr(summary),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var (
+			entity, readSummary, changes string
+			at                           time.Time
+			recordTypes                  []string
+		)
+		err = d.App.QueryRow(ctx, `select entity, summary, changes::text, at, record_types from audit_log where id = $1`, got).
+			Scan(&entity, &readSummary, &changes, &at, &recordTypes)
+		if err != nil {
+			t.Fatalf("row %d: %v", got, err)
+		}
+		if entity != "feed_delivery" || readSummary != summary || changes != "[]" || !at.Equal(testdb.Now()) ||
+			len(recordTypes) != 1 || recordTypes[0] != "pret" {
+			t.Errorf("row %d = %s %q %s %s %v", got, entity, readSummary, changes, at, recordTypes)
+		}
+		ids = append(ids, got)
+	}
+	var maxID int64
+	if err := d.App.QueryRow(ctx, `select max(id) from audit_log`).Scan(&maxID); err != nil {
+		t.Fatal(err)
+	}
+	if ids[0] <= 1 || ids[1] <= ids[0] || ids[1] != maxID {
+		t.Errorf("ids = %v, max(id) = %d; want increasing ids after the first row's", ids, maxID)
+	}
+}
+
+// TestWriteIDFailures: a value that can't be encoded or a row the table
+// refuses returns an error and id 0, and writes nothing.
+func TestWriteIDFailures(t *testing.T) {
+	ctx := context.Background()
+	d := testdb.New(t)
+	q := dbq.New(d.App)
+	entity := uuid.MustParse("44444444-4444-4444-4444-444444444444")
+	for name, r := range map[string]Row{
+		"unencodable changes": {At: testdb.Now(), Action: dbq.AuditActionPriceSet, Entity: "feed_delivery", EntityID: entity, Changes: make(chan int)},
+		"unknown entity":      {At: testdb.Now(), Action: dbq.AuditActionPriceSet, Entity: "price", EntityID: entity},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, err := WriteID(ctx, q, r)
+			if err == nil || got != 0 {
+				t.Fatalf("WriteID = %d, %v; want 0 and an error", got, err)
+			}
+		})
+	}
+	var n int
+	if err := d.App.QueryRow(ctx, `select count(*) from audit_log`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 0 {
+		t.Errorf("%d audit rows after failed writes, want 0", n)
+	}
+}

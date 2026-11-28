@@ -62,6 +62,8 @@ where farm_id = sqlc.arg(farm_id)::uuid
 -- The base of §5.5 at farm scope over [from_day, to_day]: placements plus transfers in whose peer section is in
 -- another farm. A transfer row without a peer section (migration rows may have none) takes the source farm of
 -- its transfer entry, and counts as inside the farm in any other entry. Adjustments are never part of the base.
+-- ReportsCostInputs (reports.sql, lateral b) repeats this sum per cycle in its batch: change both together
+-- (TestCostInputsMatchCalc checks they agree).
 select coalesce(sum(e.qty) filter (where e.sex = 'F'), 0)::integer as base_f,
        coalesce(sum(e.qty) filter (where e.sex = 'M'), 0)::integer as base_m
 from v_bird_event e
@@ -484,3 +486,81 @@ left join scope sc on sc.scope_id = s.id
 left join emptied e on e.scope_id = s.id
 where s.farm_id = sqlc.arg(farm_id)::uuid
 order by coalesce(p.sort_order, s.sort_order), coalesce(p.code, s.code), p.id is not null, s.sort_order, s.code;
+
+-- name: CalcDeliveries :many
+-- The live deliveries of each asked farm over its day range (§5.9, §7.12): one row per asked range, in the order
+-- asked (ord, from 1), 0 and empty arrays when the range has none. A range runs from from_day (only when has_from;
+-- else from the farm's first delivery) to to_day, both included. kg per the feed type's for_sex (F, M, null =
+-- ambele sexe); priced = total_lei set (feed_delivery_price_ck sets both prices together); the unpriced deliveries
+-- one by one in parallel arrays, oldest first, then by type name, then id.
+with r as (
+  select g.i as ord,
+         (sqlc.arg(farm_ids)::uuid[])[g.i] as farm_id,
+         (sqlc.arg(has_from)::boolean[])[g.i] as has_from,
+         (sqlc.arg(from_days)::date[])[g.i] as from_day,
+         (sqlc.arg(to_days)::date[])[g.i] as to_day
+  from generate_subscripts(sqlc.arg(farm_ids)::uuid[], 1) as g(i)
+), d as (
+  select r.ord, fd.id, fd.date, fd.qty_kg, fd.total_lei, ft.id as feed_type_id, ft.name, ft.name_key, ft.for_sex
+  from r
+  join feed_delivery fd on fd.farm_id = r.farm_id
+  join entry n on n.id = fd.entry_id and n.deleted_at is null
+  join feed_type ft on ft.id = fd.feed_type_id
+  where fd.deleted_at is null
+    and fd.date <= r.to_day
+    and (not r.has_from or fd.date >= r.from_day)
+)
+select r.ord::integer as ord, r.farm_id::uuid as farm_id,
+       count(d.id)::integer as deliveries,
+       coalesce(sum(d.qty_kg) filter (where d.for_sex = 'F'), 0)::numeric as kg_f,
+       coalesce(sum(d.qty_kg) filter (where d.for_sex = 'M'), 0)::numeric as kg_m,
+       coalesce(sum(d.qty_kg) filter (where d.id is not null and d.for_sex is null), 0)::numeric as kg_both,
+       (count(d.id) filter (where d.total_lei is not null))::integer as priced_count,
+       coalesce(sum(d.qty_kg) filter (where d.total_lei is not null), 0)::numeric as priced_kg,
+       coalesce(sum(d.total_lei), 0)::numeric as priced_lei,
+       coalesce(array_agg(d.id order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::uuid[] as unpriced_ids,
+       coalesce(array_agg(d.date order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::date[] as unpriced_dates,
+       coalesce(array_agg(d.qty_kg order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::numeric[] as unpriced_kgs,
+       coalesce(array_agg(d.feed_type_id order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::uuid[] as unpriced_type_ids,
+       coalesce(array_agg(d.name order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::text[] as unpriced_types
+from r
+left join d on d.ord = r.ord
+group by r.ord, r.farm_id
+order by r.ord;
+
+-- name: CalcEggsBetween :one
+-- Σ eggs of a farm over [from_day, to_day] (§5.6, §5.9): the live egg rows whose total is filled (Cat. 1 + 2 + 3 +
+-- Incubabile; Jos apart). No from_day = from the first egg row. ReportsCostInputs (reports.sql, lateral eg) repeats
+-- this sum per cycle in its batch: change both together (TestCostInputsMatchCalc checks they agree).
+select coalesce(sum(ep.total_eggs), 0)::bigint as eggs
+from egg_production ep
+join entry n on n.id = ep.entry_id and n.deleted_at is null
+where ep.farm_id = sqlc.arg(farm_id)::uuid
+  and ep.deleted_at is null
+  and ep.total_eggs is not null
+  and (sqlc.narg(from_day)::date is null or ep.date >= sqlc.narg(from_day)::date)
+  and ep.date <= sqlc.arg(to_day)::date;
+
+-- name: CalcSeriesPlacement :one
+-- The series placement per sex (§5.9 series total, §7.3 series page): Σ live placement rows dated inside a cycle of
+-- the series at their farm, over every farm when all_farms, else the listed farms only (the caller's: a series page
+-- never counts birds placed at a farm the caller can't see, M4 COR-1). The migration's placements sit in a migration
+-- entry without a series, so the cycle is the link; an app placement entry (always of the cycle's series) counts only
+-- for its own series. ReportsCostInputs (reports.sql, CTE sp) repeats this sum over every farm in its batch: change
+-- both together (TestCostInputsMatchCalc checks they agree).
+select coalesce(sum(e.qty) filter (where e.sex = 'F'), 0)::integer as placed_f,
+       coalesce(sum(e.qty) filter (where e.sex = 'M'), 0)::integer as placed_m
+from cycle c
+join bird_event e on e.farm_id = c.farm_id
+                 and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date)
+join entry n on n.id = e.entry_id and n.deleted_at is null
+where c.series_id = sqlc.arg(series_id)::uuid
+  and (sqlc.arg(all_farms)::boolean or c.farm_id = any(sqlc.arg(farm_ids)::uuid[]))
+  and e.type = 'placement'
+  and e.deleted_at is null
+  and (n.series_id is null or n.series_id = sqlc.arg(series_id)::uuid);

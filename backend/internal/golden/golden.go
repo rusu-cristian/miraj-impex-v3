@@ -8,7 +8,8 @@
 // exist yet has Got == nil and names the milestone that brings it.
 //
 // Got functions call the services (calc; periodtable and farms from M2; the
-// Consum table and the stock readers from M3) and round once, at the
+// Consum table and the stock readers from M3; the deliveries, price and
+// cost readers, reports.BuildCost and series.BuildPage from M4) and round once, at the
 // precision §11.7 states, into plain values (ints and fixed-point strings),
 // so Want and Got compare exactly. They never copy a formula into SQL.
 package golden
@@ -276,13 +277,32 @@ func Rows() []Row {
 				{Type: "Cocoși", AvgDaily: "170.9", Days: "10.4", RunOut: "2026-11-28"},
 			}},
 			Got: daysLeft},
-		{ID: 29, Name: "Hîrbovăț deliveries", Milestone: "M4"},
-		{ID: 30, Name: "13.11.2026 delivery price", Milestone: "M4"},
-		{ID: 31, Name: "cost", Milestone: "M4"},
+		{ID: 29, Name: "Hîrbovăț deliveries", Milestone: "M4",
+			Want: Deliveries{Count: 69, KgF: "1114110", KgM: "78530", Lei: "9562437", Unpriced: UnpricedKg{
+				Count: 4, Kg: "18160", Items: []DeliveryKg{
+					{Date: "2026-02-17", Kg: "2000"}, {Date: "2026-02-17", Kg: "1000"},
+					{Date: "2026-03-14", Kg: "6160"}, {Date: "2026-11-12", Kg: "9000"},
+				},
+			}},
+			Got: deliveries},
+		{ID: 30, Name: "13.11.2026 delivery price", Milestone: "M4",
+			Want: Price{Kg: "25640", TotalLei: "199000", PerKg: "7.76", StoredPerKg: "7.7613"},
+			Got:  price},
+		{ID: 31, Name: "cost", Milestone: "M4",
+			Want: Cost{
+				Cycles: []CycleCost{
+					{Cycle: "Telița · Seria 2026", Lei: "2031768", Birds: 31590, PerBird: "64.32"},
+					{Cycle: "Hîrbovăț · Seria 2026", Lei: "9562437", Birds: 29907, Eggs: 5073155, PerBird: "319.74", PerEgg: "1.88", UnpricedKg: "18160"},
+				},
+				Total: CostTotal{Lei: "11594205", PerBird: "367.02", PerEgg: "2.29", ExcludedKg: "18160"},
+			},
+			Got: cost},
 		{ID: 32, Name: "weighing Telița H1 vs guide", Milestone: "M9"},
 		{ID: 33, Name: "3× warning H6.1", Milestone: "M5"},
 		{ID: 34, Name: "missing Hrană zilnică H7.1, H7.2", Milestone: "M8"},
-		{ID: 35, Name: "placement Seria 2026, Telița cycle", Milestone: "M4"},
+		{ID: 35, Name: "placement Seria 2026, Telița cycle", Milestone: "M4",
+			Want: SeriesPlacement{Farm: "Telița", Placed: calc.PerSex[int]{F: 28080, M: 3510}, CycleSAPT: [2]int{1, 21}},
+			Got:  seriesPlacement},
 		{ID: 36, Name: "guide spans", Milestone: "M10"},
 		{ID: 37, Name: "correction 17.11 H5.2", Milestone: "M5"},
 		{ID: 38, Name: "H7 empty since 14.11.2026", Milestone: "M2",

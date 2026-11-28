@@ -10,14 +10,19 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
 
 // Event types (§9).
 const (
-	TypeEntryCreated = "entry.created"
+	TypeEntryCreated    = "entry.created"
+	TypeDeliveryCreated = "delivery.created"
+	TypePriceSet        = "price.set"
+	TypePriceChanged    = "price.changed"
 )
 
 // Event is one live_event row before it is written.
@@ -71,6 +76,51 @@ func EntryCreated(p EntryPayload) Event {
 	p.Sections = nonNil(p.Sections)
 	p.RecordTypes = nonNil(p.RecordTypes)
 	return Event{FarmIDs: p.FarmIDs, Type: TypeEntryCreated, Payload: p}
+}
+
+// DeliveryPayload is the data of delivery.created (§9): the new delivery's
+// entry, farm, type name, kg and date. It never carries a price.
+type DeliveryPayload struct {
+	EntryID  uuid.UUID `json:"entryId"`
+	FarmID   uuid.UUID `json:"farmId"`
+	FeedType string    `json:"feedType"` // the type's name: "Breeder 2"
+	Kg       num.Num   `json:"kg"`
+	Date     timex.Day `json:"date"`
+}
+
+// DeliveryCreated is the delivery.created event of a new delivery, for its farm.
+func DeliveryCreated(p DeliveryPayload) Event {
+	return Event{FarmIDs: []uuid.UUID{p.FarmID}, Type: TypeDeliveryCreated, Payload: p}
+}
+
+// PricePayload is the data of price.set / price.changed (§9): the deliveries
+// whose price was set, changed or undone, their count and Σ kg. It carries no
+// lei (M4 D2): the price stays out of the outbox until M11 filters by role.
+type PricePayload struct {
+	DeliveryIDs []uuid.UUID `json:"deliveryIds"`
+	Count       int         `json:"count"`
+	Kg          num.Num     `json:"kg"`
+}
+
+// PriceSet is the price.set event of a Prețuri save, for farmIDs (the
+// deliveries' farms). Count is len(deliveryIDs); nil ids are sent as [].
+func PriceSet(farmIDs, deliveryIDs []uuid.UUID, kg decimal.Decimal) Event {
+	return priceEvent(TypePriceSet, farmIDs, deliveryIDs, kg)
+}
+
+// PriceChanged is the price.changed event of a price change or a price undo,
+// for farmIDs (the deliveries' farms). Count is len(deliveryIDs).
+func PriceChanged(farmIDs, deliveryIDs []uuid.UUID, kg decimal.Decimal) Event {
+	return priceEvent(TypePriceChanged, farmIDs, deliveryIDs, kg)
+}
+
+func priceEvent(typ string, farmIDs, deliveryIDs []uuid.UUID, kg decimal.Decimal) Event {
+	ids := nonNil(deliveryIDs)
+	return Event{
+		FarmIDs: nonNil(farmIDs),
+		Type:    typ,
+		Payload: PricePayload{DeliveryIDs: ids, Count: len(ids), Kg: num.Of(kg)},
+	}
 }
 
 func nonNil[T any](s []T) []T {

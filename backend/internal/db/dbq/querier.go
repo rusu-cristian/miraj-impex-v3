@@ -23,6 +23,16 @@ type Querier interface {
 	// One cycle of a farm (§4.6) with its series, its guide and whether it has any live bird event (a past cycle without
 	// one has no flock count, D52/D54). No row when the cycle belongs to another farm.
 	CalcCycleByID(ctx context.Context, arg CalcCycleByIDParams) (CalcCycleByIDRow, error)
+	// The live deliveries of each asked farm over its day range (§5.9, §7.12): one row per asked range, in the order
+	// asked (ord, from 1), 0 and empty arrays when the range has none. A range runs from from_day (only when has_from;
+	// else from the farm's first delivery) to to_day, both included. kg per the feed type's for_sex (F, M, null =
+	// ambele sexe); priced = total_lei set (feed_delivery_price_ck sets both prices together); the unpriced deliveries
+	// one by one in parallel arrays, oldest first, then by type name, then id.
+	CalcDeliveries(ctx context.Context, arg CalcDeliveriesParams) ([]CalcDeliveriesRow, error)
+	// Σ eggs of a farm over [from_day, to_day] (§5.6, §5.9): the live egg rows whose total is filled (Cat. 1 + 2 + 3 +
+	// Incubabile; Jos apart). No from_day = from the first egg row. ReportsCostInputs (reports.sql, lateral eg) repeats
+	// this sum per cycle in its batch: change both together (TestCostInputsMatchCalc checks they agree).
+	CalcEggsBetween(ctx context.Context, arg CalcEggsBetweenParams) (int64, error)
 	// empty_since per section of a farm at the end of the day (§5.3): every section, a hall counting its compartments
 	// and a section without children itself, both sexes together. alive_end is the scope's count at the end of the day;
 	// empty_since is the last day its count went from > 0 to 0, null while it has birds or when it never had any.
@@ -31,6 +41,8 @@ type Querier interface {
 	// The base of §5.5 at farm scope over [from_day, to_day]: placements plus transfers in whose peer section is in
 	// another farm. A transfer row without a peer section (migration rows may have none) takes the source farm of
 	// its transfer entry, and counts as inside the farm in any other entry. Adjustments are never part of the base.
+	// ReportsCostInputs (reports.sql, lateral b) repeats this sum per cycle in its batch: change both together
+	// (TestCostInputsMatchCalc checks they agree).
 	CalcFarmBase(ctx context.Context, arg CalcFarmBaseParams) (CalcFarmBaseRow, error)
 	// Every cycle of a farm, newest first (CycleSelector, §7.3), with the fields of CalcCycleByID.
 	CalcFarmCycles(ctx context.Context, farmID uuid.UUID) ([]CalcFarmCyclesRow, error)
@@ -73,6 +85,13 @@ type Querier interface {
 	CalcSectionRemovals(ctx context.Context, arg CalcSectionRemovalsParams) ([]CalcSectionRemovalsRow, error)
 	// The age parameters of a series (§5.1).
 	CalcSeriesAge(ctx context.Context, seriesID uuid.UUID) (CalcSeriesAgeRow, error)
+	// The series placement per sex (§5.9 series total, §7.3 series page): Σ live placement rows dated inside a cycle of
+	// the series at their farm, over every farm when all_farms, else the listed farms only (the caller's: a series page
+	// never counts birds placed at a farm the caller can't see, M4 COR-1). The migration's placements sit in a migration
+	// entry without a series, so the cycle is the link; an app placement entry (always of the cycle's series) counts only
+	// for its own series. ReportsCostInputs (reports.sql, CTE sp) repeats this sum over every farm in its batch: change
+	// both together (TestCostInputsMatchCalc checks they agree).
+	CalcSeriesPlacement(ctx context.Context, arg CalcSeriesPlacementParams) (CalcSeriesPlacementRow, error)
 	// The asked app settings (D19 thresholds and the other numeric settings) as their JSON text; keys that don't exist
 	// are absent.
 	CalcSettings(ctx context.Context, keys []string) ([]CalcSettingsRow, error)
@@ -116,6 +135,14 @@ type Querier interface {
 	// PostgreSQL delivers the notification at commit and drops it on rollback. `at` keeps the database now(): only the
 	// purge, on the real clock, reads it (M3 D3).
 	EmitLiveEvent(ctx context.Context, arg EmitLiveEventParams) (int64, error)
+	// What the level-1 checks of a Livrare hrană save name (§6.7, M4 D5), read before the transaction: the farm's name
+	// and the asked feed type's name (null when no such type, active or not). No row = no such farm.
+	EntriesDeliveryRefs(ctx context.Context, arg EntriesDeliveryRefsParams) (EntriesDeliveryRefsRow, error)
+	// The context of a Livrare hrană save (§6.7, M4 D5), read under the farm lock: the farm's name, the closed series
+	// whose cycle contains the day (closed_series_on, 0003; '' when none: an open series, or a day between cycles such
+	// as a pre-stocking delivery; closed → 409 SERIES_CLOSED, §3.1), and the asked feed type (null columns when it
+	// doesn't exist; inactive → the "e retras" refusal). No row = no such farm.
+	EntriesDeliverySaveContext(ctx context.Context, arg EntriesDeliverySaveContextParams) (EntriesDeliverySaveContextRow, error)
 	// The sections of a farm (retired ones and halls too) with their codes, for the level-1 checks and messages of a
 	// create (§7.0b: "sectionId not a section of this farm", "H1.1 ♀: …"). One row with a null section when the farm has
 	// none; no row when the farm doesn't exist.
@@ -134,6 +161,8 @@ type Querier interface {
 	EntriesFeedSaveContext(ctx context.Context, arg EntriesFeedSaveContextParams) ([]EntriesFeedSaveContextRow, error)
 	// One Hrană zilnică row (§4.8): kg is never stored for app data, it is g × birds at the start of the day (DATA03).
 	EntriesInsertFeedAllocation(ctx context.Context, arg EntriesInsertFeedAllocationParams) error
+	// One Livrare hrană row (§4.8, §6.7). A new delivery has no price: the owner sets it in Prețuri (§6.8, M4 Q9).
+	EntriesInsertFeedDelivery(ctx context.Context, arg EntriesInsertFeedDeliveryParams) error
 	// The asked feed type ids that exist (active or not): an unknown id is a level-1 issue, an inactive one is H2.
 	EntriesKnownFeedTypes(ctx context.Context, feedTypeIds []uuid.UUID) ([]uuid.UUID, error)
 	// The entry that holds an idempotency key (soft-deleted ones too: the key stays taken), with its author and kind: a
@@ -156,6 +185,10 @@ type Querier interface {
 	// The live transfers between a farm and another farm (§7.3 farm track links), one row per day and direction, with
 	// the birds that arrived per sex (the destination side of each pair). Moves inside one farm are not links.
 	FarmsTransfers(ctx context.Context, farmID uuid.UUID) ([]FarmsTransfersRow, error)
+	// The head of the Livrare hrană form state of a farm (§7.8, M4 Q14): the farm; its open cycle, if any, with its series
+	// (name and age parameters, for SAPT today); and the active feed types in name order, as parallel arrays (for_sex
+	// '' = ambele sexe). No row for an unknown farm.
+	FormsDeliveryHead(ctx context.Context, farmID uuid.UUID) (FormsDeliveryHeadRow, error)
 	// Form states (SPEC §7.8, M3 D8, D14). The save's queries are in entries.sql; these are the reads before editing.
 	// The head of the Hrană zilnică form state of a farm on a day: the farm; the cycle whose [start_date, end_date]
 	// contains the day (an open cycle has no end) with its series (name, closed or not, age parameters) and the guide's
@@ -187,7 +220,12 @@ type Querier interface {
 	InsertAudit(ctx context.Context, arg InsertAuditParams) error
 	// One audit row per save action, every §4.10 column (M3 D1; the name InsertEntryAudit is migratehistory.sql's).
 	// `at` comes from the injected clock (M3 D3); changes is never null ('[]' for a create), old_values/new_values may be.
+	// InsertAuditLogID below must keep exactly these parameters, in this order: audit.WriteID converts
+	// InsertAuditLogParams to InsertAuditLogIDParams (a Go struct conversion that compiles only while the two match).
 	InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error
+	// InsertAuditLog returning the row's bigserial id (M4 D3): the price batch's undo token names its audit row. Keep its
+	// parameters identical to InsertAuditLog's (audit.WriteID converts one params struct into the other).
+	InsertAuditLogID(ctx context.Context, arg InsertAuditLogIDParams) (int64, error)
 	// The header of one form save (§4.7, §12.5). created_at comes from the injected clock (M3 D3), so "today = local
 	// date of created_at" (§3.2) holds under a frozen clock; the version is read back from the row, never formatted
 	// from the Go clock. client_request_id is null for a dry run and for a save without a key.
@@ -217,14 +255,72 @@ type Querier interface {
 	MarkLoginAttemptSucceeded(ctx context.Context, id int64) error
 	// §10.3: the import runs once; a database that holds a migration entry is refused (unless --replace).
 	MigrationEntryExists(ctx context.Context) (bool, error)
-	// The farms of the Stoc report (§7.12, M3 D9): every farm when all_farms, else the listed ids; ordered by name_key.
-	// Each with its latest cycle (by start date, as CalcFarmCycles orders them): has_open_cycle when it has no end
-	// date; otherwise the farm shows one "fără ciclu deschis" row, with the latest cycle's series and end date (null
-	// without any cycle).
-	ReportsFeedFarms(ctx context.Context, arg ReportsFeedFarmsParams) ([]ReportsFeedFarmsRow, error)
+	// The price_set audit row a price undo token names (M4 D4): its instant, author, action and new_values (the
+	// deliveries of the batch). No row = no such audit row.
+	PricesAuditRow(ctx context.Context, id int64) (PricesAuditRowRow, error)
+	// Changes a priced delivery's price (§6.8 Modifică, M4 Q12): the new pair and typed input, the caller and the
+	// instant; a register price becomes the caller's (price_from_register false).
+	PricesChange(ctx context.Context, arg PricesChangeParams) (int64, error)
+	// The farms of the asked deliveries, for the farm locks taken before the rows are locked (M4 D3).
+	PricesDeliveryFarms(ctx context.Context, ids []uuid.UUID) ([]uuid.UUID, error)
+	// What the level-1 checks of a price write name (§7.0b, M4 Q10, Q12), read before the transaction: each asked
+	// delivery's date, kg, type name and current price, deleted ones too (a deleted delivery is 409 STALE in a set and
+	// 404 in a change, not an unknown id). An id without a row is not in the result.
+	PricesDeliveryRefs(ctx context.Context, ids []uuid.UUID) ([]PricesDeliveryRefsRow, error)
+	// The asked deliveries locked for the write (select … for update, after the farm locks; M4 D3): kg, date, type,
+	// the five price columns, whether the delivery (or its entry) is deleted, and the closed series whose cycle holds
+	// its date (closed_series_on, 0003; '' when none, §3.1).
+	PricesLockDeliveries(ctx context.Context, ids []uuid.UUID) ([]PricesLockDeliveriesRow, error)
+	// Prices a batch of unpriced deliveries in one statement (§6.8, M4 D3): the parallel arrays hold each delivery's
+	// price per kg, total and typed input; priced_by is the caller, priced_at the save's instant (= its audit row's at,
+	// the price undo matches on it, D4). Only rows still unpriced and live are updated; the caller compares the count.
+	PricesSet(ctx context.Context, arg PricesSetParams) (int64, error)
+	// Clears the prices of a batch saved at priced_at by priced_by (the price undo, §7.13, M4 D4): the five price
+	// columns back to null, only on rows that still hold that save's prices.
+	PricesUndo(ctx context.Context, arg PricesUndoParams) (int64, error)
+	// Prețuri hrană (SPEC §6.8, §7.13, S12; M4 D3, D4, Q10–Q12). Package internal/prices.
+	// The S12 list (§7.13, M4 Q10): every live delivery without a price, oldest first (then farm, type, id), except
+	// those dated inside a cycle of a closed series (closed_series_on, 0003; §3.1: read-only; they still count in Cost
+	// `unpriced`).
+	PricesUnpriced(ctx context.Context) ([]PricesUnpricedRow, error)
+	// The bases of the Cost rows (§5.9, M4 D6, Q6) in one statement, one row per asked cycle in the order asked (ord, from
+	// 1): base_f/base_m = calc.FarmBase over [cycle_start, base_to] (placements and transfers in from another farm),
+	// eggs = calc.EggsBetween over the cycle's delivery range (from egg_from only when has_egg_from, to egg_to), and
+	// placed_f/placed_m = calc.SeriesPlacement of series_id (the same on every row; 0 for a null series_id). The three
+	// calc readers are the reference: TestCostInputsMatchCalc checks this batch against them.
+	ReportsCostInputs(ctx context.Context, arg ReportsCostInputsParams) ([]ReportsCostInputsRow, error)
+	// One page of the Livrări rows (§7.12, M4 D6, Q7): the live deliveries of each asked farm over its day range (from_day
+	// only when has_from, to_day; both included), ordered date desc, farm name_key, type name_key, id. A keyset cursor
+	// (the last row of the previous page: all four cursor_* set) starts after that row. row_limit rows at most. With the
+	// price columns and the pricing user's name (the service drops them for a viewer, M4 D2), and series_closed: the
+	// delivery is dated inside a cycle of a closed series at its farm (closed_series_on, 0003; no price is set or changed
+	// there, §3.1).
+	ReportsDeliveryRows(ctx context.Context, arg ReportsDeliveryRowsParams) ([]ReportsDeliveryRowsRow, error)
+	// The farms of Rapoarte › Hrană (§7.12, M3 D9, M4 D6): every farm when all_farms, else the listed ids; ordered by
+	// name_key, then each farm's cycles newest first (as CalcFarmCycles orders them). A farm without any cycle is one row
+	// with a null cycle. Per cycle: its series (name, status), age parameters and guide type (the cycle's type, else the
+	// farm's), and series_farms = how many farms have a cycle of that series (every farm, also those the caller can't
+	// see: the Cost total needs them all, M4 Q6).
+	ReportsFeedCycles(ctx context.Context, arg ReportsFeedCyclesParams) ([]ReportsFeedCyclesRow, error)
+	// The newest live delivery of the asked farms dated before its farm's range (the empty Livrări's "Ultima livrare",
+	// M4 Q8): only ranges with a from_day count; at most one row, in the Livrări row order.
+	ReportsLastDeliveryBefore(ctx context.Context, arg ReportsLastDeliveryBeforeParams) ([]ReportsLastDeliveryBeforeRow, error)
 	RevokeSession(ctx context.Context, arg RevokeSessionParams) (int64, error)
 	// Password reset, deactivation, any role or farm change: the user signs in again everywhere (§4.3).
 	RevokeUserSessions(ctx context.Context, arg RevokeUserSessionsParams) (int64, error)
+	// Every cycle of a series on any farm, oldest first, with its guide snapshot (B4).
+	SeriesCycles(ctx context.Context, seriesID uuid.UUID) ([]SeriesCyclesRow, error)
+	// The farms of a series page (M4 Q5): every farm the caller sees (all of them when all_farms, else the listed ids),
+	// and every farm with a cycle of the series, with whether the caller sees it. Growth farms first, then laying, each
+	// by name_key.
+	SeriesFarms(ctx context.Context, arg SeriesFarmsParams) ([]SeriesFarmsRow, error)
+	// One series (§7.3 series page, M4 D7) with its age parameters (§5.1). The birds placed in it are
+	// calc.SeriesPlacement's (CalcSeriesPlacement), over the caller's farms only (M4 COR-1).
+	SeriesGet(ctx context.Context, seriesID uuid.UUID) (SeriesGetRow, error)
+	// The live transfers between two farms the caller sees (all of them when all_farms) dated inside a cycle of the
+	// series at either farm (§7.3 cycle track links, M4 Q5), one row per day and direction, with the birds that arrived
+	// per sex (the destination side of each pair, as FarmsTransfers). Moves inside one farm are not links.
+	SeriesTransfers(ctx context.Context, arg SeriesTransfersParams) ([]SeriesTransfersRow, error)
 	SetLastLogin(ctx context.Context, arg SetLastLoginParams) error
 	// Moves expires_at forward at most once per `seen_before` window (§11.4: hourly); 1 row = slid (Q2: resend the cookie).
 	SlideSession(ctx context.Context, arg SlideSessionParams) (int64, error)

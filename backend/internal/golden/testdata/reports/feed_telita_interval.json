@@ -1,0 +1,32 @@
+{
+  "stock": [
+    {
+      "farm": "Telița",
+      "lamp": "oprit",
+      "reason": "fără ciclu deschis",
+      "sub": "ultimul ciclu: Seria 2026, închis pe 28.02.2026"
+    }
+  ],
+  "deliveries": {
+    "total": 0,
+    "byFarm": [],
+    "unpriced": {
+      "count": 0,
+      "kg": 0,
+      "dates": []
+    },
+    "rows": [],
+    "nextCursor": null,
+    "lastBefore": {
+      "date": "2026-02-10",
+      "farm": "Telița",
+      "type": "Pre-ouat",
+      "kg": 21640
+    }
+  },
+  "cost": {
+    "asOf": "2026-11-18",
+    "cycles": []
+  },
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

@@ -13,8 +13,10 @@ import (
 	"reflect"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -28,17 +30,23 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/golden"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/messages"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/prices"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/series"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
-// The JSON golden files (SPEC §11.8, M2 T9, M3 D12): the PeriodTable
-// (Rezumat and Consum), farm page, summary, bootstrap, Hrană zilnică form
-// state and Stoc report responses on the dev seed as of 18.11.2026 12:00,
-// built by the builders the handlers call (no HTTP: route wiring is
+// The JSON golden files (SPEC §11.8, M2 T9, M3 D12, M4 D8): the PeriodTable
+// (Rezumat and Consum), farm page, summary, bootstrap, Hrană zilnică and
+// Livrare hrană form states, Rapoarte › Hrană (Stoc, Livrări, Cost), the
+// Prețuri list and series page responses on the dev seed as of 18.11.2026
+// 12:00, built by the builders the handlers call (no HTTP: route wiring is
 // cmd/api's), encoded like httpx.JSON and indented. Ids are replaced by
-// stable tokens (M2 D9), because the import's ids are random.
+// stable tokens (M2 D9), because the import's ids are random; so are the
+// Livrări cursors, which carry an id, and undo tokens, which carry a
+// signature.
 //
 // Regenerate with: go test ./internal/golden -run TestJSONGolden -update
 
@@ -50,6 +58,8 @@ type fixture struct {
 	hirbovat, telita  uuid.UUID
 	seria2025Hirbovat uuid.UUID // Hîrbovăț's Seria 2025 cycle (no flock count)
 	seria2026Telita   uuid.UUID // Telița's Seria 2026 cycle (growth)
+	seria2025         uuid.UUID // the closed series
+	seria2026         uuid.UUID // the active series
 	tokens            map[uuid.UUID]string
 }
 
@@ -61,6 +71,8 @@ func newFixture(t *testing.T) fixture {
 	f.telita = farmID(t, f.db, "telita")
 	f.seria2025Hirbovat = cycleID(t, f.db, f.hirbovat, "Seria 2025")
 	f.seria2026Telita = cycleID(t, f.db, f.telita, "Seria 2026")
+	f.seria2025 = seriesID(t, f.db, "seria2025")
+	f.seria2026 = seriesID(t, f.db, "seria2026")
 	f.tokens = idTokens(t, ctx, f.db)
 	return f
 }
@@ -70,6 +82,15 @@ func farmID(t *testing.T, db dbq.DBTX, key string) uuid.UUID {
 	var id uuid.UUID
 	if err := db.QueryRow(t.Context(), `select id from farm where name_key = $1`, key).Scan(&id); err != nil {
 		t.Fatalf("farm %q: %v", key, err)
+	}
+	return id
+}
+
+func seriesID(t *testing.T, db dbq.DBTX, key string) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := db.QueryRow(t.Context(), `select id from series where name_key = $1`, key).Scan(&id); err != nil {
+		t.Fatalf("series %q: %v", key, err)
 	}
 	return id
 }
@@ -91,10 +112,12 @@ func cycleID(t *testing.T, db dbq.DBTX, farm uuid.UUID, series string) uuid.UUID
 
 // idTokens maps every id a response can carry to its stable token (M2 D9):
 // <farm:hirbovat>, <series:seria2026>, <cycle:hirbovat/2026>,
-// <section:hirbovat/H5.1>, <guide:…>, <feedType:…>, and an entry that is
+// <section:hirbovat/H5.1>, <guide:…>, <feedType:…>, an entry that is
 // the only one of its farm, kind and day: <entry:hirbovat/feed_daily/2026-11-18>
-// (an entry sharing its farm, kind and day gets no token: a response naming
-// it fails, as any id without a token).
+// and a delivery that is the only one of its farm, day and feed type:
+// <delivery:hirbovat/2026-11-13/breeder2> (an entry or a delivery sharing
+// them gets no token: a response naming it fails, as any id without a
+// token).
 func idTokens(t *testing.T, ctx context.Context, db dbq.DBTX) map[uuid.UUID]string {
 	t.Helper()
 	rows, err := db.Query(ctx, `
@@ -108,7 +131,11 @@ union all select id, 'feedType:' || name_key from feed_type
 union all select id, token from (
   select e.id, 'entry:' || f.name_key || '/' || e.kind::text || '/' || to_char(e.date, 'YYYY-MM-DD') as token,
          count(*) over (partition by e.farm_id, e.kind, e.date) as n
-  from entry e join farm f on f.id = e.farm_id) e where n = 1`)
+  from entry e join farm f on f.id = e.farm_id) e where n = 1
+union all select id, token from (
+  select d.id, 'delivery:' || f.name_key || '/' || to_char(d.date, 'YYYY-MM-DD') || '/' || ft.name_key as token,
+         count(*) over (partition by d.farm_id, d.date, d.feed_type_id) as n
+  from feed_delivery d join farm f on f.id = d.farm_id join feed_type ft on ft.id = d.feed_type_id) d where n = 1`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,10 +160,18 @@ union all select id, token from (
 	return out
 }
 
-var uuidText = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+var (
+	uuidText = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	// cursorText and undoTokenText find a Livrări cursor (reports.Cursor) and
+	// a price undo token in the indented JSON.
+	cursorText    = regexp.MustCompile(`"nextCursor": "([^"]*)"`)
+	undoTokenText = regexp.MustCompile(`"undoToken": "([^"]*)"`)
+)
 
 // normalise encodes v like httpx.JSON, indents it and replaces every id with
-// its token. An id without a token fails the test.
+// its token. A Livrări cursor becomes <cursor:day/farm/type/id> with its id
+// tokenised, and an undo token <undoToken>. An id without a token, a cursor
+// that doesn't decode or an empty undo token fails the test.
 func normalise(t *testing.T, v any, tokens map[uuid.UUID]string) []byte {
 	t.Helper()
 	b, err := httpx.Marshal(v)
@@ -147,8 +182,28 @@ func normalise(t *testing.T, v any, tokens map[uuid.UUID]string) []byte {
 	if err := json.Indent(&out, b, "", "  "); err != nil {
 		t.Fatal(err)
 	}
+	var bad []string
+	text := cursorText.ReplaceAllStringFunc(out.String(), func(s string) string {
+		raw := cursorText.FindStringSubmatch(s)[1]
+		c, err := reports.ParseCursor(raw)
+		if err != nil {
+			bad = append(bad, "cursor "+raw)
+			return s
+		}
+		return fmt.Sprintf(`"nextCursor": "<cursor:%s/%s/%s/%s>"`, c.Date, c.FarmKey, c.TypeKey, c.ID)
+	})
+	text = undoTokenText.ReplaceAllStringFunc(text, func(s string) string {
+		if undoTokenText.FindStringSubmatch(s)[1] == "" {
+			bad = append(bad, "an empty undoToken")
+			return s
+		}
+		return `"undoToken": "<undoToken>"`
+	})
+	if len(bad) > 0 {
+		t.Fatalf("not normalisable: %q", bad)
+	}
 	var unknown []string
-	text := uuidText.ReplaceAllStringFunc(out.String(), func(s string) string {
+	text = uuidText.ReplaceAllStringFunc(text, func(s string) string {
 		if tok, ok := tokens[uuid.MustParse(s)]; ok {
 			return tok
 		}
@@ -225,6 +280,11 @@ func (f fixture) viewer() auth.Principal {
 	return auth.Principal{Name: "Observator", Role: auth.Viewer, FarmIDs: []uuid.UUID{f.hirbovat}}
 }
 
+// manager manages both farms, as the seed's Ion Rusu.
+func (f fixture) manager() auth.Principal {
+	return auth.Principal{Name: "Ion Rusu", Role: auth.Manager, FarmIDs: []uuid.UUID{f.hirbovat, f.telita}}
+}
+
 // tableCases are the PeriodTable golden files: query string → file.
 func (f fixture) tableCases() []struct{ file, query string } {
 	h := "view=farm&farmId=" + f.hirbovat.String()
@@ -281,8 +341,10 @@ func TestJSONGolden(t *testing.T) {
 		})
 	}
 
-	// M3 (D12): the Hrană zilnică form state and the Stoc report.
-	m3Cases := []struct {
+	// M3 (D12): the Hrană zilnică form state and the Stoc report; M4 (D8):
+	// Rapoarte › Hrană with Livrări and Cost per role, the Livrare hrană form
+	// state, the Prețuri list and the series page.
+	feedCases := []struct {
 		file   string
 		build  func() (any, error)
 		viewer bool // a viewer's response: no price field either (D64)
@@ -292,10 +354,23 @@ func TestJSONGolden(t *testing.T) {
 				Principal: owner, FarmID: f.hirbovat, Date: golden.AsOf, Today: golden.AsOf, Now: golden.Now,
 			})
 		}, false},
-		{"reports/feed_owner.json", func() (any, error) { return f.reportsFeed(ctx, owner) }, false},
+		{"reports/feed_owner.json", func() (any, error) { return f.reportsFeedPriced(ctx, owner, nil, calc.Period{}) }, false},
+		{"reports/feed_manager.json", func() (any, error) { return f.reportsFeedPriced(ctx, f.manager(), nil, calc.Period{}) }, false},
 		{"reports/feed_viewer.json", func() (any, error) { return f.reportsFeed(ctx, f.viewer()) }, true},
+		{"reports/feed_owner_deliveries_page2.json", func() (any, error) { return f.reportsFeedPage2(t, owner) }, false},
+		{"reports/feed_telita_interval.json", func() (any, error) {
+			return f.reportsFeedPriced(ctx, owner, &f.telita, calc.Period{Kind: calc.PeriodInterval,
+				From: day(2026, time.March, 1), To: golden.AsOf})
+		}, false},
+		{"prices/unpriced_owner.json", func() (any, error) { return prices.BuildUnpriced(ctx, f.db, golden.Now) }, false},
+		{"forms/delivery_hirbovat.json", func() (any, error) {
+			return entries.BuildDeliveryForm(ctx, f.db, entries.DeliveryFormInput{FarmID: f.hirbovat, Today: golden.AsOf, Now: golden.Now})
+		}, false},
+		{"series/page_seria2026_owner.json", func() (any, error) { return f.seriesPage(ctx, owner, f.seria2026) }, false},
+		{"series/page_seria2026_viewer_hirbovat.json", func() (any, error) { return f.seriesPage(ctx, f.viewer(), f.seria2026) }, true},
+		{"series/page_seria2025_owner.json", func() (any, error) { return f.seriesPage(ctx, owner, f.seria2025) }, false},
 	}
-	for _, tc := range m3Cases {
+	for _, tc := range feedCases {
 		t.Run(tc.file, func(t *testing.T) {
 			res, err := tc.build()
 			if err != nil {
@@ -306,12 +381,12 @@ func TestJSONGolden(t *testing.T) {
 			}
 			got := normalise(t, res, f.tokens)
 			if tc.viewer {
-				keys, err := priceKeys(got)
+				found, err := priceFields(got)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if len(keys) > 0 {
-					t.Errorf("a viewer response carries price fields %q", keys)
+				if len(found) > 0 {
+					t.Errorf("a viewer response carries prices %q", found)
 				}
 			}
 			compareGolden(t, tc.file, got)
@@ -319,14 +394,45 @@ func TestJSONGolden(t *testing.T) {
 	}
 }
 
-// reportsFeed is GET /api/reports/feed with farmId=all (every farm of p).
+// reportsFeed is GET /api/reports/feed with farmId=all (every farm of p) as
+// a viewer gets it (no prices).
 func (f fixture) reportsFeed(ctx context.Context, p auth.Principal) (reports.FeedResponse, error) {
 	return reports.BuildFeed(ctx, f.db, reports.Input{Principal: p, Today: golden.AsOf, Now: golden.Now})
 }
 
-// TestViewerResponsesHaveNoPricesOrNullLists builds every M2 and M3 response a
-// viewer can get, as a viewer of Hîrbovăț sees it, and walks it: no lei, price or cost field (D64,
-// §3.3) and no null list (§7.0a).
+// reportsFeedPriced is GET /api/reports/feed as a manager or the owner gets
+// it, for farm (nil: farmId=all) and period (zero: cycle).
+func (f fixture) reportsFeedPriced(ctx context.Context, p auth.Principal, farm *uuid.UUID, period calc.Period) (reports.FeedResponsePriced, error) {
+	return reports.BuildFeedPriced(ctx, f.db, reports.Input{Principal: p, FarmID: farm, Period: period, Today: golden.AsOf, Now: golden.Now})
+}
+
+// reportsFeedPage2 is the second page of Livrări (farmId=all, period=cycle):
+// GET /api/reports/feed?cursor= with the first page's nextCursor.
+func (f fixture) reportsFeedPage2(t *testing.T, p auth.Principal) (reports.FeedPagePriced, error) {
+	t.Helper()
+	first, err := f.reportsFeedPriced(t.Context(), p, nil, calc.Period{})
+	if err != nil {
+		return reports.FeedPagePriced{}, err
+	}
+	if first.Deliveries.NextCursor == nil {
+		t.Fatal("the first Livrări page has no nextCursor")
+	}
+	c, err := reports.ParseCursor(*first.Deliveries.NextCursor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return reports.BuildFeedPagePriced(t.Context(), f.db, reports.Input{Principal: p, Cursor: &c, Today: golden.AsOf, Now: golden.Now})
+}
+
+// seriesPage is GET /api/series/{id}/page for p.
+func (f fixture) seriesPage(ctx context.Context, p auth.Principal, id uuid.UUID) (series.PageResponse, error) {
+	return series.BuildPage(ctx, f.db, series.Input{Principal: p, SeriesID: id, Today: golden.AsOf, Now: golden.Now})
+}
+
+// TestViewerResponsesHaveNoPricesOrNullLists builds every M2–M4 response a
+// viewer can get, as a viewer of Hîrbovăț sees it, and walks it: no lei,
+// price or cost field and no "fără preț" tag (D2, D64, D200, §3.3) and no
+// null list (§7.0a).
 func TestViewerResponsesHaveNoPricesOrNullLists(t *testing.T) {
 	f := newFixture(t)
 	ctx := t.Context()
@@ -336,6 +442,19 @@ func TestViewerResponsesHaveNoPricesOrNullLists(t *testing.T) {
 		"summary":      func(*testing.T) (any, error) { return farms.BuildSummary(ctx, f.db, f.input(viewer, f.hirbovat)) },
 		"bootstrap":    func(*testing.T) (any, error) { return farms.BuildBootstrap(ctx, f.db, f.input(viewer, uuid.Nil)) },
 		"reports/feed": func(*testing.T) (any, error) { return f.reportsFeed(ctx, viewer) },
+		"reports/feed cursor page": func(t *testing.T) (any, error) {
+			first, err := f.reportsFeed(ctx, viewer)
+			if err != nil || first.Deliveries.NextCursor == nil {
+				t.Fatalf("first page: nextCursor %v, err %v", first.Deliveries.NextCursor, err)
+			}
+			c, err := reports.ParseCursor(*first.Deliveries.NextCursor)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return reports.BuildFeedPage(ctx, f.db, reports.Input{Principal: viewer, Cursor: &c, Today: golden.AsOf, Now: golden.Now})
+		},
+		"series page Seria 2026": func(*testing.T) (any, error) { return f.seriesPage(ctx, viewer, f.seria2026) },
+		"series page Seria 2025": func(*testing.T) (any, error) { return f.seriesPage(ctx, viewer, f.seria2025) },
 	}
 	for _, tc := range f.tableCases() {
 		if strings.Contains(tc.query, f.telita.String()) {
@@ -356,12 +475,12 @@ func TestViewerResponsesHaveNoPricesOrNullLists(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			keys, err := priceKeys(b)
+			found, err := priceFields(b)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(keys) > 0 {
-				t.Errorf("a viewer response carries price fields %q", keys)
+			if len(found) > 0 {
+				t.Errorf("a viewer response carries prices %q", found)
 			}
 		})
 	}
@@ -615,13 +734,14 @@ func joinPath(path, name string) string {
 	return path + "." + name
 }
 
-// priceKey matches a field that carries money: lei…, price…, …cost… (D64:
-// never sent to a viewer).
-var priceKey = regexp.MustCompile(`(?i)^(lei|price)|cost`)
+// priceKey matches a field that carries money: lei…, …Lei (totalLei),
+// price… (pricePerKg, pricedBy), …cost… (D2, D64: never sent to a viewer).
+var priceKey = regexp.MustCompile(`(?i)^(lei|price)|lei$|cost`)
 
-// priceKeys returns the JSON path of every object key in body that names a
-// price.
-func priceKeys(body []byte) ([]string, error) {
+// priceFields returns the JSON path of every object key in body that names a
+// price, and of every string value that holds the "fără preț" tag (D64: a
+// viewer sees the unpriced count only).
+func priceFields(body []byte) ([]string, error) {
 	var v any
 	if err := json.Unmarshal(body, &v); err != nil {
 		return nil, err
@@ -641,6 +761,10 @@ func priceKeys(body []byte) ([]string, error) {
 		case []any:
 			for i, e := range v {
 				walk(e, fmt.Sprintf("%s[%d]", path, i))
+			}
+		case string:
+			if strings.Contains(v, messages.Unpriced()) {
+				out = append(out, path+" = "+strconv.Quote(v))
 			}
 		}
 	}
@@ -683,26 +807,45 @@ func TestNullContainersCatchesNullLists(t *testing.T) {
 	}
 }
 
-// TestPriceKeysCatchesPrices shows the walker finds price fields at any depth
-// and ignores the rest.
-func TestPriceKeysCatchesPrices(t *testing.T) {
-	body := `{"lei": 1, "feed": {"leiPerKg": 2, "kg": 3}, "rows": [{"priceKg": 4}, {"totalCost": 5}], "deleted": 6, "label": "lei"}`
-	got, err := priceKeys([]byte(body))
+// TestPriceFieldsCatchesPrices shows the walker finds price fields and the
+// "fără preț" tag at any depth and ignores the rest.
+func TestPriceFieldsCatchesPrices(t *testing.T) {
+	body := `{"lei": 1, "feed": {"leiPerKg": 2, "kg": 3}, "rows": [{"priceKg": 4}, {"totalCost": 5},
+		{"pricePerKg": null, "totalLei": null, "pricedBy": "din registru", "tag": "fără preț"}],
+		"cost": {"cycles": []}, "deleted": 6, "label": "lei", "unpriced": {"count": 4}, "notes": ["3 livrări fără preț"]}`
+	got, err := priceFields([]byte(body))
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"feed.leiPerKg", "lei", "rows[0].priceKg", "rows[1].totalCost"}
+	want := []string{"cost", "feed.leiPerKg", "lei", `notes[0] = "3 livrări fără preț"`, "rows[0].priceKg", "rows[1].totalCost",
+		"rows[2].pricePerKg", "rows[2].pricedBy", `rows[2].tag = "fără preț"`, "rows[2].totalLei"}
 	if !slices.Equal(got, want) {
-		t.Errorf("priceKeys = %q, want %q", got, want)
+		t.Errorf("priceFields = %q, want %q", got, want)
 	}
 }
 
 // TestNormaliseReplacesIDs shows every id becomes its token, in the indented
-// httpx.JSON encoding.
+// httpx.JSON encoding, a Livrări cursor its decoded fields with the id
+// tokenised, and an undo token a fixed placeholder.
 func TestNormaliseReplacesIDs(t *testing.T) {
 	known := uuid.MustParse("11111111-2222-3333-4444-555555555555")
-	got := normalise(t, map[string]any{"farmId": known, "list": []uuid.UUID{known}}, map[uuid.UUID]string{known: "<farm:hirbovat>"})
-	want := "{\n  \"farmId\": \"<farm:hirbovat>\",\n  \"list\": [\n    \"<farm:hirbovat>\"\n  ]\n}\n"
+	delivery := uuid.MustParse("66666666-7777-8888-9999-000000000000")
+	cursor := reports.Cursor{Date: day(2026, time.October, 2), FarmKey: "hirbovat", TypeKey: "cocosi", ID: delivery}.String()
+	got := normalise(t, map[string]any{
+		"farmId": known, "list": []uuid.UUID{known},
+		"deliveries": map[string]any{"nextCursor": cursor}, "undoToken": "c2lnbmVk.dG9rZW4",
+	}, map[uuid.UUID]string{known: "<farm:hirbovat>", delivery: "<delivery:hirbovat/2026-10-02/cocosi>"})
+	want := `{
+  "deliveries": {
+    "nextCursor": "<cursor:2026-10-02/hirbovat/cocosi/<delivery:hirbovat/2026-10-02/cocosi>>"
+  },
+  "farmId": "<farm:hirbovat>",
+  "list": [
+    "<farm:hirbovat>"
+  ],
+  "undoToken": "<undoToken>"
+}
+`
 	if string(got) != want {
 		t.Errorf("normalise:\n%s\nwant\n%s", got, want)
 	}

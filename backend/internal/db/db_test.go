@@ -271,7 +271,7 @@ func TestOpenPools(t *testing.T) {
 
 func TestLatestVersion(t *testing.T) {
 	v, err := db.LatestVersion()
-	if err != nil || v != 2 {
+	if err != nil || v != 3 {
 		t.Fatalf("LatestVersion = %d, %v", v, err)
 	}
 }

@@ -611,3 +611,182 @@ Entry format:
 - Consequence: every M3 route is well inside §11.6 on the seeded data. The laying summary grew from 65 ms (M2) to
   about 105 ms p50 with the stock and days-left reads; the form state is the heaviest M3 read (the section × sex
   rows plus the stock over the whole history). Rerun on production-sized data (≤ 5 years) before M6.
+
+## M4
+
+### `json.RawMessage` request fields: null vs absent        status: verified (2026-11-28, M4 T5)
+- SPEC: §6.7 (a manager's request *containing* price fields → 403 `PRICE_FORBIDDEN`), M4 D5, Q9
+- Library / version: Go 1.27.4 `encoding/json/v2` with `json.DefaultOptionsV1()` (the `httpx.Decode` options)
+- Checked: a throwaway test decoding `{"b":1}`, `{"a":null}`, `{"a":0}`, `{"a":"x"}`, `{"a":{…}}`, `{"a":[1]}` into a
+  struct with `A json.RawMessage` through `httpx.Decode`; kept as `entries.TestCreateDeliveryPriceFields` (manager
+  with `"pricePerKg": null` → 403, owner with both null → 400 on both paths).
+- Finding: an absent member leaves the field nil; any present member, `null` included, gives its raw bytes (`null` →
+  `"null"`, length 4). No value is refused at decode time, so a price field is never an unknown-field 400 for a manager.
+- Consequence: `DeliveryCreateRequest.PricePerKg` / `TotalLei` are `json.RawMessage`; "present" is `!= nil`.
+
+### numeric(12,4) / numeric(14,2) on a price update        status: verified (2026-11-28, M4 T4)
+- SPEC: §6.8, §7.13 (M4 D3: level-1 bounds before the update)
+- Library / version: PostgreSQL 16.16 (`postgres:16.16-bookworm`)
+- Checked: a throwaway container: `insert` of `8.12345` into `numeric(12,4)`, `8000.125` into `numeric(14,2)`, `10^8`
+  and `10^12` into each; `prices.TestSetValidation` (5 / 3 decimals, a value at 10^8 → 400 before any write).
+- Finding: the column's typmod rounds **silently** (half away from zero): 8.12345 → 8.1235, 8000.125 → 8000.13. A value
+  that rounds to 10^8 / 10^12 or more fails with `22003 numeric field overflow` ("A field with precision 12, scale 4
+  must round to an absolute value less than 10^8").
+- Consequence: `calc.DerivePrice` refuses more than 4 / 2 decimals and values outside the columns (typed or derived),
+  so `PricesSet` / `PricesChange` never round or overflow; a `22003` reaching `WriteError` would be a bug (500).
+
+### shopspring/decimal division and rounding for price derivation   status: verified (2026-11-28, M4 T2)
+- SPEC: §6.8 (`price = total ÷ kg`, 4 decimals; `total = round(kg × price, 2)`), §5.15 (half away from zero)
+- Library / version: `github.com/shopspring/decimal` v1.6.0
+- Checked: `go doc decimal.Decimal.DivRound`, `Decimal.Round`, `Decimal.Truncate`; `TestDerivePrice` half cases.
+- Finding: `DivRound(d2, 4)` divides exactly (quotient + remainder) and rounds the 5th decimal half away from zero,
+  so it never double-rounds through `DivisionPrecision` (16 digits) the way `Div(…).Round(4)` could: 0,50 ÷ 10 000 →
+  0,0001; 2 ÷ 3 → 0,6667; 199 000 ÷ 25 640 → 7,7613. `Mul` is exact, then `Round(2)` (half away from zero): 0,5 × 0,01
+  → 0,01; 25 640 × 7,74 → 198 453,60. `v.Equal(v.Truncate(n))` tells "more than n decimals" apart from trailing
+  zeros ("7.740000" has 2).
+- Consequence: `calc.DerivePrice` uses `DivRound` for the price per kg and `Mul(…).Round(2)` for the total; a typed or
+  derived value that rounds to 0 or reaches 10^8 lei/kg (`numeric(12,4)`) / 10^12 lei (`numeric(14,2)`) is
+  `ErrPriceRange`, so the update never meets the column's overflow or `> 0` check.
+
+### priced_at = audit_log.at after a round trip            status: verified (2026-11-28, M4 T4)
+- SPEC: §7.13 price undo (M4 D3, D4: the undo matches "still the prices of this save" on the instant)
+- Library / version: pgx/v5 v5.13.0, PostgreSQL 16.16
+- Checked: the throwaway container above (`'… 12:00:00.123456789+02'` stored as `.123457`: PostgreSQL **rounds** to
+  microseconds); `prices.TestSet` with a clock at 12:00:00.123456789: the two rows' `priced_at` equal the
+  `price_set` row's `at` in SQL and the undo of that batch succeeds.
+- Finding: both columns are written from the same Go `time.Time` in one transaction, so they are equal either way; the
+  service truncates the clock to microseconds first (`Service.now`) so the Go value is also the stored one.
+- Consequence: `PricesUndo` matches `priced_at = audit.at and priced_by = caller`; the Go check uses `time.Equal`.
+
+### Price undo token expiry across DST                     status: verified (2026-11-28, M4 T4)
+- SPEC: §8.5, §7.13 (valid until 23:59 of the save day), M4 D4
+- Library / version: Go 1.27.4 `time.Date` with the embedded `Europe/Chisinau` zone (`timex.Chisinau`)
+- Checked: `prices.TestUndoExpiry`: saves at 18.11 00:00 / 12:00 / 23:59:59, at 25.10.2026 01:30 +03:00 (the day
+  clocks go back), at 25.10 12:00 +02:00 and at 29.03.2026 01:00 (clocks go forward).
+- Finding: `timex.DayOf(now).AddDays(1).Start()` is 00:00 local of the next day in every case; 25.10.2026 lasts 25 h.
+  `tokens.Verify` accepts while `now < exp`, so 23:59:59 is valid and 00:00 is `ErrExpired`.
+- Consequence: `prices.undoExpiry`; an expired token is `409 STALE` "Nu se mai poate anula: ziua salvării s-a încheiat."
+  (tested with the clock at 19.11 00:00).
+
+### audit_log.id through sqlc `returning id`              status: verified (2026-11-28, M4 T1)
+- SPEC: §4.10, §8.5 (the price undo token names its audit row, M4 D4)
+- Library / version: sqlc v1.31.1, pgx/v5 v5.13.0
+- Checked: the generated `dbq.InsertAuditLogID` (`:one … returning id`); `internal/audit` `TestWriteID` writes rows as
+  `il_app` and reads them back by the returned id.
+- Finding: `bigserial` is generated as `int64`; the id is the row's, later rows get larger ids, and `il_app` needs no
+  sequence grant beyond `0002_roles.sql`'s (the insert already worked with the default). The generated
+  `InsertAuditLogIDParams` has the same fields as `InsertAuditLogParams`, so `audit.WriteID` converts one into the other.
+- Consequence: `audit.WriteID(ctx, q, Row) (int64, error)`; `audit.Write` keeps `InsertAuditLog` (so the M3 save
+  tracers keep their statement names).
+
+### select … for update on feed_delivery under il_app       status: verified (2026-11-28, M4 T4)
+- SPEC: §12.1 (farm advisory locks), M4 D3
+- Library / version: PostgreSQL 16.16, `0002_roles.sql` grants
+- Checked: every `internal/prices` test runs as `il_app` (`testdb`); `TestSetConcurrent` sends two batches on one
+  delivery through a barrier; `TestSetStatements` records the order.
+- Finding: `select … for update of fd` needs `UPDATE` on `feed_delivery`, which `il_app` has; `of fd` keeps the lock off
+  the joined `entry` and `feed_type` rows. The second batch waits on the farm advisory lock, then reads the row priced
+  → `409 STALE`; exactly one 200, no deadlock, no 500. A batch is 9 statements: begin, `PricesDeliveryFarms`,
+  `LockFarm` per farm, `PricesLockDeliveries`, one `PricesSet` for every row, `InsertAuditLogID`, `EmitLiveEvent`,
+  commit (plus `PricesDeliveryRefs` before the transaction for the level-1 messages).
+- Consequence: no migration; the farm lock comes first so the order is the same as every other save's.
+
+### Series placement of migrated history                status: verified (2026-11-28, M4 T2)
+- SPEC: §5.9 (series total ÷ series placement ♀ + ♂)
+- Library / version: seeded test DB (`seed.Main`, extracts to 18.11.2026)
+- Checked: `calc.SeriesPlacement`, `calc.ReadDeliveries`, `calc.EggsBetween` and `calc.FarmBase` on the seed (a
+  throwaway seeded test, not kept; T8's goldens 29 and 31 keep the figures).
+- Finding: the migration puts Telița's 07.10.2025 placement in its **migration** entry (`entry.series_id` null), so
+  "Σ placement rows of the series' placement entries" reads 0. Linking by cycle (placement rows dated inside a cycle
+  of the series at their farm; an app placement entry counts only for its own series) gives Seria 2026 ♀ 28 080 ·
+  ♂ 3 510 = 31 590. On the same seed: Hîrbovăț's Seria 2026 range (29.01.2026–18.11.2026) has 69 deliveries,
+  ♀ 1 114 110 · ♂ 78 530 kg, 65 priced 1 174 480 kg · 9 562 437 lei, 4 unpriced 18 160 kg (17.02 Breeder 2 2 000,
+  17.02 Cocoși 1 000, 14.03 Cocoși 6 160, 12.11 Breeder 2 9 000); Telița (…–28.02.2026) 13 deliveries, 263 740 kg
+  (type "ambele sexe"), all priced, 2 031 768 lei; eggs Hîrbovăț 5 073 155; `FarmBase` Telița 31 590 (28 080 · 3 510),
+  Hîrbovăț 29 907 (26 883 · 3 024).
+- Consequence: `CalcSeriesPlacement` joins `cycle` → `bird_event` (type `placement`) by farm and date. Golden 29 and
+  the golden 31 inputs reproduce.
+
+### calc.FarmBase for the Seria 2026 cycles              status: verified (2026-11-28, M4 T2; rechecked in T7)
+- SPEC: §5.9 (lei/pasăre ÷ the birds at the cycle start = the §5.5 farm base), golden 31
+- Library / version: seeded test DB (`seed.Main`), PostgreSQL 16.16
+- Checked: T2's throwaway seeded test (entry above); in T7 a throwaway `cmd/api` test calling `calc.FarmBase` for
+  Telița from 07.10.2025 and Hîrbovăț from 22.02.2026 to 18.11.2026; `TestDeliveryPriceChainSeeded`'s Cost lines.
+- Finding: Telița ♀ 28 080 · ♂ 3 510 = 31 590 (the A11 register adjustments of its closing are not inflows);
+  Hîrbovăț ♀ 26 883 · ♂ 3 024 = 29 907 (the transfers from Telița, 22–28.02). The Cost rows over HTTP give
+  64,32 and 319,74 lei/pasăre, golden 31.
+- Consequence: `reports` divides by `FarmBase` (batched in `ReportsCostInputs`); no change.
+
+### calc.ReadStockDays on a farm without birds            status: verified (2026-11-28, M4 T7)
+- SPEC: §5.8, §7.8 delivery form state (M4 Q14)
+- Library / version: seeded test DB, PostgreSQL 16.16
+- Checked: a throwaway `cmd/api` test calling `calc.ReadStockDays(Telița, 18.11.2026)` with the seeded settings;
+  `entries.TestBuildDeliveryFormSeeded` and `TestFarmReadsOnSeededData` (`GET /api/forms/delivery` for Telița, 200).
+- Finding: no error. With no section holding birds the window ends today (16–18.11) and every type's average is 0:
+  Grower and Starter `days: null`, lamp oprit (`no_consumption`); Pre-ouat (below 0) `days 0`, run-out 18.11, lamp
+  abatere (`stock_negative`). The delivery form never calls it for Telița (no open cycle → `stock: []`, `cycle: null`).
+- Consequence: no guard needed; the form keeps `stock: []` for a farm without an open cycle (§5.8).
+
+### Telița's computed stock now (the workbook's −716 kg)   status: verified (2026-11-28, M4 T7)
+- SPEC: §5.8 (an empty farm's leftover is never shown), §6.7 (a delivery Toast shows the stock at the end of its date)
+- Library / version: seeded test DB, PostgreSQL 16.16
+- Checked: the throwaway test above, `calc.StockAt(Telița, 18.11.2026)`.
+- Finding: Grower 14 637 kg (last move 19.01.2026), Pre-ouat −22 462 kg (26.02.2026), Starter 7 109 kg
+  (13.11.2025): Σ −716 kg, the workbook's figure. No screen shows it, but a new delivery to Telița puts this
+  leftover into its Toast (e.g. 9 000 kg Pre-ouat → "stoc Telița: −13 462 kg").
+- Consequence: left as is (user answer 28.11.2026: logged for the end review, plan Risks).
+
+### Livrări keyset page and the report's statements on the seed   status: verified (2026-11-28, M4 T3)
+- SPEC: §7.12 (Livrări rows, `nextCursor`), M4 D6, Q7; T3 criterion 3 (≤ 8 statements for the first page, 2 for a
+  cursor page)
+- Library / version: PostgreSQL 16 (testcontainers `postgres:16`), seeded test DB (`seed.Main`), pgx/v5 tracer
+- Checked: `EXPLAIN ANALYZE` of `ReportsDeliveryRows` on the seed (owner, both farms, Seria 2026 ranges, limit 13) in a
+  throwaway test (not kept); `reports.TestFeedStatementsSeeded` (statement names through a `pgx.QueryTracer`);
+  `reports.TestFeedPagesSeeded` (82 rows over 7 pages, no repeat); `reports.TestFeedPagesLimit` (three deliveries
+  tied on date, farm and type, pages of one row).
+- Finding: the plan is a bitmap scan of `feed_delivery_farm_type_date_idx` (82 live rows) hashed against the
+  `unnest` ranges, then a top-N heapsort on `date desc, farm name_key, type name_key, id`: 0,7 ms execution. The
+  keyset predicate `(f.name_key, ft.name_key, fd.id) > (…)` on the cursor day compares uuids bytewise (= their
+  lowercase text order), so ties on (date, farm, type) are ordered by id and no page boundary drops or repeats a
+  row. The owner's first page runs 8 statements (`ReportsFeedCycles`, `CalcSettings`, `CalcStockEnd`,
+  `CalcFeedDayComplete`, `CalcConsumption`, `CalcDeliveries`, `ReportsDeliveryRows`, `ReportsCostInputs`), about
+  48 ms per build on a laptop without `-race`; a cursor page 2 (`ReportsFeedCycles`, `ReportsDeliveryRows`).
+- Consequence: no new index. `ReportsCostInputs` batches `calc.FarmBase`, `calc.EggsBetween` and
+  `calc.SeriesPlacement` into one statement to stay within 8; `reports.TestCostInputsMatchCalc` keeps it equal to
+  those readers on the seed (Telița 28 080 · 3 510, Hîrbovăț 26 883 · 3 024 and 5 073 155 eggs, series 31 590).
+
+### Delivery stockAfter on the seed (the planner's 21 119,3)   status: verified (2026-11-28, M4 T5; over HTTP in T7)
+- SPEC: §6.7 (stock at the end of the delivery date, M4 Q13)
+- Library / version: seeded test DB, PostgreSQL 16.16
+- Checked: `entries.TestCreateDeliverySeeded` (oracle `calc.StockAt(12.11)` after the save) and `cmd/api`
+  `TestDeliveryPriceChainSeeded` (the same re-save as Ion Rusu through the whole server).
+- Finding: with the seeded 12.11.2026 delivery soft-deleted, the form's Breeder 2 stock now is 22 664,9 kg
+  (31 664,9 − 9 000); the re-save answers `stockAfter` 21 119,3 and "Livrare adăugată · 9 000 kg Breeder 2 · stoc
+  Hîrbovăț: 21 119 kg · fără preț"; the stock now is golden 27's 31 664,9 again. The boards' 16 140 / 25 140 kg are
+  D39/D73 state examples, not reproducible on the seed.
+- Consequence: the tests use `calc.StockAt` as the oracle; SPEC §6.7 quotes 21 119,3 as the seed's figure.
+
+### M4 latency vs §11.6                                   status: verified (2026-11-28, M4 T7)
+- SPEC: §11.6 (p95: summary/home ≤ 400 ms, any save ≤ 300 ms; the series page and Rapoarte › Hrană are page reads,
+  held to the summary's 400 ms, plan Architecture notes)
+- Library / version: `BenchmarkFarmReads` (cmd/api), PostgreSQL 16.16 in testcontainers (Docker Desktop), seeded data
+- Checked: `go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api` (no `-race`), Apple M5 Max, the owner, 200
+  requests each over a socket through the whole chain, 18.11.2026; three runs for the series page. The delivery save
+  is a real save (a new 9 000 kg Breeder 2 delivery on 18.11 each time); the price save prices the seeded 12.11
+  delivery, its price cleared before each request outside the timed part. The writes run after every read.
+- Finding (p50 / p95 per request, the full run):
+  | request | p50 | p95 | §11.6 target |
+  |---|---|---|---|
+  | `GET /api/series/{id}/page` Seria 2026, owner (two lanes, two panels with `BuildCycleStats`) | 104.9 ms | 139.9 ms | ≤ 400 ms |
+  | `GET /api/reports/feed` owner, every farm, first page (Stoc, Livrări, Cost; 8 statements) | 41.3 ms | 53.7 ms | ≤ 400 ms |
+  | the same with `cursor` (page 2: 2 statements) | 0.9 ms | 1.1 ms | ≤ 200 ms |
+  | `GET /api/forms/delivery` Hîrbovăț | 11.8 ms | 16.6 ms | – |
+  | `GET /api/deliveries?priced=false` | 0.5 ms | 0.7 ms | – |
+  | `POST /api/entries/delivery` (11 statements + begin/commit) | 6.4 ms | 7.1 ms | ≤ 300 ms |
+  | `POST /api/deliveries/prices`, one delivery | 1.4 ms | 2.7 ms | ≤ 300 ms |
+  | `GET /api/farms/{id}/summary` Hîrbovăț (M3, for comparison) | 97.8 ms | 108.0 ms | ≤ 400 ms |
+  The series page varied between runs (p50 / p95: 41.9 / 130.6, 84.7 / 107.8, 104.9 / 139.9 ms); it is the summary's
+  stats once per panel, so it costs about one laying summary plus one closed growth cycle's stats.
+- Consequence: every M4 route is inside §11.6 on the seeded data, the series page with about 3× headroom at p95.
+  If production-sized data (≤ 5 years) brings it near 400 ms, the plan's next step is a per-panel snapshot or a slimmer
+  stats read (plan Risks). Rerun before M6.

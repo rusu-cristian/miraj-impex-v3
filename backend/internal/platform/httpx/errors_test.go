@@ -42,6 +42,8 @@ func TestWriteErrorMapsTypedErrors(t *testing.T) {
 			`{"error":{"code":"FORBIDDEN","message":"Cererea a fost refuzată. Reîncarcă pagina și încearcă din nou."}}`},
 		{"farm forbidden", FarmForbidden(), 403,
 			`{"error":{"code":"FARM_FORBIDDEN","message":"Nu ai acces la această fermă."}}`},
+		{"price forbidden", PriceForbidden(), 403,
+			`{"error":{"code":"PRICE_FORBIDDEN","message":"Prețul îl adaugă proprietarul în Prețuri hrană."}}`},
 		{"module error", fmt.Errorf("x: %w", moduleError{}), 409, `{"error":{"code":"STALE","message":"stale"}}`},
 		{"refused with nothing", Refused("Transfer refuzat.", nil, nil), 422,
 			`{"error":{"code":"REFUSED","message":"Transfer refuzat.","refusals":[],"warnings":[]}}`},

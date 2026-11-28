@@ -1,0 +1,200 @@
+{
+  "deliveries": {
+    "rows": [
+      {
+        "id": "<delivery:hirbovat/2026-09-29/breeder2>",
+        "date": "2026-09-29",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 8480,
+        "pricePerKg": 8,
+        "totalLei": 67840,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-22/breeder2>",
+        "date": "2026-09-22",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 25360,
+        "pricePerKg": 7.95,
+        "totalLei": 201612,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-17/breeder2>",
+        "date": "2026-09-17",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 25360,
+        "pricePerKg": 7.88,
+        "totalLei": 199837,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-15/breeder2>",
+        "date": "2026-09-15",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 8460,
+        "pricePerKg": 7.88,
+        "totalLei": 66665,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-11/breeder2>",
+        "date": "2026-09-11",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 17000,
+        "pricePerKg": 7.7375,
+        "totalLei": 131538.25,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-11/cocosi>",
+        "date": "2026-09-11",
+        "farm": "Hîrbovăț",
+        "type": "Cocoși",
+        "forSex": "M",
+        "kg": 5640,
+        "pricePerKg": 7.7375,
+        "totalLei": 43639.75,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-08/breeder2>",
+        "date": "2026-09-08",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 25280,
+        "pricePerKg": 7.9,
+        "totalLei": 199712,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-09-04/breeder2>",
+        "date": "2026-09-04",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 25500,
+        "pricePerKg": 7.9,
+        "totalLei": 201450,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-08-25/breeder2>",
+        "date": "2026-08-25",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 18440,
+        "pricePerKg": 8.35,
+        "totalLei": 153974,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-08-25/cocosi>",
+        "date": "2026-08-25",
+        "farm": "Hîrbovăț",
+        "type": "Cocoși",
+        "forSex": "M",
+        "kg": 6080,
+        "pricePerKg": 7.85,
+        "totalLei": 47728,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-08-24/breeder2>",
+        "date": "2026-08-24",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 24120,
+        "pricePerKg": 8.35,
+        "totalLei": 201402,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      },
+      {
+        "id": "<delivery:hirbovat/2026-08-13/breeder2>",
+        "date": "2026-08-13",
+        "farm": "Hîrbovăț",
+        "type": "Breeder 2",
+        "forSex": "F",
+        "kg": 23500,
+        "pricePerKg": 8.35,
+        "totalLei": 196225,
+        "pricedBy": "din registru",
+        "pricedAt": null,
+        "actions": {
+          "setPrice": false,
+          "changePrice": true
+        }
+      }
+    ],
+    "nextCursor": "<cursor:2026-08-13/hirbovat/breeder2/<delivery:hirbovat/2026-08-13/breeder2>>"
+  },
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

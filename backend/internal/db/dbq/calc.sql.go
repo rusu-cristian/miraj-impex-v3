@@ -181,6 +181,144 @@ func (q *Queries) CalcCycleByID(ctx context.Context, arg CalcCycleByIDParams) (C
 	return i, err
 }
 
+const calcDeliveries = `-- name: CalcDeliveries :many
+with r as (
+  select g.i as ord,
+         ($1::uuid[])[g.i] as farm_id,
+         ($2::boolean[])[g.i] as has_from,
+         ($3::date[])[g.i] as from_day,
+         ($4::date[])[g.i] as to_day
+  from generate_subscripts($1::uuid[], 1) as g(i)
+), d as (
+  select r.ord, fd.id, fd.date, fd.qty_kg, fd.total_lei, ft.id as feed_type_id, ft.name, ft.name_key, ft.for_sex
+  from r
+  join feed_delivery fd on fd.farm_id = r.farm_id
+  join entry n on n.id = fd.entry_id and n.deleted_at is null
+  join feed_type ft on ft.id = fd.feed_type_id
+  where fd.deleted_at is null
+    and fd.date <= r.to_day
+    and (not r.has_from or fd.date >= r.from_day)
+)
+select r.ord::integer as ord, r.farm_id::uuid as farm_id,
+       count(d.id)::integer as deliveries,
+       coalesce(sum(d.qty_kg) filter (where d.for_sex = 'F'), 0)::numeric as kg_f,
+       coalesce(sum(d.qty_kg) filter (where d.for_sex = 'M'), 0)::numeric as kg_m,
+       coalesce(sum(d.qty_kg) filter (where d.id is not null and d.for_sex is null), 0)::numeric as kg_both,
+       (count(d.id) filter (where d.total_lei is not null))::integer as priced_count,
+       coalesce(sum(d.qty_kg) filter (where d.total_lei is not null), 0)::numeric as priced_kg,
+       coalesce(sum(d.total_lei), 0)::numeric as priced_lei,
+       coalesce(array_agg(d.id order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::uuid[] as unpriced_ids,
+       coalesce(array_agg(d.date order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::date[] as unpriced_dates,
+       coalesce(array_agg(d.qty_kg order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::numeric[] as unpriced_kgs,
+       coalesce(array_agg(d.feed_type_id order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::uuid[] as unpriced_type_ids,
+       coalesce(array_agg(d.name order by d.date, d.name_key, d.id)
+                  filter (where d.id is not null and d.total_lei is null), '{}')::text[] as unpriced_types
+from r
+left join d on d.ord = r.ord
+group by r.ord, r.farm_id
+order by r.ord
+`
+
+type CalcDeliveriesParams struct {
+	FarmIds  []uuid.UUID
+	HasFrom  []bool
+	FromDays []timex.Day
+	ToDays   []timex.Day
+}
+
+type CalcDeliveriesRow struct {
+	Ord             int32
+	FarmID          uuid.UUID
+	Deliveries      int32
+	KgF             decimal.Decimal
+	KgM             decimal.Decimal
+	KgBoth          decimal.Decimal
+	PricedCount     int32
+	PricedKg        decimal.Decimal
+	PricedLei       decimal.Decimal
+	UnpricedIds     []uuid.UUID
+	UnpricedDates   []timex.Day
+	UnpricedKgs     []decimal.Decimal
+	UnpricedTypeIds []uuid.UUID
+	UnpricedTypes   []string
+}
+
+// The live deliveries of each asked farm over its day range (§5.9, §7.12): one row per asked range, in the order
+// asked (ord, from 1), 0 and empty arrays when the range has none. A range runs from from_day (only when has_from;
+// else from the farm's first delivery) to to_day, both included. kg per the feed type's for_sex (F, M, null =
+// ambele sexe); priced = total_lei set (feed_delivery_price_ck sets both prices together); the unpriced deliveries
+// one by one in parallel arrays, oldest first, then by type name, then id.
+func (q *Queries) CalcDeliveries(ctx context.Context, arg CalcDeliveriesParams) ([]CalcDeliveriesRow, error) {
+	rows, err := q.db.Query(ctx, calcDeliveries,
+		arg.FarmIds,
+		arg.HasFrom,
+		arg.FromDays,
+		arg.ToDays,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CalcDeliveriesRow{}
+	for rows.Next() {
+		var i CalcDeliveriesRow
+		if err := rows.Scan(
+			&i.Ord,
+			&i.FarmID,
+			&i.Deliveries,
+			&i.KgF,
+			&i.KgM,
+			&i.KgBoth,
+			&i.PricedCount,
+			&i.PricedKg,
+			&i.PricedLei,
+			&i.UnpricedIds,
+			&i.UnpricedDates,
+			&i.UnpricedKgs,
+			&i.UnpricedTypeIds,
+			&i.UnpricedTypes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const calcEggsBetween = `-- name: CalcEggsBetween :one
+select coalesce(sum(ep.total_eggs), 0)::bigint as eggs
+from egg_production ep
+join entry n on n.id = ep.entry_id and n.deleted_at is null
+where ep.farm_id = $1::uuid
+  and ep.deleted_at is null
+  and ep.total_eggs is not null
+  and ($2::date is null or ep.date >= $2::date)
+  and ep.date <= $3::date
+`
+
+type CalcEggsBetweenParams struct {
+	FarmID  uuid.UUID
+	FromDay *timex.Day
+	ToDay   timex.Day
+}
+
+// Σ eggs of a farm over [from_day, to_day] (§5.6, §5.9): the live egg rows whose total is filled (Cat. 1 + 2 + 3 +
+// Incubabile; Jos apart). No from_day = from the first egg row. ReportsCostInputs (reports.sql, lateral eg) repeats
+// this sum per cycle in its batch: change both together (TestCostInputsMatchCalc checks they agree).
+func (q *Queries) CalcEggsBetween(ctx context.Context, arg CalcEggsBetweenParams) (int64, error) {
+	row := q.db.QueryRow(ctx, calcEggsBetween, arg.FarmID, arg.FromDay, arg.ToDay)
+	var eggs int64
+	err := row.Scan(&eggs)
+	return eggs, err
+}
+
 const calcEmptySince = `-- name: CalcEmptySince :many
 with scope_leaf as (
   select l.id as leaf_id, l.id as scope_id
@@ -299,6 +437,8 @@ type CalcFarmBaseRow struct {
 // The base of §5.5 at farm scope over [from_day, to_day]: placements plus transfers in whose peer section is in
 // another farm. A transfer row without a peer section (migration rows may have none) takes the source farm of
 // its transfer entry, and counts as inside the farm in any other entry. Adjustments are never part of the base.
+// ReportsCostInputs (reports.sql, lateral b) repeats this sum per cycle in its batch: change both together
+// (TestCostInputsMatchCalc checks they agree).
 func (q *Queries) CalcFarmBase(ctx context.Context, arg CalcFarmBaseParams) (CalcFarmBaseRow, error) {
 	row := q.db.QueryRow(ctx, calcFarmBase, arg.FarmID, arg.FromDay, arg.ToDay)
 	var i CalcFarmBaseRow
@@ -966,6 +1106,44 @@ func (q *Queries) CalcSeriesAge(ctx context.Context, seriesID uuid.UUID) (CalcSe
 	row := q.db.QueryRow(ctx, calcSeriesAge, seriesID)
 	var i CalcSeriesAgeRow
 	err := row.Scan(&i.PlacementDate, &i.AgeAtPlacementDays)
+	return i, err
+}
+
+const calcSeriesPlacement = `-- name: CalcSeriesPlacement :one
+select coalesce(sum(e.qty) filter (where e.sex = 'F'), 0)::integer as placed_f,
+       coalesce(sum(e.qty) filter (where e.sex = 'M'), 0)::integer as placed_m
+from cycle c
+join bird_event e on e.farm_id = c.farm_id
+                 and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date)
+join entry n on n.id = e.entry_id and n.deleted_at is null
+where c.series_id = $1::uuid
+  and ($2::boolean or c.farm_id = any($3::uuid[]))
+  and e.type = 'placement'
+  and e.deleted_at is null
+  and (n.series_id is null or n.series_id = $1::uuid)
+`
+
+type CalcSeriesPlacementParams struct {
+	SeriesID uuid.UUID
+	AllFarms bool
+	FarmIds  []uuid.UUID
+}
+
+type CalcSeriesPlacementRow struct {
+	PlacedF int32
+	PlacedM int32
+}
+
+// The series placement per sex (§5.9 series total, §7.3 series page): Σ live placement rows dated inside a cycle of
+// the series at their farm, over every farm when all_farms, else the listed farms only (the caller's: a series page
+// never counts birds placed at a farm the caller can't see, M4 COR-1). The migration's placements sit in a migration
+// entry without a series, so the cycle is the link; an app placement entry (always of the cycle's series) counts only
+// for its own series. ReportsCostInputs (reports.sql, CTE sp) repeats this sum over every farm in its batch: change
+// both together (TestCostInputsMatchCalc checks they agree).
+func (q *Queries) CalcSeriesPlacement(ctx context.Context, arg CalcSeriesPlacementParams) (CalcSeriesPlacementRow, error) {
+	row := q.db.QueryRow(ctx, calcSeriesPlacement, arg.SeriesID, arg.AllFarms, arg.FarmIds)
+	var i CalcSeriesPlacementRow
+	err := row.Scan(&i.PlacedF, &i.PlacedM)
 	return i, err
 }
 

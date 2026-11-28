@@ -35,9 +35,17 @@ var m2Rows = []int{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 38}
 // which stay M1's).
 var m3Rows = []int{28}
 
+// m4Rows are the goldens of M4: SPEC §12.6 "29–31" (M4 D8) and golden 35
+// (the series page's placement, labelled M4 in the registry; M4 cleanup).
+var m4Rows = []int{29, 30, 31, 35}
+
 // implementedMilestones are the milestones done so far: each of their rows
-// must have Got.
-var implementedMilestones = map[string]bool{"M1": true, "M2": true, "M3": true}
+// must have Got, except the deferred ones.
+var implementedMilestones = map[string]bool{"M1": true, "M2": true, "M3": true, "M4": true}
+
+// deferredRows are rows of an implemented milestone that may still lack Got,
+// with the reason. None at M4.
+var deferredRows = map[int]string{}
 
 // TestGolden runs every implemented row of §11.7 against the dev seed
 // (§11.9) and skips the others with the milestone that implements them.
@@ -70,7 +78,8 @@ func seededDB(t *testing.T) *testdb.DB {
 
 // checkRegistry lists what is wrong with a registry: ids not exactly 1–38
 // once each, a row without a name or a valid milestone, a row of an
-// implemented milestone (M1–M3) without Got, or a Got without a Want.
+// implemented milestone (M1–M4) without Got (deferredRows excepted), or a Got
+// without a Want.
 func checkRegistry(rows []golden.Row) []string {
 	var problems []string
 	seen := map[int]int{}
@@ -86,7 +95,7 @@ func checkRegistry(rows []golden.Row) []string {
 		if !milestone.MatchString(r.Milestone) {
 			problems = append(problems, fmt.Sprintf("golden %d has milestone %q", r.ID, r.Milestone))
 		}
-		if implementedMilestones[r.Milestone] && r.Got == nil {
+		if _, deferred := deferredRows[r.ID]; implementedMilestones[r.Milestone] && !deferred && r.Got == nil {
 			problems = append(problems, fmt.Sprintf("golden %d is %s but has no Got", r.ID, r.Milestone))
 		}
 		if r.Got != nil && r.Want == nil {
@@ -109,7 +118,7 @@ func TestRegistry(t *testing.T) {
 	if problems := checkRegistry(rows); len(problems) > 0 {
 		t.Fatalf("registry problems:\n%s", strings.Join(problems, "\n"))
 	}
-	var m1, m2, m3, implemented []int
+	var m1, m2, m3, m4, implemented []int
 	for i, r := range rows {
 		if r.ID != i+1 {
 			t.Errorf("row %d has id %d: rows are in id order", i, r.ID)
@@ -121,6 +130,10 @@ func TestRegistry(t *testing.T) {
 			m2 = append(m2, r.ID)
 		case "M3":
 			m3 = append(m3, r.ID)
+		case "M4":
+			if _, deferred := deferredRows[r.ID]; !deferred {
+				m4 = append(m4, r.ID)
+			}
 		}
 		if r.Got != nil {
 			implemented = append(implemented, r.ID)
@@ -135,10 +148,14 @@ func TestRegistry(t *testing.T) {
 	if diff := cmp.Diff(m3Rows, m3); diff != "" {
 		t.Errorf("M3 rows differ from SPEC §12.6 (-want +got):\n%s", diff)
 	}
-	// Rows 1–28 and 38 (M3 Goal): 29 goldens.
-	want := slices.Sorted(slices.Values(slices.Concat(m1Rows, m2Rows, m3Rows)))
-	if diff := cmp.Diff(want, implemented); diff != "" || len(implemented) != 29 {
-		t.Errorf("implemented rows at M3 (%d, want 29; -want +got):\n%s", len(implemented), diff)
+	if diff := cmp.Diff(m4Rows, m4); diff != "" {
+		t.Errorf("M4 rows differ from SPEC §12.6 (-want +got):\n%s", diff)
+	}
+	// Rows 1–31, 35 and 38 (M4 and its cleanup): 33 goldens; 32–34, 36 and 37
+	// are skipped.
+	want := slices.Sorted(slices.Values(slices.Concat(m1Rows, m2Rows, m3Rows, m4Rows)))
+	if diff := cmp.Diff(want, implemented); diff != "" || len(implemented) != 33 {
+		t.Errorf("implemented rows at M4 (%d, want 33; -want +got):\n%s", len(implemented), diff)
 	}
 }
 
@@ -171,6 +188,11 @@ func TestCheckRegistryCatchesProblems(t *testing.T) {
 			rows[27].Got = nil
 			return rows
 		}(), "golden 28 is M3 but has no Got"},
+		{"M4 row without Got", func() []golden.Row {
+			rows := golden.Rows()
+			rows[30].Got = nil
+			return rows
+		}(), "golden 31 is M4 but has no Got"},
 		{"bad milestone", func() []golden.Row {
 			rows := golden.Rows()
 			rows[20].Milestone = "M13"
@@ -267,10 +289,26 @@ func TestCheck(t *testing.T) {
 //	sold 18.11 by section: H5.1 0 · 2, H5.2 10 · 0 (H6.1 sold nothing: not listed; the 12.11 sale is another day)
 //	sold in the cycle ♀ 1 + 5 + 10 = 16 · ♂ 2; sold 12–18.11 ♀ 15 · ♂ 2
 //	feed 12.11: ♀ H5.1 150 g × 67 = 10,05 kg + H5.2 160 g × 19 = 3,04 kg = 13,09; ♂ H5.1 140 g × 7 = 0,98
-//	stock 18.11: Breeder 2 100 − 13,09 − 12,73 = 74,18 → 74,2; Cocoși 10 − 0,98 − 1,05 = 7,97 → 8,0
+//	deliveries: 01.11.2026 Breeder 2 100 kg and Cocoși 10 kg, unpriced; 13.11.2026 Breeder 2 40 kg,
+//	            register price 311 lei (7,7750 lei/kg)
+//	stock 18.11: Breeder 2 100 + 40 − 13,09 − 12,73 = 114,18 → 114,2; Cocoși 10 − 0,98 − 1,05 = 7,97 → 8,0
 //	days left 18.11 (28): every section × sex with birds today has a ration, so the window is 16–18.11;
-//	            Breeder 2 12,73 ÷ 3 = 4,2433 → 4,2 kg/zi, 74,18 ÷ 4,2433 = 17,48 → 17,5 zile, 18.11 + 17 = 05.12.2026;
+//	            Breeder 2 12,73 ÷ 3 = 4,2433 → 4,2 kg/zi, 114,18 ÷ 4,2433 = 26,91 → 26,9 zile, 18.11 + 26 = 14.12.2026;
 //	            Cocoși 1,05 ÷ 3 = 0,35 → 0,4 kg/zi, 7,97 ÷ 0,35 = 22,77 → 22,8 zile, 18.11 + 22 = 10.12.2026
+//
+// Telița (growth, Seria 2026 cycle 07.10.2025–28.02.2026): placement H1 ♀ 30 · ♂ 5 on 07.10.2025 and
+// one Breeder 2 delivery of 50 kg on 10.02.2026, register price 400 lei. The M4 rows read:
+//
+//	29: Hîrbovăț's range (no earlier cycle, so up to 18.11): 3 deliveries, ♀ 140 kg · ♂ 10 kg, 311 lei;
+//	    unpriced 2 · 110 kg: 01.11 100 (Breeder 2), 01.11 10 (Cocoși)
+//	30: 13.11: 40 kg, 311 lei → 7,775 → 7,78 lei/kg (half away from zero); stored 7,7750
+//	31: Telița · Seria 2026: 400 lei ÷ 35 birds = 11,43, growth (no eggs); Hîrbovăț · Seria 2026: 311 lei
+//	    ÷ 88 = 3,53, ÷ 315 eggs (80 + 60 + 44 + 50 + 40 + 41) = 0,99, 110 kg unpriced; both farms of the
+//	    series have a row, so the total: 711 lei ÷ the placement 123 (35 + 88) = 5,78, ÷ 315 = 2,26,
+//	    110 kg left out
+//	35: the series page's placement: the first cycle's farm Telița; placed in the series ♀ 30 + 80 · ♂ 5 + 8
+//	    = 110 · 13 (Hîrbovăț's own 22.02 placement counts: it is inside its cycle of the series); Telița's
+//	    cycle 07.10.2025–28.02.2026 = SAPT 1–21, as the real data (only the series and the cycle)
 //
 // Eggs, all at hall H5 (Cat. 1 · 2 · 3 + incubabile = total; jos apart; mean
 // egg weight), and the hens of H5 at the start of the day:
@@ -422,6 +460,22 @@ func newLedger(t *testing.T) *ledger {
 	delivery := `insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg) values ($1, $2, $3, $4, $5)`
 	l.id(delivery, e, l.farm, breeder, day(2026, time.November, 1), 100)
 	l.id(delivery, e, l.farm, cocosi, day(2026, time.November, 1), 10)
+	registerPriced := `insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg, price_per_kg, total_lei, price_from_register)
+		values ($1, $2, $3, $4, $5, $6, $7, true)`
+	d13 := day(2026, time.November, 13)
+	e = l.entry("delivery", d13, nil)
+	l.id(registerPriced, e, l.farm, breeder, d13, 40, 7.775, 311)
+
+	// Telița: its placement and one priced delivery inside its Seria 2026 cycle.
+	h1 := l.id(`insert into section (farm_id, code, sort_order) values ($1, 'H1', 1)`, other)
+	d0710 := day(2025, time.October, 7)
+	e = l.id(`insert into entry (kind, farm_id, date, series_id, source) values ('placement', $1, $2, $3, 'manual')`, other, d0710, series)
+	placement := `insert into bird_event (entry_id, farm_id, section_id, date, sex, type, qty) values ($1, $2, $3, $4, $5, 'placement', $6)`
+	l.id(placement, e, other, h1, d0710, "F", 30)
+	l.id(placement, e, other, h1, d0710, "M", 5)
+	d1002 := day(2026, time.February, 10)
+	e = l.id(`insert into entry (kind, farm_id, date, source) values ('delivery', $1, $2, 'manual')`, other, d1002)
+	l.id(registerPriced, e, other, breeder, d1002, 50, 8, 400)
 	alloc := `insert into feed_allocation (entry_id, farm_id, section_id, date, sex, feed_type_id, g_per_bird)
 		values ($1, $2, $3, $4, $5, $6, $7)`
 	d12 := day(2026, time.November, 12)
@@ -456,9 +510,9 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 		11: golden.SoldSpan{Cycle: ps(16, 2), Range: ps(15, 2)},
 		12: golden.LayDay{Eggs: 41, HensStart: 80, Pct: "51.3"},
 		26: golden.FeedDay{Kg: calc.PerSex[string]{F: "12.7", M: "1.1"}, Total: "13.8"},
-		27: []golden.StockKg{{Name: "Breeder 2", Kg: "74.2"}, {Name: "Cocoși", Kg: "8.0"}},
+		27: []golden.StockKg{{Name: "Breeder 2", Kg: "114.2"}, {Name: "Cocoși", Kg: "8.0"}},
 		28: golden.StockDaysLeft{From: "2026-11-16", To: "2026-11-18", Items: []golden.TypeDaysLeft{
-			{Type: "Breeder 2", AvgDaily: "4.2", Days: "17.5", RunOut: "2026-12-05"},
+			{Type: "Breeder 2", AvgDaily: "4.2", Days: "26.9", RunOut: "2026-12-14"},
 			{Type: "Cocoși", AvgDaily: "0.4", Days: "22.8", RunOut: "2026-12-10"},
 		}},
 
@@ -481,6 +535,19 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 		24: golden.Foot{Label: "Total SAPT 56–59", Eggs: 235, HenDays: 419, Lay: "56.1", Guide: "51.2",
 			Deaths: ps(3, 0), Sold: ps(16, 2), IncPct: "95.3", FeedKg: pss("25.8", "2.0")},
 		38: []golden.EmptyHall{},
+
+		29: golden.Deliveries{Count: 3, KgF: "140", KgM: "10", Lei: "311", Unpriced: golden.UnpricedKg{
+			Count: 2, Kg: "110", Items: []golden.DeliveryKg{{Date: "2026-11-01", Kg: "100"}, {Date: "2026-11-01", Kg: "10"}},
+		}},
+		30: golden.Price{Kg: "40", TotalLei: "311", PerKg: "7.78", StoredPerKg: "7.7750"},
+		31: golden.Cost{
+			Cycles: []golden.CycleCost{
+				{Cycle: "Telița · Seria 2026", Lei: "400", Birds: 35, PerBird: "11.43"},
+				{Cycle: "Hîrbovăț · Seria 2026", Lei: "311", Birds: 88, Eggs: 315, PerBird: "3.53", PerEgg: "0.99", UnpricedKg: "110"},
+			},
+			Total: golden.CostTotal{Lei: "711", PerBird: "5.78", PerEgg: "2.26", ExcludedKg: "110"},
+		},
+		35: golden.SeriesPlacement{Farm: "Telița", Placed: ps(110, 13), CycleSAPT: [2]int{1, 21}},
 	}
 	for _, r := range golden.Rows() {
 		if r.Got == nil {
@@ -510,6 +577,23 @@ func TestGoldenRowsOnHandBuiltLedger(t *testing.T) {
 				t.Errorf("Check on the miniature ledger = %v, want a mismatch carrying %+v", mm, got)
 			}
 		})
+	}
+}
+
+// TestPriceRowRefusesAStoredPriceOffTheDerivation shows golden 30 is an
+// error naming both prices, not a pass, when the stored price per kg is not
+// the derivation of the delivery's total at 4 dp.
+func TestPriceRowRefusesAStoredPriceOffTheDerivation(t *testing.T) {
+	l := newLedger(t)
+	ctx := t.Context()
+	if _, err := l.d.App.Exec(ctx, `update feed_delivery set price_per_kg = 7.77 where date = $1`, day(2026, time.November, 13)); err != nil {
+		t.Fatal(err)
+	}
+	row := golden.Rows()[29]
+	err := row.Check(ctx, golden.Env{DB: l.d.App})
+	want := "golden 30 13.11.2026 delivery price: the delivery of 2026-11-13 stores 7.7700 lei/kg, the derivation gives 7.7750"
+	if err == nil || err.Error() != want {
+		t.Errorf("err = %v, want %s", err, want)
 	}
 }
 

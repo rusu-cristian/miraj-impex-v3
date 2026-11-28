@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
@@ -477,6 +478,378 @@ func TestFeedDailyContract(t *testing.T) {
 	var n int
 	if err := s.d.App.QueryRow(ctx, `select (select count(*) from entry) + (select count(*) from audit_log)
 		+ (select count(*) from live_event)`).Scan(&n); err != nil || n != 0 {
+		t.Errorf("rows written: %d (%v), want 0", n, err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// M4: Livrare hrană and Prețuri over HTTP (plan T7)
+// ---------------------------------------------------------------------------
+
+const deliveryPath = "/api/entries/delivery"
+
+// feedReport is the part of GET /api/reports/feed the M4 chain reads.
+type feedReport struct {
+	Stock      []stockItem `json:"stock"`
+	Deliveries struct {
+		Total    int `json:"total"`
+		Unpriced struct {
+			Count int             `json:"count"`
+			Kg    decimal.Decimal `json:"kg"`
+			Dates []string        `json:"dates"`
+		} `json:"unpriced"`
+		Rows []feedDelivery `json:"rows"`
+	} `json:"deliveries"`
+	Cost *struct {
+		Cycles []costCycle `json:"cycles"`
+		Total  *struct {
+			Label      string           `json:"label"`
+			Lei        decimal.Decimal  `json:"lei"`
+			LeiPerBird *decimal.Decimal `json:"leiPerBird"`
+			LeiPerEgg  *decimal.Decimal `json:"leiPerEgg"`
+			ExcludedKg decimal.Decimal  `json:"excludedKg"`
+		} `json:"total"`
+	} `json:"cost"`
+}
+
+// feedDelivery is a Livrări row with its price (manager, owner).
+type feedDelivery struct {
+	ID         uuid.UUID        `json:"id"`
+	Date       string           `json:"date"`
+	Farm       string           `json:"farm"`
+	Type       string           `json:"type"`
+	Kg         decimal.Decimal  `json:"kg"`
+	PricePerKg *decimal.Decimal `json:"pricePerKg"`
+	TotalLei   *decimal.Decimal `json:"totalLei"`
+	PricedBy   *string          `json:"pricedBy"`
+	Tag        string           `json:"tag"`
+	Actions    struct {
+		SetPrice    bool `json:"setPrice"`
+		ChangePrice bool `json:"changePrice"`
+	} `json:"actions"`
+}
+
+// String is the row as "2026-11-12 Breeder 2 9000 · – · – · fără preț ·
+// set=false change=false".
+func (d feedDelivery) String() string {
+	opt := func(v *decimal.Decimal) string {
+		if v == nil {
+			return "–"
+		}
+		return v.String()
+	}
+	by := "–"
+	if d.PricedBy != nil {
+		by = *d.PricedBy
+	}
+	return fmt.Sprintf("%s %s %s · %s · %s · %s · %s · set=%v change=%v", d.Date, d.Type, d.Kg, opt(d.PricePerKg), opt(d.TotalLei),
+		by, d.Tag, d.Actions.SetPrice, d.Actions.ChangePrice)
+}
+
+// costCycle is a Cost row.
+type costCycle struct {
+	Label       string           `json:"label"`
+	PricedCount int              `json:"pricedCount"`
+	Lei         decimal.Decimal  `json:"lei"`
+	LeiPerBird  *decimal.Decimal `json:"leiPerBird"`
+	LeiPerEgg   *decimal.Decimal `json:"leiPerEgg"`
+	Unpriced    *struct {
+		Count int             `json:"count"`
+		Kg    decimal.Decimal `json:"kg"`
+		Span  string          `json:"span"`
+	} `json:"unpriced"`
+}
+
+// costLines are the Cost rows and total at the board's precision (2
+// decimals per bird and per egg): "Hîrbovăț · Seria 2026 · 65 · 9562437 ·
+// 319.74 · 1.88 · fără preț 4 18160 17.02–12.11.2026".
+func costLines(r feedReport) []string {
+	unit := func(v *decimal.Decimal) string {
+		if v == nil {
+			return "–"
+		}
+		return v.StringFixed(2)
+	}
+	var out []string
+	for _, c := range r.Cost.Cycles {
+		line := fmt.Sprintf("%s · %d · %s · %s · %s", c.Label, c.PricedCount, c.Lei, unit(c.LeiPerBird), unit(c.LeiPerEgg))
+		if c.Unpriced != nil {
+			line += fmt.Sprintf(" · fără preț %d %s %s", c.Unpriced.Count, c.Unpriced.Kg, c.Unpriced.Span)
+		}
+		out = append(out, line)
+	}
+	if t := r.Cost.Total; t != nil {
+		out = append(out, fmt.Sprintf("%s · %s · %s · %s · exclus %s", t.Label, t.Lei, unit(t.LeiPerBird), unit(t.LeiPerEgg), t.ExcludedKg))
+	}
+	return out
+}
+
+// golden31 is the Cost of Seria 2026 on the seed (SPEC §5.9, golden 31).
+var golden31 = []string{
+	"Telița · Seria 2026 · 13 · 2031768 · 64.32 · –",
+	"Hîrbovăț · Seria 2026 · 65 · 9562437 · 319.74 · 1.88 · fără preț 4 18160 17.02–12.11.2026",
+	"Total Seria 2026 · 11594205 · 367.02 · 2.29 · exclus 18160",
+}
+
+// T7 criterion 3: on the dev seed, through the whole server. Ion Rusu
+// re-enters the 12.11.2026 delivery to Hîrbovăț (9 000 kg Breeder 2) after
+// the seeded one is soft-deleted (plan Assumptions): form state → dry run →
+// save → Rapoarte › Hrană (stock, the new row). Then the owner prices the
+// four unpriced deliveries (S12 list → save), undoes the save, changes the
+// 13.11 price with a Motiv (S11 Modifică), and reads the Cost after each
+// step. Figures: T3 (golden 31), T4 (the price save), T5 (stockAfter
+// 21 119,3, the Toast).
+func TestDeliveryPriceChainSeeded(t *testing.T) {
+	t.Parallel()
+	s := newSeededStack(t)
+	ctx := context.Background()
+	hirb := seededFarm(t, s, "hirbovat")
+	manager, owner := seededSession(t, s, "ion.rusu"), seededSession(t, s, "proprietar")
+	do := func(u seededReader, method, path, body string, want int) response {
+		t.Helper()
+		r := s.do(t, call{method: method, path: path, body: body, cookie: u.token})
+		if r.status != want {
+			t.Fatalf("%s %s as %s: %s, want %d", method, path, u.login, r, want)
+		}
+		return r
+	}
+	report := func(u seededReader) feedReport {
+		t.Helper()
+		return decodeBody[feedReport](t, do(u, http.MethodGet, "/api/reports/feed", "", http.StatusOK))
+	}
+	var lastAudit, lastEvent int64
+	if err := s.d.App.QueryRow(ctx, `select coalesce((select max(id) from audit_log), 0), coalesce((select max(id) from live_event), 0)`).
+		Scan(&lastAudit, &lastEvent); err != nil {
+		t.Fatal(err)
+	}
+
+	// The seeded 12.11 delivery, soft-deleted with its entry.
+	var oldEntry uuid.UUID
+	if err := s.d.App.QueryRow(ctx, `select fd.entry_id from feed_delivery fd join feed_type ft on ft.id = fd.feed_type_id
+		where fd.farm_id = $1 and fd.date = '2026-11-12' and ft.name = 'Breeder 2' and fd.qty_kg = 9000 and fd.deleted_at is null`,
+		hirb).Scan(&oldEntry); err != nil {
+		t.Fatal(err)
+	}
+	s.exec(t, `update feed_delivery set deleted_at = $2 where entry_id = $1`, oldEntry, testdb.Now())
+	s.exec(t, `update entry set deleted_at = $2, deleted_by = (select id from app_user where login = 'proprietar') where id = $1`,
+		oldEntry, testdb.Now())
+
+	// 1. The form state: the active types and the stock now, 9 000 kg short.
+	form := decodeBody[struct {
+		FeedTypes []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"feedTypes"`
+		Stock []stockItem `json:"stock"`
+	}](t, do(manager, http.MethodGet, "/api/forms/delivery?farmId="+hirb.String(), "", http.StatusOK))
+	var breeder2 uuid.UUID
+	for _, ft := range form.FeedTypes {
+		if ft.Name == "Breeder 2" {
+			breeder2 = ft.ID
+		}
+	}
+	if breeder2 == uuid.Nil || len(form.Stock) != 2 || form.Stock[0].Type != "Breeder 2" || form.Stock[0].Kg.StringFixed(1) != "22664.9" {
+		t.Fatalf("form: Breeder 2 %s, stock %q; want the type and 31 664,9 − 9 000 = 22 664,9 kg", breeder2, stockStrings(form.Stock))
+	}
+
+	// 2. A dry run: 200, nothing written. 3. The save.
+	body := func(extra string) string {
+		return `{` + extra + `"farmId":"` + hirb.String() + `","date":"2026-11-12","feedTypeId":"` + breeder2.String() + `","qtyKg":9000}`
+	}
+	wantBody(t, "dry run", do(manager, http.MethodPost, deliveryPath, body(`"dryRun":true,`), http.StatusOK), http.StatusOK,
+		`{"effects":[],"warnings":[],"refusals":[]}`)
+	saved := decodeBody[struct {
+		Entry      httpx.EntryRef  `json:"entry"`
+		Toast      string          `json:"toast"`
+		StockAfter decimal.Decimal `json:"stockAfter"`
+		Warnings   []httpx.Warning `json:"warnings"`
+	}](t, do(manager, http.MethodPost, deliveryPath, body(`"clientRequestId":"`+uuid.NewString()+`",`), http.StatusCreated))
+	if saved.Entry.Kind != string(dbq.EntryKindDelivery) || saved.StockAfter.StringFixed(1) != "21119.3" || len(saved.Warnings) != 0 ||
+		saved.Toast != "Livrare adăugată · 9 000 kg Breeder 2 · stoc Hîrbovăț: 21 119 kg · fără preț" {
+		t.Errorf("save = %+v; want a delivery entry, stockAfter 21119.3 and the S13 Toast", saved)
+	}
+
+	// 4. Rapoarte › Hrană (manager): the stock now is golden 27's again; the
+	// new row is unpriced, the newest priced one is 13.11 "din registru";
+	// the manager has no price action.
+	rep := report(manager)
+	if got := stockStrings(rep.Stock[:1]); !strings.HasPrefix(got[0], "Breeder 2 31664.9 kg") {
+		t.Errorf("stock after the delivery = %q, want Breeder 2 31 664,9 kg", got)
+	}
+	if d := rep.Deliveries; d.Total != 82 || d.Unpriced.Count != 4 || d.Unpriced.Kg.String() != "18160" ||
+		!slices.Equal(d.Unpriced.Dates, []string{"2026-02-17", "2026-03-14", "2026-11-12"}) {
+		t.Errorf("deliveries = %d, unpriced %+v", d.Total, d.Unpriced)
+	}
+	var nov13 feedDelivery
+	var rows []string
+	for _, r := range rep.Deliveries.Rows[:2] {
+		rows = append(rows, r.String())
+	}
+	if want := []string{
+		"2026-11-13 Breeder 2 25640 · 7.7613 · 199000 · din registru ·  · set=false change=false",
+		"2026-11-12 Breeder 2 9000 · – · – · – · fără preț · set=false change=false",
+	}; !slices.Equal(rows, want) {
+		t.Errorf("newest rows\n got %q\nwant %q", rows, want)
+	} else {
+		nov13 = rep.Deliveries.Rows[0]
+	}
+	newDelivery := rep.Deliveries.Rows[1].ID
+
+	// 5. The S12 list (owner): the four, the new one last.
+	list := decodeBody[struct {
+		Items []struct {
+			ID uuid.UUID `json:"id"`
+		} `json:"items"`
+		Count int `json:"count"`
+	}](t, do(owner, http.MethodGet, "/api/deliveries?priced=false", "", http.StatusOK))
+	if list.Count != 4 || len(list.Items) != 4 || list.Items[3].ID != newDelivery {
+		t.Fatalf("S12 list = %+v, want 4 with the new delivery %s last", list, newDelivery)
+	}
+
+	// 6. The price save: 17.02 Breeder 2 by its total, the others per kg.
+	set := decodeBody[struct {
+		Count     int    `json:"count"`
+		Toast     string `json:"toast"`
+		UndoToken string `json:"undoToken"`
+	}](t, do(owner, http.MethodPost, "/api/deliveries/prices", fmt.Sprintf(`{"items":[`+
+		`{"id":"%s","totalLei":16000},{"id":"%s","pricePerKg":8.5},{"id":"%s","pricePerKg":8.25},{"id":"%s","pricePerKg":7.74}]}`,
+		list.Items[0].ID, list.Items[1].ID, list.Items[2].ID, list.Items[3].ID), http.StatusOK))
+	if set.Count != 4 || set.UndoToken == "" || set.Toast != "Prețuri salvate · 4 livrări · 18 160 kg intră în cost" {
+		t.Errorf("price save = %+v", set)
+	}
+	// Every Hîrbovăț delivery of Seria 2026 now has a price: 9 562 437 +
+	// 16 000 + 8 500 + 50 820 + 69 660 lei, nothing left out of the total.
+	if got, want := costLines(report(owner)), []string{
+		golden31[0],
+		"Hîrbovăț · Seria 2026 · 69 · 9707417 · 324.59 · 1.91",
+		"Total Seria 2026 · 11739185 · 371.61 · 2.31 · exclus 0",
+	}; !slices.Equal(got, want) {
+		t.Errorf("cost after the save\n got %q\nwant %q", got, want)
+	}
+
+	// 7. The undo: the four are "fără preț" again; the Cost is golden 31.
+	undo := do(owner, http.MethodPost, "/api/deliveries/prices/undo", `{"undoToken":"`+set.UndoToken+`"}`, http.StatusOK)
+	if !strings.Contains(undo.body, `"toast":"Prețuri anulate · 4 livrări înapoi fără preț"`) {
+		t.Errorf("undo = %s", undo)
+	}
+	if got := costLines(report(owner)); !slices.Equal(got, golden31) {
+		t.Errorf("cost after the undo\n got %q\nwant %q", got, golden31)
+	}
+
+	// 8. S11 Modifică: 13.11 Breeder 2 from 7,7613 to 7,74 lei/kg.
+	change := do(owner, http.MethodPatch, "/api/deliveries/"+nov13.ID.String()+"/price",
+		`{"pricePerKg":7.74,"reason":"Factura corectată"}`, http.StatusOK)
+	for _, want := range []string{
+		`"pricePerKg":7.74`, `"totalLei":198453.6`, `"pricedBy":"Proprietar"`,
+		"\"toast\":\"Preț schimbat · Breeder 2 · 13.11.2026 · 7,74 lei/kg · 198 454 lei\"",
+	} {
+		if !strings.Contains(change.body, want) {
+			t.Errorf("change body lacks %s: %s", want, change.body)
+		}
+	}
+	// 9. The Cost: 9 562 437 − 199 000 + 198 453,6 lei at Hîrbovăț.
+	rep = report(owner)
+	if got, want := costLines(rep), []string{
+		golden31[0],
+		"Hîrbovăț · Seria 2026 · 65 · 9561890.6 · 319.72 · 1.88 · fără preț 4 18160 17.02–12.11.2026",
+		"Total Seria 2026 · 11593658.6 · 367.00 · 2.29 · exclus 18160",
+	}; !slices.Equal(got, want) {
+		t.Errorf("cost after the change\n got %q\nwant %q", got, want)
+	}
+	if got := rep.Deliveries.Rows[0].String(); got != "2026-11-13 Breeder 2 25640 · 7.74 · 198453.6 · Proprietar ·  · set=false change=true" {
+		t.Errorf("13.11 row after the change = %q", got)
+	}
+
+	// One audit row per write, each with its summary, and the live events
+	// (none of them with a price).
+	audits := queryStrings(t, s, `select action || ' · ' || summary from audit_log where id > $1 order by id`, lastAudit)
+	if want := []string{
+		"create · Livrare · 9 000 kg Breeder 2",
+		"price_set · Prețuri · 4 livrări · 18 160 kg",
+		"undo · Prețuri · 4 livrări · 18 160 kg",
+		"price_change · Preț schimbat · Breeder 2 · 13.11.2026",
+	}; !slices.Equal(audits, want) {
+		t.Errorf("audit rows\n got %q\nwant %q", audits, want)
+	}
+	events := queryStrings(t, s, `select type from live_event where id > $1 order by id`, lastEvent)
+	if want := []string{"entry.created", "delivery.created", "price.set", "price.changed", "price.changed"}; !slices.Equal(events, want) {
+		t.Errorf("live events = %q, want %q", events, want)
+	}
+	if priced := queryStrings(t, s, `select type from live_event where id > $1 and payload::text ~ '(lei|price)'`, lastEvent); len(priced) != 0 {
+		t.Errorf("live events with a price: %q", priced)
+	}
+}
+
+// queryStrings runs a one-column query as il_app.
+func queryStrings(t testing.TB, s *stack, sql string, args ...any) []string {
+	t.Helper()
+	rows, err := s.d.App.Query(context.Background(), sql, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// The HTTP contract of the M4 writes (§7.0a, §11.4) on a hand-built farm, the
+// owner calling: an unknown member is named by its path (a price write has
+// no dryRun and no clientRequestId, M4 D3), a body over 64 KiB is 413, and a
+// cross-site request is refused before the handler. Nothing is written.
+func TestM4WritesContract(t *testing.T) {
+	t.Parallel()
+	s := newStack(t)
+	farm := s.farm(t, "Hîrbovăț", "hirbovat")
+	token := s.session(t, s.user(t, "proprietar", "Proprietar", dbq.UserRoleOwner, true), sessionOpen)
+	var feedType uuid.UUID
+	if err := s.d.App.QueryRow(context.Background(), `insert into feed_type (name, name_key, for_sex) values ('Breeder 2', 'breeder 2', 'F')
+		returning id`).Scan(&feedType); err != nil {
+		t.Fatal(err)
+	}
+	id := unknownFarm.String() // no delivery has it
+	pad := `"pad":"` + strings.Repeat("a", 65<<10) + `"`
+	delivery := func(extra string) string {
+		return `{"farmId":"` + farm.String() + `","date":"2026-11-18","feedTypeId":"` + feedType.String() + `","qtyKg":9000,` + extra + `}`
+	}
+	for _, tc := range []struct {
+		method, path       string
+		unknown, unknownAt string
+		big                string
+		valid              string
+		validStatus        int
+	}{
+		{http.MethodPost, deliveryPath, delivery(`"pret":8`), "pret", delivery(pad), delivery(`"dryRun":true`), http.StatusOK},
+		{http.MethodPost, "/api/deliveries/prices", `{"items":[{"id":"` + id + `","pricePerKg":8,"pret":1}]}`, "items[0].pret",
+			`{"items":[],` + pad + `}`, `{"items":[{"id":"` + id + `","pricePerKg":8}]}`, http.StatusBadRequest},
+		{http.MethodPost, "/api/deliveries/prices/undo", `{"undoToken":"x","dryRun":true}`, "dryRun",
+			`{"undoToken":"x",` + pad + `}`, `{"undoToken":"x"}`, http.StatusBadRequest},
+		{http.MethodPatch, "/api/deliveries/" + id + "/price", `{"pricePerKg":7.74,"reason":"x","clientRequestId":"` + uuid.NewString() + `"}`,
+			"clientRequestId", `{"reason":"x",` + pad + `}`, `{"pricePerKg":7.74,"reason":"x"}`, http.StatusNotFound},
+	} {
+		what := tc.method + " " + tc.path
+		send := func(b string, header map[string]string) response {
+			return s.do(t, call{method: tc.method, path: tc.path, body: b, cookie: token, header: header})
+		}
+		wantBody(t, what+" unknown member", send(tc.unknown, nil), http.StatusBadRequest,
+			`{"error":{"code":"VALIDATION","message":"Datele trimise nu sunt valide.",`+
+				`"issues":[{"path":"`+tc.unknownAt+`","code":"unknown_field","message":"Datele trimise nu sunt valide."}]}}`)
+		wantBody(t, what+" 65 KiB", send(tc.big, nil), http.StatusRequestEntityTooLarge, bodyTooLarge)
+		for _, h := range []map[string]string{
+			{"Origin": "https://evil.example"},
+			{"Origin": "", "Sec-Fetch-Site": "cross-site"},
+			{"Content-Type": "text/plain"},
+		} {
+			wantBody(t, fmt.Sprintf("%s with %v", what, h), send(tc.valid, h), http.StatusForbidden, bodyForbidden)
+		}
+		if r := send(tc.valid, nil); r.status != tc.validStatus {
+			t.Errorf("%s from the app's origin: %s, want %d", what, r, tc.validStatus)
+		}
+	}
+	var n int
+	if err := s.d.App.QueryRow(context.Background(), `select (select count(*) from entry) + (select count(*) from feed_delivery)
+		+ (select count(*) from audit_log) + (select count(*) from live_event)`).Scan(&n); err != nil || n != 0 {
 		t.Errorf("rows written: %d (%v), want 0", n, err)
 	}
 }

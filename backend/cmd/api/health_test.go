@@ -18,10 +18,15 @@ import (
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
 
 const testOrigin = "https://app.example"
+
+// testAppSecret is APP_SECRET in every newApp of these tests (the HKDF root
+// of the undo key, M4 D4): a fixed 32-byte value, never a real secret.
+var testAppSecret = config.Secret("cmd-api-test-app-secret-32-bytes")
 
 // newTestApp wires the real app on a fresh test database (il_app and
 // il_maint pools, frozen clock). Logs go to the returned buffer.
@@ -30,7 +35,7 @@ func newTestApp(t *testing.T) (*app, *testdb.DB, *logBuffer) {
 	d := testdb.New(t)
 	logs := &logBuffer{}
 	log := slog.New(slog.NewJSONHandler(logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	cfg := config.Config{Env: config.Dev, AppOrigin: testOrigin, LogFormat: config.FormatJSON}
+	cfg := config.Config{Env: config.Dev, AppOrigin: testOrigin, AppSecret: testAppSecret, LogFormat: config.FormatJSON}
 	a, err := newApp(cfg, log, d.Clock, &db.Pools{App: d.App, Maint: d.Pool(testdb.RoleMaint)})
 	if err != nil {
 		t.Fatal(err)
@@ -103,7 +108,9 @@ func TestRoutesRecorded(t *testing.T) {
 	a, _, _ := newTestApp(t)
 	want := []string{"GET /healthz", "GET /readyz", "POST /api/auth/login", "POST /api/auth/logout", "GET /api/auth/me",
 		"GET /api/table", "GET /api/farms/{id}/page", "GET /api/farms/{id}/summary", "GET /api/bootstrap",
-		"GET /api/forms/feed-daily", "POST /api/entries/feed-daily", "GET /api/reports/feed"}
+		"GET /api/forms/feed-daily", "GET /api/forms/delivery", "POST /api/entries/feed-daily", "POST /api/entries/delivery",
+		"GET /api/reports/feed", "GET /api/series/{id}/page",
+		"GET /api/deliveries", "POST /api/deliveries/prices", "POST /api/deliveries/prices/undo", "PATCH /api/deliveries/{id}/price"}
 	if !slices.Equal(a.routes, want) {
 		t.Fatalf("routes = %v, want %v", a.routes, want)
 	}
@@ -113,6 +120,22 @@ func TestRoutesRecorded(t *testing.T) {
 	rec.Patterns()[0] = "changed"
 	if rec.Patterns()[0] != "GET /x" {
 		t.Fatal("Patterns shares its slice")
+	}
+}
+
+// newApp derives the price undo key from APP_SECRET (M4 D4) and refuses to
+// build without a usable one (config.Load checks it too, for `api serve`).
+func TestNewAppNeedsAppSecret(t *testing.T) {
+	t.Parallel()
+	log := slog.New(slog.NewJSONHandler(io.Discard, nil))
+	for _, secret := range []config.Secret{nil, config.Secret("only-31-bytes-long-secret-value")} {
+		cfg := config.Config{AppOrigin: testOrigin, AppSecret: secret}
+		if _, err := newApp(cfg, log, timex.FixedClock(testdb.Now()), &db.Pools{}); err == nil || !strings.Contains(err.Error(), "undo key") {
+			t.Errorf("newApp with a %d-byte APP_SECRET: err = %v, want the undo key refused", len(secret), err)
+		}
+	}
+	if _, err := newApp(config.Config{AppOrigin: testOrigin, AppSecret: testAppSecret}, log, timex.FixedClock(testdb.Now()), &db.Pools{}); err != nil {
+		t.Errorf("newApp with the 32-byte test secret: %v", err)
 	}
 }
 

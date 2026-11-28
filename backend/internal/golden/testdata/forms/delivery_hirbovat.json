@@ -1,0 +1,57 @@
+{
+  "farm": {
+    "id": "<farm:hirbovat>",
+    "name": "Hîrbovăț",
+    "type": "laying"
+  },
+  "today": "2026-11-18",
+  "cycle": {
+    "id": "<cycle:hirbovat/2026>",
+    "series": "Seria 2026",
+    "startDate": "2026-02-22",
+    "saptToday": 59
+  },
+  "feedTypes": [
+    {
+      "id": "<feedType:breeder2>",
+      "name": "Breeder 2",
+      "forSex": "F"
+    },
+    {
+      "id": "<feedType:cocosi>",
+      "name": "Cocoși",
+      "forSex": "M"
+    }
+  ],
+  "stock": [
+    {
+      "feedTypeId": "<feedType:breeder2>",
+      "type": "Breeder 2",
+      "forSex": "F",
+      "kg": 31664.9,
+      "avgDaily": 2392.2,
+      "window": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "daysLeft": 13.2367,
+      "runOut": "2026-12-01",
+      "lamp": "in_norma"
+    },
+    {
+      "feedTypeId": "<feedType:cocosi>",
+      "type": "Cocoși",
+      "forSex": "M",
+      "kg": 1781,
+      "avgDaily": 170.9333,
+      "window": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "daysLeft": 10.4193,
+      "runOut": "2026-11-28",
+      "lamp": "in_norma"
+    }
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

@@ -13,6 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/fmtx"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 )
 
@@ -426,9 +427,22 @@ func FeedGuideDeviation[S ~string](section string, sex S, g, guide, diffPct deci
 
 // StockWouldGoNegative is the H5 STOCK_NEGATIVE warning with the lowest stock
 // in whole kg: "Stocul de Breeder 2 la Hîrbovăț ar ajunge la −1 240 kg.
-// Verifică livrările."
+// Verifică livrările." A stock below 0 never reads as 0 (COR-4, M4 D9): when
+// whole kg round to 0 it shows one decimal ("−0,3 kg"), and at least −0,1.
 func StockWouldGoNegative(feedType, farm string, kg decimal.Decimal) string {
-	return "Stocul de " + feedType + " la " + farm + " ar ajunge la " + fmtx.Dec(kg, 0) + " kg. Verifică livrările."
+	return "Stocul de " + feedType + " la " + farm + " ar ajunge la " + negativeKg(kg) + " kg. Verifică livrările."
+}
+
+// negativeKg is kg in whole kg, or with one decimal (at least −0,1) for a
+// negative kg that whole-kg rounding would show as 0.
+func negativeKg(kg decimal.Decimal) string {
+	if kg.Sign() >= 0 || num.Round(kg, 0).Sign() != 0 {
+		return fmtx.Dec(kg, 0)
+	}
+	if tenth := decimal.New(-1, -1); num.Round(kg, 1).GreaterThan(tenth) {
+		kg = tenth
+	}
+	return fmtx.Dec(kg, 1)
 }
 
 // FeedDailySaved is the save Toast: "Hrană zilnică salvată · 8 rânduri ·
@@ -537,3 +551,167 @@ func NoteRecordedKg[S ~string](sex S, recordedKg, computedKg decimal.Decimal, we
 	return sexSign(sex) + " " + fmtx.Dec(recordedKg, 0) + " kg/compartiment în registru (g × păsări ≈ " +
 		fmtx.Dec(computedKg, 0) + " kg): " + strings.Join(ws, "; ") + "."
 }
+
+// Livrare hrană (SPEC §6.7, S13; M4 D5, Q9, Q13, Q15, Q16).
+
+// DeliveryQtyRequired is the 400 of a missing or non-positive qtyKg: "Scrie
+// câte kg de Breeder 2 s-au livrat la Hîrbovăț."
+func DeliveryQtyRequired(feedType, farm string) string {
+	return "Scrie câte kg de " + feedType + " s-au livrat la " + farm + "."
+}
+
+// PriceForbidden is the 403 PRICE_FORBIDDEN of a manager's request with price
+// fields, or a manager on a price write (§6.7, M4 Q10).
+func PriceForbidden() string { return "Prețul îl adaugă proprietarul în Prețuri hrană." }
+
+// DeliveryAdded is the save Toast, kg as typed (up to 1 decimal) and the stock
+// of the type at the end of the delivery date in whole kg: "Livrare adăugată ·
+// 9 000 kg Breeder 2 · stoc Hîrbovăț: 25 140 kg · fără preț".
+func DeliveryAdded(kg decimal.Decimal, feedType, farm string, stock decimal.Decimal) string {
+	return "Livrare adăugată · " + fmtx.DecUpTo(kg, 1) + " kg " + feedType + " · stoc " + farm + ": " +
+		fmtx.Dec(stock, 0) + " kg · " + Unpriced()
+}
+
+// DeliverySummary is the audit summary and journal name of a delivery:
+// "Livrare · 9 000 kg Breeder 2". (proposed, M4 Q15)
+func DeliverySummary(kg decimal.Decimal, feedType string) string {
+	return "Livrare · " + fmtx.DecUpTo(kg, 1) + " kg " + feedType
+}
+
+// deliveriesWord is a delivery count: "1 livrare", "4 livrări", "20 de livrări".
+func deliveriesWord(n int) string { return countNoun(n, "1 livrare", "livrări") }
+
+// Prețuri hrană (SPEC §6.8, §7.13, S12; M4 Q10, Q11, Q15).
+
+// PricesSaved is the S12 save Toast: "Prețuri salvate · 4 livrări · 18 160 kg
+// intră în cost" (kg up to 1 decimal).
+func PricesSaved(count int, kg decimal.Decimal) string {
+	return "Prețuri salvate · " + deliveriesWord(count) + " · " + fmtx.DecUpTo(kg, 1) + " kg intră în cost"
+}
+
+// PricesSummary is the audit summary of a price batch: "Prețuri · 4 livrări ·
+// 18 160 kg". (proposed, M4 Q10)
+func PricesSummary(count int, kg decimal.Decimal) string {
+	return "Prețuri · " + deliveriesWord(count) + " · " + fmtx.DecUpTo(kg, 1) + " kg"
+}
+
+// PricePerKgNotPositive is the 400 of a pricePerKg ≤ 0, naming the delivery by
+// type and date: "Cocoși 17.02.2026: scrie un preț mai mare de 0 lei/kg".
+func PricePerKgNotPositive(feedType string, date timex.Day) string {
+	return feedType + " " + fmtx.Day(date) + ": scrie un preț mai mare de 0 lei/kg"
+}
+
+// TotalLeiNotPositive is the 400 of a totalLei ≤ 0: "Cocoși 17.02.2026: scrie
+// un total mai mare de 0 lei". (proposed, M4 Q10)
+func TotalLeiNotPositive(feedType string, date timex.Day) string {
+	return feedType + " " + fmtx.Day(date) + ": scrie un total mai mare de 0 lei"
+}
+
+// PriceBothGiven is the 400 of an item with both pricePerKg and totalLei:
+// "Cocoși 17.02.2026: scrie prețul pe kg sau totalul, nu amândouă." (proposed,
+// M4 Q10)
+func PriceBothGiven(feedType string, date timex.Day) string {
+	return feedType + " " + fmtx.Day(date) + ": scrie prețul pe kg sau totalul, nu amândouă."
+}
+
+// AuditKeyPricePerKg is the `changes[].key` of a delivery's lei/kg: "Breeder 2
+// · 12.11.2026 · lei/kg". (proposed, M4 Q10)
+func AuditKeyPricePerKg(feedType string, date timex.Day) string {
+	return feedType + " · " + fmtx.Day(date) + " · lei/kg"
+}
+
+// AuditKeyTotalLei is the `changes[].key` of a delivery's total: "Breeder 2 ·
+// 12.11.2026 · total lei". (proposed, M4 Q10)
+func AuditKeyTotalLei(feedType string, date timex.Day) string {
+	return feedType + " · " + fmtx.Day(date) + " · total lei"
+}
+
+// UndoDayEnded is the 409 STALE of a price undo token used after 23:59 of the
+// save day: "Nu se mai poate anula: ziua salvării s-a încheiat." (proposed,
+// M4 Q11)
+func UndoDayEnded() string { return "Nu se mai poate anula: ziua salvării s-a încheiat." }
+
+// PricesUndone is the price undo Toast: "Prețuri anulate · 4 livrări înapoi
+// fără preț". (proposed, M4 Q11)
+func PricesUndone(count int) string {
+	return "Prețuri anulate · " + deliveriesWord(count) + " înapoi " + Unpriced()
+}
+
+// Price change (SPEC §6.8, §6.15, S11 Modifică; M4 Q12).
+
+// PriceChangeReasonRequired is the 400 of a price change without a Motiv, the
+// prices in lei/kg with 2 decimals: "Breeder 2 13.11.2026: scrie motivul ca să
+// schimbi prețul din 7,76 în 7,74 lei/kg".
+func PriceChangeReasonRequired(feedType string, date timex.Day, oldPerKg, newPerKg decimal.Decimal) string {
+	return feedType + " " + fmtx.Day(date) + ": scrie motivul ca să schimbi prețul din " + fmtx.Dec(oldPerKg, 2) +
+		" în " + fmtx.Dec(newPerKg, 2) + " lei/kg"
+}
+
+// ReasonTooLong is the §6.15 400 of a trimmed Motiv over limit characters:
+// "Motivul are 212 caractere; cel mult 200. Scurtează-l cu 12 ca să poți
+// salva." ("220 de caractere" proposed.)
+func ReasonTooLong(length, limit int) string {
+	return "Motivul are " + countNoun(length, "1 caracter", "caractere") + "; cel mult " + strconv.Itoa(limit) +
+		". Scurtează-l cu " + strconv.Itoa(length-limit) + " ca să poți salva."
+}
+
+// NothingChanged is the 422 of a correction or price change that changes no
+// figure (§6.15). (proposed)
+func NothingChanged() string { return "Nu ai schimbat nicio cifră." }
+
+// PriceChanged is the price change Toast, lei/kg with 2 decimals and the total
+// in whole lei: "Preț schimbat · Breeder 2 · 13.11.2026 · 7,74 lei/kg · 198 454
+// lei". (proposed, M4 Q12)
+func PriceChanged(feedType string, date timex.Day, perKg, totalLei decimal.Decimal) string {
+	return "Preț schimbat · " + feedType + " · " + fmtx.Day(date) + " · " + fmtx.Dec(perKg, 2) + " lei/kg · " +
+		fmtx.Dec(totalLei, 0) + " lei"
+}
+
+// PriceChangeSummary is the audit summary of a price change, the delivery by
+// type and date: "Preț schimbat · Breeder 2 · 13.11.2026". The old and new
+// prices and the Motiv are in the row's changes and reason, so the summary,
+// like the batch's, names no price. (proposed, M4 T7)
+func PriceChangeSummary(feedType string, date timex.Day) string {
+	return "Preț schimbat · " + feedType + " · " + fmtx.Day(date)
+}
+
+// Rapoarte › Hrană: Livrări and Cost (SPEC §5.9, §7.12, S11; M4 D6, Q6, Q8).
+
+// Unpriced is the tag of a delivery without a price: "fără preț".
+func Unpriced() string { return "fără preț" }
+
+// PricedFromRegister is `pricedBy` of a migrated price: "din registru" (D163).
+func PricedFromRegister() string { return "din registru" }
+
+// CostRowLabel is a Cost row's label: "Telița · Seria 2026".
+func CostRowLabel(farm, series string) string { return farm + " · " + series }
+
+// CostSpanClosed is the span of a closed cycle's Cost row, the §11.3 range:
+// "07.10.2025–28.02.2026".
+func CostSpanClosed(from, to timex.Day) string { return fmtx.Range(from, to) }
+
+// CostSpanOpen is the span of the open cycle's Cost row: "din 22.02.2026 ·
+// SAPT 59".
+func CostSpanOpen(start timex.Day, saptToday int) string {
+	return "din " + fmtx.Day(start) + " · " + fmtx.WeekLabel(saptToday)
+}
+
+// UnpricedSpan is the first–last date of a cycle's unpriced deliveries:
+// "17.02–12.11.2026"; one day alone is "17.02.2026" (proposed).
+func UnpricedSpan(first, last timex.Day) string {
+	if first == last {
+		return fmtx.Day(first)
+	}
+	return fmtx.Range(first, last)
+}
+
+// CostNoEggsGrowth is the `eggReason` of a growth cycle's lei/ou: "creștere,
+// fără ouă".
+func CostNoEggsGrowth() string { return "creștere, fără ouă" }
+
+// CostNoEggs is the `eggReason` of a laying cycle (or a series total) without
+// eggs in the period yet: "fără ouă în perioadă". (proposed, M4 T3)
+func CostNoEggs() string { return "fără ouă în perioadă" }
+
+// CostSeriesTotal is the Cost total row's label: "Total Seria 2026".
+func CostSeriesTotal(series string) string { return "Total " + series }

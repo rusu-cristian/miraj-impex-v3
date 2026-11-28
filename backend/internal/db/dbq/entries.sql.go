@@ -14,6 +14,71 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const entriesDeliveryRefs = `-- name: EntriesDeliveryRefs :one
+select f.name as farm_name, ft.name as feed_type_name
+from farm f
+left join feed_type ft on ft.id = $1::uuid
+where f.id = $2::uuid
+`
+
+type EntriesDeliveryRefsParams struct {
+	FeedTypeID uuid.UUID
+	FarmID     uuid.UUID
+}
+
+type EntriesDeliveryRefsRow struct {
+	FarmName     string
+	FeedTypeName *string
+}
+
+// What the level-1 checks of a Livrare hrană save name (§6.7, M4 D5), read before the transaction: the farm's name
+// and the asked feed type's name (null when no such type, active or not). No row = no such farm.
+func (q *Queries) EntriesDeliveryRefs(ctx context.Context, arg EntriesDeliveryRefsParams) (EntriesDeliveryRefsRow, error) {
+	row := q.db.QueryRow(ctx, entriesDeliveryRefs, arg.FeedTypeID, arg.FarmID)
+	var i EntriesDeliveryRefsRow
+	err := row.Scan(&i.FarmName, &i.FeedTypeName)
+	return i, err
+}
+
+const entriesDeliverySaveContext = `-- name: EntriesDeliverySaveContext :one
+select f.name as farm_name,
+       coalesce(closed_series_on(f.id, $1::date), '')::text as closed_series,
+       ft.name as feed_type_name,
+       ft.active as feed_type_active
+from farm f
+left join feed_type ft on ft.id = $2::uuid
+where f.id = $3::uuid
+`
+
+type EntriesDeliverySaveContextParams struct {
+	Day        timex.Day
+	FeedTypeID uuid.UUID
+	FarmID     uuid.UUID
+}
+
+type EntriesDeliverySaveContextRow struct {
+	FarmName       string
+	ClosedSeries   string
+	FeedTypeName   *string
+	FeedTypeActive *bool
+}
+
+// The context of a Livrare hrană save (§6.7, M4 D5), read under the farm lock: the farm's name, the closed series
+// whose cycle contains the day (closed_series_on, 0003; ” when none: an open series, or a day between cycles such
+// as a pre-stocking delivery; closed → 409 SERIES_CLOSED, §3.1), and the asked feed type (null columns when it
+// doesn't exist; inactive → the "e retras" refusal). No row = no such farm.
+func (q *Queries) EntriesDeliverySaveContext(ctx context.Context, arg EntriesDeliverySaveContextParams) (EntriesDeliverySaveContextRow, error) {
+	row := q.db.QueryRow(ctx, entriesDeliverySaveContext, arg.Day, arg.FeedTypeID, arg.FarmID)
+	var i EntriesDeliverySaveContextRow
+	err := row.Scan(
+		&i.FarmName,
+		&i.ClosedSeries,
+		&i.FeedTypeName,
+		&i.FeedTypeActive,
+	)
+	return i, err
+}
+
 const entriesFarmSections = `-- name: EntriesFarmSections :many
 select f.id as farm_id, s.id as section_id, s.code
 from farm f
@@ -235,6 +300,34 @@ func (q *Queries) EntriesInsertFeedAllocation(ctx context.Context, arg EntriesIn
 		arg.Sex,
 		arg.FeedTypeID,
 		arg.GPerBird,
+	)
+	return err
+}
+
+const entriesInsertFeedDelivery = `-- name: EntriesInsertFeedDelivery :exec
+insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg, note)
+values ($1, $2, $3, $4, $5,
+        $6)
+`
+
+type EntriesInsertFeedDeliveryParams struct {
+	EntryID    uuid.UUID
+	FarmID     uuid.UUID
+	FeedTypeID uuid.UUID
+	Date       timex.Day
+	QtyKg      decimal.Decimal
+	Note       *string
+}
+
+// One Livrare hrană row (§4.8, §6.7). A new delivery has no price: the owner sets it in Prețuri (§6.8, M4 Q9).
+func (q *Queries) EntriesInsertFeedDelivery(ctx context.Context, arg EntriesInsertFeedDeliveryParams) error {
+	_, err := q.db.Exec(ctx, entriesInsertFeedDelivery,
+		arg.EntryID,
+		arg.FarmID,
+		arg.FeedTypeID,
+		arg.Date,
+		arg.QtyKg,
+		arg.Note,
 	)
 	return err
 }

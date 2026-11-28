@@ -43,25 +43,46 @@ type Row struct {
 // the row exists exactly when the save commits. The app role has no UPDATE
 // or DELETE on audit_log: a row is never changed afterwards.
 func Write(ctx context.Context, q *dbq.Queries, r Row) error {
+	p, err := params(r)
+	if err != nil {
+		return err
+	}
+	return q.InsertAuditLog(ctx, p)
+}
+
+// WriteID is Write returning the new row's id (the bigserial audit_log.id),
+// for a save that names its audit row afterwards (the price undo token, M4 D4).
+func WriteID(ctx context.Context, q *dbq.Queries, r Row) (int64, error) {
+	p, err := params(r)
+	if err != nil {
+		return 0, err
+	}
+	// The conversion holds while InsertAuditLog and InsertAuditLogID keep
+	// identical parameters (audit.sql says so on both).
+	return q.InsertAuditLogID(ctx, dbq.InsertAuditLogIDParams(p))
+}
+
+// params is r as the insert's parameters, with the Row defaults applied.
+func params(r Row) (dbq.InsertAuditLogParams, error) {
 	changes, err := encode(r.Changes)
 	if err != nil {
-		return fmt.Errorf("audit: changes: %w", err)
+		return dbq.InsertAuditLogParams{}, fmt.Errorf("audit: changes: %w", err)
 	}
 	if changes == nil {
 		changes = []byte("[]")
 	}
 	oldValues, err := encode(r.OldValues)
 	if err != nil {
-		return fmt.Errorf("audit: old values: %w", err)
+		return dbq.InsertAuditLogParams{}, fmt.Errorf("audit: old values: %w", err)
 	}
 	newValues, err := encode(r.NewValues)
 	if err != nil {
-		return fmt.Errorf("audit: new values: %w", err)
+		return dbq.InsertAuditLogParams{}, fmt.Errorf("audit: new values: %w", err)
 	}
 	if r.Source == "" {
 		r.Source = dbq.RecordSourceManual
 	}
-	return q.InsertAuditLog(ctx, dbq.InsertAuditLogParams{
+	return dbq.InsertAuditLogParams{
 		At:              r.At,
 		UserID:          r.UserID,
 		Action:          r.Action,
@@ -80,7 +101,7 @@ func Write(ctx context.Context, q *dbq.Queries, r Row) error {
 		NewValues:       newValues,
 		Source:          r.Source,
 		VoiceTranscript: r.VoiceTranscript,
-	})
+	}, nil
 }
 
 // encode is v as JSON, or nil when v is nil or encodes as null (a nil slice,

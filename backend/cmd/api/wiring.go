@@ -14,7 +14,10 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/config"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/tokens"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/prices"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/series"
 )
 
 // app is `api serve` wired by hand: config → slog → pools (done by runServe)
@@ -37,6 +40,12 @@ func newApp(cfg config.Config, log *slog.Logger, clock timex.Clock, pools *db.Po
 		return nil, fmt.Errorf("wiring: %w", err)
 	}
 
+	// Signing keys (SPEC §8.5): one per token kind, derived from APP_SECRET.
+	undoKey, err := tokens.DeriveKey(cfg.AppSecret, tokens.PurposeUndo)
+	if err != nil {
+		return nil, fmt.Errorf("wiring: undo key: %w", err)
+	}
+
 	// Services.
 	store := db.NewStore(pools.App)
 	authService := auth.NewService(store, clock)
@@ -50,6 +59,8 @@ func newApp(cfg config.Config, log *slog.Logger, clock timex.Clock, pools *db.Po
 		farms:   farms.NewHandler(farms.NewService(store, clock)),
 		entries: entries.NewHandler(entries.NewService(store, clock)),
 		reports: reports.NewHandler(reports.NewService(store, clock)),
+		series:  series.NewHandler(series.NewService(store, clock)),
+		prices:  prices.NewHandler(prices.NewService(store, clock, undoKey)),
 	})
 
 	return &app{

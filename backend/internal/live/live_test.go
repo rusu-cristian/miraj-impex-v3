@@ -4,14 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/num"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
 )
@@ -176,5 +180,130 @@ func TestEntryCreatedNilLists(t *testing.T) {
 	}
 	if ev.Type != "entry.created" || ev.FarmIDs == nil {
 		t.Errorf("event = %s %v", ev.Type, ev.FarmIDs)
+	}
+}
+
+// priceKeys are the key fragments a live payload must never hold (M4 D2):
+// the outbox has no role filter before M11.
+var priceKeys = []string{"lei", "price", "total", "cost", "pricedby"}
+
+// noPriceKey fails when any key of the JSON value b (at any depth) holds a
+// price fragment.
+func noPriceKey(t *testing.T, b []byte) {
+	t.Helper()
+	var v any
+	if err := json.Unmarshal(b, &v); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range priceKeyPaths("$", v) {
+		t.Errorf("%s: price key in a live payload %s", path, b)
+	}
+}
+
+// priceKeyPaths lists the paths of the keys in v that hold a price fragment.
+func priceKeyPaths(path string, v any) []string {
+	var out []string
+	switch x := v.(type) {
+	case map[string]any:
+		for k, e := range x {
+			if slices.ContainsFunc(priceKeys, func(frag string) bool { return strings.Contains(strings.ToLower(k), frag) }) {
+				out = append(out, path+"."+k)
+			}
+			out = append(out, priceKeyPaths(path+"."+k, e)...)
+		}
+	case []any:
+		for i, e := range x {
+			out = append(out, priceKeyPaths(path+"["+strconv.Itoa(i)+"]", e)...)
+		}
+	}
+	return out
+}
+
+// TestM4Payloads: delivery.created and price.set / price.changed carry the
+// §9 fields only, numbers as JSON numbers, no lei.
+func TestM4Payloads(t *testing.T) {
+	entry := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	d1 := uuid.MustParse("33333333-3333-3333-3333-333333333331")
+	d2 := uuid.MustParse("33333333-3333-3333-3333-333333333332")
+	other := uuid.MustParse("11111111-1111-1111-1111-111111111112")
+	for _, tc := range []struct {
+		name  string
+		ev    Event
+		typ   string
+		farms []uuid.UUID
+		want  string
+	}{
+		{"delivery.created", DeliveryCreated(DeliveryPayload{
+			EntryID: entry, FarmID: farm, FeedType: "Breeder 2", Kg: num.MustParse("9000.5"), Date: timex.MustDay(2026, 11, 12),
+		}), TypeDeliveryCreated, []uuid.UUID{farm},
+			`{"entryId":"22222222-2222-2222-2222-222222222222","farmId":"11111111-1111-1111-1111-111111111111","feedType":"Breeder 2","kg":9000.5,"date":"2026-11-12"}`},
+		{"price.set", PriceSet([]uuid.UUID{farm, other}, []uuid.UUID{d1, d2}, decimal.RequireFromString("18160.0")),
+			TypePriceSet, []uuid.UUID{farm, other},
+			`{"deliveryIds":["33333333-3333-3333-3333-333333333331","33333333-3333-3333-3333-333333333332"],"count":2,"kg":18160}`},
+		{"price.changed", PriceChanged([]uuid.UUID{farm}, []uuid.UUID{d1}, decimal.RequireFromString("25640")),
+			TypePriceChanged, []uuid.UUID{farm},
+			`{"deliveryIds":["33333333-3333-3333-3333-333333333331"],"count":1,"kg":25640}`},
+		{"price.changed, nil lists", PriceChanged(nil, nil, decimal.Zero), TypePriceChanged, []uuid.UUID{},
+			`{"deliveryIds":[],"count":0,"kg":0}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			b, err := json.Marshal(tc.ev.Payload)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(b) != tc.want {
+				t.Errorf("payload = %s\nwant      %s", b, tc.want)
+			}
+			if tc.ev.Type != tc.typ || tc.ev.FarmIDs == nil || !slices.Equal(tc.ev.FarmIDs, tc.farms) {
+				t.Errorf("event = %s %v, want %s %v", tc.ev.Type, tc.ev.FarmIDs, tc.typ, tc.farms)
+			}
+			noPriceKey(t, b)
+		})
+	}
+}
+
+// TestPriceKeyPathsCatchesLei: the walker itself finds price keys at depth.
+func TestPriceKeyPathsCatchesLei(t *testing.T) {
+	var v any
+	if err := json.Unmarshal([]byte(`{"deliveryIds":[],"rows":[{"kg":1,"totalLei":1}],"pricePerKg":2}`), &v); err != nil {
+		t.Fatal(err)
+	}
+	got := priceKeyPaths("$", v)
+	slices.Sort(got)
+	if want := []string{"$.pricePerKg", "$.rows[0].totalLei"}; !slices.Equal(got, want) {
+		t.Errorf("paths = %v, want %v", got, want)
+	}
+}
+
+// TestEmitM4Events: the M4 events go through the outbox like entry.created.
+func TestEmitM4Events(t *testing.T) {
+	ctx := context.Background()
+	d := testdb.New(t)
+	evs := []Event{
+		DeliveryCreated(DeliveryPayload{EntryID: uuid.New(), FarmID: farm, FeedType: "Cocoși", Kg: num.FromInt(1000), Date: testdb.Today}),
+		PriceSet([]uuid.UUID{farm}, []uuid.UUID{uuid.New()}, decimal.NewFromInt(1000)),
+		PriceChanged([]uuid.UUID{farm}, []uuid.UUID{uuid.New()}, decimal.NewFromInt(1000)),
+	}
+	if err := Emit(ctx, dbq.New(d.App), evs...); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := d.App.Query(ctx, `select type, payload::text from live_event order by id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var types []string
+	for rows.Next() {
+		var typ, payload string
+		if err := rows.Scan(&typ, &payload); err != nil {
+			t.Fatal(err)
+		}
+		types = append(types, typ)
+		noPriceKey(t, []byte(payload))
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"delivery.created", "price.set", "price.changed"}; !slices.Equal(types, want) {
+		t.Errorf("types = %v, want %v", types, want)
 	}
 }

@@ -10,10 +10,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
+	"net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -23,6 +25,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/auth"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
@@ -89,7 +92,7 @@ func newSeededStack(t testing.TB) *stack {
 
 func newStackOn(t testing.TB, d *testdb.DB, opts ...func(*config.Config)) *stack {
 	t.Helper()
-	cfg := config.Config{Env: config.Dev, AppOrigin: testOrigin, LogFormat: config.FormatJSON}
+	cfg := config.Config{Env: config.Dev, AppOrigin: testOrigin, AppSecret: testAppSecret, LogFormat: config.FormatJSON}
 	for _, o := range opts {
 		o(&cfg)
 	}
@@ -103,9 +106,10 @@ func newStackOn(t testing.TB, d *testdb.DB, opts ...func(*config.Config)) *stack
 	return &stack{d: d, app: a, srv: srv}
 }
 
-// call is one request. Writes (POST) get Origin: APP_ORIGIN and
-// Content-Type: application/json by default; every request gets a fresh
-// X-Request-ID. header is applied last; an empty value removes the header.
+// call is one request. Writes (POST, PUT, PATCH, DELETE) get Origin:
+// APP_ORIGIN and Content-Type: application/json by default; every request
+// gets a fresh X-Request-ID. header is applied last; an empty value removes
+// the header.
 type call struct {
 	method, path, body string
 	cookie             string // il_session value; "" sends no cookie
@@ -137,7 +141,8 @@ func (s *stack) do(t testing.TB, c call) response {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.method == http.MethodPost {
+	switch c.method {
+	case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
 		req.Header.Set("Origin", testOrigin)
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -277,6 +282,49 @@ var nullableFields = map[string]bool{
 	"stock[].forSex":   true,
 	"stock[].daysLeft": true,
 	"stock[].runOut":   true,
+
+	// GET /api/reports/feed Livrări and Cost (§7.12, M4 D2, D6, Q6–Q8): the
+	// last page has no cursor; lastBefore only when the range is empty; a
+	// type for both sexes; an unpriced row has no price, no pricer and no
+	// time, a migrated price no time; a growth cycle has no eggs and no lei
+	// per egg, a cycle without birds no lei per bird; every delivery of a
+	// cycle priced.
+	"deliveries.nextCursor":        true,
+	"deliveries.lastBefore":        true,
+	"deliveries.rows[].forSex":     true,
+	"deliveries.rows[].pricePerKg": true,
+	"deliveries.rows[].totalLei":   true,
+	"deliveries.rows[].pricedBy":   true,
+	"deliveries.rows[].pricedAt":   true,
+	"cost.cycles[].eggs":           true,
+	"cost.cycles[].leiPerBird":     true,
+	"cost.cycles[].leiPerEgg":      true,
+	"cost.cycles[].unpriced":       true,
+	"cost.total.leiPerBird":        true,
+	"cost.total.leiPerEgg":         true,
+
+	// GET /api/deliveries?priced=false (§7.13, M4 Q10): a type for both sexes.
+	"items[].forSex": true,
+
+	// GET /api/series/{id}/page (§7.3, M4 Q2–Q5): a closed series has no
+	// week today; no placement event (Seria 2025); a farm panel without a
+	// cycle of the series, without a guide, its cycle still open. The
+	// panels' stats are the §7.6 stats: init below adds their paths.
+	"saptToday":             true,
+	"placement.placed":      true,
+	"farms[].cycle":         true,
+	"farms[].cycle.endDate": true,
+}
+
+// init allows under the series page's farms[].stats[] every null
+// the summary allows under stats[] (M4 Q3: the panels carry that cycle's
+// §7.6 stats unchanged).
+func init() {
+	for path := range maps.Clone(nullableFields) {
+		if strings.HasPrefix(path, "stats[].") {
+			nullableFields["farms[]."+path] = true
+		}
+	}
 }
 
 // nullable reports whether nullableFields allows a null at path (array
@@ -328,6 +376,60 @@ func nullLists(body string) ([]string, error) {
 	walk(v, "")
 	slices.Sort(out)
 	return out, nil
+}
+
+// priceKeys returns the path of every price in the JSON document body: a key
+// pricePerKg, totalLei, cost, price… or lei…, and any string holding "fără
+// preț". A viewer's (and a vet's) responses must have none (SPEC §7.0a "never
+// sent", D64, D200, M4 D2).
+func priceKeys(body string) ([]string, error) {
+	var v any
+	if err := json.Unmarshal([]byte(body), &v); err != nil {
+		return nil, err
+	}
+	var out []string
+	var walk func(v any, path string)
+	walk = func(v any, path string) {
+		switch v := v.(type) {
+		case string:
+			if strings.Contains(v, "fără preț") {
+				out = append(out, path)
+			}
+		case map[string]any:
+			for k, e := range v {
+				p := k
+				if path != "" {
+					p = path + "." + k
+				}
+				if k == "cost" || k == "totalLei" || strings.HasPrefix(k, "price") || strings.HasPrefix(k, "lei") {
+					out = append(out, p)
+				}
+				walk(e, p)
+			}
+		case []any:
+			for i, e := range v {
+				walk(e, fmt.Sprintf("%s[%d]", path, i))
+			}
+		}
+	}
+	walk(v, "")
+	slices.Sort(out)
+	return out, nil
+}
+
+// noPrices fails if r's JSON body carries a price (priceKeys); a body of
+// another type (/healthz's "ok") has none.
+func noPrices(t testing.TB, what string, r response) {
+	t.Helper()
+	if !strings.HasPrefix(r.header.Get("Content-Type"), "application/json") {
+		return
+	}
+	keys, err := priceKeys(r.body)
+	if err != nil {
+		t.Errorf("%s: JSON body %q: %v", what, r.body, err)
+	} else if len(keys) > 0 {
+		t.Errorf("%s: a price for a caller who may not see prices at %v: %s", what, keys, r.body)
+	}
 }
 
 // exec runs fixture SQL as il_app.
@@ -1003,7 +1105,10 @@ func TestEveryWriteRouteChecksContentType(t *testing.T) {
 			}
 		}
 	}
-	for _, want := range []string{"POST /api/auth/login", "POST /api/auth/logout", "POST /api/entries/feed-daily"} {
+	for _, want := range []string{
+		"POST /api/auth/login", "POST /api/auth/logout", "POST /api/entries/feed-daily", "POST /api/entries/delivery",
+		"POST /api/deliveries/prices", "POST /api/deliveries/prices/undo", "PATCH /api/deliveries/{id}/price",
+	} {
 		if !slices.Contains(checked, want) {
 			t.Errorf("checked %q; the walk missed %s", checked, want)
 		}
@@ -1112,17 +1217,33 @@ func seededSession(t testing.TB, s *stack, login string) seededReader {
 // Cache-Control: no-store. The viewer is refused the form (FORBIDDEN). The
 // vet gets the bootstrap and his farm's form, and is refused the pages,
 // Consum, the Stoc report and another farm's form (FARM_FORBIDDEN).
+//
+// M4: the same callers read both series pages, every page of Livrări (82
+// deliveries, cursor to cursor), Telița's empty interval (lastBefore), the
+// Livrare hrană form (manager, owner; the viewer is refused) and the S12
+// list (the owner only); the vet is refused all of them. No response to the
+// viewer or the vet carries a price (noPrices, M4 D2).
 func TestFarmReadsOnSeededData(t *testing.T) {
 	t.Parallel()
 	s := newSeededStack(t)
 	hirb, tel := seededFarm(t, s, "hirbovat"), seededFarm(t, s, "telita")
+	series := seededSeries(t, s)
 	get := func(t *testing.T, u seededReader, path string, want int) response {
 		t.Helper()
 		r := s.do(t, call{method: http.MethodGet, path: path, cookie: u.token})
 		if r.status != want {
 			t.Fatalf("%s as %s: %s, want %d", path, u.login, r, want)
 		}
+		if u.login == "observator" || u.login == "dr.ceban" {
+			noPrices(t, path+" as "+u.login, r)
+		}
 		return r
+	}
+	refused := func(t *testing.T, u seededReader, path, code string) {
+		t.Helper()
+		if got := errorCode(t, get(t, u, path, http.StatusForbidden)); got != code {
+			t.Errorf("%s as %s: code %s, want %s", path, u.login, got, code)
+		}
 	}
 
 	for _, login := range []string{"proprietar", "ion.rusu", "observator"} {
@@ -1179,6 +1300,40 @@ func TestFarmReadsOnSeededData(t *testing.T) {
 				get(t, u, table+q, http.StatusOK)
 			}
 			get(t, u, "/api/farms/"+hirb.String()+"/summary?period=weeks:4", http.StatusOK)
+
+			// M4: series pages, Livrări pages, the empty interval, Livrare
+			// hrană form, S12 list.
+			for _, id := range series {
+				get(t, u, "/api/series/"+id.String()+"/page", http.StatusOK)
+			}
+			if n := deliveryPages(t, func(path string) response { return get(t, u, path, http.StatusOK) }, "/api/reports/feed?"); n != 82 {
+				t.Errorf("Livrări as %s: %d rows over every page, want 82", login, n)
+			}
+			empty := decodeBody[struct {
+				Deliveries struct {
+					Total      int `json:"total"`
+					LastBefore *struct {
+						Date string `json:"date"`
+						Type string `json:"type"`
+					} `json:"lastBefore"`
+				} `json:"deliveries"`
+			}](t, get(t, u, "/api/reports/feed?farmId="+tel.String()+"&period=interval:2026-03-01,2026-11-18", http.StatusOK))
+			if d := empty.Deliveries; d.Total != 0 || d.LastBefore == nil || d.LastBefore.Date != "2026-02-10" || d.LastBefore.Type != "Pre-ouat" {
+				t.Errorf("Telița 01.03–18.11 as %s: %+v, want none and the last one on 10.02 (Pre-ouat)", login, d)
+			}
+			for _, farm := range []uuid.UUID{hirb, tel} {
+				form := "/api/forms/delivery?farmId=" + farm.String()
+				if login == "observator" {
+					refused(t, u, form, httpx.CodeForbidden)
+				} else {
+					get(t, u, form, http.StatusOK)
+				}
+			}
+			if login == "proprietar" {
+				get(t, u, "/api/deliveries?priced=false", http.StatusOK)
+			} else {
+				refused(t, u, "/api/deliveries?priced=false", httpx.CodeForbidden)
+			}
 		})
 	}
 
@@ -1201,6 +1356,58 @@ func TestFarmReadsOnSeededData(t *testing.T) {
 	if code := errorCode(t, get(t, vet, telForm, http.StatusForbidden)); code != httpx.CodeFarmForbidden {
 		t.Errorf("%s as the vet: code %s, want %s", telForm, code, httpx.CodeFarmForbidden)
 	}
+	// M4: no series page, Livrare hrană or Prețuri for the vet.
+	for _, path := range []string{
+		"/api/series/" + series[0].String() + "/page", "/api/forms/delivery?farmId=" + hirb.String(), "/api/deliveries?priced=false",
+	} {
+		refused(t, vet, path, httpx.CodeForbidden)
+	}
+}
+
+// seededSeries are the ids of the seeded series, oldest first (Seria 2025,
+// Seria 2026).
+func seededSeries(t testing.TB, s *stack) []uuid.UUID {
+	t.Helper()
+	rows, err := s.d.App.Query(context.Background(), `select id from series order by year`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if err != nil || len(ids) != 2 {
+		t.Fatalf("seeded series: %v, %v; want 2", ids, err)
+	}
+	return ids
+}
+
+// deliveryPages reads Livrări from base ("/api/reports/feed?…&") page by
+// page through nextCursor and returns how many rows it saw; it fails on a
+// row seen twice.
+func deliveryPages(t testing.TB, get func(path string) response, base string) int {
+	t.Helper()
+	seen := map[uuid.UUID]bool{}
+	path := base
+	for range 100 {
+		page := decodeBody[struct {
+			Deliveries struct {
+				Rows []struct {
+					ID uuid.UUID `json:"id"`
+				} `json:"rows"`
+				NextCursor *string `json:"nextCursor"`
+			} `json:"deliveries"`
+		}](t, get(path))
+		for _, r := range page.Deliveries.Rows {
+			if seen[r.ID] {
+				t.Errorf("%s: delivery %s again", path, r.ID)
+			}
+			seen[r.ID] = true
+		}
+		if page.Deliveries.NextCursor == nil {
+			return len(seen)
+		}
+		path = base + "cursor=" + url.QueryEscape(*page.Deliveries.NextCursor)
+	}
+	t.Fatalf("%s: more than 100 pages", base)
+	return 0
 }
 
 // cycleDay is a day inside the seeded cycle: its start + 30 days, or its last
@@ -1215,14 +1422,19 @@ func cycleDay(t *testing.T, s *stack, cycleID uuid.UUID) timex.Day {
 	return day
 }
 
-// BenchmarkFarmReads times the M2 reads and the M3 feed routes through the
+// BenchmarkFarmReads times the M2 reads and the M3 and M4 routes through the
 // whole server (socket, middleware, session check, service, SQL, JSON) on the
 // seeded database, the owner on Hîrbovăț's open cycle (SAPT 20–59) and
 // Telița's growth cycle. It reports the p50 and p95 per request against SPEC
 // §11.6 (table page ≤ 300 ms, load-more ≤ 200 ms, summary ≤ 400 ms, save ≤
-// 300 ms). The feed save is a real save of Hîrbovăț's 18.11.2026 rows, its dry
-// run the same save rolled back: before each one (outside the timed request)
-// the day's live entry is soft-deleted.
+// 300 ms; the series page and Rapoarte › Hrană are page reads, held to the
+// summary's 400 ms). The feed save is a real save of Hîrbovăț's 18.11.2026
+// rows, its dry run the same save rolled back: before each one (outside the
+// timed request) the day's live entry is soft-deleted. The delivery save adds
+// a new 9 000 kg delivery each time (two of one day are legal); the price
+// save prices the seeded 12.11 delivery, whose price is cleared before each
+// one (outside the timed request). The writes run last, so the reads see the
+// seed as it is.
 // Run it without -race:
 //
 //	go test -run '^$' -bench FarmReads -benchtime 200x ./cmd/api
@@ -1232,6 +1444,28 @@ func BenchmarkFarmReads(b *testing.B) {
 	hirb, tel := hirbID.String(), seededFarm(b, s, "telita").String()
 	owner := seededSession(b, s, "proprietar")
 	feedSave := seededFeedDay(b, s, hirbID)
+	seria2026 := seededSeries(b, s)[1].String()
+	ctx := context.Background()
+	var cursor, breeder2 string
+	var unpriced uuid.UUID
+	if err := s.d.App.QueryRow(ctx, `select fd.id, ft.id::text from feed_delivery fd join feed_type ft on ft.id = fd.feed_type_id
+		where fd.farm_id = $1 and fd.date = '2026-11-12' and ft.name = 'Breeder 2' and fd.total_lei is null and fd.deleted_at is null`,
+		hirbID).Scan(&unpriced, &breeder2); err != nil {
+		b.Fatal(err)
+	}
+	first := decodeBody[struct {
+		Deliveries struct {
+			NextCursor *string `json:"nextCursor"`
+		} `json:"deliveries"`
+	}](b, s.do(b, call{method: http.MethodGet, path: "/api/reports/feed", cookie: owner.token}))
+	if first.Deliveries.NextCursor == nil {
+		b.Fatal("reports/feed: no second page")
+	}
+	cursor = url.QueryEscape(*first.Deliveries.NextCursor)
+	unprice := func() {
+		s.exec(b, `update feed_delivery set price_per_kg = null, total_lei = null, price_input = null, priced_by = null,
+			priced_at = null where id = $1`, unpriced)
+	}
 
 	for _, bc := range []struct {
 		name, method, path, body string
@@ -1255,6 +1489,15 @@ func BenchmarkFarmReads(b *testing.B) {
 		{name: "reports-feed", path: "/api/reports/feed"},
 		{name: "consum-page", path: "/api/table?view=report-feed&farmId=" + hirb},
 		{name: "consum-load-more", path: "/api/table?view=report-feed&farmId=" + hirb + "&before=56"},
+		// M4.
+		{name: "series-page", path: "/api/series/" + seria2026 + "/page"},
+		{name: "reports-feed-cursor", path: "/api/reports/feed?cursor=" + cursor},
+		{name: "delivery-form", path: "/api/forms/delivery?farmId=" + hirb},
+		{name: "unpriced-list", path: "/api/deliveries?priced=false"},
+		{name: "delivery-save", method: http.MethodPost, path: deliveryPath, status: http.StatusCreated,
+			body: `{"farmId":"` + hirb + `","date":"2026-11-18","feedTypeId":"` + breeder2 + `","qtyKg":9000}`},
+		{name: "price-save", method: http.MethodPost, path: "/api/deliveries/prices", before: unprice,
+			body: `{"items":[{"id":"` + unpriced.String() + `","pricePerKg":7.74}]}`},
 	} {
 		b.Run(bc.name, func(b *testing.B) {
 			method, status := cmp.Or(bc.method, http.MethodGet), cmp.Or(bc.status, http.StatusOK)
@@ -1334,5 +1577,33 @@ func TestNullLists(t *testing.T) {
 	}
 	if _, err := nullLists(`{"a":`); err == nil {
 		t.Error("nullLists accepted malformed JSON")
+	}
+}
+
+func TestPriceKeys(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		body string
+		want []string
+	}{
+		{`{"deliveries":{"rows":[{"id":"x","kg":9000,"forSex":null}],"unpriced":{"count":4}}}`, nil},
+		{`{"deliveries":{"rows":[{"kg":9000,"pricePerKg":null,"totalLei":null,"pricedBy":null,"pricedAt":null}]}}`,
+			[]string{"deliveries.rows[0].pricePerKg", "deliveries.rows[0].pricedAt", "deliveries.rows[0].pricedBy", "deliveries.rows[0].totalLei"}},
+		{`{"cost":{"cycles":[]},"stock":[]}`, []string{"cost"}},
+		{`{"cycles":[{"lei":1,"leiPerBird":2,"kg":3}]}`, []string{"cycles[0].lei", "cycles[0].leiPerBird"}},
+		{`{"rows":[{"tag":"fără preț"}],"toast":"Livrare adăugată · 9 000 kg · fără preț"}`, []string{"rows[0].tag", "toast"}},
+		// Words that only look alike pass: a "pret" chip, a "layPct" key.
+		{`{"recordTypes":["pret"],"layPct":81.2,"label":"Prețuri"}`, nil},
+	} {
+		got, err := priceKeys(tc.body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(got, tc.want) {
+			t.Errorf("priceKeys(%s) = %q, want %q", tc.body, got, tc.want)
+		}
+	}
+	if _, err := priceKeys(`{"a":`); err == nil {
+		t.Error("priceKeys accepted malformed JSON")
 	}
 }

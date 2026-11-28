@@ -87,3 +87,30 @@ order by s.id, sx.sex;
 insert into feed_allocation (entry_id, farm_id, section_id, date, sex, feed_type_id, g_per_bird)
 values (sqlc.arg(entry_id), sqlc.arg(farm_id), sqlc.arg(section_id), sqlc.arg(date), sqlc.arg(sex),
         sqlc.arg(feed_type_id), sqlc.arg(g_per_bird));
+
+-- name: EntriesDeliveryRefs :one
+-- What the level-1 checks of a Livrare hrană save name (§6.7, M4 D5), read before the transaction: the farm's name
+-- and the asked feed type's name (null when no such type, active or not). No row = no such farm.
+select f.name as farm_name, ft.name as feed_type_name
+from farm f
+left join feed_type ft on ft.id = sqlc.arg(feed_type_id)::uuid
+where f.id = sqlc.arg(farm_id)::uuid;
+
+-- name: EntriesDeliverySaveContext :one
+-- The context of a Livrare hrană save (§6.7, M4 D5), read under the farm lock: the farm's name, the closed series
+-- whose cycle contains the day (closed_series_on, 0003; '' when none: an open series, or a day between cycles such
+-- as a pre-stocking delivery; closed → 409 SERIES_CLOSED, §3.1), and the asked feed type (null columns when it
+-- doesn't exist; inactive → the "e retras" refusal). No row = no such farm.
+select f.name as farm_name,
+       coalesce(closed_series_on(f.id, sqlc.arg(day)::date), '')::text as closed_series,
+       ft.name as feed_type_name,
+       ft.active as feed_type_active
+from farm f
+left join feed_type ft on ft.id = sqlc.arg(feed_type_id)::uuid
+where f.id = sqlc.arg(farm_id)::uuid;
+
+-- name: EntriesInsertFeedDelivery :exec
+-- One Livrare hrană row (§4.8, §6.7). A new delivery has no price: the owner sets it in Prețuri (§6.8, M4 Q9).
+insert into feed_delivery (entry_id, farm_id, feed_type_id, date, qty_kg, note)
+values (sqlc.arg(entry_id), sqlc.arg(farm_id), sqlc.arg(feed_type_id), sqlc.arg(date), sqlc.arg(qty_kg),
+        sqlc.narg(note));

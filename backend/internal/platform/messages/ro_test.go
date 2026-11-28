@@ -368,3 +368,151 @@ func TestM3UnknownSexPanics(t *testing.T) {
 		})
 	}
 }
+
+// TestStockWouldGoNegativeCOR4: a stock below 0 shows whole kg, one decimal
+// when whole kg round to 0, and never reads as 0 (COR-4, M4 D9).
+func TestStockWouldGoNegativeCOR4(t *testing.T) {
+	const head = "Stocul de Breeder 2 la Hîrbovăț ar ajunge la "
+	for _, tc := range []struct{ kg, want string }{
+		{"-1240", "−1 240 kg"},
+		{"-1240.3", "−1 240 kg"},
+		{"-0.6", "−1 kg"},
+		{"-0.5", "−1 kg"},
+		{"-0.45", "−0,5 kg"},
+		{"-0.3", "−0,3 kg"},
+		{"-0.05", "−0,1 kg"},
+		{"-0.04", "−0,1 kg"},
+		{"-0.0001", "−0,1 kg"},
+		{"0", "0 kg"},
+	} {
+		want := head + tc.want + ". Verifică livrările."
+		if got := StockWouldGoNegative("Breeder 2", "Hîrbovăț", dec(tc.kg)); got != want {
+			t.Errorf("%s: got %q, want %q", tc.kg, got, want)
+		}
+	}
+	// Every negative stock from −0,0001 to −2 kg reads as a negative figure.
+	for i := int64(1); i <= 20000; i++ {
+		got := StockWouldGoNegative("Breeder 2", "Hîrbovăț", decimal.New(-i, -4))
+		if !strings.HasPrefix(got, head+"−") || strings.Contains(got, "−0 kg") || strings.Contains(got, "−0,0 kg") {
+			t.Fatalf("%s: %q", decimal.New(-i, -4), got)
+		}
+	}
+}
+
+// TestM4Strings checks the M4 copy byte for byte (U+202F thousands, U+2212
+// minus, U+2013 en dash spelled out as escapes). inSpec marks the strings
+// SPEC.md quotes (plain spaces for U+202F): the board copy (S11, S12, S13)
+// and the plan's (proposed) copy (M4 Q10–Q12, Q15, T7); the others are
+// variants (plurals, decimals, one day) of a quoted string.
+func TestM4Strings(t *testing.T) {
+	spec, err := os.ReadFile(specPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := func(s string) timex.Day { return mustDay(t, s) }
+	for _, tc := range []struct {
+		name   string
+		got    string
+		want   string
+		inSpec bool
+	}{
+		// S13 Livrare hrană.
+		{"DeliveryQtyRequired", DeliveryQtyRequired("Breeder 2", "Hîrbovăț"), "Scrie câte kg de Breeder 2 s-au livrat la Hîrbovăț.", true},
+		{"PriceForbidden", PriceForbidden(), "Prețul îl adaugă proprietarul în Prețuri hrană.", true},
+		{"DeliveryAdded", DeliveryAdded(dec("9000"), "Breeder 2", "Hîrbovăț", dec("25140")), "Livrare adăugată · 9 000 kg Breeder 2 · stoc Hîrbovăț: 25 140 kg · fără preț", true},
+		{"DeliveryAdded seed re-save", DeliveryAdded(dec("9000.0"), "Breeder 2", "Hîrbovăț", dec("21119.3")), "Livrare adăugată · 9 000 kg Breeder 2 · stoc Hîrbovăț: 21 119 kg · fără preț", false},
+		{"DeliveryAdded decimal kg, negative stock", DeliveryAdded(dec("1000.5"), "Pre-ouat", "Telița", dec("-716")), "Livrare adăugată · 1 000,5 kg Pre-ouat · stoc Telița: −716 kg · fără preț", false},
+		{"DeliverySummary", DeliverySummary(dec("9000.0"), "Breeder 2"), "Livrare · 9 000 kg Breeder 2", true},
+		{"DeliverySummary decimal", DeliverySummary(dec("850.5"), "Cocoși"), "Livrare · 850,5 kg Cocoși", false},
+		// S12 Prețuri hrană.
+		{"PricesSaved", PricesSaved(4, dec("18160.0")), "Prețuri salvate · 4 livrări · 18 160 kg intră în cost", true},
+		{"PricesSaved one", PricesSaved(1, dec("9000")), "Prețuri salvate · 1 livrare · 9 000 kg intră în cost", false},
+		{"PricesSaved 20", PricesSaved(20, dec("120000")), "Prețuri salvate · 20 de livrări · 120 000 kg intră în cost", false},
+		{"PricesSummary", PricesSummary(4, dec("18160")), "Prețuri · 4 livrări · 18 160 kg", true},
+		{"PricePerKgNotPositive", PricePerKgNotPositive("Cocoși", d("2026-02-17")), "Cocoși 17.02.2026: scrie un preț mai mare de 0 lei/kg", true},
+		{"TotalLeiNotPositive", TotalLeiNotPositive("Cocoși", d("2026-02-17")), "Cocoși 17.02.2026: scrie un total mai mare de 0 lei", true},
+		{"PriceBothGiven", PriceBothGiven("Cocoși", d("2026-02-17")), "Cocoși 17.02.2026: scrie prețul pe kg sau totalul, nu amândouă.", true},
+		{"AuditKeyPricePerKg", AuditKeyPricePerKg("Breeder 2", d("2026-11-12")), "Breeder 2 · 12.11.2026 · lei/kg", true},
+		{"AuditKeyTotalLei", AuditKeyTotalLei("Breeder 2", d("2026-11-12")), "Breeder 2 · 12.11.2026 · total lei", true},
+		{"UndoDayEnded", UndoDayEnded(), "Nu se mai poate anula: ziua salvării s-a încheiat.", true},
+		{"PricesUndone", PricesUndone(4), "Prețuri anulate · 4 livrări înapoi fără preț", true},
+		{"PricesUndone one", PricesUndone(1), "Prețuri anulate · 1 livrare înapoi fără preț", false},
+		// S11 Modifică.
+		{"PriceChangeReasonRequired", PriceChangeReasonRequired("Breeder 2", d("2026-11-13"), dec("7.7613"), dec("7.74")), "Breeder 2 13.11.2026: scrie motivul ca să schimbi prețul din 7,76 în 7,74 lei/kg", true},
+		{"PriceChangeReasonRequired derived", PriceChangeReasonRequired("Breeder 2", d("2026-11-13"), dec("7.7613"), dec("8")), "Breeder 2 13.11.2026: scrie motivul ca să schimbi prețul din 7,76 în 8,00 lei/kg", false},
+		{"ReasonTooLong", ReasonTooLong(212, 200), "Motivul are 212 caractere; cel mult 200. Scurtează-l cu 12 ca să poți salva.", true},
+		{"ReasonTooLong 201", ReasonTooLong(201, 200), "Motivul are 201 caractere; cel mult 200. Scurtează-l cu 1 ca să poți salva.", false},
+		{"ReasonTooLong 220", ReasonTooLong(220, 200), "Motivul are 220 de caractere; cel mult 200. Scurtează-l cu 20 ca să poți salva.", false},
+		{"NothingChanged", NothingChanged(), "Nu ai schimbat nicio cifră.", true},
+		// 25 640 × 7,74 = 198 453,60 → 198 454 lei (D72 board).
+		{"PriceChanged", PriceChanged("Breeder 2", d("2026-11-13"), dec("7.74"), dec("198453.60")), "Preț schimbat · Breeder 2 · 13.11.2026 · 7,74 lei/kg · 198 454 lei", true},
+		{"PriceChangeSummary", PriceChangeSummary("Breeder 2", d("2026-11-13")), "Preț schimbat · Breeder 2 · 13.11.2026", true},
+		// Rapoarte › Hrană.
+		{"Unpriced", Unpriced(), "fără preț", true},
+		{"PricedFromRegister", PricedFromRegister(), "din registru", true},
+		{"CostRowLabel", CostRowLabel("Telița", "Seria 2026"), "Telița · Seria 2026", true},
+		{"CostSpanClosed", CostSpanClosed(d("2025-10-07"), d("2026-02-28")), "07.10.2025–28.02.2026", true},
+		{"CostSpanClosed one year", CostSpanClosed(d("2026-03-01"), d("2026-11-18")), "01.03–18.11.2026", false},
+		{"CostSpanOpen", CostSpanOpen(d("2026-02-22"), 59), "din 22.02.2026 · SAPT 59", true},
+		{"UnpricedSpan", UnpricedSpan(d("2026-02-17"), d("2026-11-12")), "17.02–12.11.2026", true},
+		{"UnpricedSpan one day", UnpricedSpan(d("2026-02-17"), d("2026-02-17")), "17.02.2026", false},
+		{"CostNoEggsGrowth", CostNoEggsGrowth(), "creștere, fără ouă", true},
+		{"CostNoEggs", CostNoEggs(), "fără ouă în perioadă", true},
+		{"CostSeriesTotal", CostSeriesTotal("Seria 2026"), "Total Seria 2026", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.got != tc.want {
+				t.Fatalf("got %q, want %q", tc.got, tc.want)
+			}
+			if !tc.inSpec {
+				return
+			}
+			if inSpec := strings.ReplaceAll(tc.want, " ", " "); !strings.Contains(string(spec), `"`+inSpec+`"`) {
+				t.Fatalf("%q is not quoted in SPEC.md", inSpec)
+			}
+		})
+	}
+}
+
+// TestM4BoardStrings checks the S11 Modifică and S12 în lucru sentences
+// against their boards' text, tags stripped.
+func TestM4BoardStrings(t *testing.T) {
+	for _, tc := range []struct{ board, want string }{
+		{"S12-preturi-hrana--in-lucru.dc.html", PricePerKgNotPositive("Cocoși", timex.MustDay(2026, 2, 17))},
+		{"S11-rapoarte-hrana--modifica-pret--eroare.dc.html", PriceChangeReasonRequired("Breeder 2", timex.MustDay(2026, 11, 13), dec("7.7613"), dec("7.74"))},
+	} {
+		b, err := os.ReadFile("../../../../design/canvas/project/" + tc.board)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(boardText(string(b)), tc.want) {
+			t.Errorf("%q is not in %s", tc.want, tc.board)
+		}
+	}
+}
+
+// boardText is a board's HTML with its tags removed (inline spans join their
+// text) and runs of white space collapsed to one space.
+func boardText(html string) string {
+	var b strings.Builder
+	inTag := false
+	for _, r := range html {
+		switch {
+		case r == '<':
+			inTag = true
+		case r == '>':
+			inTag = false
+		case !inTag:
+			b.WriteRune(r)
+		}
+	}
+	return strings.Join(strings.Fields(b.String()), " ")
+}
+
+func TestM4Plurals(t *testing.T) {
+	for n, want := range map[int]string{1: "1 livrare", 4: "4 livrări", 19: "19 livrări", 20: "20 de livrări", 82: "82 de livrări", 101: "101 livrări"} {
+		if got := deliveriesWord(n); got != want {
+			t.Errorf("deliveriesWord(%d) = %q, want %q", n, got, want)
+		}
+	}
+}

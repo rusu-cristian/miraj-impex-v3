@@ -108,6 +108,13 @@ func FarmForbidden() *Error {
 	return NewError(http.StatusForbidden, CodeFarmForbidden, messages.FarmForbidden())
 }
 
+// PriceForbidden is 403 PRICE_FORBIDDEN "Prețul îl adaugă proprietarul în
+// Prețuri hrană.": a manager's delivery with price fields (§6.7) or a manager
+// on a price write (§7.13, M4 Q10).
+func PriceForbidden() *Error {
+	return NewError(http.StatusForbidden, CodePriceForbidden, messages.PriceForbidden())
+}
+
 // NotFound is 404 NOT_FOUND "Adresa cerută nu există.": no route serves the
 // path (MuxFallback). A module whose resource is missing may use it too.
 func NotFound() *Error {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"maps"
 	"net/http"
 	"slices"
 	"strings"
@@ -77,10 +78,13 @@ type matrixCase struct {
 // matrixFarms are the farms TestAuthMatrix creates; their ids exist only at
 // run time, so farm-scoped rows build their paths and bodies from them.
 // section (a compartment of Hîrbovăț, no birds) and feedType (active, ♀) let
-// a Hrană zilnică body pass level 1 and reach the service (M3 T8).
+// a Hrană zilnică or a Livrare hrană body pass level 1 and reach the service
+// (M3 T8, M4 T7). series has a closed cycle on Telița (the viewer's farm),
+// cojusnaSeries one on Cojușna only (the owner's), for the series page.
 type matrixFarms struct {
-	hirb, tel, cojusna uuid.UUID
-	section, feedType  uuid.UUID
+	hirb, tel, cojusna    uuid.UUID
+	section, feedType     uuid.UUID
+	series, cojusnaSeries uuid.UUID
 }
 
 // unknownFarm is a farm id that no farm has.
@@ -157,6 +161,145 @@ var authMatrix = []matrixRow{
 				revoked: 401, expired: 401, deactivated: 401,
 			},
 			code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeFarmForbidden}}}},
+
+	// The series page (§7.3, M4 Q4): viewer, manager and owner, each on a
+	// series with a cycle on one of their farms; vets never reach it (403
+	// FORBIDDEN). A series without a cycle on the caller's farms, or an
+	// unknown one, is 404 NOT_FOUND for every other role (no existence leak).
+	{route: "GET /api/series/{id}/page",
+		path: func(f matrixFarms) string { return seriesPagePath(f.series) },
+		want: map[caller]int{
+			anonymous: 401, vet: 403, viewer: 200, manager: 200, owner: 200,
+			revoked: 401, expired: 401, deactivated: 401,
+		},
+		code: map[caller]string{vet: httpx.CodeForbidden},
+		also: []matrixCase{
+			{name: "Cojușna's series", path: func(f matrixFarms) string { return seriesPagePath(f.cojusnaSeries) },
+				want: map[caller]int{
+					anonymous: 401, vet: 403, viewer: 404, manager: 404, owner: 200,
+					revoked: 401, expired: 401, deactivated: 401,
+				},
+				code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeNotFound, manager: httpx.CodeNotFound}},
+			{name: "unknown series", path: func(matrixFarms) string { return seriesPagePath(unknownFarm) },
+				want: map[caller]int{
+					anonymous: 401, vet: 403, viewer: 404, manager: 404, owner: 404,
+					revoked: 401, expired: 401, deactivated: 401,
+				},
+				code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeNotFound,
+					manager: httpx.CodeNotFound, owner: httpx.CodeNotFound}},
+		}},
+
+	// Livrare hrană (§6.7, §7.8, M4 D5, Q14): manager and owner on their
+	// farms; vets and viewers never (403 FORBIDDEN). The save is a dry run
+	// that passes level 1 and answers 200 (nothing written). A manager's body
+	// with a price field is 403 PRICE_FORBIDDEN, the owner's 400 (M4 Q9).
+	deliveryRow("GET /api/forms/delivery", func(id uuid.UUID) string { return "/api/forms/delivery?farmId=" + id.String() }, nil),
+	withPriceField(deliveryRow("POST /api/entries/delivery", func(uuid.UUID) string { return "/api/entries/delivery" },
+		func(f matrixFarms, farm uuid.UUID) string { return deliveryDryRun(f, farm, "") })),
+
+	// Prețuri hrană (§3.3, §7.13, M4 Q10): the owner's only. The S12 list is
+	// 403 FORBIDDEN for every other role; the writes are 403 PRICE_FORBIDDEN
+	// for a manager ("○ sees, cannot set") and 403 FORBIDDEN for the vet and
+	// the viewer. The owner reaches the service, which refuses the matrix's
+	// requests: an unknown delivery in a batch and a forged undo token → 400,
+	// a change of an unknown delivery → 404.
+	{route: "GET /api/deliveries", path: func(matrixFarms) string { return "/api/deliveries?priced=false" },
+		want: map[caller]int{
+			anonymous: 401, vet: 403, viewer: 403, manager: 403, owner: 200,
+			revoked: 401, expired: 401, deactivated: 401,
+		},
+		code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeForbidden, manager: httpx.CodeForbidden}},
+	priceWriteRow("POST /api/deliveries/prices", "/api/deliveries/prices",
+		`{"items":[{"id":"`+unknownFarm.String()+`","pricePerKg":8}]}`, http.StatusBadRequest, httpx.CodeValidation),
+	priceWriteRow("POST /api/deliveries/prices/undo", "/api/deliveries/prices/undo",
+		`{"undoToken":"nu-e-un-token"}`, http.StatusBadRequest, httpx.CodeValidation),
+	priceWriteRow("PATCH /api/deliveries/{id}/price", "/api/deliveries/"+unknownFarm.String()+"/price",
+		`{"pricePerKg":7.74,"reason":"Factura corectată"}`, http.StatusNotFound, httpx.CodeNotFound),
+}
+
+func seriesPagePath(id uuid.UUID) string { return "/api/series/" + id.String() + "/page" }
+
+// deliveryRow is the row of a Livrare hrană route (form state or dry-run
+// save): path and body build the request for a farm id. Managers and the
+// owner reach the service on their farms: Hîrbovăț (main) for both, Cojușna
+// for the owner only (a manager gets 403 FARM_FORBIDDEN), and an unknown id
+// is 404 for the owner, 403 FARM_FORBIDDEN for a manager. Vets and viewers
+// are refused by role first, everywhere (403 FORBIDDEN).
+func deliveryRow(route string, path func(uuid.UUID) string, body func(matrixFarms, uuid.UUID) string) matrixRow {
+	at := func(pick func(matrixFarms) uuid.UUID) (func(matrixFarms) string, func(matrixFarms) string) {
+		p := func(f matrixFarms) string { return path(pick(f)) }
+		if body == nil {
+			return p, nil
+		}
+		return p, func(f matrixFarms) string { return body(f, pick(f)) }
+	}
+	scoped := func(managerStatus, ownerStatus int) map[caller]int {
+		return map[caller]int{
+			anonymous: 401, vet: 403, viewer: 403, manager: managerStatus, owner: ownerStatus,
+			revoked: 401, expired: 401, deactivated: 401,
+		}
+	}
+	byRole := map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeForbidden}
+	with := func(extra map[caller]string) map[caller]string {
+		m := maps.Clone(byRole)
+		maps.Copy(m, extra)
+		return m
+	}
+	hirbPath, hirbBody := at(func(f matrixFarms) uuid.UUID { return f.hirb })
+	cojPath, cojBody := at(func(f matrixFarms) uuid.UUID { return f.cojusna })
+	unknownPath, unknownBody := at(func(matrixFarms) uuid.UUID { return unknownFarm })
+	return matrixRow{
+		route: route, path: hirbPath, body: hirbBody,
+		want: scoped(200, 200),
+		code: byRole,
+		also: []matrixCase{
+			{name: "Cojușna", path: cojPath, body: cojBody, want: scoped(403, 200),
+				code: with(map[caller]string{manager: httpx.CodeFarmForbidden})},
+			{name: "unknown farm", path: unknownPath, body: unknownBody, want: scoped(403, 404),
+				code: with(map[caller]string{manager: httpx.CodeFarmForbidden, owner: httpx.CodeNotFound})},
+		},
+	}
+}
+
+// withPriceField adds the delivery save with a price field on Hîrbovăț: 403
+// PRICE_FORBIDDEN for the manager, 400 VALIDATION (unknown_field) for the
+// owner (M4 Q9); the vet and the viewer are refused by role first.
+func withPriceField(row matrixRow) matrixRow {
+	row.also = append(row.also, matrixCase{name: "with pricePerKg",
+		path: func(matrixFarms) string { return "/api/entries/delivery" },
+		body: func(f matrixFarms) string { return deliveryDryRun(f, f.hirb, `"pricePerKg":7.74,`) },
+		want: map[caller]int{
+			anonymous: 401, vet: 403, viewer: 403, manager: 403, owner: 400,
+			revoked: 401, expired: 401, deactivated: 401,
+		},
+		code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeForbidden,
+			manager: httpx.CodePriceForbidden, owner: httpx.CodeValidation}})
+	return row
+}
+
+// deliveryDryRun is a Livrare hrană dry run on farm that passes level 1 (M4
+// D5): the matrix's active type, 9 000 kg today; extra is spliced in as
+// members before the others (`"pricePerKg":7.74,`).
+func deliveryDryRun(f matrixFarms, farm uuid.UUID, extra string) string {
+	return `{` + extra + `"farmId":"` + farm.String() + `","date":"2026-11-18","feedTypeId":"` + f.feedType.String() +
+		`","qtyKg":9000,"dryRun":true}`
+}
+
+// priceWriteRow is the row of a Prețuri write: the owner reaches the service
+// (ownerStatus, ownerCode); a manager gets 403 PRICE_FORBIDDEN, the vet and
+// the viewer 403 FORBIDDEN, before the body is read.
+func priceWriteRow(route, path, body string, ownerStatus int, ownerCode string) matrixRow {
+	return matrixRow{
+		route: route,
+		path:  func(matrixFarms) string { return path },
+		body:  func(matrixFarms) string { return body },
+		want: map[caller]int{
+			anonymous: 401, vet: 403, viewer: 403, manager: 403, owner: ownerStatus,
+			revoked: 401, expired: 401, deactivated: 401,
+		},
+		code: map[caller]string{vet: httpx.CodeForbidden, viewer: httpx.CodeForbidden,
+			manager: httpx.CodePriceForbidden, owner: ownerCode},
+	}
 }
 
 // withCases adds other's targets (its main one and its also) to row's also,
@@ -337,6 +480,20 @@ func TestAuthMatrix(t *testing.T) {
 		returning id`).Scan(&ids.feedType); err != nil {
 		t.Fatal(err)
 	}
+	// Series for the series page: one with a closed cycle on Telița, one with
+	// a closed cycle on Cojușna only.
+	cycleSeries := func(name string, year int, farm uuid.UUID, from, to string) uuid.UUID {
+		var id uuid.UUID
+		if err := s.d.App.QueryRow(t.Context(), `insert into series (name, name_key, year, placement_date)
+			values ($1, lower($1), $2, $3) returning id`, name, year, from).Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		s.exec(t, `insert into cycle (series_id, farm_id, start_date, end_date, started_by, ended_by)
+			values ($1, $2, $3, $4, 'auto', 'emptied')`, id, farm, from, to)
+		return id
+	}
+	ids.series = cycleSeries("Seria M", 2026, tel, "2026-01-05", "2026-02-28")
+	ids.cojusnaSeries = cycleSeries("Seria C", 2027, ids.cojusna, "2026-03-02", "2026-04-30")
 	accounts := map[caller]account{}
 	add := func(c caller, login, name string, role dbq.UserRole, active bool, farms []uuid.UUID, names ...string) {
 		accounts[c] = account{id: s.user(t, login, name, role, active, farms...), login: login, role: string(role), farms: names}
@@ -414,6 +571,9 @@ func TestAuthMatrix(t *testing.T) {
 					if row.stockFarms && mc.name == "" && r.status == http.StatusOK {
 						checkStockFarms(t, accounts[c], r)
 					}
+					if (c == viewer || c == vet) && r.status == http.StatusOK {
+						noPrices(t, name+" as "+string(c), r) // D2: never sent
+					}
 				})
 			}
 		}
@@ -483,7 +643,7 @@ func checkStockFarms(t *testing.T, a account, r response) {
 func TestAuthMatrixCatchesMissingRow(t *testing.T) {
 	t.Parallel()
 	log := slog.New(slog.NewJSONHandler(io.Discard, nil))
-	a, err := newApp(config.Config{AppOrigin: testOrigin}, log, timex.FixedClock(testdb.Now()), &db.Pools{})
+	a, err := newApp(config.Config{AppOrigin: testOrigin, AppSecret: testAppSecret}, log, timex.FixedClock(testdb.Now()), &db.Pools{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -117,3 +117,18 @@ left join yesterday y on y.section_id = l.id and y.sex = l.sex
 left join last_type lt on lt.section_id = l.id and lt.sex = l.sex
 left join today e on e.section_id = l.id and e.sex = l.sex
 order by l.hall_sort, l.hall_code, l.sort_order, l.code, l.sex;
+
+-- name: FormsDeliveryHead :one
+-- The head of the Livrare hrană form state of a farm (§7.8, M4 Q14): the farm; its open cycle, if any, with its series
+-- (name and age parameters, for SAPT today); and the active feed types in name order, as parallel arrays (for_sex
+-- '' = ambele sexe). No row for an unknown farm.
+select f.id, f.name, f.type,
+       c.id as cycle_id, c.start_date as cycle_start, s.name as series_name, s.placement_date, s.age_at_placement_days,
+       array(select ft.id from feed_type ft where ft.active order by ft.name_key, ft.id)::uuid[] as type_ids,
+       array(select ft.name from feed_type ft where ft.active order by ft.name_key, ft.id)::text[] as type_names,
+       array(select coalesce(ft.for_sex::text, '') from feed_type ft where ft.active
+             order by ft.name_key, ft.id)::text[] as type_sexes
+from farm f
+left join cycle c on c.farm_id = f.id and c.end_date is null
+left join series s on s.id = c.series_id
+where f.id = sqlc.arg(farm_id)::uuid;

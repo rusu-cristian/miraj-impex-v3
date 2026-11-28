@@ -1,0 +1,157 @@
+{
+  "series": {
+    "id": "<series:seria2025>",
+    "name": "Seria 2025",
+    "status": "closed",
+    "placementDate": "2024-11-01",
+    "placementInferred": true,
+    "ageAtPlacementDays": 0
+  },
+  "alive": null,
+  "ownFarmsOnly": false,
+  "saptToday": null,
+  "saptSpan": [
+    19,
+    65
+  ],
+  "placement": {
+    "date": "2025-03-07",
+    "inferred": true,
+    "farm": "Hîrbovăț",
+    "placed": null
+  },
+  "end": {
+    "date": "2026-01-28",
+    "by": "emptied"
+  },
+  "track": {
+    "lanes": [
+      {
+        "farm": {
+          "id": "<farm:telita>",
+          "name": "Telița"
+        },
+        "cycles": [],
+        "transfers": []
+      },
+      {
+        "farm": {
+          "id": "<farm:hirbovat>",
+          "name": "Hîrbovăț"
+        },
+        "cycles": [
+          {
+            "id": "<cycle:hirbovat/2025>",
+            "series": "Seria 2025",
+            "startDate": "2025-03-07",
+            "endDate": "2026-01-28",
+            "open": false,
+            "startInferred": true,
+            "saptSpan": [
+              19,
+              65
+            ],
+            "type": "laying"
+          }
+        ],
+        "transfers": []
+      }
+    ],
+    "today": "2026-11-18"
+  },
+  "farms": [
+    {
+      "farm": {
+        "id": "<farm:telita>",
+        "name": "Telița",
+        "type": "growth"
+      },
+      "access": true,
+      "guide": null,
+      "cycle": null,
+      "stats": []
+    },
+    {
+      "farm": {
+        "id": "<farm:hirbovat>",
+        "name": "Hîrbovăț",
+        "type": "laying"
+      },
+      "access": true,
+      "guide": {
+        "id": "<guide:ross308ouat>",
+        "name": "Ross 308 ouat"
+      },
+      "cycle": {
+        "id": "<cycle:hirbovat/2025>",
+        "startDate": "2025-03-07",
+        "endDate": "2026-01-28",
+        "open": false,
+        "startInferred": true,
+        "saptSpan": [
+          19,
+          65
+        ]
+      },
+      "stats": [
+        {
+          "id": "alive",
+          "F": null,
+          "M": null,
+          "arrivals": {
+            "F": null,
+            "M": null
+          },
+          "sold": {
+            "F": null,
+            "M": null
+          }
+        },
+        {
+          "id": "cumMortality",
+          "F": null,
+          "M": null,
+          "guideF": null,
+          "reason": "no_guide",
+          "note": "(ghid din intrarea în ouat)",
+          "deaths": {
+            "F": null,
+            "M": null
+          }
+        },
+        {
+          "id": "weight",
+          "F": null,
+          "M": null,
+          "guide": null,
+          "reason": "no_weighing",
+          "at": null,
+          "section": null
+        },
+        {
+          "id": "feedToday",
+          "F": null,
+          "M": null,
+          "guideF": 156,
+          "guideM": 158
+        },
+        {
+          "id": "layToday",
+          "value": null,
+          "guide": null,
+          "diffPts": null,
+          "reason": "no_guide",
+          "eggs": 485,
+          "halls": 1
+        }
+      ]
+    }
+  ],
+  "tabs": [
+    "pasari",
+    "hrana",
+    "greutate",
+    "productie"
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

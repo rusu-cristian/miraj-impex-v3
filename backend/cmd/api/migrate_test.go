@@ -76,7 +76,7 @@ func TestMigrateUpStatusIdempotent(t *testing.T) {
 	if code != exitOK {
 		t.Fatalf("up: exit %d\n%s%s", code, out, errOut)
 	}
-	if got := doneLine(t, out); got["applied"] != float64(2) || got["version"] != float64(2) {
+	if got := doneLine(t, out); got["applied"] != float64(3) || got["version"] != float64(3) {
 		t.Fatalf("first up: %v", got)
 	}
 
@@ -84,7 +84,7 @@ func TestMigrateUpStatusIdempotent(t *testing.T) {
 	if code != exitOK {
 		t.Fatalf("status: exit %d\n%s%s", code, out, errOut)
 	}
-	for _, file := range []string{"0001_baseline.sql", "0002_roles.sql"} {
+	for _, file := range []string{"0001_baseline.sql", "0002_roles.sql", "0003_closed_series_on.sql"} {
 		line := lineWith(out, file)
 		if line == "" || !strings.Contains(line, "applied") {
 			t.Fatalf("status has no applied line for %s:\n%s", file, out)
@@ -95,10 +95,10 @@ func TestMigrateUpStatusIdempotent(t *testing.T) {
 	if code != exitOK {
 		t.Fatalf("second up: exit %d\n%s%s", code, out, errOut)
 	}
-	if got := doneLine(t, out); got["applied"] != float64(0) || got["version"] != float64(2) {
+	if got := doneLine(t, out); got["applied"] != float64(0) || got["version"] != float64(3) {
 		t.Fatalf("second up changed something: %v", got)
 	}
-	if vs := appliedVersions(t, dsn); len(vs) != 2 || vs[0] != 1 || vs[1] != 2 {
+	if vs := appliedVersions(t, dsn); len(vs) != 3 || vs[0] != 1 || vs[1] != 2 || vs[2] != 3 {
 		t.Fatalf("goose_db_version = %v", vs)
 	}
 }
@@ -124,7 +124,7 @@ func TestMigrateConcurrentRuns(t *testing.T) {
 		}
 	}
 	// Each migration was applied exactly once.
-	if vs := appliedVersions(t, dsn); len(vs) != 2 {
+	if vs := appliedVersions(t, dsn); len(vs) != 3 {
 		t.Fatalf("goose_db_version = %v", vs)
 	}
 }

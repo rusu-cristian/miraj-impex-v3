@@ -17,13 +17,16 @@ func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 
 // Routes registers the entries routes on mux behind authed (the session
 // chain, SPEC §12.3). Every route checks the role and the farm itself
-// (checkWriter: vet, manager, owner); the creates do it after decoding (M3
-// D5: decode → role → farm → codes → Validate → service).
+// (checkWriter: vet, manager, owner; checkDeliveryWriter: manager, owner);
+// the creates do it after decoding (M3 D5: decode → role → farm → codes →
+// Validate → service).
 func (h *Handler) Routes(mux httpx.Router, authed httpx.Chain) {
 	// Form states (§7.8, feedform.go).
 	mux.Handle("GET /api/forms/feed-daily", authed.ThenFunc(h.feedForm))
+	mux.Handle("GET /api/forms/delivery", authed.ThenFunc(h.deliveryForm))
 	// Creates.
 	mux.Handle(routeFeedDaily, authed.ThenFunc(h.createFeedDaily))
+	mux.Handle(routeDelivery, authed.ThenFunc(h.createDelivery))
 }
 
 // createFeedDaily is POST /api/entries/feed-daily (§7.8, M3 D5). The answer

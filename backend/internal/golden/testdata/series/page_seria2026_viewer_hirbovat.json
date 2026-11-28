@@ -1,0 +1,158 @@
+{
+  "series": {
+    "id": "<series:seria2026>",
+    "name": "Seria 2026",
+    "status": "active",
+    "placementDate": "2025-10-07",
+    "placementInferred": false,
+    "ageAtPlacementDays": 0
+  },
+  "alive": {
+    "F": 12561,
+    "M": 794
+  },
+  "ownFarmsOnly": true,
+  "saptToday": 59,
+  "saptSpan": [
+    20,
+    59
+  ],
+  "track": {
+    "lanes": [
+      {
+        "farm": {
+          "id": "<farm:hirbovat>",
+          "name": "Hîrbovăț"
+        },
+        "cycles": [
+          {
+            "id": "<cycle:hirbovat/2026>",
+            "series": "Seria 2026",
+            "startDate": "2026-02-22",
+            "endDate": null,
+            "open": true,
+            "saptSpan": [
+              20,
+              59
+            ],
+            "type": "laying"
+          }
+        ],
+        "transfers": []
+      }
+    ],
+    "today": "2026-11-18"
+  },
+  "farms": [
+    {
+      "farm": {
+        "name": "Telița"
+      },
+      "access": false
+    },
+    {
+      "farm": {
+        "id": "<farm:hirbovat>",
+        "name": "Hîrbovăț",
+        "type": "laying"
+      },
+      "access": true,
+      "guide": {
+        "id": "<guide:ross308ouat>",
+        "name": "Ross 308 ouat"
+      },
+      "cycle": {
+        "id": "<cycle:hirbovat/2026>",
+        "startDate": "2026-02-22",
+        "endDate": null,
+        "open": true,
+        "saptSpan": [
+          20,
+          59
+        ]
+      },
+      "stats": [
+        {
+          "id": "alive",
+          "F": 12561,
+          "M": 794,
+          "arrivals": {
+            "F": 26883,
+            "M": 3024
+          },
+          "sold": {
+            "F": 12801,
+            "M": 1182
+          }
+        },
+        {
+          "id": "cumMortality",
+          "F": 5.6579,
+          "M": 34.6561,
+          "guideF": 7.25,
+          "status": "in_norma",
+          "note": "(ghid din intrarea în ouat)",
+          "deaths": {
+            "F": 1521,
+            "M": 1048
+          }
+        },
+        {
+          "id": "weight",
+          "F": 3960,
+          "M": 4870,
+          "guide": null,
+          "reason": "no_guide",
+          "at": "2026-11-10",
+          "section": "H5.1"
+        },
+        {
+          "id": "feedToday",
+          "F": 160,
+          "M": 142.844,
+          "guideF": 157,
+          "guideM": 156,
+          "status": "in_norma",
+          "note": "H7 goală din 14.11"
+        },
+        {
+          "id": "feedDaysLeft",
+          "items": [
+            {
+              "type": "Breeder 2",
+              "forSex": "F",
+              "days": 13.2367,
+              "runOut": "2026-12-01",
+              "kg": 31664.9,
+              "lamp": "in_norma"
+            },
+            {
+              "type": "Cocoși",
+              "forSex": "M",
+              "days": 10.4193,
+              "runOut": "2026-11-28",
+              "kg": 1781,
+              "lamp": "in_norma"
+            }
+          ]
+        },
+        {
+          "id": "layToday",
+          "value": 41.0837,
+          "guide": 57.6,
+          "diffPts": -16.5163,
+          "status": "abatere",
+          "eggs": 5914,
+          "halls": 2
+        }
+      ]
+    }
+  ],
+  "tabs": [
+    "pasari",
+    "hrana",
+    "greutate",
+    "productie"
+  ],
+  "asOf": "2026-11-18T12:00:00+02:00"
+}

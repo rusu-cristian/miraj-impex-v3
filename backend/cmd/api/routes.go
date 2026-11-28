@@ -9,7 +9,9 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/farms"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/periodtable"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/prices"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/reports"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/series"
 )
 
 // routeRecorder is the httpx.Router of `api serve`: a ServeMux that also
@@ -52,8 +54,10 @@ func registerRoutes(r httpx.Router, h *health, authService *auth.Service, hs han
 	hs.auth.Routes(r, public, authed) // POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me
 	hs.table.Routes(r, authed)        // GET /api/table
 	hs.farms.Routes(r, authed)        // GET /api/farms/{id}/page, GET /api/farms/{id}/summary, GET /api/bootstrap
-	hs.entries.Routes(r, authed)      // GET /api/forms/feed-daily, POST /api/entries/feed-daily
+	hs.entries.Routes(r, authed)      // GET /api/forms/feed-daily, GET /api/forms/delivery, POST /api/entries/feed-daily, POST /api/entries/delivery
 	hs.reports.Routes(r, authed)      // GET /api/reports/feed
+	hs.series.Routes(r, authed)       // GET /api/series/{id}/page
+	hs.prices.Routes(r, authed)       // GET /api/deliveries, POST /api/deliveries/prices, POST /api/deliveries/prices/undo, PATCH /api/deliveries/{id}/price
 }
 
 // handlers are the module handlers registerRoutes mounts.
@@ -63,4 +67,6 @@ type handlers struct {
 	farms   *farms.Handler
 	entries *entries.Handler
 	reports *reports.Handler
+	series  *series.Handler
+	prices  *prices.Handler
 }

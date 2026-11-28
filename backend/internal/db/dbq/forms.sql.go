@@ -14,6 +14,55 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const formsDeliveryHead = `-- name: FormsDeliveryHead :one
+select f.id, f.name, f.type,
+       c.id as cycle_id, c.start_date as cycle_start, s.name as series_name, s.placement_date, s.age_at_placement_days,
+       array(select ft.id from feed_type ft where ft.active order by ft.name_key, ft.id)::uuid[] as type_ids,
+       array(select ft.name from feed_type ft where ft.active order by ft.name_key, ft.id)::text[] as type_names,
+       array(select coalesce(ft.for_sex::text, '') from feed_type ft where ft.active
+             order by ft.name_key, ft.id)::text[] as type_sexes
+from farm f
+left join cycle c on c.farm_id = f.id and c.end_date is null
+left join series s on s.id = c.series_id
+where f.id = $1::uuid
+`
+
+type FormsDeliveryHeadRow struct {
+	ID                 uuid.UUID
+	Name               string
+	Type               FarmType
+	CycleID            *uuid.UUID
+	CycleStart         *timex.Day
+	SeriesName         *string
+	PlacementDate      *timex.Day
+	AgeAtPlacementDays *int16
+	TypeIds            []uuid.UUID
+	TypeNames          []string
+	TypeSexes          []string
+}
+
+// The head of the Livrare hrană form state of a farm (§7.8, M4 Q14): the farm; its open cycle, if any, with its series
+// (name and age parameters, for SAPT today); and the active feed types in name order, as parallel arrays (for_sex
+// ” = ambele sexe). No row for an unknown farm.
+func (q *Queries) FormsDeliveryHead(ctx context.Context, farmID uuid.UUID) (FormsDeliveryHeadRow, error) {
+	row := q.db.QueryRow(ctx, formsDeliveryHead, farmID)
+	var i FormsDeliveryHeadRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.CycleID,
+		&i.CycleStart,
+		&i.SeriesName,
+		&i.PlacementDate,
+		&i.AgeAtPlacementDays,
+		&i.TypeIds,
+		&i.TypeNames,
+		&i.TypeSexes,
+	)
+	return i, err
+}
+
 const formsFeedHead = `-- name: FormsFeedHead :one
 
 select f.id, f.name, f.type,

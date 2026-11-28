@@ -7,60 +7,356 @@ package dbq
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
+	"github.com/shopspring/decimal"
 )
 
-const reportsFeedFarms = `-- name: ReportsFeedFarms :many
-select f.id, f.name,
-       (c.id is not null and c.end_date is null)::boolean as has_open_cycle,
-       c.end_date, s.name as series_name
-from farm f
-left join lateral (
-  select c.id, c.series_id, c.end_date
+const reportsCostInputs = `-- name: ReportsCostInputs :many
+with r as (
+  select g.i as ord,
+         ($1::uuid[])[g.i] as farm_id,
+         ($2::date[])[g.i] as cycle_start,
+         ($3::date[])[g.i] as base_to,
+         ($4::boolean[])[g.i] as has_egg_from,
+         ($5::date[])[g.i] as egg_from,
+         ($6::date[])[g.i] as egg_to
+  from generate_subscripts($1::uuid[], 1) as g(i)
+), sp as (
+  select coalesce(sum(e.qty) filter (where e.sex = 'F'), 0)::integer as placed_f,
+         coalesce(sum(e.qty) filter (where e.sex = 'M'), 0)::integer as placed_m
   from cycle c
-  where c.farm_id = f.id
-  order by c.start_date desc
-  limit 1
-) c on true
-left join series s on s.id = c.series_id
-where $1::boolean or f.id = any($2::uuid[])
-order by f.name_key
+  join bird_event e on e.farm_id = c.farm_id
+                   and e.date between c.start_date and coalesce(c.end_date, 'infinity'::date)
+  join entry n on n.id = e.entry_id and n.deleted_at is null
+  where c.series_id = $7::uuid
+    and e.type = 'placement'
+    and e.deleted_at is null
+    and (n.series_id is null or n.series_id = $7::uuid)
+)
+select r.ord::integer as ord, r.farm_id::uuid as farm_id, b.base_f, b.base_m, eg.eggs, sp.placed_f, sp.placed_m
+from r
+cross join sp
+cross join lateral (
+  select coalesce(sum(e.qty) filter (where e.sex = 'F'), 0)::integer as base_f,
+         coalesce(sum(e.qty) filter (where e.sex = 'M'), 0)::integer as base_m
+  from v_bird_event e
+  join entry n on n.id = e.entry_id
+  left join section ps on ps.id = e.peer_section_id
+  where e.farm_id = r.farm_id
+    and e.date between r.cycle_start and r.base_to
+    and (e.type = 'placement'
+         or (e.type = 'transfer' and e.qty > 0
+             and coalesce(ps.farm_id, case when n.kind = 'transfer' then n.farm_id end, e.farm_id) <> r.farm_id))
+) b
+cross join lateral (
+  select coalesce(sum(ep.total_eggs), 0)::bigint as eggs
+  from egg_production ep
+  join entry n on n.id = ep.entry_id and n.deleted_at is null
+  where ep.farm_id = r.farm_id
+    and ep.deleted_at is null
+    and ep.total_eggs is not null
+    and (not r.has_egg_from or ep.date >= r.egg_from)
+    and ep.date <= r.egg_to
+) eg
+order by r.ord
 `
 
-type ReportsFeedFarmsParams struct {
-	AllFarms bool
-	FarmIds  []uuid.UUID
+type ReportsCostInputsParams struct {
+	FarmIds     []uuid.UUID
+	CycleStarts []timex.Day
+	BaseTos     []timex.Day
+	HasEggFrom  []bool
+	EggFroms    []timex.Day
+	EggTos      []timex.Day
+	SeriesID    *uuid.UUID
 }
 
-type ReportsFeedFarmsRow struct {
-	ID           uuid.UUID
-	Name         string
-	HasOpenCycle bool
-	EndDate      *timex.Day
-	SeriesName   *string
+type ReportsCostInputsRow struct {
+	Ord     int32
+	FarmID  uuid.UUID
+	BaseF   int32
+	BaseM   int32
+	Eggs    int64
+	PlacedF int32
+	PlacedM int32
 }
 
-// The farms of the Stoc report (§7.12, M3 D9): every farm when all_farms, else the listed ids; ordered by name_key.
-// Each with its latest cycle (by start date, as CalcFarmCycles orders them): has_open_cycle when it has no end
-// date; otherwise the farm shows one "fără ciclu deschis" row, with the latest cycle's series and end date (null
-// without any cycle).
-func (q *Queries) ReportsFeedFarms(ctx context.Context, arg ReportsFeedFarmsParams) ([]ReportsFeedFarmsRow, error) {
-	rows, err := q.db.Query(ctx, reportsFeedFarms, arg.AllFarms, arg.FarmIds)
+// The bases of the Cost rows (§5.9, M4 D6, Q6) in one statement, one row per asked cycle in the order asked (ord, from
+// 1): base_f/base_m = calc.FarmBase over [cycle_start, base_to] (placements and transfers in from another farm),
+// eggs = calc.EggsBetween over the cycle's delivery range (from egg_from only when has_egg_from, to egg_to), and
+// placed_f/placed_m = calc.SeriesPlacement of series_id (the same on every row; 0 for a null series_id). The three
+// calc readers are the reference: TestCostInputsMatchCalc checks this batch against them.
+func (q *Queries) ReportsCostInputs(ctx context.Context, arg ReportsCostInputsParams) ([]ReportsCostInputsRow, error) {
+	rows, err := q.db.Query(ctx, reportsCostInputs,
+		arg.FarmIds,
+		arg.CycleStarts,
+		arg.BaseTos,
+		arg.HasEggFrom,
+		arg.EggFroms,
+		arg.EggTos,
+		arg.SeriesID,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ReportsFeedFarmsRow{}
+	items := []ReportsCostInputsRow{}
 	for rows.Next() {
-		var i ReportsFeedFarmsRow
+		var i ReportsCostInputsRow
+		if err := rows.Scan(
+			&i.Ord,
+			&i.FarmID,
+			&i.BaseF,
+			&i.BaseM,
+			&i.Eggs,
+			&i.PlacedF,
+			&i.PlacedM,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const reportsDeliveryRows = `-- name: ReportsDeliveryRows :many
+with r as (
+  select ($6::uuid[])[g.i] as farm_id,
+         ($7::boolean[])[g.i] as has_from,
+         ($8::date[])[g.i] as from_day,
+         ($9::date[])[g.i] as to_day
+  from generate_subscripts($6::uuid[], 1) as g(i)
+)
+select fd.id, fd.date, fd.farm_id, f.name as farm_name, f.name_key as farm_key, ft.name as type_name,
+       ft.name_key as type_key, ft.for_sex, fd.qty_kg, fd.price_per_kg, fd.total_lei, fd.price_from_register,
+       fd.priced_at, u.name as priced_by_name,
+       (closed_series_on(fd.farm_id, fd.date) is not null)::boolean as series_closed
+from r
+join feed_delivery fd on fd.farm_id = r.farm_id
+join entry n on n.id = fd.entry_id and n.deleted_at is null
+join farm f on f.id = fd.farm_id
+join feed_type ft on ft.id = fd.feed_type_id
+left join app_user u on u.id = fd.priced_by
+where fd.deleted_at is null
+  and fd.date <= r.to_day
+  and (not r.has_from or fd.date >= r.from_day)
+  and ($1::date is null
+       or fd.date < $1::date
+       or (fd.date = $1::date
+           and (f.name_key, ft.name_key, fd.id)
+               > ($2::text, $3::text, $4::uuid)))
+order by fd.date desc, f.name_key, ft.name_key, fd.id
+limit $5::integer
+`
+
+type ReportsDeliveryRowsParams struct {
+	CursorDate    *timex.Day
+	CursorFarmKey *string
+	CursorTypeKey *string
+	CursorID      *uuid.UUID
+	RowLimit      int32
+	FarmIds       []uuid.UUID
+	HasFrom       []bool
+	FromDays      []timex.Day
+	ToDays        []timex.Day
+}
+
+type ReportsDeliveryRowsRow struct {
+	ID                uuid.UUID
+	Date              timex.Day
+	FarmID            uuid.UUID
+	FarmName          string
+	FarmKey           string
+	TypeName          string
+	TypeKey           string
+	ForSex            *Sex
+	QtyKg             decimal.Decimal
+	PricePerKg        decimal.NullDecimal
+	TotalLei          decimal.NullDecimal
+	PriceFromRegister bool
+	PricedAt          *time.Time
+	PricedByName      *string
+	SeriesClosed      bool
+}
+
+// One page of the Livrări rows (§7.12, M4 D6, Q7): the live deliveries of each asked farm over its day range (from_day
+// only when has_from, to_day; both included), ordered date desc, farm name_key, type name_key, id. A keyset cursor
+// (the last row of the previous page: all four cursor_* set) starts after that row. row_limit rows at most. With the
+// price columns and the pricing user's name (the service drops them for a viewer, M4 D2), and series_closed: the
+// delivery is dated inside a cycle of a closed series at its farm (closed_series_on, 0003; no price is set or changed
+// there, §3.1).
+func (q *Queries) ReportsDeliveryRows(ctx context.Context, arg ReportsDeliveryRowsParams) ([]ReportsDeliveryRowsRow, error) {
+	rows, err := q.db.Query(ctx, reportsDeliveryRows,
+		arg.CursorDate,
+		arg.CursorFarmKey,
+		arg.CursorTypeKey,
+		arg.CursorID,
+		arg.RowLimit,
+		arg.FarmIds,
+		arg.HasFrom,
+		arg.FromDays,
+		arg.ToDays,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ReportsDeliveryRowsRow{}
+	for rows.Next() {
+		var i ReportsDeliveryRowsRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
-			&i.HasOpenCycle,
-			&i.EndDate,
+			&i.Date,
+			&i.FarmID,
+			&i.FarmName,
+			&i.FarmKey,
+			&i.TypeName,
+			&i.TypeKey,
+			&i.ForSex,
+			&i.QtyKg,
+			&i.PricePerKg,
+			&i.TotalLei,
+			&i.PriceFromRegister,
+			&i.PricedAt,
+			&i.PricedByName,
+			&i.SeriesClosed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const reportsFeedCycles = `-- name: ReportsFeedCycles :many
+select f.id as farm_id, f.name as farm_name, f.type as farm_type,
+       c.id as cycle_id, c.series_id, s.name as series_name, s.status as series_status,
+       c.start_date, c.end_date, s.placement_date, coalesce(s.age_at_placement_days, 0)::integer as age_at_placement_days,
+       g.type as guide_type,
+       (select count(distinct c2.farm_id) from cycle c2 where c2.series_id = c.series_id)::integer as series_farms
+from farm f
+left join cycle c on c.farm_id = f.id
+left join series s on s.id = c.series_id
+left join guide g on g.id = c.guide_id
+where $1::boolean or f.id = any($2::uuid[])
+order by f.name_key, c.start_date desc
+`
+
+type ReportsFeedCyclesParams struct {
+	AllFarms bool
+	FarmIds  []uuid.UUID
+}
+
+type ReportsFeedCyclesRow struct {
+	FarmID             uuid.UUID
+	FarmName           string
+	FarmType           FarmType
+	CycleID            *uuid.UUID
+	SeriesID           *uuid.UUID
+	SeriesName         *string
+	SeriesStatus       *SeriesStatus
+	StartDate          *timex.Day
+	EndDate            *timex.Day
+	PlacementDate      *timex.Day
+	AgeAtPlacementDays int32
+	GuideType          *FarmType
+	SeriesFarms        int32
+}
+
+// The farms of Rapoarte › Hrană (§7.12, M3 D9, M4 D6): every farm when all_farms, else the listed ids; ordered by
+// name_key, then each farm's cycles newest first (as CalcFarmCycles orders them). A farm without any cycle is one row
+// with a null cycle. Per cycle: its series (name, status), age parameters and guide type (the cycle's type, else the
+// farm's), and series_farms = how many farms have a cycle of that series (every farm, also those the caller can't
+// see: the Cost total needs them all, M4 Q6).
+func (q *Queries) ReportsFeedCycles(ctx context.Context, arg ReportsFeedCyclesParams) ([]ReportsFeedCyclesRow, error) {
+	rows, err := q.db.Query(ctx, reportsFeedCycles, arg.AllFarms, arg.FarmIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ReportsFeedCyclesRow{}
+	for rows.Next() {
+		var i ReportsFeedCyclesRow
+		if err := rows.Scan(
+			&i.FarmID,
+			&i.FarmName,
+			&i.FarmType,
+			&i.CycleID,
+			&i.SeriesID,
 			&i.SeriesName,
+			&i.SeriesStatus,
+			&i.StartDate,
+			&i.EndDate,
+			&i.PlacementDate,
+			&i.AgeAtPlacementDays,
+			&i.GuideType,
+			&i.SeriesFarms,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const reportsLastDeliveryBefore = `-- name: ReportsLastDeliveryBefore :many
+with r as (
+  select ($1::uuid[])[g.i] as farm_id,
+         ($2::date[])[g.i] as from_day
+  from generate_subscripts($1::uuid[], 1) as g(i)
+)
+select fd.date, f.name as farm_name, ft.name as type_name, fd.qty_kg
+from r
+join feed_delivery fd on fd.farm_id = r.farm_id
+join entry n on n.id = fd.entry_id and n.deleted_at is null
+join farm f on f.id = fd.farm_id
+join feed_type ft on ft.id = fd.feed_type_id
+where fd.deleted_at is null
+  and fd.date < r.from_day
+order by fd.date desc, f.name_key, ft.name_key, fd.id
+limit 1
+`
+
+type ReportsLastDeliveryBeforeParams struct {
+	FarmIds  []uuid.UUID
+	FromDays []timex.Day
+}
+
+type ReportsLastDeliveryBeforeRow struct {
+	Date     timex.Day
+	FarmName string
+	TypeName string
+	QtyKg    decimal.Decimal
+}
+
+// The newest live delivery of the asked farms dated before its farm's range (the empty Livrări's "Ultima livrare",
+// M4 Q8): only ranges with a from_day count; at most one row, in the Livrări row order.
+func (q *Queries) ReportsLastDeliveryBefore(ctx context.Context, arg ReportsLastDeliveryBeforeParams) ([]ReportsLastDeliveryBeforeRow, error) {
+	rows, err := q.db.Query(ctx, reportsLastDeliveryBefore, arg.FarmIds, arg.FromDays)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ReportsLastDeliveryBeforeRow{}
+	for rows.Next() {
+		var i ReportsLastDeliveryBeforeRow
+		if err := rows.Scan(
+			&i.Date,
+			&i.FarmName,
+			&i.TypeName,
+			&i.QtyKg,
 		); err != nil {
 			return nil, err
 		}

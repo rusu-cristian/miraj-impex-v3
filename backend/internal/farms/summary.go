@@ -39,20 +39,54 @@ import (
 // calc.ErrIntervalFuture).
 func BuildSummary(ctx context.Context, db dbq.DBTX, in Input) (SummaryResponse, error) {
 	res := SummaryResponse{Stats: []Stat{}, Tiles: []Tile{}, Alerts: []any{}, Latest: []any{}}
+	s, rp, ok, err := loadSummary(ctx, db, in, true)
+	if err != nil || !ok {
+		return res, err
+	}
+	if s.laying {
+		res.Readout = s.layReadout(periodtable.Series(rp, s.farmDays, s.guide))
+	} else {
+		res.Readout = s.growthReadout()
+	}
+	res.Stats = s.stats()
+	res.Tiles = s.tiles()
+	return res, nil
+}
+
+// BuildCycleStats is the stats of BuildSummary for the same input, without
+// the readout, tiles, alerts or latest records: the series page's farm panels
+// (M4 D7, Q3) take it with in.CycleID set and a zero period (the whole
+// cycle). It reads the farm's days of the period's last day only (the readout
+// series is not built). Its errors are BuildSummary's; a farm without a
+// cycle, or a period with no day in the cycle, gives [].
+func BuildCycleStats(ctx context.Context, db dbq.DBTX, in Input) ([]Stat, error) {
+	s, _, ok, err := loadSummary(ctx, db, in, false)
+	if err != nil || !ok {
+		return []Stat{}, err
+	}
+	return s.stats(), nil
+}
+
+// loadSummary reads what BuildSummary and BuildCycleStats show: the cycle
+// and period of in, resolved as BuildSummary documents. ok is false for a
+// farm without a cycle or a period with no day in the cycle. readout reads
+// the farm's days of the whole period for a laying cycle's readout series;
+// without it only the last day is read.
+func loadSummary(ctx context.Context, db dbq.DBTX, in Input, readout bool) (summary, calc.ResolvedPeriod, bool, error) {
 	farm, err := dbq.New(db).FarmsGetFarm(ctx, in.FarmID)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return res, ErrFarmNotFound
+		return summary{}, calc.ResolvedPeriod{}, false, ErrFarmNotFound
 	}
 	if err != nil {
-		return res, fmt.Errorf("farms: summary farm: %w", err)
+		return summary{}, calc.ResolvedPeriod{}, false, fmt.Errorf("farms: summary farm: %w", err)
 	}
 	cycles, err := calc.FarmCycles(ctx, db, in.FarmID)
 	if err != nil {
-		return res, err
+		return summary{}, calc.ResolvedPeriod{}, false, err
 	}
 	cycle, err := pickCycle(cycles, in.CycleID)
 	if err != nil || cycle == nil {
-		return res, err
+		return summary{}, calc.ResolvedPeriod{}, false, err
 	}
 	period := in.Period
 	if period.Kind == "" {
@@ -62,30 +96,23 @@ func BuildSummary(ctx context.Context, db dbq.DBTX, in Input) (SummaryResponse, 
 	// cycle without a flock count runs from its first register day (M2 Q7).
 	tableCycle, legacy, err := periodtable.TableCycle(ctx, db, *cycle)
 	if err != nil {
-		return res, err
+		return summary{}, calc.ResolvedPeriod{}, false, err
 	}
 	rp, err := calc.ResolvePeriod(tableCycle, period, in.Today)
 	if err != nil {
-		return res, err
+		return summary{}, calc.ResolvedPeriod{}, false, err
 	}
 	if rp.Empty {
-		return res, nil
+		return summary{}, rp, false, nil
 	}
 
 	laying := cycle.Type(farm.Type) == dbq.FarmTypeLaying
-	s, err := readSummary(ctx, db, *cycle, rp, laying, in)
+	s, err := readSummary(ctx, db, *cycle, rp, laying, readout && laying, in)
 	if err != nil {
-		return res, err
+		return summary{}, rp, false, err
 	}
 	s.noFlockCount = legacy
-	if laying {
-		res.Readout = s.layReadout(periodtable.Series(rp, s.farmDays, s.guide))
-	} else {
-		res.Readout = s.growthReadout()
-	}
-	res.Stats = s.stats()
-	res.Tiles = s.tiles()
-	return res, nil
+	return s, rp, true, nil
 }
 
 // summary is what the summary reads for one cycle and day.
@@ -118,8 +145,10 @@ type summary struct {
 // readSummary reads what the summary shows on the period's last day. Each
 // figure is read once: the guide weeks cover both the weighings (from the
 // week before the cycle's first, §5.10) and the readout series, and the
-// farm's last day is the last row of the series' day query.
-func readSummary(ctx context.Context, db dbq.DBTX, c calc.CycleInfo, rp calc.ResolvedPeriod, laying bool, in Input) (summary, error) {
+// farm's last day is the last row of the series' day query. series reads the
+// farm's days of the whole period (a laying cycle's readout series); without
+// it only the last day is read.
+func readSummary(ctx context.Context, db dbq.DBTX, c calc.CycleInfo, rp calc.ResolvedPeriod, laying, series bool, in Input) (summary, error) {
 	day := rp.To
 	s := summary{cycle: c, day: day, sapt: calc.SAPT(c.Age, day), laying: laying}
 	var err error
@@ -135,7 +164,7 @@ func readSummary(ctx context.Context, db dbq.DBTX, c calc.CycleInfo, rp calc.Res
 		}
 	}
 	from := day // growth: no readout series in M2, so the last day only
-	if laying {
+	if series {
 		from = rp.From
 	}
 	farmDays, err := periodtable.ReadDays(ctx, db, periodtable.DaysQuery{FarmID: c.FarmID, Scope: periodtable.ScopeFarm, From: from, To: day})

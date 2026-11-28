@@ -47,6 +47,7 @@ func TestRoleGrants(t *testing.T) {
 		{"app: insert login_attempt", testdb.RoleApp, "insert into login_attempt (login, at, success) values ('ion', now(), false)", false},
 		{"app: update app_user", testdb.RoleApp, "update app_user set name = 'Proprietar'", false},
 		{"app: select a view", testdb.RoleApp, "select count(*) from v_section_sex_day", false},
+		{"app: execute closed_series_on (0003)", testdb.RoleApp, "select closed_series_on(gen_random_uuid(), current_date)", false},
 		{"app: select goose_db_version", testdb.RoleApp, "select max(version_id) from goose_db_version", false},
 		{"app: insert goose_db_version", testdb.RoleApp, "insert into goose_db_version (version_id, is_applied) values (99, true)", true},
 		{"maint: delete login_attempt", testdb.RoleMaint, "delete from login_attempt", false},
