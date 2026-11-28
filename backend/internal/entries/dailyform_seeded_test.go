@@ -11,6 +11,7 @@ import (
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/db/dbq"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/entries"
+	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/fmtx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/httpx"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/platform/timex"
 	"github.com/rusu-cristian/miraj-impex-v3/backend/internal/testdb"
@@ -100,7 +101,7 @@ func TestDailyFormSeeded(t *testing.T) {
 		if e.Author == nil || *e.Author != "Dr. Ceban" || e.Editable || !e.Correctable {
 			t.Errorf("existing %+v: want Dr. Ceban's, correctable only", e)
 		}
-		got = append(got, e.At.Format("15:04")+" "+strconv.Itoa(len(e.Sections))+" "+strconv.Itoa(len(e.Eggs)))
+		got = append(got, fmtx.TimeOfDay(e.At.Time)+" "+strconv.Itoa(len(e.Sections))+" "+strconv.Itoa(len(e.Eggs)))
 	}
 	if !slices.Equal(got, []string{"08:15 4 0", "08:27 0 2"}) {
 		t.Errorf("existing = %v, want the 08:15 mortality of 4 sections, then the eggs of H5, H6", got)
